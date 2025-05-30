@@ -51,7 +51,10 @@
                 const body = (query.value.city || query.value.county)
                     ? JSON.stringify(query.value)
                     : JSON.stringify({})
-                const res = await fetch('http://localhost:8080/locations/search', {
+                let API_BASE = window.location.origin;
+                console.log(API_BASE)
+                if(!API_BASE.endsWith('/')) {API_BASE = API_BASE + '/'}
+                const res = await fetch(`${API_BASE}locations/search`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body
