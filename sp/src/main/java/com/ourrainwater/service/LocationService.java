@@ -9,6 +9,8 @@ public interface LocationService {
 
     List<Location> getLocationByID(Integer id);
 
+    List<Location> getByLocation(Location location);
+
     int insert(Location location);
 
     int update(Location location);

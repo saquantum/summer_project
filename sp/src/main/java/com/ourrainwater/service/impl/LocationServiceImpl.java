@@ -25,6 +25,11 @@ public class LocationServiceImpl implements LocationService {
     }
 
     @Override
+    public List<Location> getByLocation(Location location) {
+        return locationMapper.selectByLocation(location);
+    }
+
+    @Override
     public int insert(Location location) {
         return locationMapper.insert(location);
     }

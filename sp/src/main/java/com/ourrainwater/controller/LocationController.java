@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/locations")
+@CrossOrigin
 public class LocationController {
 
     @Autowired
@@ -20,6 +21,13 @@ public class LocationController {
     @GetMapping("/{id}")
     public ResponseResult getAllLocationsByID(@PathVariable Integer id) {
         return new ResponseResult(Code.SELECT_OK, locationService.getLocationByID(id));
+    }
+
+    @PostMapping("/search")
+    public ResponseResult getByLocation(@RequestBody Location location) {
+        if(location.getCity()!=null && !location.getCity().isEmpty()) location.setCity(location.getCity() + "%");
+        if(location.getCounty()!=null && !location.getCounty().isEmpty()) location.setCounty(location.getCounty() + "%");
+        return new ResponseResult(Code.SELECT_OK, locationService.getByLocation(location));
     }
 
     @PostMapping
