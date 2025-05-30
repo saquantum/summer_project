@@ -13,12 +13,12 @@ public interface LocationMapper {
 
     public List<Location> selectLocationByID(Integer id);
 
-    public List<Location> insert(Location location);
+    public List<Location> selectByLocation(Location location);
 
-    public List<Location> update(Location location);
+    public int insert(Location location);
 
-    public List<Location> deleteByID(Integer id);
+    public int update(Location location);
 
-    public List<Location> deleteByIDs(Integer[] ids);
-    public List<Location> deleteByIDs(List<Integer> ids);
+    public int deleteByIDs(Integer[] ids);
+    public int deleteByIDs(List<Integer> ids);
 }

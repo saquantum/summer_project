@@ -23,4 +23,23 @@ public class LocationServiceImpl implements LocationService {
     public List<Location> getLocationByID(Integer id) {
         return locationMapper.selectLocationByID(id);
     }
+
+    @Override
+    public int insert(Location location) {
+        return locationMapper.insert(location);
+    }
+
+    @Override
+    public int update(Location location) {
+        return locationMapper.update(location);
+    }
+
+    @Override
+    public int deleteByLocation(Location location) {
+        List<Integer> ids = locationMapper.selectByLocation(location).stream()
+                .map(Location::getId)
+                .toList();
+        if (ids.isEmpty()) return 0;
+        return locationMapper.deleteByIDs(ids);
+    }
 }

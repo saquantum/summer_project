@@ -1,7 +1,7 @@
 package com.ourrainwater.pojo;
 
 public class Location {
-    private int id;
+    private Integer id;
     private String city;
     private String county;
 
@@ -13,17 +13,17 @@ public class Location {
         this.county = county;
     }
 
-    public Location(int id, String city, String county) {
+    public Location(Integer id, String city, String county) {
         this.id = id;
         this.city = city;
         this.county = county;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
