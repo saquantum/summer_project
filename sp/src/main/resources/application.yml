@@ -1,0 +1,13 @@
+spring.application.name: sp
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql:///rainwaterDB?useSSL=false&serverTimezone=UTC
+    username: root
+    password: 123456
+    type: com.alibaba.druid.pool.DruidDataSource
+
+mybatis:
+  mapper-locations: classpath:com.ourrainwater.dao/*.xml
+  type-aliases-package: com.ourrainwater.pojo

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ourrainwater.dao.LocationMapper">
+    <select id="selectAllLocations" resultType="com.ourrainwater.pojo.Location">
+        select * from locations;
+    </select>
+
+    <select id="selectLocationByID" resultType="com.ourrainwater.pojo.Location">
+        SELECT * FROM locations where id = #{id}
+    </select>
+</mapper>
