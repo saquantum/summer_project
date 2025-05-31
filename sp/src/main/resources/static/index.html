@@ -1,72 +1,133 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>demo</title>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <style>
-        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: auto; }
-        input, button { padding: 8px; margin-right: 10px; border: 1px solid #ccc; border-radius: 4px; }
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background-color: #f4f4f4; }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <link rel="stylesheet" href="index.css">
 </head>
 <body>
 <div id="app">
     <div>
         <input v-model="query.city" placeholder="city">
         <input v-model="query.county" placeholder="county">
+        <button @click="clearQuery">Clear</button>
+        <button @click="insertItem">Insert</button>
         <button @click="search">Search</button>
     </div>
 
-    <table v-if="results.length">
+    <table v-show="results.length">
         <thead>
         <tr>
             <th>ID</th>
             <th>City</th>
             <th>County</th>
+            <th>Performable Actions(You should not see this)</th>
         </tr>
         </thead>
         <tbody>
-        <tr v-for="item in results" :key="item.id">
+        <tr v-for="(item, index) in results" :key="item.id" @click="startEditing(item.id)">
             <td>{{ item.id }}</td>
-            <td>{{ item.city }}</td>
-            <td>{{ item.county }}</td>
+            <td v-if="editingId === item.id">
+                <input v-model="item.city"
+                       @keyup.enter="stopEditing"
+                       @blur="stopEditing" />
+            </td>
+            <td v-else>{{ item.city }}</td>
+            <td v-if="editingId === item.id">
+                <input v-model="item.county"
+                       @keyup.enter="stopEditing"
+                       @blur="stopEditing" />
+            </td>
+            <td v-else>{{ item.county }}</td>
+            <td>
+                <div>
+                    <button @click.stop="updateItem(item.id, index)">update</button>
+                    <button @click.stop="deleteItem(item.id, index)">delete</button>
+                </div>
+            </td>
         </tr>
         </tbody>
     </table>
-    <p v-else>No result found</p>
+    <p v-show="!results.length">No result found</p>
 </div>
 
 <script>
-    const { createApp, ref } = Vue
+    const app = new Vue({
+        el: '#app',
+        data: {
+            query: {city: '', county: ''},
+            results: [],
+            editingId: null
+        },
+        methods: {
+            startEditing(id) {
+                this.editingId = id;
+            },
+            stopEditing() {
+                this.editingId = null;
+            },
+            clearQuery(){
+                this.query = {};
+            },
+            getHost(){
+                let host = window.location.origin;
+                if (host.startsWith("file")) {
+                    host = "http://localhost:8080";
+                }
+                if (!host.endsWith('/')) {
+                    host = host + '/';
+                }
+                return host;
+            },
+            async search() {
+                const body = (this.query.city || this.query.county)
+                    ? JSON.stringify(this.query)
+                    : JSON.stringify({});
 
-    createApp({
-        setup() {
-            const query = ref({ city: '', county: '' })
-            const results = ref([])
-
-            const search = async () => {
-                const body = (query.value.city || query.value.county)
-                    ? JSON.stringify(query.value)
-                    : JSON.stringify({})
-                let API_BASE = window.location.origin;
-                console.log(API_BASE)
-                if(!API_BASE.endsWith('/')) {API_BASE = API_BASE + '/'}
-                const res = await fetch(`${API_BASE}locations/search`, {
+                const response = await fetch(`${this.getHost()}locations/search`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body
-                })
-
-                const data = await res.json()
-                results.value = data.data
+                    headers: {'Content-Type': 'application/json'},
+                    body: body
+                });
+                this.results = (await response.json()).data;
+            },
+            async updateItem(id, index){
+                if(!this.results[index] || this.results[index].city === '' || this.results[index].county === '') return;
+                const body = JSON.stringify(this.results[index]);
+                const response = await fetch(`${this.getHost()}locations/`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: body
+                });
+            },
+            async deleteItem(id, index){
+                if(!this.results[index] || this.results[index].city === '' || this.results[index].county === '') return;
+                const body = JSON.stringify(this.results[index]);
+                const response = await fetch(`${this.getHost()}locations/`, {
+                    method: 'DELETE',
+                    headers: {'Content-Type': 'application/json'},
+                    body: body
+                });
+                // remove the row from the table
+                this.results = this.results.filter(v => v.id !== id);
+            },
+            async insertItem(){
+                if(this.query.city === '' || this.query.city.county === ''){
+                    window.alert("please enter non-empty value");
+                    return;
+                }
+                const body = JSON.stringify(this.query);
+                const response = await fetch(`${this.getHost()}locations/`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: body
+                });
+                window.alert("insert successful");
             }
-
-            return { query, results, search }
         }
-    }).mount('#app')
+    });
 </script>
 </body>
 </html>
