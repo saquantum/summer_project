@@ -1,8 +1,7 @@
-2025-05-31T16:03:54.564557800	[Location{id=null, city='null', county='null'}]	getByLocation
-2025-05-31T16:03:58.870877200	[Location{id=null, city='null', county='null'}]	getByLocation
-2025-05-31T18:10:11.245386900	[]	getAllLocations
-2025-05-31T18:10:56.386781800	[Location{id=null, city='null', county='null'}]	getByLocation
-2025-05-31T18:11:23.941594800	[Location{id=null, city='null', county='null'}]	getByLocation
-2025-05-31T18:11:29.947508800	[Location{id=null, city='null', county='null'}]	getByLocation
-2025-05-31T18:12:54.082620800	[Location{id=null, city='null', county='null'}]	getByLocation
-2025-05-31T18:14:00.970227900	[Location{id=null, city='null', county='null'}]	getByLocation
+
+2025-06-01T07:54:32.909218900	[Location{id=null, city='null', county='null'}]	getByLocation
+2025-06-01T07:54:38.338794500	[Location{id=null, city='b%', county=''}]	getByLocation
+2025-06-01T07:54:40.571403400	[Location{id=null, city='null', county='null'}]	getByLocation
+2025-06-01T07:55:56.276143600	[Location{id=null, city='null', county='null'}]	getByLocation
+2025-06-01T07:56:07.640200200	[Location{id=null, city='b%', county=''}]	getByLocation
+2025-06-01T07:56:46.143820500	[]	getAllLocations

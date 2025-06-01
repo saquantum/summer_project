@@ -16,7 +16,7 @@ public class SpMVCConfigSupport extends WebMvcConfigurationSupport {
     // redirect URI resources
     @Override
     protected void addResourceHandlers(ResourceHandlerRegistry registry) {
-        //registry.addResourceHandler("/resources/**").addResourceLocations("/resources/");
+        registry.addResourceHandler("/**").addResourceLocations("classpath:/static/");
     }
 
     @Override
