@@ -1,5 +1,0 @@
-2025-06-06T17:25:17.246669	[]	selectAllAssetHolders
-2025-06-06T17:28:08.960477100	[java.lang.String, @org.springframework.web.bind.annotation.RequestHeader java.lang.String]	canConvert
-2025-06-06T17:28:08.963469500	[abc123, java.lang.String, @org.springframework.web.bind.annotation.RequestHeader java.lang.String]	convert
-2025-06-06T17:28:18.828402300	[java.lang.String, @org.springframework.web.bind.annotation.RequestHeader java.lang.String]	canConvert
-2025-06-06T17:28:18.828402300	[abc123, java.lang.String, @org.springframework.web.bind.annotation.RequestHeader java.lang.String]	convert
