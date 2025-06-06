@@ -10,7 +10,17 @@ import java.io.IOException;
 public class Pages {
 
     @GetMapping("/")
-    public void redirect(HttpServletResponse response) throws IOException {
+    public void redirectHome(HttpServletResponse response) throws IOException {
         response.sendRedirect("/index.html");
+    }
+
+    @GetMapping("/user")
+    public void redirectUser(HttpServletResponse response) throws IOException {
+        response.sendRedirect("/user/index.html");
+    }
+
+    @GetMapping("/admin")
+    public void redirectAdmin(HttpServletResponse response) throws IOException {
+        response.sendRedirect("/admin/index.html");
     }
 }

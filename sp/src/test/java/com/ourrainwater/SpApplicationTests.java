@@ -1,21 +1,16 @@
 package com.ourrainwater;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ourrainwater.controller.LocationController;
-import com.ourrainwater.controller.ResponseResult;
-import com.ourrainwater.dao.LocationMapper;
-import com.ourrainwater.service.LocationService;
+import com.ourrainwater.controller.CrudController;
+import com.ourrainwater.dao.SqlMapper;
+import com.ourrainwater.service.SqlService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -28,20 +23,26 @@ class SpApplicationTests {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private LocationMapper locationMapper;
+    private SqlMapper sqlMapper;
 
     @Autowired
-    private LocationService locationService;
+    private SqlService sqlService;
 
     @Autowired
-    private LocationController locationController;
+    private CrudController crudController;
 
     @Test
-    public void testExceptionHandler() throws Exception {
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/locations")).andReturn();
-        String json = mvcResult.getResponse().getContentAsString();
-        ResponseResult response = objectMapper.readValue(json, ResponseResult.class);
-        System.out.println(response);
+    public void testPostgre(){
+        System.out.println(sqlService.selectAllAssetHolders());
+        System.out.println(sqlService.selectAllAssets());
     }
+
+//    @Test
+//    public void testExceptionHandler() throws Exception {
+//        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/locations")).andReturn();
+//        String json = mvcResult.getResponse().getContentAsString();
+//        ResponseResult response = objectMapper.readValue(json, ResponseResult.class);
+//        System.out.println(response);
+//    }
 
 }

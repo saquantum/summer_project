@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>WebSocket Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <link rel="stylesheet" href="../index.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <style>
+        #modal-overlay {
+            z-index: 2000 !important;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #modal {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div v-show="hasNotification" id="modal-overlay">
+        <div id="modal">
+            <p>{{notificationFromAdmin}}</p>
+            <button @click="unsubscribe">unsubscribe</button>
+            <button @click="hasNotification = false">close</button>
+        </div>
+    </div>
+    <div v-if="!hasFoundAsset">
+        Enter Asset ID:
+        <input type="text" v-model="assetID" @keyup.enter="searchAsset">
+        <button v-on:click="searchAsset">find my asset</button>
+    </div>
+    <div v-else>
+        <h3>My asset: {{ asset.name}} <button v-if="!hasPersonalInfo" @click="findPersonalInfo">find my contact info</button></h3>
+
+        <br>
+        <div id="map" style="height: 500px; width: 500px; margin: 0 auto;">
+        </div>
+
+        <div v-if="hasPersonalInfo">
+            <table>
+                <thead>
+                <tr>
+                    <th>name</th>
+                    <th>phone</th>
+                    <th>email</th>
+                    <th>contact preference</th>
+                    <th>Performable Actions(You should not see this)</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr @click="startEditing(holderInfo.id)">
+                    <td v-if="editingId === holderInfo.id">
+                        <input v-model="holderInfo.name"
+                               @keyup.enter="stopEditing"
+                               @blur="stopEditing" />
+                    </td>
+                    <td v-else>{{ holderInfo.name }}</td>
+
+                    <td v-if="editingId === holderInfo.id">
+                        <input v-model="holderInfo.phone"
+                               @keyup.enter="stopEditing"
+                               @blur="stopEditing" />
+                    </td>
+                    <td v-else>{{ holderInfo.phone }}</td>
+
+                    <td v-if="editingId === holderInfo.id">
+                        <input v-model="holderInfo.email"
+                               @keyup.enter="stopEditing"
+                               @blur="stopEditing" />
+                    </td>
+                    <td v-else>{{ holderInfo.email }}</td>
+
+                    <td v-if="editingId === holderInfo.id">
+                        <input v-model="holderInfo.contactPreference"
+                               @keyup.enter="stopEditing"
+                               @blur="stopEditing" />
+                    </td>
+                    <td v-else>{{ holderInfo.contactPreference }}</td>
+
+                    <td>
+                        <div>
+                            <button @click.stop="updatePersonalInfo()">update</button>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    const app = new Vue({
+        el: '#app',
+        data: {
+            stompClient: null,
+            hasNotification: false,
+            notificationFromAdmin: null,
+            editingId: null,
+            hasFoundAsset: false,
+            assetID : 1,
+            asset: null,
+            map: null,
+            geoLayer: null,
+            hasPersonalInfo: false,
+            holderInfo: null,
+        },
+        methods: {
+            startEditing(id) {
+                this.editingId = id;
+            },
+            stopEditing() {
+                this.editingId = null;
+            },
+            getHost(){
+                let host = window.location.origin;
+                if (host.startsWith("file")) {
+                    host = "http://localhost:8080";
+                }
+                if (!host.endsWith('/')) {
+                    host = host + '/';
+                }
+                return host;
+            },
+            async searchAsset() {
+                if(this.assetID <= 0){
+                    window.alert("asset id is a positive number")
+                }
+
+                const response = await fetch(`${this.getHost()}user/api/asset/${this.assetID}`, {
+                    method: 'GET',
+                    headers: {'Content-Type': 'application/json'},
+                });
+                this.asset = (await response.json()).data[0];
+                this.hasFoundAsset =  true;
+                this.$nextTick(() => {
+                    const geojson = this.asset.drainArea;
+                    this.showOnMap(geojson);
+                });
+            },
+            showOnMap(geojson) {
+                if (!this.map) {
+                    this.map = L.map('map').setView([0, 0], 13);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap contributors'
+                    }).addTo(this.map);
+                }
+                if (this.geoLayer) {
+                    this.geoLayer.remove();
+                }
+
+                this.geoLayer = L.geoJSON(geojson).addTo(this.map);
+                this.map.fitBounds(this.geoLayer.getBounds());
+            },
+            async findPersonalInfo(){
+                const response = await fetch(`${this.getHost()}user/api/holder/${this.asset.assetHolderId}`, {
+                    method: 'GET',
+                    headers: {'Content-Type': 'application/json'},
+                });
+                this.holderInfo = (await response.json()).data[0];
+                this.hasPersonalInfo =  true;
+            },
+            async updatePersonalInfo(){
+                //if(this.holderInfo.name === "" || this.holderInfo.phone === "" || this.holderInfo.email === "" || this.holderInfo.contactPreference === "") return;
+                const body = JSON.stringify(this.holderInfo);
+                console.log(body)
+                const response = await fetch(`${this.getHost()}user/api/holder/`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: body
+                });
+            },
+            async unsubscribe() {
+                if (this.subscription) {
+                    this.subscription.unsubscribe();
+                    this.subscription = null;
+                }
+                this.hasNotification = false;
+            }
+        },
+        mounted() {
+            const socket = new SockJS('http://localhost:8080/ws')
+            this.stompClient = Stomp.over(socket);
+            this.stompClient.connect({}, () => {
+                this.subscription = this.stompClient.subscribe('/topic/notify', (msg) => {
+                    this.notificationFromAdmin = msg.body;
+                    this.hasNotification = true;
+                });
+            });
+        },
+        beforeDestroy() {
+            if (this.stompClient) {
+                this.stompClient.deactivate()
+            }
+        },
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>WebSocket Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <link rel="stylesheet" href="../index.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+</head>
+<body>
+<div id="app">
+    <input type="text" v-model="notification"/>
+    <button @click="sendNotification">send</button>
+</div>
+<script>
+    const app = new Vue({
+        el: '#app',
+        data: {
+            notification: "",
+        },
+        methods: {
+            getHost() {
+                let host = window.location.origin;
+                if (host.startsWith("file")) {
+                    host = "http://localhost:8080";
+                }
+                if (!host.endsWith('/')) {
+                    host = host + '/';
+                }
+                return host;
+            },
+            async sendNotification() {
+                const body = {"message": this.notification};
+                const response = await fetch(`${this.getHost()}admin/notify`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'X-Admin-Secret': 'abc123'},
+                    body: JSON.stringify(body),
+                });
+            },
+        }
+    })
+</script>
+</body>
+</html>

@@ -1,11 +1,7 @@
 package com.ourrainwater.advice;
 
-import com.ourrainwater.controller.Code;
-import com.ourrainwater.controller.ResponseResult;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.After;
-import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
@@ -25,7 +21,7 @@ public class LogAdvice {
 
     @After("pt()")
     public void log(JoinPoint jp) throws IOException {
-        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("src/main/resources/static/pages/logs", true));
+        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("src/main/resources/static/sys/logs", true));
 
         LocalDateTime now = LocalDateTime.now();
         StringBuilder sb = new StringBuilder()

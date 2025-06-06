@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### custom log file
+!**/src/main/resources/static/sys/logs
