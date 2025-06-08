@@ -55,7 +55,7 @@ $ sudo systemctl enable docker
 
 我的虚拟机地址是`192.168.48.131`.
 
-找到springboot项目下的`/target`文件夹, 将其中的`sp-xx.jar`文件重命名为`app.jar`, 然后在此处打开cmd, 复制jar包到虚拟机中:
+执行Maven的`Package`生命周期,找到springboot项目下的`/target`文件夹, 将其中的`sp-xx.jar`文件重命名为`app.jar`, 然后在此处打开cmd, 复制jar包到虚拟机中:
 
 ```
 E:\Users\Desktop\summer_project\sp\target> scp app.jar root@192.168.48.131:~/app
