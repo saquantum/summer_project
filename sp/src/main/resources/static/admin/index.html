@@ -26,19 +26,9 @@
             notification: "",
         },
         methods: {
-            getHost() {
-                let host = window.location.origin;
-                if (host.startsWith("file")) {
-                    host = "http://localhost:8080";
-                }
-                if (!host.endsWith('/')) {
-                    host = host + '/';
-                }
-                return host;
-            },
             async sendNotification() {
                 const body = {"message": this.notification};
-                const response = await fetch(`${this.getHost()}admin/notify`, {
+                const response = await fetch(`/admin/notify`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json', 'X-Admin-Secret': 'abc123'},
                     body: JSON.stringify(body),

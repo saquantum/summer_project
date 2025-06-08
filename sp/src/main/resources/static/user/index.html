@@ -145,22 +145,12 @@
             stopEditing() {
                 this.editingId = null;
             },
-            getHost(){
-                let host = window.location.origin;
-                if (host.startsWith("file")) {
-                    host = "http://localhost:8080";
-                }
-                if (!host.endsWith('/')) {
-                    host = host + '/';
-                }
-                return host;
-            },
             async searchAsset() {
                 if(this.assetID <= 0){
                     window.alert("asset id is a positive number")
                 }
 
-                const response = await fetch(`${this.getHost()}user/api/asset/${this.assetID}`, {
+                const response = await fetch(`/user/api/asset/${this.assetID}`, {
                     method: 'GET',
                     headers: {'Content-Type': 'application/json'},
                 });
@@ -186,7 +176,7 @@
                 this.map.fitBounds(this.geoLayer.getBounds());
             },
             async findPersonalInfo(){
-                const response = await fetch(`${this.getHost()}user/api/holder/${this.asset.assetHolderId}`, {
+                const response = await fetch(`/user/api/holder/${this.asset.assetHolderId}`, {
                     method: 'GET',
                     headers: {'Content-Type': 'application/json'},
                 });
@@ -197,7 +187,7 @@
                 //if(this.holderInfo.name === "" || this.holderInfo.phone === "" || this.holderInfo.email === "" || this.holderInfo.contactPreference === "") return;
                 const body = JSON.stringify(this.holderInfo);
                 console.log(body)
-                const response = await fetch(`${this.getHost()}user/api/holder/`, {
+                const response = await fetch(`/user/api/holder/`, {
                     method: 'PUT',
                     headers: {'Content-Type': 'application/json'},
                     body: body
@@ -212,7 +202,7 @@
             }
         },
         mounted() {
-            const socket = new SockJS('http://localhost:8080/ws')
+            const socket = new SockJS('/ws')
             this.stompClient = Stomp.over(socket);
             this.stompClient.connect({}, () => {
                 this.subscription = this.stompClient.subscribe('/topic/notify', (msg) => {

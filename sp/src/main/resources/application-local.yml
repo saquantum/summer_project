@@ -1,0 +1,25 @@
+server:
+  port: 8080
+  address: 0.0.0.0
+
+spring.application.name: sp
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/rainwaterDB?useSSL=false&serverTimezone=UTC
+    username: postgres
+    password: 123456
+    type: com.alibaba.druid.pool.DruidDataSource
+
+mybatis:
+  mapper-locations: classpath:com/ourrainwater/dao/*.xml
+  type-aliases-package: com.ourrainwater.pojo
+  type-handlers-package: com.ourrainwater.typehandler
+
+
+logging:
+  level:
+    com.ourrainwater.dao: DEBUG
+    org.apache.ibatis: DEBUG
+    org.mybatis: DEBUG

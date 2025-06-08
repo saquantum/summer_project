@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class SpExceptionHandler {
     @ExceptionHandler(Throwable.class)
     public ResponseResult handleException(Throwable e) {
-        return new ResponseResult(Code.SYSTEM_ERR, null, e.getMessage());
+        e.printStackTrace();
+        return new ResponseResult(Code.SYSTEM_ERR, null, e.toString());
     }
 }

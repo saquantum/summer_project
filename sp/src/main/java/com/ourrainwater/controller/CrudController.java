@@ -26,6 +26,7 @@ public class CrudController {
 
     @GetMapping("/holder")
     public ResponseResult getAllAssetHolders(){
+        System.out.println("查询结果：" + sqlService.selectAllAssetHolders());
         return new ResponseResult(Code.SELECT_OK, sqlService.selectAllAssetHolders());
     }
 

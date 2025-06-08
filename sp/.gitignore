@@ -33,4 +33,4 @@ build/
 .vscode/
 
 ### custom log file
-sp/src/main/resources/static/sys/logs
+logs/
