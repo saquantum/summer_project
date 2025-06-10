@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8"/>
     <title>WebSocket Demo</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
@@ -64,7 +64,9 @@
         <button v-on:click="searchAsset">find my asset</button>
     </div>
     <div v-else>
-        <h3>My asset: {{ asset.name}} <button v-if="!hasPersonalInfo" @click="findPersonalInfo">find my contact info</button></h3>
+        <h3>My asset: {{ asset.name}}
+            <button v-if="!hasPersonalInfo" @click="findPersonalInfo">find my contact info</button>
+        </h3>
 
         <br>
         <div id="map" style="height: 500px; width: 500px; margin: 0 auto;">
@@ -86,28 +88,28 @@
                     <td v-if="editingId === holderInfo.id">
                         <input v-model="holderInfo.name"
                                @keyup.enter="stopEditing"
-                               @blur="stopEditing" />
+                               @blur="stopEditing"/>
                     </td>
                     <td v-else>{{ holderInfo.name }}</td>
 
                     <td v-if="editingId === holderInfo.id">
                         <input v-model="holderInfo.phone"
                                @keyup.enter="stopEditing"
-                               @blur="stopEditing" />
+                               @blur="stopEditing"/>
                     </td>
                     <td v-else>{{ holderInfo.phone }}</td>
 
                     <td v-if="editingId === holderInfo.id">
                         <input v-model="holderInfo.email"
                                @keyup.enter="stopEditing"
-                               @blur="stopEditing" />
+                               @blur="stopEditing"/>
                     </td>
                     <td v-else>{{ holderInfo.email }}</td>
 
                     <td v-if="editingId === holderInfo.id">
                         <input v-model="holderInfo.contactPreference"
                                @keyup.enter="stopEditing"
-                               @blur="stopEditing" />
+                               @blur="stopEditing"/>
                     </td>
                     <td v-else>{{ holderInfo.contactPreference }}</td>
 
@@ -131,7 +133,7 @@
             notificationFromAdmin: null,
             editingId: null,
             hasFoundAsset: false,
-            assetID : 1,
+            assetID: 1,
             asset: null,
             map: null,
             geoLayer: null,
@@ -146,7 +148,7 @@
                 this.editingId = null;
             },
             async searchAsset() {
-                if(this.assetID <= 0){
+                if (this.assetID <= 0) {
                     window.alert("asset id is a positive number")
                 }
 
@@ -155,13 +157,14 @@
                     headers: {'Content-Type': 'application/json'},
                 });
                 this.asset = (await response.json()).data[0];
-                this.hasFoundAsset =  true;
+                this.hasFoundAsset = true;
                 this.$nextTick(() => {
                     const geojson = this.asset.drainArea;
-                    this.showOnMap(geojson);
+                    this.displayMap(geojson);
                 });
             },
-            showOnMap(geojson) {
+            // https://leafletjs.com/examples/geojson/
+            displayMap(geojson) {
                 if (!this.map) {
                     this.map = L.map('map').setView([0, 0], 13);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -175,15 +178,15 @@
                 this.geoLayer = L.geoJSON(geojson).addTo(this.map);
                 this.map.fitBounds(this.geoLayer.getBounds());
             },
-            async findPersonalInfo(){
+            async findPersonalInfo() {
                 const response = await fetch(`/user/api/holder/${this.asset.assetHolderId}`, {
                     method: 'GET',
                     headers: {'Content-Type': 'application/json'},
                 });
                 this.holderInfo = (await response.json()).data[0];
-                this.hasPersonalInfo =  true;
+                this.hasPersonalInfo = true;
             },
-            async updatePersonalInfo(){
+            async updatePersonalInfo() {
                 //if(this.holderInfo.name === "" || this.holderInfo.phone === "" || this.holderInfo.email === "" || this.holderInfo.contactPreference === "") return;
                 const body = JSON.stringify(this.holderInfo);
                 console.log(body)

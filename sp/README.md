@@ -1,10 +1,34 @@
+### All the documentation and functionality specifications can be found separately in each package.
+
+### How to run this project:
+
+Direct to the folder where `mvnw` or `mvnw.cmd` exists, open console here type
+
+```
+$ ./mvnw clean package
+```
+
+and if it compiles there should be a `sp-xx-.jar` file in the `/target` folder. Open console there and type
+
+```
+$ java -jar sp-xx-.jar
+```
+
+then visit `http://localhost:8080` with browser.
+
+For Windows, use `mvnw.cmd`:
+```
+> mvnw clean package
+```
+
+
 #### Front-End
 Vue + Leaflet
 
 #### Back-End
 SpringBoot + MyBatis + PostgreSQL
 
-
+# -------------------------
 
 ### 在Docker上配置运行环境
 
