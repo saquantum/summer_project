@@ -69,6 +69,11 @@ public class SqlServiceImpl implements SqlService {
     }
 
     @Override
+    public List<Asset> selectAllAssetsOfHolder(Integer id) {
+        return sqlMapper.selectAllAssetsOfHolder(id);
+    }
+
+    @Override
     public int insertAsset(Asset asset) {
         return sqlMapper.insertAsset(asset);
     }

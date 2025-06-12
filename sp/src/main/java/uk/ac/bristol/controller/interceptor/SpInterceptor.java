@@ -13,7 +13,7 @@ public class SpInterceptor implements HandlerInterceptor {
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return true; // 直接放行预检请求
         }
-        System.out.println("请求方法：" + request.getMethod() + ", URI：" + request.getRequestURI());
+        System.out.println("Request Method：" + request.getMethod() + ", URI：" + request.getRequestURI());
         return true;
     }
 

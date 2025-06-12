@@ -29,6 +29,8 @@ public interface SqlMapper {
 
     List<Asset> selectByAsset(Asset asset);
 
+    List<Asset> selectAllAssetsOfHolder(@Param("id") Integer id);
+
     int insertAsset(Asset asset);
 
     int updateAsset(Asset asset);

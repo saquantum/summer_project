@@ -24,6 +24,11 @@ public class CrudController {
         return new ResponseResult(Code.SELECT_OK, sqlService.selectByAsset(new Asset(id)));
     }
 
+    @GetMapping("holder/{id}/assets")
+    public ResponseResult getAllAssetsOfHolder(@PathVariable Integer id) {
+        return new ResponseResult(Code.SELECT_OK, sqlService.selectAllAssetsOfHolder(id));
+    }
+
     @GetMapping("/holder")
     public ResponseResult getAllAssetHolders() {
         return new ResponseResult(Code.SELECT_OK, sqlService.selectAllAssetHolders());

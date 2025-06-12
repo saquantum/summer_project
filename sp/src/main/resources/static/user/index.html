@@ -6,177 +6,168 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-    <link rel="stylesheet" href="../index.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""></script>
-    <style>
-        #modal-overlay {
-            z-index: 2000 !important;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #modal {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            max-width: 400px;
-            width: 90%;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
 <div id="app">
+    <!-- overlay popup component -->
     <div v-show="hasNotification" id="modal-overlay">
         <div id="modal">
             <p>{{notificationFromAdmin}}</p>
-            <button @click="unsubscribe">unsubscribe</button>
-            <button @click="hasNotification = false">close</button>
+            <button class="submit" @click="unsubscribe">unsubscribe</button>
+            <button class="submit" @click="hasNotification = false">close</button>
         </div>
     </div>
-    <div v-if="!hasFoundAsset">
-        Enter Asset ID:
-        <input type="text" v-model="assetID" @keyup.enter="searchAsset">
-        <button v-on:click="searchAsset">find my asset</button>
-    </div>
-    <div v-else>
-        <h3>My asset: {{ asset.name}}
-            <button v-if="!hasPersonalInfo" @click="findPersonalInfo">find my contact info</button>
-        </h3>
-
-        <br>
-        <div id="map" style="height: 500px; width: 500px; margin: 0 auto;">
+    <!-- sidebar component -->
+    <div class="sidebar">
+        <div>
+            <a href="/">
+                <img src="../images/uob.webp" id="logo" alt="logo">
+            </a>
         </div>
-
-        <div v-if="hasPersonalInfo">
-            <table>
-                <thead>
-                <tr>
-                    <th>name</th>
-                    <th>phone</th>
-                    <th>email</th>
-                    <th>contact preference</th>
-                    <th>Performable Actions(You should not see this)</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr @click="startEditing(holderInfo.id)">
-                    <td v-if="editingId === holderInfo.id">
-                        <input v-model="holderInfo.name"
-                               @keyup.enter="stopEditing"
-                               @blur="stopEditing"/>
-                    </td>
-                    <td v-else>{{ holderInfo.name }}</td>
-
-                    <td v-if="editingId === holderInfo.id">
-                        <input v-model="holderInfo.phone"
-                               @keyup.enter="stopEditing"
-                               @blur="stopEditing"/>
-                    </td>
-                    <td v-else>{{ holderInfo.phone }}</td>
-
-                    <td v-if="editingId === holderInfo.id">
-                        <input v-model="holderInfo.email"
-                               @keyup.enter="stopEditing"
-                               @blur="stopEditing"/>
-                    </td>
-                    <td v-else>{{ holderInfo.email }}</td>
-
-                    <td v-if="editingId === holderInfo.id">
-                        <input v-model="holderInfo.contactPreference"
-                               @keyup.enter="stopEditing"
-                               @blur="stopEditing"/>
-                    </td>
-                    <td v-else>{{ holderInfo.contactPreference }}</td>
-
-                    <td>
-                        <div>
-                            <button @click.stop="updatePersonalInfo()">update</button>
-                        </div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+        <button @click="sidebarActive = 'profile'" :class="{ active: sidebarActive === 'profile' }">My Profile</button>
+        <button @click="sidebarActive = 'allAssets'" :class="{ active: sidebarActive === 'allAssets' }">My Assets
+        </button>
+        <button v-show="sidebarActive === 'currentAsset'" @click="sidebarActive = 'currentAsset'"
+                :class="{ active: sidebarActive === 'currentAsset' }">Current Asset
+        </button>
+    </div>
+    <!-- main contents -->
+    <!-- user profile -->
+    <div v-if="sidebarActive === 'profile'" class="content"></div>
+    <!-- user assets -->
+    <div v-if="sidebarActive === 'allAssets'" class="content">
+        <div class="topbar">
+            <h3>My Assets</h3>
+            <div style="flex-grow: 1;"></div>
+            <input type="text" name="assetName" placeholder="Search my asset">
+            <select name="alert">
+                <option value="" selected disabled>Select Warning Level</option>
+                <option value="no">No Warning</option>
+                <option value="yellow">Yellow Warning</option>
+                <option value="amber">Amber Warning</option>
+                <option value="red">Red Warning</option>
+            </select>
+            <select name="county">
+                <option value="" selected disabled>Select County of Asset</option>
+                <option value="london">Greater London</option>
+                <option value="bristol">Bristol</option>
+            </select>
+            <div style="flex-grow: 1;"></div>
+            <a href="/admin"><img src="../images/mailbox.png" alt="mailbox" class="mailbox-icon"></a>
+        </div>
+        <div class="assets-grid-container">
+            <div class="asset-card" v-for="(item, index) in currentUsersAllAssets" :key="index">
+                <div :id="'map-' + index" class="mini-map"></div>
+                <h4 style="text-align: center;">
+                    <a @click="switch2CurrentAsset(index)"
+                       style="color: blue;text-decoration: underline;cursor: pointer;">
+                        {{ item.name }}
+                    </a>
+                </h4>
+            </div>
+        </div>
+    </div>
+    <!-- current asset -->
+    <div v-if="sidebarActive === 'currentAsset'" class="content">
+        <div class="topbar">
+            <h3>{{currentAsset.name}}</h3>
+            <div style="flex-grow: 1;"></div>
+            <a href="/admin"><img src="../images/mailbox.png" alt="mailbox" class="mailbox-icon"></a>
+        </div>
+        <div class="asset-detail-container">
+            <div id="map" style="height: 500px; grid-column: 1 / span 2;">
+            </div>
+            <div>
+                <button class="submit" style="display: block" title="Will reset contact details of this asset to align with your default profile settings.">Reset All</button>
+                <p class="short-p" style="display: block">Contact preference for this asset</p>
+                <select name="contactPreference">
+                    <option value="email">email</option>
+                    <option value="sms">SMS</option>
+                    <option value="discord">discord</option>
+                </select>
+                <p class="short-p"  style="display: block">Send email to this address:</p>
+                <input style="display: block" type="text" name="email" placeholder="email address">
+                <p class="short-p"  style="display: block">Send SMS to this phone number:</p>
+                <input style="display: block" type="text" name="phone" placeholder="phone number">
+                <p class="short-p"  style="display: block">Send message to this discord:</p>
+                <input style="display: block" type="text" name="discord" placeholder="discord account">
+                <p class="short-p"  style="display: block"></p>
+                <button class="submit" style="display: block">Save</button>
+                <p class="short-p"  style="display: block"></p>
+                <button v-if="!currentAsset.unsubscribe" @click="toggleSubscribe" style="display: block" class="submit" title="Will unsubscribe all warnings on this asset. Will not remove this asset from your assets.">Unsubscribe this asset</button>
+                <button v-else @click="toggleSubscribe" style="display: block" class="submit">Subscribe this asset</button>
+            </div>
+        </div>
+        <div>
+            <p style="display: block">
+                Current warning on this asset: none
+            </p>
         </div>
     </div>
 </div>
+
 <script>
     const app = new Vue({
         el: '#app',
         data: {
+            sidebarActive: 'allAssets',
             stompClient: null,
             hasNotification: false,
             notificationFromAdmin: null,
             editingId: null,
             hasFoundAsset: false,
-            assetID: 1,
-            asset: null,
+            currentUserId: 1,
+            currentUsersAllAssets: [],
+            currentAsset: null,
             map: null,
             geoLayer: null,
             hasPersonalInfo: false,
             holderInfo: null,
         },
         methods: {
-            startEditing(id) {
-                this.editingId = id;
-            },
-            stopEditing() {
-                this.editingId = null;
-            },
-            async searchAsset() {
-                if (this.assetID <= 0) {
-                    window.alert("asset id is a positive number")
-                }
-
-                const response = await fetch(`/user/api/asset/${this.assetID}`, {
-                    method: 'GET',
-                    headers: {'Content-Type': 'application/json'},
-                });
-                this.asset = (await response.json()).data[0];
-                this.hasFoundAsset = true;
+            switch2CurrentAsset(index){
+                console.log('switch2CurrentAsset');
+                this.sidebarActive = 'currentAsset';
+                this.currentAsset = this.currentUsersAllAssets[index];
                 this.$nextTick(() => {
-                    const geojson = this.asset.drainArea;
+                    const geojson = this.currentAsset.drainArea;
                     this.displayMap(geojson);
                 });
             },
+            toggleSubscribe() {
+                if (typeof this.currentAsset.unsubscribe !== 'boolean') {
+                    this.$set(this.currentAsset, 'unsubscribe', true);
+                } else {
+                    this.currentAsset.unsubscribe = !this.currentAsset.unsubscribe;
+                }
+                console.log(this.currentAsset.unsubscribe);
+            },
             // https://leafletjs.com/examples/geojson/
             displayMap(geojson) {
-                if (!this.map) {
+                if (this.map) {
+                    this.map.remove();
+                    this.map = null;
+                }
+                this.$nextTick(() => {
                     this.map = L.map('map').setView([0, 0], 13);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         attribution: '&copy; OpenStreetMap contributors'
                     }).addTo(this.map);
-                }
-                if (this.geoLayer) {
-                    this.geoLayer.remove();
-                }
 
-                this.geoLayer = L.geoJSON(geojson).addTo(this.map);
-                this.map.fitBounds(this.geoLayer.getBounds());
+                    if (this.geoLayer) {
+                        this.geoLayer.remove();
+                    }
+
+                    this.geoLayer = L.geoJSON(geojson).addTo(this.map);
+                    this.map.fitBounds(this.geoLayer.getBounds());
+                });
             },
             async findPersonalInfo() {
                 const response = await fetch(`/user/api/holder/${this.asset.assetHolderId}`, {
@@ -202,6 +193,35 @@
                     this.subscription = null;
                 }
                 this.hasNotification = false;
+            },
+            async loadAllAssets() {
+                if (this.assetID <= 0) {
+                    window.alert("asset holder id is a positive number")
+                }
+                const response = await fetch(`/user/api/holder/${this.currentUserId}/assets/`, {
+                    method: 'GET',
+                    headers: {'Content-Type': 'application/json'},
+                });
+                this.currentUsersAllAssets = (await response.json()).data;
+
+                this.$nextTick(() => {
+                    this.currentUsersAllAssets.forEach((asset, index) => {
+                        const map = L.map('map-' + index).setView([0, 0], 13);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '&copy; OpenStreetMap contributors'
+                        }).addTo(map);
+
+                        const geoLayer = L.geoJSON(asset.drainArea).addTo(map);
+                        map.fitBounds(geoLayer.getBounds());
+                    });
+                });
+            }
+        },
+        watch: {
+            sidebarActive(newVal) {
+                if (newVal === 'allAssets') {
+                    this.loadAllAssets();
+                }
             }
         },
         mounted() {
@@ -213,6 +233,10 @@
                     this.hasNotification = true;
                 });
             });
+
+            if (this.sidebarActive === 'allAssets') {
+                this.loadAllAssets();
+            }
         },
         beforeDestroy() {
             if (this.stompClient) {

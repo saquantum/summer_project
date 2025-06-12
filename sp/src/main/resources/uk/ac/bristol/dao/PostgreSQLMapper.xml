@@ -84,6 +84,12 @@
         </where>
     </select>
 
+    <select id="selectAllAssetsOfHolder" resultMap="AssetMap">
+        select id, name, ST_AsGeoJSON(drain_area) as drain_area, asset_holder_id
+        from assets
+        where asset_holder_id = #{id}
+    </select>
+
     <insert id="insertAsset" useGeneratedKeys="true" keyProperty="id">
         insert into assets (name, drain_area, asset_holder_id)
         values (#{name}, ST_GeomFromGeoJSON(#{drainArea}), #{assetHolderId});
