@@ -1,0 +1,1 @@
+This packages stores all the object prototypes. When retrieving data from databases with MyBatis, one needs to define such a prototype to receive all the columns of a record from a table.

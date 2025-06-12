@@ -1,0 +1,1 @@
+This packages stores the Service layer where background logic is handled. Currently it is only a transit station between the controller layer and the dao layer and does nothing.

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
-from macrolab_autoflow.common.Result import Result
+
+from Weather_Location_API_Data.common.Result import Result
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -31,9 +32,12 @@ class BaseFetcher(ABC, Generic[T, U]):
         """
         raw_res: Result[T] = self.fetch()
         if raw_res.is_failure():
-            return Result.fail(raw_res.error_msg or "fetch 失敗", code=raw_res.code)
-        # parse 可能也回傳 Result<U>
-        return self.parse(raw_res.value)  # type: ignore
+            return Result.fail(raw_res.error_msg or "[BaseFetcger] fetch 失敗", code=raw_res.code)
+        try:
+            parsed = self.parse(raw_res.value)
+            return Result.ok(parsed)  # parse 可能也回傳 Result<U>
+        except Exception as err:
+            return Result.fail(f"[BaseFetcher] Parse error: {err}")
 
     @abstractmethod
     def fetch(self) -> Result[T]:
@@ -44,9 +48,10 @@ class BaseFetcher(ABC, Generic[T, U]):
         """
 
     @abstractmethod
-    def parse(self, raw: T) -> Result[U]:
+    def parse(self, raw: T) -> U:
         """
         解析原始資料，轉成統一的結構
         回傳 Result.ok(parsed) 或 Result.fail(msg)
         例：list[dict]：每篇文章的 title/url/published_at…
         """
+
