@@ -1,3 +1,14 @@
 {
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.compile.nullAnalysis.mode": "automatic",
+    // Python extension 執行程式時用這個
+    "python.defaultInterpreterPath": "/opt/homebrew/bin/python3",
+
+    // 啟動新的 Integrated Terminal 時，先把 brew 安裝的 Python 放在最前面
+    "terminal.integrated.env.osx": {
+        "PATH": "/opt/homebrew/bin:${env:PATH}",
+        "CONDA_AUTO_ACTIVATE_BASE": "false"
+    },
+
+    // Python extension 開 terminal 時自動 activate 你選的 env
+    "python.terminal.activateEnvironment": false
 }
