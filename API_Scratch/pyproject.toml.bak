@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "macrolab_autoflow"
+name = "Weather_Location_API_Data"
 version = "0.1.0"
 description = "MacroLab AutoFlow Podcast 工具"
 authors = ["jproacademic@gmail.com"]

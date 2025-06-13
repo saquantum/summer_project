@@ -22,6 +22,8 @@ class BaseFetcher(ABC, Generic[T, U]):
 
     子類別只需實作 fetch() 與 parse()，run() 的流程就能自動串起來。
     """
+    def __init__(self, url: str) -> None:
+        self.url = url
 
     def run(self) -> Result[U]:
         """

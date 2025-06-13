@@ -15,6 +15,10 @@ class MetOfficeWarningsFetcher(BaseFetcher):
     - 來源 API：
       https://services.arcgis.com/Lq3V5RFuTBC9I7kv/arcgis/rest/services/
       Met_Office_National_Severe_Weather_Warning_Service_Live/FeatureServer/0/query
+    
+      https://services.arcgis.com/Lq3V5RFuTBC9I7kv/arcgis/rest/services/
+      Met_Office_National_Severe_Weather_Warning_Service_Live/FeatureServer/0/query
+      ?f=json&where=1=1&outFields=* 
 
     - 回傳欄位（常用）：
         • id
@@ -36,7 +40,7 @@ class MetOfficeWarningsFetcher(BaseFetcher):
         "f": "json",
         "where": "1=1",         # 不篩選，取全部
         "outFields": "*",
-        "returnGeometry": "false",
+        "returnGeometry": "true",
     }
 
     def __init__(self):
@@ -53,23 +57,39 @@ class MetOfficeWarningsFetcher(BaseFetcher):
             return Result.fail(f"HTTP error: {err}")
 
     def parse(self, raw: dict) -> List[Dict]:
-        records: list[dict] = []
-        for feat in raw.get("features", []):
-            attr = feat["attributes"]
+        pass
+    #     records: list[dict] = []
+        
+    #     for feat in raw.get("features", []):
+    #         attr = feat["attributes"]
             
-            # 轉成與 NotionUploader 相容的統一 schema
-            records.append(
-                {
-                    "title": attr.get("headline") or "Met Office Warning",
-                    "timestamp": datetime.fromtimestamp(
-                        attr["issueDate"] / 1000, tz=timezone.utc
-                    ),
-                    "content": (attr.get("description") or "")[:2000],
-                    "source": f"MetOffice-{attr.get('severity')}",
-                    "url": (
-                        "https://www.metoffice.gov.uk/weather/"
-                        f"warnings-and-advice/uk-warnings#{attr.get('id')}"
-                    ),
-                }
-            )
-        return records
+    #         print("available attributes:", list(attr.keys()))
+
+    #         #  try a few possible field-names, then fallback to now()
+    #         ms = (
+    #             attr.get("issueData") 
+    #             or attr.get("IssueDate") 
+    #             or attr.get("issue_date")
+    #             or 0
+    #         )
+    #         if ms:
+    #             timestamp = datetime.fromtimestamp(ms/1000, tz=timezone.utc)
+    #         else:
+    #             timestamp = datetime.now(timezone.utc)
+
+    #         # 轉成與 NotionUploader 相容的統一 schema
+    #         records.append(
+    #             {
+    #                 "title": attr.get("headline") or "Met Office Warning",
+    #                 "timestamp": datetime.fromtimestamp(
+    #                     attr["issueDate"] / 1000, tz=timezone.utc
+    #                 ),
+    #                 "content": (attr.get("description") or "")[:2000],
+    #                 "source": f"MetOffice-{attr.get('severity')}",
+    #                 "url": (
+    #                     "https://www.metoffice.gov.uk/weather/"
+    #                     f"warnings-and-advice/uk-warnings#{attr.get('id')}"
+    #                 ),
+    #             }
+    #         )
+    #     return records
