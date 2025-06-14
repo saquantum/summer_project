@@ -6,6 +6,7 @@ import uk.ac.bristol.dao.SqlMapper;
 import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
+import uk.ac.bristol.pojo.UserAsAssetHolder;
 import uk.ac.bristol.service.SqlService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,9 @@ public class SqlServiceImpl implements SqlService {
     private SqlMapper sqlMapper;
 
     @Override
-    public List<AssetHolder> selectAllAssetHolders() { return sqlMapper.selectAllAssetHolders();}
+    public List<UserAsAssetHolder> selectAllAssetHolders() {
+        return sqlMapper.selectAllAssetHolders();
+    }
 
     @Override
     public List<AssetHolder> selectAssetHolderByID(Integer id) {

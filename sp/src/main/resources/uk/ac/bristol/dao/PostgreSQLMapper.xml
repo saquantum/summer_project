@@ -23,14 +23,53 @@
 
     <resultMap id="UserMap" type="uk.ac.bristol.pojo.User">
         <id property="id" column="id"/>
-        <result property="name" column="name"/>
-        <result property="drainArea" column="drain_area" javaType="java.lang.String"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
         <result property="assetHolderId" column="asset_holder_id"/>
         <result property="admin" column="is_admin"/>
     </resultMap>
 
-    <select id="selectAllAssetHolders" resultMap="AssetHolderMap">
-        select * from asset_holders
+    <resultMap id="UserAsAssetHolderMap" type="uk.ac.bristol.pojo.UserAsAssetHolder">
+        <id property="assetHolder.id" column="holder_id"/>
+        <result property="assetCount" column="asset_count"/>
+        <association property="assetHolder" javaType="uk.ac.bristol.pojo.AssetHolder">
+            <id property="id" column="holder_id"/>
+            <result property="name" column="holder_name"/>
+            <result property="email" column="email"/>
+            <result property="phone" column="phone"/>
+            <result property="contactPreference" column="contact_preference" javaType="java.lang.String"/>
+            <result property="lastModified" column="last_modified"/>
+        </association>
+        <association property="user" javaType="uk.ac.bristol.pojo.User">
+            <result property="id" column="user_id"/>
+            <result property="username" column="username"/>
+            <result property="password" column="password"/>
+            <result property="assetHolderId" column="asset_holder_id"/>
+            <result property="admin" column="is_admin"/>
+        </association>
+    </resultMap>
+
+    <select id="selectAllAssetHolders" resultMap="UserAsAssetHolderMap">
+        select
+            t1.id user_id,
+            t1.username,
+            t1.password,
+            t1.asset_holder_id,
+            t1.is_admin,
+            t2.id holder_id,
+            t2.name holder_name,
+            t2.email,
+            t2.phone,
+            t2.contact_preference,
+            t2.last_modified,
+            coalesce(ac.asset_count, 0) asset_count
+        from users t1
+        join asset_holders t2 on t1.asset_holder_id = t2.id
+        left join (
+            select asset_holder_id, COUNT(*) asset_count
+            from assets
+            group by asset_holder_id
+        ) ac on ac.asset_holder_id = t2.id
     </select>
 
     <select id="selectAssetHolderByID" resultMap="AssetHolderMap">

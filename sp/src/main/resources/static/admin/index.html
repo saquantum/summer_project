@@ -16,9 +16,92 @@
 </head>
 <body>
 <div id="app">
-    <div>
-        <input type="text" v-model="notification"/>
-        <button class="submit" @click="sendNotification">send</button>
+    <!-- overlay popup component -->
+    <div v-show="hasNotification" id="modal-overlay">
+        <div id="modal">
+            <p>{{popupNotification}}</p>
+            <button class="submit" @click="hasNotification = false">close</button>
+        </div>
+    </div>
+    <!-- sidebar component -->
+    <div class="sidebar">
+        <div>
+            <a href="/">
+                <img src="../images/uob.webp" id="logo" alt="logo">
+            </a>
+        </div>
+        <button @click="sidebarActive = 'test'" :class="{ active: sidebarActive === 'test' }">Send Notifications
+        </button>
+        <button @click="sidebarActive = 'users'" :class="{ active: sidebarActive === 'users' }">All Users</button>
+        <button @click="sidebarActive = 'assets'" :class="{ active: sidebarActive === 'assets' }">All Assets</button>
+    </div>
+    <!-- main -->
+    <div class="main">
+        <div class="topbar">
+            <h3>WebSocket Demo</h3>
+        </div>
+        <div v-if="sidebarActive === 'test'" class="content">
+            <div>
+                <input type="text" v-model="notification"/>
+                <button class="submit" @click="sendNotification">send</button>
+            </div>
+        </div>
+        <div v-if="sidebarActive === 'users'" class="content">
+            <div v-if="allAssetHolders.length > 0">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>UID</th>
+                        <th>AssetHolderID</th>
+                        <th>Username</th>
+                        <th>#Assets</th>
+                        <th>Performable Actions(You should not see this)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="(item, index) in allAssetHolders" :key="index">
+                        <td>{{item.user.id}}</td>
+                        <td>{{item.assetHolder.id}}</td>
+                        <td>{{item.user.username}}</td>
+                        <td>{{item.assetCount}}</td>
+                        <td>
+                            <div>
+                                <button class="submit" @click.stop="gotoUser(index)">goto</button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div v-if="sidebarActive === 'assets'" class="content">
+            <div v-if="allAssets.length > 0">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Asset ID</th>
+                        <th>Asset Name</th>
+                        <th>Asset Holder ID</th>
+                        <th>Warning Level</th>
+                        <th>Performable Actions(You should not see this)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="(item, index) in allAssets" :key="index">
+                        <td>{{item.id}}</td>
+                        <td>{{item.name}}</td>
+                        <td>{{item.assetHolderId}}</td>
+                        <td>...</td>
+                        <td>
+                            <div>
+                                <button class="submit" @click.stop="gotoAsset(index)">goto</button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 <script>
@@ -26,18 +109,66 @@
         el: '#app',
         data: {
             notification: "",
+            hasNotification: false,
+            popupNotification: null,
+            asUserId: '',
+            sidebarActive: 'test',
+            allAssets: [],
+            allAssetHolders: [],
         },
         methods: {
             async sendNotification() {
                 const body = {"message": this.notification};
-                const response = await fetch(`/admin/notify`, {
+                const response = await fetch(`/admin/api/notify`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     credentials: 'include',
                     body: JSON.stringify(body),
                 });
             },
-        }
+            async proxyAsUser() {
+                await fetch(`/admin/api/as/${this.asUserId}`, {
+                    method: 'GET',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
+                });
+                window.location.href = '/user/';
+            },
+            async gotoUser(index) {
+                this.asUserId = this.allAssetHolders[index].assetHolder.id;
+                await this.proxyAsUser();
+            },
+            async gotoAsset(index) {
+                this.asUserId = this.allAssets[index].assetHolderId;
+                await this.proxyAsUser();
+            },
+            async loadAllUsers() {
+                const response = await fetch(`/user/api/holder`, {
+                    method: 'GET',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
+                });
+                this.allAssetHolders = (await response.json()).data;
+            },
+            async loadAllAssets() {
+                const response = await fetch(`/user/api/asset`, {
+                    method: 'GET',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
+                });
+                this.allAssets = (await response.json()).data;
+            },
+        },
+        watch: {
+            async sidebarActive(newVal) {
+                if (newVal === 'assets') {
+                    await this.loadAllAssets();
+                }
+                if (newVal === 'users') {
+                    await this.loadAllUsers();
+                }
+            }
+        },
     })
 </script>
 </body>

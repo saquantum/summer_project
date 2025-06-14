@@ -1,16 +1,15 @@
 package uk.ac.bristol.controller;
 
 import io.jsonwebtoken.Claims;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.service.SqlService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 import uk.ac.bristol.util.JwtUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,19 +22,31 @@ public class CrudController {
     private SqlService sqlService;
 
     @GetMapping("/me")
-    public ResponseResult getUserInfo(HttpServletResponse response, HttpServletRequest request) throws IOException {
+    public ResponseResult getUserInfo(HttpServletResponse response, HttpServletRequest request) throws Exception {
         String token = JwtUtil.getJWTFromCookie(request, response);
         Claims claims = JwtUtil.parseJWT(token);
-        Integer id = null;
-        try {
-            id = claims.get("assetHolderId", Integer.class);
-        } catch (Exception ignored) {
-        }
-        boolean isAdmin = claims.get("isAdmin", Boolean.class);
+        System.out.println(claims);
         Map<String, Object> data = new HashMap<>();
-        data.put("id", id);
+        boolean isAdmin = claims.get("isAdmin", Boolean.class);
         data.put("isAdmin", isAdmin);
-        return new ResponseResult(Code.SUCCESS, data);
+        // for user, must get asset holder id, or something has gone wrong
+        if(!isAdmin){
+            data.put("id", claims.get("assetHolderId", Integer.class));
+            return new ResponseResult(Code.SUCCESS, data);
+        }
+        // for admin, two possibilities:
+        else{
+            // 1. with proxy id
+            if(claims.containsKey("asUserId")){
+                data.put("id", claims.get("asUserId", Integer.class));
+                return new ResponseResult(Code.SUCCESS, data);
+            }
+            // 2. without proxy id
+            else{
+                data.put("id", -1);
+                return new ResponseResult(Code.SUCCESS, data);
+            }
+        }
     }
 
     @GetMapping("/asset")
@@ -48,7 +59,7 @@ public class CrudController {
         return new ResponseResult(Code.SELECT_OK, sqlService.selectByAsset(new Asset(id)));
     }
 
-    @GetMapping("holder/{id}/assets")
+    @GetMapping("holder/{id}/asset")
     public ResponseResult getAllAssetsOfHolder(@PathVariable Integer id) {
         return new ResponseResult(Code.SELECT_OK, sqlService.selectAllAssetsOfHolder(id));
     }

@@ -4,11 +4,12 @@ import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.AssetHolder;
 import org.apache.ibatis.annotations.Param;
 import uk.ac.bristol.pojo.User;
+import uk.ac.bristol.pojo.UserAsAssetHolder;
 
 import java.util.List;
 
 public interface SqlService {
-    List<AssetHolder> selectAllAssetHolders();
+    List<UserAsAssetHolder> selectAllAssetHolders();
 
     List<AssetHolder> selectAssetHolderByID(@Param("id") Integer id);
 

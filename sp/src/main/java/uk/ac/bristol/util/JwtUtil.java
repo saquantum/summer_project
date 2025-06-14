@@ -5,6 +5,8 @@ import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import uk.ac.bristol.controller.Code;
 
 import javax.servlet.http.Cookie;
@@ -13,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
 
@@ -57,5 +60,16 @@ public class JwtUtil {
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().write("{\"code\":401, \"message\":\"Missing or empty token\"}");
         return null;
+    }
+
+    public static void bindJWTAsCookie(HttpServletResponse response, String token) {
+        ResponseCookie cookie = ResponseCookie.from("token", token)
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(Duration.ofHours(24))
+                .build();
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }
