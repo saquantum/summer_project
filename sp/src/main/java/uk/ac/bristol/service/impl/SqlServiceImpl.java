@@ -1,14 +1,22 @@
 package uk.ac.bristol.service.impl;
 
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.SqlMapper;
 import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.AssetHolder;
+import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.service.SqlService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.ac.bristol.util.JwtUtil;
 
+import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
 @Service
 public class SqlServiceImpl implements SqlService {
 
@@ -35,6 +43,7 @@ public class SqlServiceImpl implements SqlService {
 
     @Override
     public int updateAssetHolder(AssetHolder assetHolder) {
+        assetHolder.setLastModified(Instant.now());
         return sqlMapper.updateAssetHolder(assetHolder);
     }
 
@@ -80,6 +89,13 @@ public class SqlServiceImpl implements SqlService {
 
     @Override
     public int updateAsset(Asset asset) {
+        List<Asset> old = this.selectByAsset(asset);
+        if(old.size() != 1) return 0;
+        List<AssetHolder> assetHolder = this.selectAssetHolderByID(old.get(0).getAssetHolderId());
+        if(assetHolder.size() != 1) return 0;
+        Instant now = Instant.now();
+        assetHolder.get(0).setLastModified(now);
+        asset.setLastModified(now);
         return sqlMapper.updateAsset(asset);
     }
 
@@ -100,4 +116,17 @@ public class SqlServiceImpl implements SqlService {
         return sqlMapper.deleteByAssetIDs(ids);
     }
 
+    @Override
+    public User login(User user){
+        List<User> list = sqlMapper.loginQuery(user);
+        if(list.size() != 1) return null;
+        User u = list.get(0);
+        Map<String,Object> claims = new HashMap<>();
+        claims.put("id", u.getId());
+        claims.put("username", u.getUsername());
+        claims.put("assetHolderId", u.getAssetHolderId());
+        claims.put("isAdmin", u.isAdmin());
+        u.setToken(JwtUtil.generateJWT(claims));
+        return u;
+    }
 }

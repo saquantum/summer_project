@@ -1,9 +1,13 @@
 CREATE EXTENSION IF NOT EXISTS postgis;
 
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS asset_holders CASCADE;
+DROP TABLE IF EXISTS assets CASCADE;
+
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'contact_preference') THEN
-    CREATE TYPE contact_preference AS ENUM ('EMAIL', 'SMS', 'PHONE');
+    CREATE TYPE contact_preference AS ENUM ('EMAIL', 'SMS', 'PHONE', 'DISCORD', 'WHATSAPP', 'TELEGRAM');
   END IF;
 END$$;
 
@@ -13,21 +17,35 @@ CREATE TABLE IF NOT EXISTS asset_holders (
     email VARCHAR(100),
     phone VARCHAR(20),
     contact_preference contact_preference NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    last_modified TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(100) NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    asset_holder_id INTEGER REFERENCES asset_holders(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    is_admin BOOLEAN NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS assets (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     drain_area GEOMETRY(POLYGON, 4326) NOT NULL,
-    asset_holder_id INTEGER REFERENCES asset_holders(id) ON DELETE CASCADE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    asset_holder_id INTEGER REFERENCES asset_holders(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    last_modified TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 INSERT INTO asset_holders (name, email, phone, contact_preference) VALUES
 ('Alice Smith', 'alice@example.com', '1234567890', 'EMAIL'),
 ('Bob Johnson', 'bob@example.com', '1234567891', 'SMS'),
-('Carol Davis', 'carol@example.com', '1234567892', 'PHONE');
+('Carol Davis', 'carol@example.com', '1234567892', 'DISCORD');
+
+INSERT INTO users (username, password, asset_holder_id, is_admin) VALUES
+('admin', 'admin', NULL, TRUE),
+('user1', '123456', 1, FALSE),
+('user2', '123456', 2, FALSE),
+('user3', '123456', 3, FALSE);
 
 INSERT INTO assets (name, drain_area, asset_holder_id) VALUES
 ('Big Ben',          ST_GeomFromText('POLYGON((-0.1265 51.5003, -0.1250 51.5003, -0.1250 51.5018, -0.1265 51.5018, -0.1265 51.5003))', 4326), 1),

@@ -1,11 +1,14 @@
 package uk.ac.bristol.pojo;
 
+import java.time.Instant;
+
 public class AssetHolder {
-    private int id;
+    private Integer id;
     private String name;
     private String email;
     private String phone;
     private String contactPreference;
+    private Instant lastModified;
 
     public AssetHolder() {
     }
@@ -18,7 +21,7 @@ public class AssetHolder {
         this.name = name;
     }
 
-    public AssetHolder(int id, String name, String email, String phone, String contactPreference) {
+    public AssetHolder(Integer id, String name, String email, String phone, String contactPreference) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -37,11 +40,11 @@ public class AssetHolder {
                 '}';
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -75,5 +78,13 @@ public class AssetHolder {
 
     public void setContactPreference(String contactPreference) {
         this.contactPreference = contactPreference;
+    }
+
+    public Instant getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(Instant lastModified) {
+        this.lastModified = lastModified;
     }
 }

@@ -3,6 +3,7 @@ package uk.ac.bristol.dao;
 import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.AssetHolder;
 import org.apache.ibatis.annotations.*;
+import uk.ac.bristol.pojo.User;
 
 import java.util.List;
 
@@ -38,4 +39,6 @@ public interface SqlMapper {
     int deleteByAssetIDs(@Param("ids") int[] ids);
 
     int deleteByAssetIDs(@Param("ids") List<Integer> ids);
+
+    List<User> loginQuery(User user);
 }

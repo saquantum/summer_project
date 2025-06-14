@@ -10,6 +10,7 @@
         <result property="email" column="email"/>
         <result property="phone" column="phone"/>
         <result property="contactPreference" column="contact_preference"/>
+        <result property="lastModified" column="last_modified"/>
     </resultMap>
 
     <resultMap id="AssetMap" type="uk.ac.bristol.pojo.Asset">
@@ -17,6 +18,15 @@
         <result property="name" column="name"/>
         <result property="drainArea" column="drain_area" javaType="java.lang.String"/>
         <result property="assetHolderId" column="asset_holder_id"/>
+        <result property="lastModified" column="last_modified"/>
+    </resultMap>
+
+    <resultMap id="UserMap" type="uk.ac.bristol.pojo.User">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="drainArea" column="drain_area" javaType="java.lang.String"/>
+        <result property="assetHolderId" column="asset_holder_id"/>
+        <result property="admin" column="is_admin"/>
     </resultMap>
 
     <select id="selectAllAssetHolders" resultMap="AssetHolderMap">
@@ -39,8 +49,8 @@
     </select>
 
     <insert id="insertAssetHolder" useGeneratedKeys="true" keyProperty="id">
-        insert into asset_holders (name, email, phone, contact_preference)
-        values (#{name}, #{email}, #{phone}, #{contactPreference});
+        insert into asset_holders (name, email, phone, contact_preference, last_modified)
+        values (#{name}, #{email}, #{phone}, #{contactPreference}, #{lastModified});
     </insert>
 
     <update id="updateAssetHolder">
@@ -49,9 +59,8 @@
             <if test="name != null and name != ''">name = #{name},</if>
             <if test="email != null and email != ''">email = #{email},</if>
             <if test="phone != null and phone != ''">phone = #{phone},</if>
-            <!-- 这个字段是一个enum, 需要类型转换
-            <if test="contactPreference != null and contactPreference != ''">contact_preference = #{contactPreference},</if>
-            -->
+            <if test="contactPreference != null and contactPreference != ''">contact_preference = cast(#{contactPreference} as contact_preference),</if>
+            <if test="lastModified != null">last_modified = #{lastModified},</if>
         </set>
         where id = #{id};
     </update>
@@ -64,18 +73,18 @@
     <!-- https://postgis.net/workshops/postgis-intro/geometries.html -->
 
     <select id="selectAllAssets" resultMap="AssetMap">
-        select id, name, ST_AsGeoJSON(drain_area) as drain_area, asset_holder_id
+        select id, name, ST_AsGeoJSON(drain_area) as drain_area, asset_holder_id, last_modified
         from assets;
     </select>
 
     <select id="selectAssetByID" resultMap="AssetMap">
-        select id, name, ST_AsGeoJSON(drain_area) as drain_area, asset_holder_id
+        select id, name, ST_AsGeoJSON(drain_area) as drain_area, asset_holder_id, last_modified
         from assets
         where id = #{id};
     </select>
 
     <select id="selectByAsset" resultMap="AssetMap">
-        select id, name, ST_AsGeoJSON(drain_area) as drain_area, asset_holder_id
+        select id, name, ST_AsGeoJSON(drain_area) as drain_area, asset_holder_id, last_modified
         from assets
         <where>
             <if test="id != null">and id = #{id}</if>
@@ -85,14 +94,14 @@
     </select>
 
     <select id="selectAllAssetsOfHolder" resultMap="AssetMap">
-        select id, name, ST_AsGeoJSON(drain_area) as drain_area, asset_holder_id
+        select id, name, ST_AsGeoJSON(drain_area) as drain_area, asset_holder_id, last_modified
         from assets
         where asset_holder_id = #{id}
     </select>
 
     <insert id="insertAsset" useGeneratedKeys="true" keyProperty="id">
-        insert into assets (name, drain_area, asset_holder_id)
-        values (#{name}, ST_GeomFromGeoJSON(#{drainArea}), #{assetHolderId});
+        insert into assets (name, drain_area, asset_holder_id, last_modified)
+        values (#{name}, ST_GeomFromGeoJSON(#{drainArea}), #{assetHolderId}, #{lastModified});
     </insert>
 
     <update id="updateAsset">
@@ -101,6 +110,7 @@
             <if test="name != null and name != ''">name = #{name},</if>
             <if test="drainArea != null">drain_area = ST_GeomFromGeoJSON(#{drainArea}),</if>
             <if test="assetHolderId != null">asset_holder_id = #{assetHolderId},</if>
+            <if test="lastModified != null">last_modified = #{lastModified},</if>
         </set>
         where id = #{id};
     </update>
@@ -109,4 +119,8 @@
         delete from assets where id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
+
+    <select id="loginQuery" resultMap="UserMap">
+        select * from users where username = #{username} and password = #{password}
+    </select>
 </mapper>

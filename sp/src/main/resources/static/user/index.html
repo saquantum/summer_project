@@ -19,7 +19,7 @@
     <!-- overlay popup component -->
     <div v-show="hasNotification" id="modal-overlay">
         <div id="modal">
-            <p>{{notificationFromAdmin}}</p>
+            <p>{{popupNotification}}</p>
             <button class="submit" @click="unsubscribe">unsubscribe</button>
             <button class="submit" @click="hasNotification = false">close</button>
         </div>
@@ -31,6 +31,7 @@
                 <img src="../images/uob.webp" id="logo" alt="logo">
             </a>
         </div>
+        <button v-if="isAdminAccessing" @click="goBackToAdminDashboard" :class="{ active: sidebarActive === 'admin' }">Admin Dashboard</button>
         <button @click="sidebarActive = 'profile'" :class="{ active: sidebarActive === 'profile' }">My Profile</button>
         <button @click="sidebarActive = 'allAssets'" :class="{ active: sidebarActive === 'allAssets' }">My Assets
         </button>
@@ -87,17 +88,17 @@
             <div>
                 <button class="submit" style="display: block" title="Will reset contact details of this asset to align with your default profile settings.">Reset All</button>
                 <p class="short-p" style="display: block">Contact preference for this asset</p>
-                <select name="contactPreference">
-                    <option value="email">email</option>
-                    <option value="sms">SMS</option>
-                    <option value="discord">discord</option>
+                <select name="contactPreference" v-model="selectedContact">
+                    <option v-for="option in contactOptions" :value="option.value">
+                        {{ option.label }}
+                    </option>
                 </select>
-                <p class="short-p"  style="display: block">Send email to this address:</p>
-                <input style="display: block" type="text" name="email" placeholder="email address">
-                <p class="short-p"  style="display: block">Send SMS to this phone number:</p>
-                <input style="display: block" type="text" name="phone" placeholder="phone number">
-                <p class="short-p"  style="display: block">Send message to this discord:</p>
-                <input style="display: block" type="text" name="discord" placeholder="discord account">
+                <p class="short-p">{{ getSelectedOption().desc}}:</p>
+                <input
+                        type="text"
+                        :placeholder="getSelectedOption().placeholder"
+                        name="atesaki"
+                />
                 <p class="short-p"  style="display: block"></p>
                 <button class="submit" style="display: block">Save</button>
                 <p class="short-p"  style="display: block"></p>
@@ -120,16 +121,25 @@
             sidebarActive: 'allAssets',
             stompClient: null,
             hasNotification: false,
-            notificationFromAdmin: null,
+            popupNotification: null,
             editingId: null,
             hasFoundAsset: false,
-            currentUserId: 1,
+            isAdminAccessing: false,
+            currentUserId: null,
             currentUsersAllAssets: [],
             currentAsset: null,
             map: null,
             geoLayer: null,
             hasPersonalInfo: false,
             holderInfo: null,
+            contactOptions: [
+                { value: 'email', label: 'Email', desc: 'Send email to this address', placeholder: 'email address' },
+                { value: 'sms', label: 'SMS', desc: 'Send SMS to this phone number', placeholder: 'phone number' },
+                { value: 'discord', label: 'Discord', desc: 'Send to this Discord account', placeholder: 'Discord account' },
+                { value: 'whatsapp', label: 'WhatsApp', desc: 'Send to this WhatsApp account', placeholder: 'WhatsApp account' },
+                { value: 'telegram', label: 'Telegram', desc: 'Send to this Telegram account', placeholder: 'Telegram account' }
+            ],
+            selectedContact: 'email',
         },
         methods: {
             switch2CurrentAsset(index){
@@ -173,6 +183,7 @@
                 const response = await fetch(`/user/api/holder/${this.asset.assetHolderId}`, {
                     method: 'GET',
                     headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
                 });
                 this.holderInfo = (await response.json()).data[0];
                 this.hasPersonalInfo = true;
@@ -184,6 +195,7 @@
                 const response = await fetch(`/user/api/holder/`, {
                     method: 'PUT',
                     headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
                     body: body
                 });
             },
@@ -195,12 +207,10 @@
                 this.hasNotification = false;
             },
             async loadAllAssets() {
-                if (this.assetID <= 0) {
-                    window.alert("asset holder id is a positive number")
-                }
                 const response = await fetch(`/user/api/holder/${this.currentUserId}/assets/`, {
                     method: 'GET',
                     headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
                 });
                 this.currentUsersAllAssets = (await response.json()).data;
 
@@ -210,11 +220,16 @@
                         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                             attribution: '&copy; OpenStreetMap contributors'
                         }).addTo(map);
-
                         const geoLayer = L.geoJSON(asset.drainArea).addTo(map);
                         map.fitBounds(geoLayer.getBounds());
                     });
                 });
+            },
+            getSelectedOption() {
+                return this.contactOptions.find(o => o.value === this.selectedContact);
+            },
+            goBackToAdminDashboard(){
+                window.location.href = '/admin/';
             }
         },
         watch: {
@@ -224,18 +239,26 @@
                 }
             }
         },
-        mounted() {
+        async mounted() {
             const socket = new SockJS('/ws')
             this.stompClient = Stomp.over(socket);
             this.stompClient.connect({}, () => {
                 this.subscription = this.stompClient.subscribe('/topic/notify', (msg) => {
-                    this.notificationFromAdmin = msg.body;
+                    this.popupNotification = msg.body;
                     this.hasNotification = true;
                 });
             });
 
             if (this.sidebarActive === 'allAssets') {
-                this.loadAllAssets();
+                const response = await fetch('/user/api/me', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                const info = await response.json();
+                this.isAdminAccessing = info.data.isAdmin;
+                if(!this.isAdminAccessing) this.currentUserId = info.data.id;
+                if(!this.currentUserId) return;
+                await this.loadAllAssets();
             }
         },
         beforeDestroy() {

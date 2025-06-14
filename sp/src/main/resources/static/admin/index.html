@@ -32,7 +32,8 @@
                 const body = {"message": this.notification};
                 const response = await fetch(`/admin/notify`, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json', 'X-Admin-Secret': 'abc123'},
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
                     body: JSON.stringify(body),
                 });
             },

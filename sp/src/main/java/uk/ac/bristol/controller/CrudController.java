@@ -1,10 +1,18 @@
 package uk.ac.bristol.controller;
 
+import io.jsonwebtoken.Claims;
 import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.service.SqlService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.bristol.util.JwtUtil;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user/api")
@@ -13,6 +21,22 @@ public class CrudController {
 
     @Autowired
     private SqlService sqlService;
+
+    @GetMapping("/me")
+    public ResponseResult getUserInfo(HttpServletResponse response, HttpServletRequest request) throws IOException {
+        String token = JwtUtil.getJWTFromCookie(request, response);
+        Claims claims = JwtUtil.parseJWT(token);
+        Integer id = null;
+        try {
+            id = claims.get("assetHolderId", Integer.class);
+        } catch (Exception ignored) {
+        }
+        boolean isAdmin = claims.get("isAdmin", Boolean.class);
+        Map<String, Object> data = new HashMap<>();
+        data.put("id", id);
+        data.put("isAdmin", isAdmin);
+        return new ResponseResult(Code.SUCCESS, data);
+    }
 
     @GetMapping("/asset")
     public ResponseResult getAllAssets() {
@@ -56,7 +80,6 @@ public class CrudController {
 
     @PutMapping("/holder")
     public ResponseResult updateAssetHolder(@RequestBody AssetHolder assetHolder) {
-        System.out.println(assetHolder);
         return new ResponseResult(Code.UPDATE_OK, sqlService.updateAssetHolder(assetHolder));
     }
 

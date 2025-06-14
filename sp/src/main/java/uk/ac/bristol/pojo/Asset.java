@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Map;
 
 public class Asset {
@@ -11,6 +12,7 @@ public class Asset {
     private String name;
     private Map<String, Object> drainArea;
     private Integer assetHolderId;
+    private Instant lastModified;
 
     public Asset() {
     }
@@ -78,5 +80,13 @@ public class Asset {
 
     public void setAssetHolderId(Integer assetHolderId) {
         this.assetHolderId = assetHolderId;
+    }
+
+    public Instant getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(Instant lastModified) {
+        this.lastModified = lastModified;
     }
 }
