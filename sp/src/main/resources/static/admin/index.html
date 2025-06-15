@@ -110,6 +110,7 @@
             </div>
         </div>
         <div v-if="sidebarActive === 'warnings'" class="content">
+            <div id="allWarningsMap" style="height: 500px; width: 50vh;"></div>
             <div v-if="allWarnings.length > 0">
                 <table>
                     <thead>
@@ -209,8 +210,8 @@
             allAssetHolders: [],
             allWarnings: [],
             currentWarning: null,
-            map: null,
-            geoLayer: null,
+            maps: [],
+            geoLayers: [],
         },
         methods: {
             async sendNotification() {
@@ -269,6 +270,7 @@
                     credentials: 'include',
                 });
                 this.allWarnings = (await response.json()).data;
+                this.displayMap('allWarningsMap', this.allWarnings.map(w => w.polygon));
             },
             findHighestLevel(list) {
                 if (list.length === 0) return "none";
@@ -305,22 +307,43 @@
                     this.map = null;
                 }
                 this.$nextTick(() => {
-                    this.map = L.map('warningMap').setView([0, 0], 13);
+                    this.displayMap('warningMap', this.currentWarning.polygon);
+                });
+            },
+            displayMap(tagID, geoJson) {
+                this.$nextTick(() => {
+                    const map = L.map(tagID).setView([0, 0], 13);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         attribution: '&copy; OpenStreetMap contributors'
-                    }).addTo(this.map);
-                    if (this.geoLayer) {
-                        this.geoLayer.remove();
-                    }
-                    this.geoLayer = L.geoJSON(this.currentWarning.polygon).addTo(this.map);
-                    this.map.fitBounds(this.geoLayer.getBounds());
+                    }).addTo(map);
+                    const geoLayer = L.geoJSON(Array.isArray(geoJson) ? geoJson : [geoJson]).addTo(map);
+                    map.fitBounds(geoLayer.getBounds());
+                    this.maps.push(map);
+                    this.geoLayers.push(geoLayer);
                 });
+            },
+            cleanMaps() {
+                if (this.maps.length > 0) {
+                    this.maps.forEach(map => {
+                        const container = map.getContainer();
+                        if (container && container._leaflet_id) {
+                            map.remove();
+                            container._leaflet_id = null;
+                        }
+                    });
+                    this.maps = [];
+                }
+                if (this.geoLayers.length > 0) {
+                    this.geoLayers.forEach(layer => layer.remove());
+                    this.geoLayers = [];
+                }
             },
         },
         watch: {
             sidebarActive: {
                 immediate: true,
                 async handler(newVal) {
+                    this.cleanMaps();
                     if (newVal === 'assets') {
                         await this.loadAllAssets();
                     }

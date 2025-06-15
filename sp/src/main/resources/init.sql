@@ -107,8 +107,8 @@ INSERT INTO weather_warnings (
     warning_impact, warning_likelihood, affected_areas,
     what_to_expect, warning_further_details, warning_update_description,
     polygon
-)
-VALUES (
+) VALUES
+(
     1609,
     'THUNDERSTORM',
     'YELLOW',
@@ -122,4 +122,19 @@ VALUES (
     'Frequent heavy showers and thunderstorms are expected for much of Saturday before fading from the west during the mid to late afternoon. \n\n10-15 mm of rain could fall in less than an hour, whilst some places could see 30-40 mm of rain over several hours from successive showers and thunderstorms. Frequent lightning, hail and strong, gusty winds will be additional hazards.\n\nWhat Should I Do?\n\nConsider if your location is at risk of flash flooding. If so, consider preparing a flood plan and an emergency flood kit. \n\nGive yourself the best chance of avoiding delays by checking road conditions if driving, or bus and train timetables, amending your travel plans if necessary.\n\nPeople cope better with power cuts when they have prepared for them in advance. It’s easy to do; consider gathering torches and batteries, a mobile phone power pack and other essential items.\n\nIf you find yourself outside and hear thunder, protect yourself by finding a safe enclosed shelter (such as a car). Do not shelter under or near trees, or other structures which may be struck by lightning. If you are on an elevated area move to lower ground.\n\nBe prepared for weather warnings to change quickly: when a weather warning is issued, the Met Office recommends staying up to date with the weather forecast in your area.',
     'Warning re-issued due to a technical error.',
     ST_GeomFromText('POLYGON((1.4337 52.6697, 1.7963 52.5797, 2.0435 52.3957, 2.0764 52.12, 2.0544 51.9036, 2.0105 51.761, 1.8567 51.4814, 1.4832 51.1104, 1.3293 50.9999, 1.1426 50.903, 0.3296 50.5832, -0.1538 50.4365, -0.5164 50.3595, -0.9119 50.2964, -1.1865 50.2683, -2.5873 50.1276, -3.7408 50.1065, -4.3451 50.3104, -4.6252 50.7086, -4.7296 51.2034, -4.3726 51.7338, -3.6145 52.1335, -3.2629 52.3488, -2.8235 52.4727, -2.0435 52.6964, -1.1646 52.5229, -0.7635 52.4493, -0.3516 52.4594, 0.4504 52.6531, 1.4337 52.6697))', 4326)
+),
+(
+    1608,
+    'RAIN',
+    'RED',
+    'Prolonged heavy rain may lead to flooding and disruption in parts of Scotland.',
+    now(),
+    now() + interval '1 year',
+    '4/High',
+    '4/Very Likely',
+    'Scotland (Highlands, Eilean Siar, Grampian, Central, Tayside & Fife, Strathclyde, Lothian, Borders)',
+    'Flooding of homes and businesses is likely.\nTravel disruption due to road closures and difficult driving conditions.',
+    'Persistent heavy rain over higher ground is expected. 50-80 mm of rain may fall in some areas, possibly more locally.',
+    'Initial issue of warning for Scotland region due to forecasted weather system.',
+    ST_GeomFromText('POLYGON((-5.5 58.6, -3.0 58.6, -1.0 57.5, -1.0 56.0, -3.0 55.0, -5.0 55.0, -6.0 56.0, -6.5 57.0, -6.0 58.0, -5.5 58.6))', 4326)
 );

@@ -57,39 +57,39 @@
             <h3>
                 {{isAdminAccessing ? (currentUserId <= 0 ? 'Admin ( no user selected )' : `Admin ( as user ${currentUserId} )`) : 'My Assets'}}</h3>
             <div style="flex-grow: 1;"></div>
-            <input type="text" name="assetName" placeholder="Search my asset">
-            <select name="alert">
-                <option value="" selected disabled>Select Warning Level</option>
-                <option value="no">No Warning</option>
+            <input type="text" v-model=searchAsset.text name="assetName" placeholder="Search my asset by name">
+            <select v-model=searchAsset.level name="level">
+                <option value="" selected>Select Warning Level</option>
+                <option value="none">No Warning</option>
                 <option value="yellow">Yellow Warning</option>
                 <option value="amber">Amber Warning</option>
                 <option value="red">Red Warning</option>
             </select>
-            <select name="county">
-                <option value="" selected disabled>Select Region of Asset</option>
-                <option value="nee">North East England</option>
-                <option value="nwe">North West England</option>
-                <option value="yh">Yorkshire & Humber</option>
-                <option value="em">East Midlands</option>
-                <option value="wm">West Midlands</option>
-                <option value="ee">East of England</option>
-                <option value="lsee">London & South East England</option>
-                <option value="swe">South West England</option>
-                <option value="os">Orkney & Shetland</option>
-                <option value="hes">Highlands & Eilean Siar</option>
-                <option value="g">Grampian</option>
-                <option value="ctf">Central, Tayside & Fife</option>
-                <option value="s">Strathclyde</option>
-                <option value="dglb">Dumfries, Galloway, Lothian & Borders</option>
-                <option value="ni">Northern Ireland</option>
-                <option value="w">Wales</option>
+            <select v-model=searchAsset.region name="region">
+                <option value="" selected>Select Region of Asset</option>
+                <option value="North East England">North East England</option>
+                <option value="North West England">North West England</option>
+                <option value="Yorkshire & Humber">Yorkshire & Humber</option>
+                <option value="East Midlands">East Midlands</option>
+                <option value="West Midlands">West Midlands</option>
+                <option value="East of England">East of England</option>
+                <option value="London & South East England">London & South East England</option>
+                <option value="South West England">South West England</option>
+                <option value="Orkney & Shetland">Orkney & Shetland</option>
+                <option value="Highlands & Eilean Siar">Highlands & Eilean Siar</option>
+                <option value="Grampian">Grampian</option>
+                <option value="Central, Tayside & Fife">Central, Tayside & Fife</option>
+                <option value="Strathclyde">Strathclyde</option>
+                <option value="Dumfries, Galloway, Lothian & Borders">Dumfries, Galloway, Lothian & Borders</option>
+                <option value="Northern Ireland">Northern Ireland</option>
+                <option value="Wales">Wales</option>
             </select>
             <div style="flex-grow: 1;"></div>
             <a href="/admin"><img src="../images/mailbox.png" alt="mailbox" class="mailbox-icon"></a>
         </div>
         <div v-if="sidebarActive === 'allAssets'" class="content">
             <div class="assets-grid-container">
-                <div class="asset-card" v-for="(item, index) in currentUsersAllAssets" :key="index"
+                <div class="asset-card" v-for="(item, index) in currentUsersAllAssetsInView" :key="index"
                      :style="{ backgroundColor: getAssetCardColor(item.warnings) }">
                     <div :id="'map-' + index" class="mini-map"></div>
                     <h4 style="text-align: center;">
@@ -249,9 +249,12 @@
             isAdminAccessing: false,
             currentUserId: null,
             currentUsersAllAssets: [],
+            currentUsersAllAssetsInView: [],
+            searchAsset: {text: '', level: '', region: ''},
+            searchAssetTimer: null,
             currentAsset: null,
-            assetMap: null,
-            assetGeoLayer: null,
+            maps: [],
+            geoLayers: [],
             hasPersonalInfo: false,
             holderInfo: null,
             contactOptions: [
@@ -278,13 +281,11 @@
             ],
             selectedContact: 'email',
             currentWarning: null,
-            warningMap: null,
-            warningGeoLayer: null,
         },
         methods: {
             switch2CurrentAsset(index) {
                 this.sidebarActive = 'currentAsset';
-                this.currentAsset = this.currentUsersAllAssets[index];
+                this.currentAsset = this.currentUsersAllAssetsInView[index];
             },
             toggleSubscribe() {
                 if (typeof this.currentAsset.unsubscribe !== 'boolean') {
@@ -292,17 +293,18 @@
                 } else {
                     this.currentAsset.unsubscribe = !this.currentAsset.unsubscribe;
                 }
-                console.log(this.currentAsset.unsubscribe);
             },
             // https://leafletjs.com/examples/geojson/
-            displayMap(geojson) {
+            displayMap(tagID, geoJson) {
                 this.$nextTick(() => {
-                    this.assetMap = L.map('assetMap').setView([0, 0], 13);
+                    const map = L.map(tagID).setView([0, 0], 13);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         attribution: '&copy; OpenStreetMap contributors'
-                    }).addTo(this.assetMap);
-                    this.assetGeoLayer = L.geoJSON(geojson).addTo(this.assetMap);
-                    this.assetMap.fitBounds(this.assetGeoLayer.getBounds());
+                    }).addTo(map);
+                    const geoLayer = L.geoJSON(Array.isArray(geoJson) ? geoJson : [geoJson]).addTo(map);
+                    map.fitBounds(geoLayer.getBounds());
+                    this.maps.push(map);
+                    this.geoLayers.push(geoLayer);
                 });
             },
             async findPersonalInfo() {
@@ -317,7 +319,6 @@
             async updatePersonalInfo() {
                 //if(this.holderInfo.name === "" || this.holderInfo.phone === "" || this.holderInfo.email === "" || this.holderInfo.contactPreference === "") return;
                 const body = JSON.stringify(this.holderInfo);
-                console.log(body)
                 const response = await fetch(`/user/api/holder/`, {
                     method: 'PUT',
                     headers: {'Content-Type': 'application/json'},
@@ -332,6 +333,11 @@
                 }
                 this.hasNotification = false;
             },
+            resetMiniMaps() {
+                this.currentUsersAllAssetsInView.forEach((assetWithWarnings, index) => {
+                    this.displayMap('map-' + index, assetWithWarnings.asset.drainArea);
+                });
+            },
             async loadAllAssets() {
                 const response = await fetch(`/user/api/holder/${this.currentUserId}/asset/`, {
                     method: 'GET',
@@ -339,17 +345,8 @@
                     credentials: 'include',
                 });
                 this.currentUsersAllAssets = (await response.json()).data;
-
-                this.$nextTick(() => {
-                    this.currentUsersAllAssets.forEach((assetWithWarnings, index) => {
-                        const map = L.map('map-' + index).setView([0, 0], 13);
-                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                            attribution: '&copy; OpenStreetMap contributors'
-                        }).addTo(map);
-                        const geoLayer = L.geoJSON(assetWithWarnings.asset.drainArea).addTo(map);
-                        map.fitBounds(geoLayer.getBounds());
-                    });
-                });
+                this.currentUsersAllAssetsInView = this.currentUsersAllAssets;
+                this.$nextTick(() => this.resetMiniMaps());
             },
             getSelectedOption() {
                 return this.contactOptions.find(o => o.value === this.selectedContact);
@@ -383,14 +380,7 @@
             gotoWarning(index) {
                 this.currentWarning = this.currentAsset.warnings[index];
                 this.sidebarActive = 'currentWarning';
-                this.$nextTick(() => {
-                    this.warningMap = L.map('warningMap').setView([0, 0], 13);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '&copy; OpenStreetMap contributors'
-                    }).addTo(this.warningMap);
-                    this.warningGeoLayer = L.geoJSON(this.currentWarning.polygon).addTo(this.warningMap);
-                    this.warningMap.fitBounds(this.warningGeoLayer.getBounds());
-                });
+                this.displayMap('warningMap', this.currentWarning.polygon);
             },
             findHighestLevel(list) {
                 if (list.length === 0) return "none";
@@ -414,39 +404,67 @@
                 if (level.includes('yellow')) return '#ffffcc';
                 return '#f5f5f5';
             },
+            cleanMaps() {
+                if (this.maps.length > 0) {
+                    this.maps.forEach(map => {
+                        const container = map.getContainer();
+                        if (container && container._leaflet_id) {
+                            map.remove();
+                            container._leaflet_id = null;
+                        }
+                    });
+                    this.maps = [];
+                }
+                if (this.geoLayers.length > 0) {
+                    this.geoLayers.forEach(layer => layer.remove());
+                    this.geoLayers = [];
+                }
+            },
         },
         watch: {
             sidebarActive: {
                 async handler(newVal) {
+                    this.cleanMaps();
                     if (newVal === 'allAssets') {
                         await this.loadAllAssets();
                     }
                     if (newVal !== 'currentWarning') {
                         this.currentWarning = null;
-                        if (this.warningMap) {
-                            this.warningMap.remove();
-                            this.warningMap = null;
-                        }
-                        if (this.warningGeoLayer) {
-                            this.warningGeoLayer.remove();
-                        }
                     }
                     if (newVal !== 'currentAsset' && newVal !== 'currentWarning') {
                         this.currentAsset = null;
-                        if (this.assetMap) {
-                            this.assetMap.remove();
-                            this.assetMap = null;
-                        }
-                        if (this.assetGeoLayer) {
-                            this.assetGeoLayer.remove();
-                        }
                     }
                     if (newVal === 'currentAsset' && this.currentAsset) {
                         this.$nextTick(() => {
-                            this.displayMap(this.currentAsset.asset.drainArea);
+                            this.displayMap('assetMap', this.currentAsset.asset.drainArea);
                         });
                     }
                 },
+            },
+            searchAsset: {
+                deep: true,
+                handler(newVal) {
+                    clearTimeout(this.searchAssetTimer);
+                    this.searchAssetTimer = setTimeout(() => {
+                        this.cleanMaps();
+                        const needSearch =
+                            newVal.text.trim() !== '' ||
+                            newVal.level.trim() !== '' ||
+                            newVal.region.trim() !== '';
+                        this.currentUsersAllAssetsInView = this.currentUsersAllAssets.filter(item => {
+                            if (!needSearch) return true;
+                            const matchName = newVal.text.trim() !== '' &&
+                                item.asset.name.toLowerCase().includes(newVal.text.toLowerCase());
+                            const matchLevel = newVal.level.trim() !== '' &&
+                                this.findHighestLevel(item.warnings) === newVal.level;
+                            const matchRegion = newVal.region.trim() !== '' &&
+                                item.asset.region.toLowerCase() === newVal.region.toLowerCase();
+                            return matchName || matchLevel || matchRegion;
+                        });
+                        this.resetMiniMaps();
+                    }, 300);
+
+                }
             },
         },
         async created() {
