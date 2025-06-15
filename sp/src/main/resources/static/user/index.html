@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"/>
-    <title>WebSocket Demo</title>
+    <title>User Interface</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
@@ -37,17 +37,22 @@
         <button @click="sidebarActive = 'profile'" :class="{ active: sidebarActive === 'profile' }">My Profile</button>
         <button @click="sidebarActive = 'allAssets'" :class="{ active: sidebarActive === 'allAssets' }">My Assets
         </button>
-        <button v-show="sidebarActive === 'currentAsset'" @click="sidebarActive = 'currentAsset'"
+        <button v-show="sidebarActive === 'currentAsset' || sidebarActive === 'currentWarning'"
+                @click="sidebarActive = 'currentAsset'"
                 :class="{ active: sidebarActive === 'currentAsset' }">Current Asset
+        </button>
+        <button v-show="sidebarActive === 'currentWarning'" @click="sidebarActive = 'currentWarning'"
+                :class="{ active: sidebarActive === 'currentWarning' }">Current Warning
         </button>
     </div>
     <!-- main contents -->
     <div class="main">
+
         <!-- user profile -->
         <div v-if="sidebarActive === 'profile'" class="topbar"></div>
         <div v-if="sidebarActive === 'profile'" class="content"></div>
-        <!-- user assets -->
 
+        <!-- user assets -->
         <div v-if="sidebarActive === 'allAssets'" class="topbar">
             <h3>
                 {{isAdminAccessing ? (currentUserId <= 0 ? 'Admin ( no user selected )' : `Admin ( as user ${currentUserId} )`) : 'My Assets'}}</h3>
@@ -61,28 +66,43 @@
                 <option value="red">Red Warning</option>
             </select>
             <select name="county">
-                <option value="" selected disabled>Select County of Asset</option>
-                <option value="london">Greater London</option>
-                <option value="bristol">Bristol</option>
+                <option value="" selected disabled>Select Region of Asset</option>
+                <option value="nee">North East England</option>
+                <option value="nwe">North West England</option>
+                <option value="yh">Yorkshire & Humber</option>
+                <option value="em">East Midlands</option>
+                <option value="wm">West Midlands</option>
+                <option value="ee">East of England</option>
+                <option value="lsee">London & South East England</option>
+                <option value="swe">South West England</option>
+                <option value="os">Orkney & Shetland</option>
+                <option value="hes">Highlands & Eilean Siar</option>
+                <option value="g">Grampian</option>
+                <option value="ctf">Central, Tayside & Fife</option>
+                <option value="s">Strathclyde</option>
+                <option value="dglb">Dumfries, Galloway, Lothian & Borders</option>
+                <option value="ni">Northern Ireland</option>
+                <option value="w">Wales</option>
             </select>
             <div style="flex-grow: 1;"></div>
             <a href="/admin"><img src="../images/mailbox.png" alt="mailbox" class="mailbox-icon"></a>
         </div>
         <div v-if="sidebarActive === 'allAssets'" class="content">
             <div class="assets-grid-container">
-                <div class="asset-card" v-for="(item, index) in currentUsersAllAssets" :key="index">
+                <div class="asset-card" v-for="(item, index) in currentUsersAllAssets" :key="index"
+                     :style="{ backgroundColor: getAssetCardColor(item.warnings) }">
                     <div :id="'map-' + index" class="mini-map"></div>
                     <h4 style="text-align: center;">
                         <a @click="switch2CurrentAsset(index)"
-                           style="color: blue;text-decoration: underline;cursor: pointer;">
-                            {{ item.name }}
+                           style="color: green;text-decoration: underline;cursor: pointer;">
+                            {{ item.asset.name }}
                         </a>
                     </h4>
                 </div>
             </div>
         </div>
-        <!-- current asset -->
 
+        <!-- current asset -->
         <div v-if="sidebarActive === 'currentAsset'" class="topbar">
             <h3>{{currentAsset.name}}</h3>
             <div style="flex-grow: 1;"></div>
@@ -90,7 +110,7 @@
         </div>
         <div v-if="sidebarActive === 'currentAsset'" class="content">
             <div class="asset-detail-container">
-                <div id="map" style="height: 500px; grid-column: 1 / span 2;">
+                <div id="assetMap" style="height: 500px; grid-column: 1 / span 2;">
                 </div>
                 <div>
                     <button class="submit" style="display: block"
@@ -123,9 +143,95 @@
             </div>
             <div>
                 <p style="display: block">
-                    Current warning on this asset: none
+                    Current warning on this asset: {{this.currentAsset.warnings.length === 0 ? 'none' : ''}}
                 </p>
+                <div v-if="this.currentAsset.warnings.length > 0">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Warning ID</th>
+                            <th>Weather Type</th>
+                            <th>Warning Level</th>
+                            <th>Warning Impact</th>
+                            <th>Warning Likelihood</th>
+                            <th>Valid From</th>
+                            <th>Valid To</th>
+                            <th>Performable Actions(You should not see this)</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="(item, index) in this.currentAsset.warnings" :key="index">
+                            <td>{{item.id}}</td>
+                            <td>{{item.weatherType}}</td>
+                            <td>{{item.warningLevel}}</td>
+                            <td>{{item.warningImpact}}</td>
+                            <td>{{item.warningLikelihood}}</td>
+                            <td>{{new Date(item.validFrom * 1000).toLocaleString()}}</td>
+                            <td>{{new Date(item.validTo * 1000).toLocaleString()}}</td>
+                            <td>
+                                <div>
+                                    <button class="submit" @click.stop="gotoWarning(index)">goto</button>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+        </div>
+
+        <!-- warning -->
+        <div v-if="sidebarActive === 'currentWarning'" class="topbar"></div>
+        <div v-if="sidebarActive === 'currentWarning'" class="content">
+            <div id="warningMap" style="height: 500px; width: 50vw;"></div>
+            <table>
+                <tbody>
+                <tr>
+                    <td>Warning ID</td>
+                    <td>{{currentWarning.id}}</td>
+                </tr>
+                <tr>
+                    <td>Weather Type</td>
+                    <td>{{currentWarning.weatherType}}</td>
+                </tr>
+                <tr>
+                    <td>Warning Level</td>
+                    <td>{{currentWarning.warningLevel}}</td>
+                </tr>
+                <tr>
+                    <td>Warning HeadLine</td>
+                    <td>{{currentWarning.warningHeadLine}}</td>
+                </tr>
+                <tr>
+                    <td>Valid From</td>
+                    <td>{{new Date(currentWarning.validFrom * 1000).toLocaleString()}}</td>
+                </tr>
+                <tr>
+                    <td>Valid To</td>
+                    <td>{{new Date(currentWarning.validTo * 1000).toLocaleString()}}</td>
+                </tr>
+                <tr>
+                    <td>Warning Impact</td>
+                    <td>{{currentWarning.warningImpact}}</td>
+                </tr>
+                <tr>
+                    <td>Warning Likelihood</td>
+                    <td>{{currentWarning.warningLikelihood}}</td>
+                </tr>
+                <tr>
+                    <td>Affected Areas</td>
+                    <td v-html="currentWarning.affectedAreas.replaceAll('\\n', '<br>')"></td>
+                </tr>
+                <tr>
+                    <td>Further Details</td>
+                    <td v-html="currentWarning.affectedAreas.replaceAll('\\n', '<br>')"></td>
+                </tr>
+                <tr>
+                    <td>Update Description</td>
+                    <td>{{currentWarning.warningUpdateDescription}}</td>
+                </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -144,8 +250,8 @@
             currentUserId: null,
             currentUsersAllAssets: [],
             currentAsset: null,
-            map: null,
-            geoLayer: null,
+            assetMap: null,
+            assetGeoLayer: null,
             hasPersonalInfo: false,
             holderInfo: null,
             contactOptions: [
@@ -171,16 +277,14 @@
                 }
             ],
             selectedContact: 'email',
+            currentWarning: null,
+            warningMap: null,
+            warningGeoLayer: null,
         },
         methods: {
             switch2CurrentAsset(index) {
-                console.log('switch2CurrentAsset');
                 this.sidebarActive = 'currentAsset';
                 this.currentAsset = this.currentUsersAllAssets[index];
-                this.$nextTick(() => {
-                    const geojson = this.currentAsset.drainArea;
-                    this.displayMap(geojson);
-                });
             },
             toggleSubscribe() {
                 if (typeof this.currentAsset.unsubscribe !== 'boolean') {
@@ -192,22 +296,13 @@
             },
             // https://leafletjs.com/examples/geojson/
             displayMap(geojson) {
-                if (this.map) {
-                    this.map.remove();
-                    this.map = null;
-                }
                 this.$nextTick(() => {
-                    this.map = L.map('map').setView([0, 0], 13);
+                    this.assetMap = L.map('assetMap').setView([0, 0], 13);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         attribution: '&copy; OpenStreetMap contributors'
-                    }).addTo(this.map);
-
-                    if (this.geoLayer) {
-                        this.geoLayer.remove();
-                    }
-
-                    this.geoLayer = L.geoJSON(geojson).addTo(this.map);
-                    this.map.fitBounds(this.geoLayer.getBounds());
+                    }).addTo(this.assetMap);
+                    this.assetGeoLayer = L.geoJSON(geojson).addTo(this.assetMap);
+                    this.assetMap.fitBounds(this.assetGeoLayer.getBounds());
                 });
             },
             async findPersonalInfo() {
@@ -246,12 +341,12 @@
                 this.currentUsersAllAssets = (await response.json()).data;
 
                 this.$nextTick(() => {
-                    this.currentUsersAllAssets.forEach((asset, index) => {
+                    this.currentUsersAllAssets.forEach((assetWithWarnings, index) => {
                         const map = L.map('map-' + index).setView([0, 0], 13);
                         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                             attribution: '&copy; OpenStreetMap contributors'
                         }).addTo(map);
-                        const geoLayer = L.geoJSON(asset.drainArea).addTo(map);
+                        const geoLayer = L.geoJSON(assetWithWarnings.asset.drainArea).addTo(map);
                         map.fitBounds(geoLayer.getBounds());
                     });
                 });
@@ -266,16 +361,95 @@
                     credentials: 'include',
                 });
                 window.location.href = '/admin/';
-            }
+            },
+            async getCurrentUser() {
+                const response = await fetch('/user/api/me', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                const info = await response.json();
+                this.isAdminAccessing = info.data.isAdmin;
+                this.currentUserId = info.data.id;
+                if (info.data.asUserInAssetId) {
+                    const assetList = (await (await fetch(`/user/api/asset/${info.data.asUserInAssetId}`, {
+                        method: 'GET',
+                        headers: {'Content-Type': 'application/json'},
+                        credentials: 'include',
+                    })).json());
+                    this.currentAsset = assetList.data[0];
+                    this.sidebarActive = 'currentAsset';
+                }
+            },
+            gotoWarning(index) {
+                this.currentWarning = this.currentAsset.warnings[index];
+                this.sidebarActive = 'currentWarning';
+                this.$nextTick(() => {
+                    this.warningMap = L.map('warningMap').setView([0, 0], 13);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap contributors'
+                    }).addTo(this.warningMap);
+                    this.warningGeoLayer = L.geoJSON(this.currentWarning.polygon).addTo(this.warningMap);
+                    this.warningMap.fitBounds(this.warningGeoLayer.getBounds());
+                });
+            },
+            findHighestLevel(list) {
+                if (list.length === 0) return "none";
+                let max = 'yellow';
+                for (const w of list) {
+                    const warning = w.warningLevel.toLowerCase();
+                    if (warning.includes('red')) {
+                        max = 'red';
+                        break;
+                    }
+                    if (warning.includes('amber')) {
+                        max = 'amber';
+                    }
+                }
+                return max;
+            },
+            getAssetCardColor(list) {
+                const level = this.findHighestLevel(list).toLowerCase();
+                if (level.includes('red')) return '#ffcccc';
+                if (level.includes('amber')) return '#fff0b3';
+                if (level.includes('yellow')) return '#ffffcc';
+                return '#f5f5f5';
+            },
         },
         watch: {
-            sidebarActive(newVal) {
-                if (newVal === 'allAssets') {
-                    this.loadAllAssets();
-                }
-            }
+            sidebarActive: {
+                async handler(newVal) {
+                    if (newVal === 'allAssets') {
+                        await this.loadAllAssets();
+                    }
+                    if (newVal !== 'currentWarning') {
+                        this.currentWarning = null;
+                        if (this.warningMap) {
+                            this.warningMap.remove();
+                            this.warningMap = null;
+                        }
+                        if (this.warningGeoLayer) {
+                            this.warningGeoLayer.remove();
+                        }
+                    }
+                    if (newVal !== 'currentAsset' && newVal !== 'currentWarning') {
+                        this.currentAsset = null;
+                        if (this.assetMap) {
+                            this.assetMap.remove();
+                            this.assetMap = null;
+                        }
+                        if (this.assetGeoLayer) {
+                            this.assetGeoLayer.remove();
+                        }
+                    }
+                    if (newVal === 'currentAsset' && this.currentAsset) {
+                        this.$nextTick(() => {
+                            this.displayMap(this.currentAsset.asset.drainArea);
+                        });
+                    }
+                },
+            },
         },
-        async mounted() {
+        async created() {
             const socket = new SockJS('/ws')
             this.stompClient = Stomp.over(socket);
             this.stompClient.connect({}, () => {
@@ -284,17 +458,16 @@
                     this.hasNotification = true;
                 });
             });
-
+        },
+        async mounted() {
             if (this.sidebarActive === 'allAssets') {
-                const response = await fetch('/user/api/me', {
-                    method: 'GET',
-                    credentials: 'include'
-                });
-                const info = await response.json();
-                this.isAdminAccessing = info.data.isAdmin;
-                this.currentUserId = info.data.id;
-                if (this.currentUserId <= 0) return;
-                await this.loadAllAssets();
+                await this.getCurrentUser();
+                if (this.sidebarActive === 'currentAsset') {
+
+                } else {
+                    if (this.currentUserId <= 0) return;
+                    await this.loadAllAssets();
+                }
             }
         },
         beforeDestroy() {

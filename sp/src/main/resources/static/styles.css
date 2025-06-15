@@ -191,6 +191,7 @@ th {
 
 td {
     height: 50px;
+    text-align: center;
     vertical-align: middle;
     background-color: #f9f9f9;
     border: 1px solid #ccc;
@@ -199,22 +200,6 @@ td {
 
 th:last-child {
     display: none;
-}
-
-th:nth-child(1), td:nth-child(1) {
-    width: 30px;
-}
-
-th:nth-child(2), td:nth-child(2) {
-    width: 200px;
-}
-
-th:nth-child(3), td:nth-child(3) {
-    width: 200px;
-}
-
-th:nth-child(4), td:nth-child(4) {
-    width: 180px;
 }
 
 tr {

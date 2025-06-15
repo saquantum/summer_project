@@ -16,6 +16,7 @@
     <resultMap id="AssetMap" type="uk.ac.bristol.pojo.Asset">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
+        <result property="region" column="region"/>
         <result property="drainArea" column="drain_area" javaType="java.lang.String"/>
         <result property="assetHolderId" column="asset_holder_id"/>
         <result property="lastModified" column="last_modified"/>
@@ -49,31 +50,70 @@
         </association>
     </resultMap>
 
+    <resultMap id="WarningMap" type="uk.ac.bristol.pojo.Warning">
+        <id column="warning_id" property="id"/>
+        <result column="weather_type" property="weatherType"/>
+        <result column="warning_level" property="warningLevel"/>
+        <result column="warning_head_line" property="warningHeadLine"/>
+        <result column="valid_from" property="validFrom"/>
+        <result column="valid_to" property="validTo"/>
+        <result column="warning_impact" property="warningImpact"/>
+        <result column="warning_likelihood" property="warningLikelihood"/>
+        <result column="affected_areas" property="affectedAreas"/>
+        <result column="what_to_expect" property="whatToExpect"/>
+        <result column="warning_further_details" property="warningFurtherDetails"/>
+        <result column="warning_update_description" property="warningUpdateDescription"/>
+        <result column="polygon" property="polygon" javaType="java.lang.String"/>
+    </resultMap>
+
+    <resultMap id="AssetWithWarningsMap" type="uk.ac.bristol.pojo.AssetWithWeatherWarnings">
+        <id property="asset.id" column="id"/>
+        <association property="asset" javaType="uk.ac.bristol.pojo.Asset" resultMap="AssetMap"/>
+        <collection property="warnings" ofType="uk.ac.bristol.pojo.Warning" resultMap="WarningMap"/>
+    </resultMap>
+
+    <select id="selectAllWarnings" resultMap="WarningMap">
+        select warning_id,
+               weather_type,
+               warning_level,
+               warning_head_line,
+               valid_from,
+               valid_to,
+               warning_impact,
+               warning_likelihood,
+               affected_areas,
+               what_to_expect,
+               warning_further_details,
+               warning_update_description,
+               ST_AsGeoJSON(polygon) polygon
+        from weather_warnings
+        where now() between valid_from and valid_to
+    </select>
+
     <select id="selectAllAssetHolders" resultMap="UserAsAssetHolderMap">
-        select
-            t1.id user_id,
-            t1.username,
-            t1.password,
-            t1.asset_holder_id,
-            t1.is_admin,
-            t2.id holder_id,
-            t2.name holder_name,
-            t2.email,
-            t2.phone,
-            t2.contact_preference,
-            t2.last_modified,
-            coalesce(ac.asset_count, 0) asset_count
+        select t1.id                       user_id,
+               t1.username,
+               t1.password,
+               t1.asset_holder_id,
+               t1.is_admin,
+               t2.id                       holder_id,
+               t2.name                     holder_name,
+               t2.email,
+               t2.phone,
+               t2.contact_preference,
+               t2.last_modified,
+               coalesce(ac.asset_count, 0) asset_count
         from users t1
-        join asset_holders t2 on t1.asset_holder_id = t2.id
-        left join (
-            select asset_holder_id, COUNT(*) asset_count
-            from assets
-            group by asset_holder_id
-        ) ac on ac.asset_holder_id = t2.id
+                 join asset_holders t2 on t1.asset_holder_id = t2.id
+                 left join (select asset_holder_id, COUNT(*) asset_count
+                            from assets
+                            group by asset_holder_id) ac on ac.asset_holder_id = t2.id
     </select>
 
     <select id="selectAssetHolderByID" resultMap="AssetHolderMap">
-        select * from asset_holders where id = #{id};
+        select *
+        from asset_holders
+        where id = #{id};
     </select>
 
     <select id="selectByAssetHolder" resultMap="AssetHolderMap">
@@ -83,7 +123,9 @@
             <if test="name != null and name != ''">and name like #{name}</if>
             <if test="email != null and email != ''">and email like #{email}</if>
             <if test="phone != null and phone != ''">and phone like #{phone}</if>
-            <if test="contactPreference != null and contactPreference != ''">and contact_preference = #{contactPreference}</if>
+            <if test="contactPreference != null and contactPreference != ''">and contact_preference =
+                #{contactPreference}
+            </if>
         </where>
     </select>
 
@@ -98,7 +140,9 @@
             <if test="name != null and name != ''">name = #{name},</if>
             <if test="email != null and email != ''">email = #{email},</if>
             <if test="phone != null and phone != ''">phone = #{phone},</if>
-            <if test="contactPreference != null and contactPreference != ''">contact_preference = cast(#{contactPreference} as contact_preference),</if>
+            <if test="contactPreference != null and contactPreference != ''">contact_preference =
+                cast(#{contactPreference} as contact_preference),
+            </if>
             <if test="lastModified != null">last_modified = #{lastModified},</if>
         </set>
         where id = #{id};
@@ -111,20 +155,84 @@
 
     <!-- https://postgis.net/workshops/postgis-intro/geometries.html -->
 
-    <select id="selectAllAssets" resultMap="AssetMap">
-        select id, name, ST_AsGeoJSON(drain_area) as drain_area, asset_holder_id, last_modified
-        from assets;
+    <select id="selectAllAssets" resultMap="AssetWithWarningsMap">
+        select a.id                         id,
+               a.name                       name,
+               a.region                     region,
+               ST_AsGeoJSON(a.drain_area)   drain_area,
+               a.asset_holder_id            asset_holder_id,
+               a.last_modified              last_modified,
+
+               w.warning_id                 warning_id,
+               w.weather_type               weather_type,
+               w.warning_level              warning_level,
+               w.warning_head_line          warning_head_line,
+               w.valid_from                 valid_from,
+               w.valid_to                   valid_to,
+               w.warning_impact             warning_impact,
+               w.warning_likelihood         warning_likelihood,
+               w.affected_areas             affected_areas,
+               w.what_to_expect             what_to_expect,
+               w.warning_further_details    warning_further_details,
+               w.warning_update_description warning_update_description,
+               ST_AsGeoJSON(w.polygon)      polygon
+        from assets a
+                 left join weather_warnings w
+                           on ST_Intersects(a.drain_area, w.polygon) and now() between w.valid_from and w.valid_to
+
     </select>
 
-    <select id="selectAssetByID" resultMap="AssetMap">
-        select id, name, ST_AsGeoJSON(drain_area) as drain_area, asset_holder_id, last_modified
-        from assets
+    <select id="selectAssetByID" resultMap="AssetWithWarningsMap">
+        select a.id                         id,
+               a.name                       name,
+               a.region                     region,
+               ST_AsGeoJSON(a.drain_area)   drain_area,
+               a.asset_holder_id            asset_holder_id,
+               a.last_modified              last_modified,
+
+               w.warning_id                 warning_id,
+               w.weather_type               weather_type,
+               w.warning_level              warning_level,
+               w.warning_head_line          warning_head_line,
+               w.valid_from                 valid_from,
+               w.valid_to                   valid_to,
+               w.warning_impact             warning_impact,
+               w.warning_likelihood         warning_likelihood,
+               w.affected_areas             affected_areas,
+               w.what_to_expect             what_to_expect,
+               w.warning_further_details    warning_further_details,
+               w.warning_update_description warning_update_description,
+               ST_AsGeoJSON(w.polygon)      polygon
+        from assets a
+                 left join weather_warnings w
+                           on ST_Intersects(a.drain_area, w.polygon) and now() between w.valid_from and w.valid_to
         where id = #{id};
     </select>
 
-    <select id="selectByAsset" resultMap="AssetMap">
-        select id, name, ST_AsGeoJSON(drain_area) as drain_area, asset_holder_id, last_modified
-        from assets
+    <select id="selectByAsset" resultMap="AssetWithWarningsMap">
+        select a.id id,
+        a.name name,
+        a.region region,
+        ST_AsGeoJSON(a.drain_area) drain_area,
+        a.asset_holder_id asset_holder_id,
+        a.last_modified last_modified,
+
+        w.warning_id warning_id,
+        w.weather_type weather_type,
+        w.warning_level warning_level,
+        w.warning_head_line warning_head_line,
+        w.valid_from valid_from,
+        w.valid_to valid_to,
+        w.warning_impact warning_impact,
+        w.warning_likelihood warning_likelihood,
+        w.affected_areas affected_areas,
+        w.what_to_expect what_to_expect,
+        w.warning_further_details warning_further_details,
+        w.warning_update_description warning_update_description,
+        ST_AsGeoJSON(w.polygon) polygon
+        from assets a
+        left join weather_warnings w
+        on ST_Intersects(a.drain_area, w.polygon) and now() between w.valid_from and w.valid_to
         <where>
             <if test="id != null">and id = #{id}</if>
             <if test="name != null and name != ''">and name like #{name}</if>
@@ -132,21 +240,43 @@
         </where>
     </select>
 
-    <select id="selectAllAssetsOfHolder" resultMap="AssetMap">
-        select id, name, ST_AsGeoJSON(drain_area) as drain_area, asset_holder_id, last_modified
-        from assets
+    <select id="selectAllAssetsOfHolder" resultMap="AssetWithWarningsMap">
+        select a.id                         id,
+               a.name                       name,
+               a.region                     region,
+               ST_AsGeoJSON(a.drain_area)   drain_area,
+               a.asset_holder_id            asset_holder_id,
+               a.last_modified              last_modified,
+
+               w.warning_id                 warning_id,
+               w.weather_type               weather_type,
+               w.warning_level              warning_level,
+               w.warning_head_line          warning_head_line,
+               w.valid_from                 valid_from,
+               w.valid_to                   valid_to,
+               w.warning_impact             warning_impact,
+               w.warning_likelihood         warning_likelihood,
+               w.affected_areas             affected_areas,
+               w.what_to_expect             what_to_expect,
+               w.warning_further_details    warning_further_details,
+               w.warning_update_description warning_update_description,
+               ST_AsGeoJSON(w.polygon)      polygon
+        from assets a
+                 left join weather_warnings w
+                           on ST_Intersects(a.drain_area, w.polygon) and now() between w.valid_from and w.valid_to
         where asset_holder_id = #{id}
     </select>
 
     <insert id="insertAsset" useGeneratedKeys="true" keyProperty="id">
-        insert into assets (name, drain_area, asset_holder_id, last_modified)
-        values (#{name}, ST_GeomFromGeoJSON(#{drainArea}), #{assetHolderId}, #{lastModified});
+        insert into assets (name, region, drain_area, asset_holder_id, last_modified)
+        values (#{name}, #{region}, ST_GeomFromGeoJSON(#{drainArea}), #{assetHolderId}, #{lastModified});
     </insert>
 
     <update id="updateAsset">
         update assets
         <set>
             <if test="name != null and name != ''">name = #{name},</if>
+            <if test="region != null and region != ''">region = #{region},</if>
             <if test="drainArea != null">drain_area = ST_GeomFromGeoJSON(#{drainArea}),</if>
             <if test="assetHolderId != null">asset_holder_id = #{assetHolderId},</if>
             <if test="lastModified != null">last_modified = #{lastModified},</if>
@@ -160,6 +290,9 @@
     </delete>
 
     <select id="loginQuery" resultMap="UserMap">
-        select * from users where username = #{username} and password = #{password}
+        select *
+        from users
+        where username = #{username}
+          and password = #{password}
     </select>
 </mapper>

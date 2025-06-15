@@ -10,6 +10,7 @@ import java.util.Map;
 public class Asset {
     private Integer id;
     private String name;
+    private String region;
     private Map<String, Object> drainArea;
     private Integer assetHolderId;
     private Instant lastModified;
@@ -19,17 +20,6 @@ public class Asset {
 
     public Asset(Integer id) {
         this.id = id;
-    }
-
-    public Asset(String name) {
-        this.name = name;
-    }
-
-    public Asset(Integer id, String name, Map<String, Object> drainArea, Integer assetHolderId) {
-        this.id = id;
-        this.name = name;
-        this.drainArea = drainArea;
-        this.assetHolderId = assetHolderId;
     }
 
     @Override
@@ -88,5 +78,13 @@ public class Asset {
 
     public void setLastModified(Instant lastModified) {
         this.lastModified = lastModified;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
     }
 }

@@ -3,10 +3,7 @@ package uk.ac.bristol.service.impl;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.SqlMapper;
-import uk.ac.bristol.pojo.Asset;
-import uk.ac.bristol.pojo.AssetHolder;
-import uk.ac.bristol.pojo.User;
-import uk.ac.bristol.pojo.UserAsAssetHolder;
+import uk.ac.bristol.pojo.*;
 import uk.ac.bristol.service.SqlService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +20,11 @@ public class SqlServiceImpl implements SqlService {
 
     @Autowired
     private SqlMapper sqlMapper;
+
+    @Override
+    public List<Warning> selectAllWarnings() {
+        return sqlMapper.selectAllWarnings();
+    }
 
     @Override
     public List<UserAsAssetHolder> selectAllAssetHolders() {
@@ -68,20 +70,20 @@ public class SqlServiceImpl implements SqlService {
     }
 
     @Override
-    public List<Asset> selectAllAssets(){ return sqlMapper.selectAllAssets();}
+    public List<AssetWithWeatherWarnings> selectAllAssets(){ return sqlMapper.selectAllAssets();}
 
     @Override
-    public List<Asset> selectAssetByID(Integer id) {
+    public List<AssetWithWeatherWarnings> selectAssetByID(Integer id) {
         return sqlMapper.selectAssetByID(id);
     }
 
     @Override
-    public List<Asset> selectByAsset(Asset asset) {
+    public List<AssetWithWeatherWarnings> selectByAsset(Asset asset) {
         return sqlMapper.selectByAsset(asset);
     }
 
     @Override
-    public List<Asset> selectAllAssetsOfHolder(Integer id) {
+    public List<AssetWithWeatherWarnings> selectAllAssetsOfHolder(Integer id) {
         return sqlMapper.selectAllAssetsOfHolder(id);
     }
 
@@ -92,9 +94,9 @@ public class SqlServiceImpl implements SqlService {
 
     @Override
     public int updateAsset(Asset asset) {
-        List<Asset> old = this.selectByAsset(asset);
+        List<AssetWithWeatherWarnings> old = this.selectByAsset(asset);
         if(old.size() != 1) return 0;
-        List<AssetHolder> assetHolder = this.selectAssetHolderByID(old.get(0).getAssetHolderId());
+        List<AssetHolder> assetHolder = this.selectAssetHolderByID(old.get(0).getAsset().getAssetHolderId());
         if(assetHolder.size() != 1) return 0;
         Instant now = Instant.now();
         assetHolder.get(0).setLastModified(now);
@@ -104,7 +106,7 @@ public class SqlServiceImpl implements SqlService {
 
     @Override
     public int deleteByAsset(Asset asset) {
-        List<Integer> ids = sqlMapper.selectByAsset(asset).stream().map(Asset::getId).toList();
+        List<Integer> ids = sqlMapper.selectByAsset(asset).stream().map(a -> a.getAsset().getId()).toList();
         if (ids.isEmpty()) return 0;
         return sqlMapper.deleteByAssetIDs(ids);
     }

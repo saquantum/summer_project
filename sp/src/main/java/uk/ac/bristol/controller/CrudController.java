@@ -25,7 +25,6 @@ public class CrudController {
     public ResponseResult getUserInfo(HttpServletResponse response, HttpServletRequest request) throws Exception {
         String token = JwtUtil.getJWTFromCookie(request, response);
         Claims claims = JwtUtil.parseJWT(token);
-        System.out.println(claims);
         Map<String, Object> data = new HashMap<>();
         boolean isAdmin = claims.get("isAdmin", Boolean.class);
         data.put("isAdmin", isAdmin);
@@ -39,6 +38,9 @@ public class CrudController {
             // 1. with proxy id
             if(claims.containsKey("asUserId")){
                 data.put("id", claims.get("asUserId", Integer.class));
+                if(claims.containsKey("asUserInAssetId")){
+                    data.put("asUserInAssetId", claims.get("asUserInAssetId", Integer.class));
+                }
                 return new ResponseResult(Code.SUCCESS, data);
             }
             // 2. without proxy id
@@ -47,6 +49,11 @@ public class CrudController {
                 return new ResponseResult(Code.SUCCESS, data);
             }
         }
+    }
+
+    @GetMapping("/warning")
+    public ResponseResult getAllWarnings() {
+        return new ResponseResult(Code.SELECT_OK, sqlService.selectAllWarnings());
     }
 
     @GetMapping("/asset")

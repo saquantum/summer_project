@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"/>
-    <title>WebSocket Demo</title>
+    <title>Admin Interface</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
@@ -34,11 +34,16 @@
         </button>
         <button @click="sidebarActive = 'users'" :class="{ active: sidebarActive === 'users' }">All Users</button>
         <button @click="sidebarActive = 'assets'" :class="{ active: sidebarActive === 'assets' }">All Assets</button>
+        <button @click="sidebarActive = 'warnings'" :class="{ active: sidebarActive === 'warnings' }">All Warnings
+        </button>
+        <button v-show="sidebarActive === 'currentWarning'" @click="sidebarActive = 'currentWarning'"
+                :class="{ active: sidebarActive === 'currentWarning' }">Current Warning
+        </button>
     </div>
     <!-- main -->
     <div class="main">
         <div class="topbar">
-            <h3>WebSocket Demo</h3>
+            <h3>Admin Interface</h3>
         </div>
         <div v-if="sidebarActive === 'test'" class="content">
             <div>
@@ -88,10 +93,12 @@
                     </thead>
                     <tbody>
                     <tr v-for="(item, index) in allAssets" :key="index">
-                        <td>{{item.id}}</td>
-                        <td>{{item.name}}</td>
-                        <td>{{item.assetHolderId}}</td>
-                        <td>...</td>
+                        <td>{{item.asset.id}}</td>
+                        <td>{{item.asset.name}}</td>
+                        <td>{{item.asset.assetHolderId}}</td>
+                        <td :style="getWarningStyle(findHighestLevel(item.warnings))">
+                            {{ findHighestLevel(item.warnings) }}
+                        </td>
                         <td>
                             <div>
                                 <button class="submit" @click.stop="gotoAsset(index)">goto</button>
@@ -101,6 +108,91 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+        <div v-if="sidebarActive === 'warnings'" class="content">
+            <div v-if="allWarnings.length > 0">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Warning ID</th>
+                        <th>Weather Type</th>
+                        <th>Warning Level</th>
+                        <th>Warning Impact</th>
+                        <th>Warning Likelihood</th>
+                        <th>Valid From</th>
+                        <th>Valid To</th>
+                        <th>Performable Actions(You should not see this)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="(item, index) in allWarnings" :key="index">
+                        <td>{{item.id}}</td>
+                        <td>{{item.weatherType}}</td>
+                        <td>{{item.warningLevel}}</td>
+                        <td>{{item.warningImpact}}</td>
+                        <td>{{item.warningLikelihood}}</td>
+                        <td>{{new Date(item.validFrom * 1000).toLocaleString()}}</td>
+                        <td>{{new Date(item.validTo * 1000).toLocaleString()}}</td>
+                        <td>
+                            <div>
+                                <button class="submit" @click.stop="gotoWarning(index)">goto</button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div v-if="sidebarActive === 'currentWarning'" class="content">
+            <div id="warningMap" style="height: 500px; width: 50vw;"></div>
+            <table>
+                <tbody>
+                <tr>
+                    <td>Warning ID</td>
+                    <td>{{currentWarning.id}}</td>
+                </tr>
+                <tr>
+                    <td>Weather Type</td>
+                    <td>{{currentWarning.weatherType}}</td>
+                </tr>
+                <tr>
+                    <td>Warning Level</td>
+                    <td>{{currentWarning.warningLevel}}</td>
+                </tr>
+                <tr>
+                    <td>Warning HeadLine</td>
+                    <td>{{currentWarning.warningHeadLine}}</td>
+                </tr>
+                <tr>
+                    <td>Valid From</td>
+                    <td>{{new Date(currentWarning.validFrom * 1000).toLocaleString()}}</td>
+                </tr>
+                <tr>
+                    <td>Valid To</td>
+                    <td>{{new Date(currentWarning.validTo * 1000).toLocaleString()}}</td>
+                </tr>
+                <tr>
+                    <td>Warning Impact</td>
+                    <td>{{currentWarning.warningImpact}}</td>
+                </tr>
+                <tr>
+                    <td>Warning Likelihood</td>
+                    <td>{{currentWarning.warningLikelihood}}</td>
+                </tr>
+                <tr>
+                    <td>Affected Areas</td>
+                    <td v-html="currentWarning.affectedAreas.replaceAll('\\n', '<br>')"></td>
+                </tr>
+                <tr>
+                    <td>Further Details</td>
+                    <td v-html="currentWarning.affectedAreas.replaceAll('\\n', '<br>')"></td>
+                </tr>
+                <tr>
+                    <td>Update Description</td>
+                    <td>{{currentWarning.warningUpdateDescription}}</td>
+                </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -115,6 +207,10 @@
             sidebarActive: 'test',
             allAssets: [],
             allAssetHolders: [],
+            allWarnings: [],
+            currentWarning: null,
+            map: null,
+            geoLayer: null,
         },
         methods: {
             async sendNotification() {
@@ -138,9 +234,17 @@
                 this.asUserId = this.allAssetHolders[index].assetHolder.id;
                 await this.proxyAsUser();
             },
+            async proxyAsUserInAsset(assetID) {
+                await fetch(`/admin/api/as/${this.asUserId}/inAsset/${assetID}`, {
+                    method: 'GET',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
+                });
+                window.location.href = '/user/';
+            },
             async gotoAsset(index) {
-                this.asUserId = this.allAssets[index].assetHolderId;
-                await this.proxyAsUser();
+                this.asUserId = this.allAssets[index].asset.assetHolderId;
+                await this.proxyAsUserInAsset(this.allAssets[index].asset.id);
             },
             async loadAllUsers() {
                 const response = await fetch(`/user/api/holder`, {
@@ -158,15 +262,75 @@
                 });
                 this.allAssets = (await response.json()).data;
             },
+            async loadAllWarnings() {
+                const response = await fetch(`/user/api/warning`, {
+                    method: 'GET',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
+                });
+                this.allWarnings = (await response.json()).data;
+            },
+            findHighestLevel(list) {
+                if (list.length === 0) return "none";
+                let max = 'yellow';
+                for (const w of list) {
+                    const warning = w.warningLevel.toLowerCase();
+                    if (warning.includes('red')) {
+                        max = 'red';
+                        break;
+                    }
+                    if (warning.includes('amber')) {
+                        max = 'amber';
+                    }
+                }
+                return max;
+            },
+            getWarningStyle(level) {
+                switch (level.toLowerCase()) {
+                    case 'red':
+                        return 'background-color: #C32030; color: white;';
+                    case 'amber':
+                        return 'background-color: #F28C28; color: black;';
+                    case 'yellow':
+                        return 'background-color: #F9E11C; color: black;';
+                    default:
+                        return '';
+                }
+            },
+            gotoWarning(index) {
+                this.currentWarning = this.allWarnings[index];
+                this.sidebarActive = 'currentWarning';
+                if (this.map) {
+                    this.map.remove();
+                    this.map = null;
+                }
+                this.$nextTick(() => {
+                    this.map = L.map('warningMap').setView([0, 0], 13);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap contributors'
+                    }).addTo(this.map);
+                    if (this.geoLayer) {
+                        this.geoLayer.remove();
+                    }
+                    this.geoLayer = L.geoJSON(this.currentWarning.polygon).addTo(this.map);
+                    this.map.fitBounds(this.geoLayer.getBounds());
+                });
+            },
         },
         watch: {
-            async sidebarActive(newVal) {
-                if (newVal === 'assets') {
-                    await this.loadAllAssets();
-                }
-                if (newVal === 'users') {
-                    await this.loadAllUsers();
-                }
+            sidebarActive: {
+                immediate: true,
+                async handler(newVal) {
+                    if (newVal === 'assets') {
+                        await this.loadAllAssets();
+                    }
+                    if (newVal === 'users') {
+                        await this.loadAllUsers();
+                    }
+                    if (newVal === 'warnings') {
+                        await this.loadAllWarnings();
+                    }
+                },
             }
         },
     })

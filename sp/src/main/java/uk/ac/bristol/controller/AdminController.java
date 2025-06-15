@@ -44,10 +44,20 @@ public class AdminController {
         return new ResponseResult(Code.SUCCESS, null, "You are in proxy mode as user id " + id);
     }
 
+    @GetMapping("/as/{id}/inAsset/{assetId}")
+    public ResponseResult asUserInAsset(HttpServletResponse response, HttpServletRequest request, @PathVariable Integer id, @PathVariable Integer assetId) throws IOException {
+        Claims claims = JwtUtil.parseJWT(JwtUtil.getJWTFromCookie(request, response));
+        claims.put("asUserId", id);
+        claims.put("asUserInAssetId", assetId);
+        JwtUtil.bindJWTAsCookie(response, JwtUtil.generateJWT(claims));
+        return new ResponseResult(Code.SUCCESS, null, "You are in proxy mode as user id " + id + " in asset " + assetId);
+    }
+
     @GetMapping("/as/clear")
     public ResponseResult clearProxy(HttpServletResponse response, HttpServletRequest request) throws IOException {
         Claims claims = JwtUtil.parseJWT(JwtUtil.getJWTFromCookie(request, response));
         claims.remove("asUserId");
+        claims.remove("asUserInAssetId");
         JwtUtil.bindJWTAsCookie(response, JwtUtil.generateJWT(claims));
         return new ResponseResult(Code.SUCCESS, null, "Proxy mode cleared.");
     }
