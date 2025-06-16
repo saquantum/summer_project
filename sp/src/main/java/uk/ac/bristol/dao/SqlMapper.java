@@ -8,6 +8,8 @@ import java.util.List;
 @Mapper
 public interface SqlMapper {
 
+    List<UserAsAssetHolder> selectUserByAssetHolderId(@Param("id") Integer id);
+
     List<Warning> selectAllWarnings();
 
     List<UserAsAssetHolder> selectAllAssetHolders();

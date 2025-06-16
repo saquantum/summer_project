@@ -30,13 +30,13 @@
                 <img src="../images/uob.webp" id="logo" alt="logo">
             </a>
         </div>
-        <button @click="sidebarActive = 'test'" :class="{ active: sidebarActive === 'test' }">Send Notifications
+        <button @click="setSideBar('test')" :class="{ active: sidebarActive === 'test' }">Send Notifications
         </button>
-        <button @click="sidebarActive = 'users'" :class="{ active: sidebarActive === 'users' }">All Users</button>
-        <button @click="sidebarActive = 'assets'" :class="{ active: sidebarActive === 'assets' }">All Assets</button>
-        <button @click="sidebarActive = 'warnings'" :class="{ active: sidebarActive === 'warnings' }">All Warnings
+        <button @click="setSideBar('users')" :class="{ active: sidebarActive === 'users' }">All Users</button>
+        <button @click="setSideBar('assets')" :class="{ active: sidebarActive === 'assets' }">All Assets</button>
+        <button @click="setSideBar('warnings')" :class="{ active: sidebarActive === 'warnings' }">All Warnings
         </button>
-        <button v-show="sidebarActive === 'currentWarning'" @click="sidebarActive = 'currentWarning'"
+        <button v-show="sidebarActive === 'currentWarning'" @click="setSideBar('currentWarning')"
                 :class="{ active: sidebarActive === 'currentWarning' }">Current Warning
         </button>
     </div>
@@ -270,7 +270,11 @@
                     credentials: 'include',
                 });
                 this.allWarnings = (await response.json()).data;
-                this.displayMap('allWarningsMap', this.allWarnings.map(w => w.polygon));
+                this.displayMap('allWarningsMap', this.allWarnings.map(w => {
+                    let geoJson = w.polygon;
+                    geoJson.style = this.setWarningLevelStyle(w.warningLevel);
+                    return geoJson;
+                }));
             },
             findHighestLevel(list) {
                 if (list.length === 0) return "none";
@@ -301,14 +305,33 @@
             },
             gotoWarning(index) {
                 this.currentWarning = this.allWarnings[index];
-                this.sidebarActive = 'currentWarning';
+                this.setSideBar('currentWarning');
                 if (this.map) {
                     this.map.remove();
                     this.map = null;
                 }
                 this.$nextTick(() => {
+                    this.currentWarning.polygon.style = this.setWarningLevelStyle(this.currentWarning.warningLevel)
                     this.displayMap('warningMap', this.currentWarning.polygon);
                 });
+            },
+            setWarningLevelStyle(level) {
+                let style = {weight: 2, fillOpacity: 0.4};
+                if (level) {
+                    if (level.toLowerCase().includes('yellow')) {
+                        style.color = '#cc9900';
+                        style.fillColor = '#ffff00'
+                    }
+                    if (level.toLowerCase().includes('amber')) {
+                        style.color = '#cc6600';
+                        style.fillColor = '#ffcc00'
+                    }
+                    if (level.toLowerCase().includes('red')) {
+                        style.color = '#800000';
+                        style.fillColor = '#ff0000'
+                    }
+                }
+                return style;
             },
             displayMap(tagID, geoJson) {
                 this.$nextTick(() => {
@@ -316,7 +339,8 @@
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         attribution: '&copy; OpenStreetMap contributors'
                     }).addTo(map);
-                    const geoLayer = L.geoJSON(Array.isArray(geoJson) ? geoJson : [geoJson]).addTo(map);
+                    const geoArray = Array.isArray(geoJson) ? geoJson : [geoJson];
+                    const geoLayer = L.geoJSON(geoArray, {style: feature => feature.geometry.style}).addTo(map);
                     map.fitBounds(geoLayer.getBounds());
                     this.maps.push(map);
                     this.geoLayers.push(geoLayer);
@@ -326,8 +350,9 @@
                 if (this.maps.length > 0) {
                     this.maps.forEach(map => {
                         const container = map.getContainer();
+                        map.remove();
                         if (container && container._leaflet_id) {
-                            map.remove();
+                            container.innerHTML = '';
                             container._leaflet_id = null;
                         }
                     });
@@ -338,12 +363,15 @@
                     this.geoLayers = [];
                 }
             },
+            setSideBar(newState) {
+                this.cleanMaps();
+                this.sidebarActive = newState;
+            },
         },
         watch: {
             sidebarActive: {
                 immediate: true,
                 async handler(newVal) {
-                    this.cleanMaps();
                     if (newVal === 'assets') {
                         await this.loadAllAssets();
                     }

@@ -72,22 +72,21 @@
         <collection property="warnings" ofType="uk.ac.bristol.pojo.Warning" resultMap="WarningMap"/>
     </resultMap>
 
-    <select id="selectAllWarnings" resultMap="WarningMap">
-        select warning_id,
-               weather_type,
-               warning_level,
-               warning_head_line,
-               valid_from,
-               valid_to,
-               warning_impact,
-               warning_likelihood,
-               affected_areas,
-               what_to_expect,
-               warning_further_details,
-               warning_update_description,
-               ST_AsGeoJSON(polygon) polygon
-        from weather_warnings
-        where now() between valid_from and valid_to
+    <select id="selectUserByAssetHolderId" resultMap="UserAsAssetHolderMap">
+        select t1.id   user_id,
+               t1.username,
+               t1.password,
+               t1.asset_holder_id,
+               t1.is_admin,
+               t2.id   holder_id,
+               t2.name holder_name,
+               t2.email,
+               t2.phone,
+               t2.contact_preference,
+               t2.last_modified
+        from users t1
+                 join asset_holders t2 on t1.asset_holder_id = t2.id
+        where t1.asset_holder_id = #{id}
     </select>
 
     <select id="selectAllAssetHolders" resultMap="UserAsAssetHolderMap">

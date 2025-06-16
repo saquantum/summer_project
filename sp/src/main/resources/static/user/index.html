@@ -34,14 +34,14 @@
         <button v-if="isAdminAccessing" @click="goBackToAdminDashboard" :class="{ active: sidebarActive === 'admin' }">
             Admin Dashboard
         </button>
-        <button @click="sidebarActive = 'profile'" :class="{ active: sidebarActive === 'profile' }">My Profile</button>
-        <button @click="sidebarActive = 'allAssets'" :class="{ active: sidebarActive === 'allAssets' }">My Assets
+        <button @click="setSideBar('profile')" :class="{ active: sidebarActive === 'profile' }">My Profile</button>
+        <button @click="setSideBar('allAssets')" :class="{ active: sidebarActive === 'allAssets' }">My Assets
         </button>
         <button v-show="sidebarActive === 'currentAsset' || sidebarActive === 'currentWarning'"
-                @click="sidebarActive = 'currentAsset'"
+                @click="setSideBar('currentAsset')"
                 :class="{ active: sidebarActive === 'currentAsset' }">Current Asset
         </button>
-        <button v-show="sidebarActive === 'currentWarning'" @click="sidebarActive = 'currentWarning'"
+        <button v-show="sidebarActive === 'currentWarning'" @click="setSideBar('currentWarning')"
                 :class="{ active: sidebarActive === 'currentWarning' }">Current Warning
         </button>
     </div>
@@ -49,13 +49,48 @@
     <div class="main">
 
         <!-- user profile -->
-        <div v-if="sidebarActive === 'profile'" class="topbar"></div>
-        <div v-if="sidebarActive === 'profile'" class="content"></div>
+        <div v-if="sidebarActive === 'profile'" class="topbar">
+            <h3>
+                {{isAdminAccessing ? (currentUserProfile.user.id <= 0 ? 'No Profile ( No user selected )' : `Profile of User ID ${currentUserProfile.user.id}`) : 'My Profile'}}
+            </h3>
+        </div>
+        <div v-if="sidebarActive === 'profile' && currentUserProfile.user.id > 0" class="content">
+            <div class="profile-grid-container"
+                 style="display: grid; grid-template-columns: 200px minmax(100px, 1fr); column-gap: min(500px, 10vw);">
+                <div>
+                    <img src="../images/uob.webp" alt="logo"
+                         style="width: 200px; height: 200px; border-radius: 50%; border: 5px solid #ccc; object-fit: cover;">
+                </div>
+                <div>
+                    <p>My username:
+                    <pre><code>{{currentUserProfile.user.username}}</code></pre>
+                    </p>
+                </div>
+            </div>
+            <div style="display: block; margin-bottom: 20px;">
+                <p style="display: block">My Name:</p>
+                <input v-model="currentUserProfile.assetHolder.name" type="text"/>
+                <p style="display: block">My Contact Preference:</p>
+                <select v-model="currentUserProfile.assetHolder.contactPreference">
+                    <option value="EMAIL">Email</option>
+                    <option value="SMS">SMS</option>
+                    <option value="DISCORD">Discord</option>
+                    <option value="TELEGRAM">Telegram</option>
+                    <option value="WHATSAPP">WhatsApp</option>
+                </select>
+                <p style="display: block">My Email:</p>
+                <input v-model="currentUserProfile.assetHolder.email" type="email"/>
+                <p style="display: block">My Phone Number:</p>
+                <input v-model="currentUserProfile.assetHolder.phone" type="text"/>
+            </div>
+            <button class="submit" @click="updatePersonalInfo()">Save</button>
+        </div>
 
         <!-- user assets -->
         <div v-if="sidebarActive === 'allAssets'" class="topbar">
             <h3>
-                {{isAdminAccessing ? (currentUserId <= 0 ? 'Admin ( no user selected )' : `Admin ( as user ${currentUserId} )`) : 'My Assets'}}</h3>
+                {{isAdminAccessing ? (currentUserProfile.user.id <= 0 ? 'Admin ( no user selected )' : `Admin ( as user ${currentUserProfile.user.id} )`) : 'My Assets'}}
+            </h3>
             <div style="flex-grow: 1;"></div>
             <input type="text" v-model=searchAsset.text name="assetName" placeholder="Search my asset by name">
             <select v-model=searchAsset.level name="level">
@@ -247,7 +282,7 @@
             editingId: null,
             hasFoundAsset: false,
             isAdminAccessing: false,
-            currentUserId: null,
+            currentUserProfile: null,
             currentUsersAllAssets: [],
             currentUsersAllAssetsInView: [],
             searchAsset: {text: '', level: '', region: ''},
@@ -294,14 +329,32 @@
                     this.currentAsset.unsubscribe = !this.currentAsset.unsubscribe;
                 }
             },
-            // https://leafletjs.com/examples/geojson/
+            setWarningLevelStyle(level) {
+                let style = {weight: 2, fillOpacity: 0.4};
+                if (level) {
+                    if (level.toLowerCase().includes('yellow')) {
+                        style.color = '#cc9900';
+                        style.fillColor = '#ffff00'
+                    }
+                    if (level.toLowerCase().includes('amber')) {
+                        style.color = '#cc6600';
+                        style.fillColor = '#ffcc00'
+                    }
+                    if (level.toLowerCase().includes('red')) {
+                        style.color = '#800000';
+                        style.fillColor = '#ff0000'
+                    }
+                }
+                return style;
+            },
             displayMap(tagID, geoJson) {
                 this.$nextTick(() => {
                     const map = L.map(tagID).setView([0, 0], 13);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         attribution: '&copy; OpenStreetMap contributors'
                     }).addTo(map);
-                    const geoLayer = L.geoJSON(Array.isArray(geoJson) ? geoJson : [geoJson]).addTo(map);
+                    const geoArray = Array.isArray(geoJson) ? geoJson : [geoJson];
+                    const geoLayer = L.geoJSON(geoArray, {style: feature => feature.geometry.style}).addTo(map);
                     map.fitBounds(geoLayer.getBounds());
                     this.maps.push(map);
                     this.geoLayers.push(geoLayer);
@@ -317,8 +370,7 @@
                 this.hasPersonalInfo = true;
             },
             async updatePersonalInfo() {
-                //if(this.holderInfo.name === "" || this.holderInfo.phone === "" || this.holderInfo.email === "" || this.holderInfo.contactPreference === "") return;
-                const body = JSON.stringify(this.holderInfo);
+                const body = JSON.stringify(this.currentUserProfile.assetHolder);
                 const response = await fetch(`/user/api/holder/`, {
                     method: 'PUT',
                     headers: {'Content-Type': 'application/json'},
@@ -339,7 +391,7 @@
                 });
             },
             async loadAllAssets() {
-                const response = await fetch(`/user/api/holder/${this.currentUserId}/asset/`, {
+                const response = await fetch(`/user/api/holder/${this.currentUserProfile.user.id}/asset/`, {
                     method: 'GET',
                     headers: {'Content-Type': 'application/json'},
                     credentials: 'include',
@@ -365,8 +417,13 @@
                     credentials: 'include'
                 });
                 const info = await response.json();
+                const profile = (await (await fetch(`/user/api/${info.data.id}`, {
+                    method: 'GET',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
+                })).json());
+                this.currentUserProfile = profile.data[0] ? profile.data[0] : {user: {id: -1}};
                 this.isAdminAccessing = info.data.isAdmin;
-                this.currentUserId = info.data.id;
                 if (info.data.asUserInAssetId) {
                     const assetList = (await (await fetch(`/user/api/asset/${info.data.asUserInAssetId}`, {
                         method: 'GET',
@@ -380,6 +437,7 @@
             gotoWarning(index) {
                 this.currentWarning = this.currentAsset.warnings[index];
                 this.sidebarActive = 'currentWarning';
+                this.currentWarning.polygon.style = this.setWarningLevelStyle(this.currentWarning.warningLevel)
                 this.displayMap('warningMap', this.currentWarning.polygon);
             },
             findHighestLevel(list) {
@@ -408,8 +466,9 @@
                 if (this.maps.length > 0) {
                     this.maps.forEach(map => {
                         const container = map.getContainer();
+                        map.remove();
                         if (container && container._leaflet_id) {
-                            map.remove();
+                            container.innerHTML = '';
                             container._leaflet_id = null;
                         }
                     });
@@ -420,11 +479,14 @@
                     this.geoLayers = [];
                 }
             },
+            setSideBar(newState) {
+                this.cleanMaps();
+                this.sidebarActive = newState;
+            },
         },
         watch: {
             sidebarActive: {
                 async handler(newVal) {
-                    this.cleanMaps();
                     if (newVal === 'allAssets') {
                         await this.loadAllAssets();
                     }
@@ -463,7 +525,6 @@
                         });
                         this.resetMiniMaps();
                     }, 300);
-
                 }
             },
         },
@@ -483,12 +544,13 @@
                 if (this.sidebarActive === 'currentAsset') {
 
                 } else {
-                    if (this.currentUserId <= 0) return;
+                    if (this.currentUserProfile.user.id <= 0) return;
                     await this.loadAllAssets();
                 }
             }
         },
         beforeDestroy() {
+            this.cleanMaps();
             if (this.stompClient) {
                 this.stompClient.deactivate()
             }

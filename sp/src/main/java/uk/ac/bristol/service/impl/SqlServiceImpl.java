@@ -22,6 +22,11 @@ public class SqlServiceImpl implements SqlService {
     private SqlMapper sqlMapper;
 
     @Override
+    public List<UserAsAssetHolder> selectUserByAssetHolderId(Integer id) {
+        return sqlMapper.selectUserByAssetHolderId(id);
+    }
+
+    @Override
     public List<Warning> selectAllWarnings() {
         return sqlMapper.selectAllWarnings();
     }

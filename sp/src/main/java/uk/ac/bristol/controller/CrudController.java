@@ -51,6 +51,11 @@ public class CrudController {
         }
     }
 
+    @GetMapping("/{id}")
+    public ResponseResult getUserByAssetHolderId(@PathVariable Integer id){
+        return new ResponseResult(Code.SELECT_OK, sqlService.selectUserByAssetHolderId(id));
+    }
+
     @GetMapping("/warning")
     public ResponseResult getAllWarnings() {
         return new ResponseResult(Code.SELECT_OK, sqlService.selectAllWarnings());

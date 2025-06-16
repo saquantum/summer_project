@@ -6,6 +6,9 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface SqlService {
+
+    List<UserAsAssetHolder> selectUserByAssetHolderId(@Param("id") Integer id);
+
     List<Warning> selectAllWarnings();
 
     List<UserAsAssetHolder> selectAllAssetHolders();
