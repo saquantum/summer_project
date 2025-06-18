@@ -1,5 +1,6 @@
 package uk.ac.bristol.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -97,7 +98,7 @@ public class CrudController {
     }
 
     @PutMapping("/asset")
-    public ResponseResult updateAsset(@RequestBody Asset asset) {
+    public ResponseResult updateAsset(@RequestBody Asset asset) throws JsonProcessingException {
         return new ResponseResult(Code.UPDATE_OK, sqlService.updateAsset(asset));
     }
 

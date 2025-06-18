@@ -1,5 +1,7 @@
 package uk.ac.bristol.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -48,19 +50,26 @@ public class Asset {
         this.name = name;
     }
 
+    // to be handled by Jackson to respond to front-end
     public Map<String, Object> getDrainArea() {
         return drainArea;
     }
 
-    public void setDrainArea(String geoJson) {
+    // convert to String for SQL, ignored when responding to front-end
+    @JsonIgnore
+    public String getDrainAreaAsJson() {
+        try {
+            return new ObjectMapper().writeValueAsString(drainArea);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void setDrainArea(String geoJson) throws JsonProcessingException {
         if (geoJson != null) {
             ObjectMapper mapper = new ObjectMapper();
-            try {
-                this.drainArea = mapper.readValue(geoJson, new TypeReference<Map<String, Object>>() {
-                });
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            this.drainArea = mapper.readValue(geoJson, new TypeReference<>() {
+            });
         }
     }
 

@@ -1,5 +1,7 @@
 package uk.ac.bristol.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -125,15 +127,20 @@ public class Warning {
         return polygon;
     }
 
-    public void setPolygon(String geoJson) {
+    @JsonIgnore
+    public String getPolygonAsJson() {
+        try {
+            return new ObjectMapper().writeValueAsString(polygon);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void setPolygon(String geoJson) throws JsonProcessingException {
         if (geoJson != null) {
             ObjectMapper mapper = new ObjectMapper();
-            try {
-                this.polygon = mapper.readValue(geoJson, new TypeReference<Map<String, Object>>() {
-                });
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            this.polygon = mapper.readValue(geoJson, new TypeReference<>() {
+            });
         }
     }
 }

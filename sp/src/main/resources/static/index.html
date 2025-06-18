@@ -33,9 +33,13 @@
             height: 100vh;
         ">
             <div style="display: flex; flex-direction: column; gap: 10px;">
-                <input type="text" v-model="username" placeholder="username"/>
-                <input type="password" v-model="password"/>
-                <button class="submit" @click="login">login</button>
+                <input type="text" v-model="username" placeholder="username"
+                       @keydown="(e) => { if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); $refs.passwordInput.focus(); } }"
+                />
+                <input type="password" v-model="password" ref="passwordInput"
+                       @keydown=" (e) => { if (e.key === 'Enter') {e.preventDefault(); login();} }"
+                />
+                <button class="submit" @click="login" >login</button>
             </div>
         </div>
     </div>

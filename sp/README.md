@@ -28,7 +28,23 @@ Vue + Leaflet
 #### Back-End
 SpringBoot + MyBatis + PostgreSQL
 
-# -------------------------
+# --------------------------------------------------
+
+### 在idea上测试程序 (不需要Docker)
+
+1. 通过官网下载PostgreSQL和图形化工具pgAdmin, 记住安装时填写的root用户的密码.
+2. 打开pgAdmin, 创建一个名为`rainwaterDB`的数据库, 右键点击它打开查询工具/Query Tool.
+3. 在`sp/src/main/resources/`下找到`init.sql`, 复制其中的所有代码, 粘贴到查询工具中, 点击执行/Execute.
+4. 在`sp/src/main/resources/`下找到`application-local.yml`, 把`spring: datasource: password`中的密码改成自己的root用户的密码.
+5. 在idea中运行`SpApplication`.
+6. 在浏览器中访问`http://localhost:8080`.
+
+常见问题:
+1. 我忘了root用户的密码. -> google一下如何找回密码, 或者把postgre卸载了重装.
+2. 执行SQL代码出错. -> 删掉rainwaterDB数据库, 重新创建一次.
+3. 运行SpApplication出错. -> 检查代码的版本是否为github上的最新版, 或者看报错信息中是否指出8080端口已经被占用. 如果是被占用, 重启电脑试试.
+
+# --------------------------------------------------
 
 ### 在Docker上配置运行环境
 

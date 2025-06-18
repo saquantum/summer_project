@@ -139,7 +139,7 @@
 
         <!-- current asset -->
         <div v-if="sidebarActive === 'currentAsset'" class="topbar">
-            <h3>{{currentAsset.name}}</h3>
+            <h3>{{currentAsset.asset.name}}</h3>
             <div style="flex-grow: 1;"></div>
             <a href="/admin"><img src="../images/mailbox.png" alt="mailbox" class="mailbox-icon"></a>
         </div>
@@ -175,6 +175,22 @@
                     <button v-else @click="toggleSubscribe" style="display: block" class="submit">Subscribe this asset
                     </button>
                 </div>
+            </div>
+            <div style="margin-top: 20px;">
+                <select v-model="currentAsset.mode">
+                    <option value="" disabled>Select a drawing mode</option>
+                    <option value="sequence">sequence</option>
+                    <option value="convex">convex</option>
+                </select>
+                <p class="short-p" style="display: block"></p>
+                <button class="submit" @click="beginDrawingAssetArea()">Draw New Asset Area
+                </button>
+                <button class="submit" @click="endDrawingAssetArea()">Finish Drawing</button>
+                <p class="short-p" style="display: block"></p>
+                <button class="submit" @click="UpdateDrawingAssetArea()">Update Area</button>
+                <button class="submit" @click="resetDrawingAssetArea()">Reset Drawing</button>
+                <p class="short-p" style="display: block"></p>
+                <button class="submit" @click="updateCurrentAsset()">Save Area</button>
             </div>
             <div>
                 <p style="display: block">
@@ -289,7 +305,6 @@
             searchAssetTimer: null,
             currentAsset: null,
             maps: [],
-            geoLayers: [],
             hasPersonalInfo: false,
             holderInfo: null,
             contactOptions: [
@@ -316,11 +331,13 @@
             ],
             selectedContact: 'email',
             currentWarning: null,
+            mapPointIcon: null,
         },
         methods: {
             switch2CurrentAsset(index) {
-                this.sidebarActive = 'currentAsset';
+                this.setSideBar('currentAsset');
                 this.currentAsset = this.currentUsersAllAssetsInView[index];
+                this.currentAsset.mode = 'convex';
             },
             toggleSubscribe() {
                 if (typeof this.currentAsset.unsubscribe !== 'boolean') {
@@ -357,7 +374,6 @@
                     const geoLayer = L.geoJSON(geoArray, {style: feature => feature.geometry.style}).addTo(map);
                     map.fitBounds(geoLayer.getBounds());
                     this.maps.push(map);
-                    this.geoLayers.push(geoLayer);
                 });
             },
             async findPersonalInfo() {
@@ -391,7 +407,7 @@
                 });
             },
             async loadAllAssets() {
-                const response = await fetch(`/user/api/holder/${this.currentUserProfile.user.id}/asset/`, {
+                const response = await fetch(`/user/api/holder/${this.currentUserProfile.assetHolder.id}/asset/`, {
                     method: 'GET',
                     headers: {'Content-Type': 'application/json'},
                     credentials: 'include',
@@ -417,6 +433,7 @@
                     credentials: 'include'
                 });
                 const info = await response.json();
+                // fetch user's personal profile
                 const profile = (await (await fetch(`/user/api/${info.data.id}`, {
                     method: 'GET',
                     headers: {'Content-Type': 'application/json'},
@@ -424,6 +441,7 @@
                 })).json());
                 this.currentUserProfile = profile.data[0] ? profile.data[0] : {user: {id: -1}};
                 this.isAdminAccessing = info.data.isAdmin;
+                // fetch asset data if admin is in asset
                 if (info.data.asUserInAssetId) {
                     const assetList = (await (await fetch(`/user/api/asset/${info.data.asUserInAssetId}`, {
                         method: 'GET',
@@ -431,12 +449,12 @@
                         credentials: 'include',
                     })).json());
                     this.currentAsset = assetList.data[0];
-                    this.sidebarActive = 'currentAsset';
+                    this.setSideBar('currentAsset');
                 }
             },
             gotoWarning(index) {
                 this.currentWarning = this.currentAsset.warnings[index];
-                this.sidebarActive = 'currentWarning';
+                this.setSideBar('currentWarning');
                 this.currentWarning.polygon.style = this.setWarningLevelStyle(this.currentWarning.warningLevel)
                 this.displayMap('warningMap', this.currentWarning.polygon);
             },
@@ -465,8 +483,15 @@
             cleanMaps() {
                 if (this.maps.length > 0) {
                     this.maps.forEach(map => {
+                        // clean layers
+                        map.eachLayer(layer => {
+                            if (!(layer instanceof L.TileLayer)) {
+                                map.removeLayer(layer);
+                            }
+                        });
                         const container = map.getContainer();
                         map.remove();
+                        // clean the container
                         if (container && container._leaflet_id) {
                             container.innerHTML = '';
                             container._leaflet_id = null;
@@ -474,15 +499,177 @@
                     });
                     this.maps = [];
                 }
-                if (this.geoLayers.length > 0) {
-                    this.geoLayers.forEach(layer => layer.remove());
-                    this.geoLayers = [];
-                }
             },
             setSideBar(newState) {
+                if (this.sidebarActive === newState) return;
                 this.cleanMaps();
                 this.sidebarActive = newState;
             },
+
+            // Andrew's monotone chain convex hull algorithm
+            // https://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain
+            crossProduct(a, b, o) {
+                return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+            },
+            convexHull(points) {
+                points.sort(function (a, b) {
+                    return a[0] === b[0] ? a[1] - b[1] : a[0] - b[0];
+                });
+                let lower = [];
+                for (let i = 0; i < points.length; i++) {
+                    while (lower.length >= 2 && this.crossProduct(lower[lower.length - 2], lower[lower.length - 1], points[i]) <= 0) {
+                        lower.pop();
+                    }
+                    lower.push(points[i]);
+                }
+                let upper = [];
+                for (let i = points.length - 1; i >= 0; i--) {
+                    while (upper.length >= 2 && this.crossProduct(upper[upper.length - 2], upper[upper.length - 1], points[i]) <= 0) {
+                        upper.pop();
+                    }
+                    upper.push(points[i]);
+                }
+                upper.pop();
+                lower.pop();
+                return lower.concat(upper);
+            },
+            clickOnMap(event) {
+                const map = event.target;
+                const latlng = event.latlng;
+                const idx = map.myDrawData.clickedPoints.length;
+                map.myDrawData.clickedPoints.push([latlng.lat, latlng.lng]);
+                const marker = L.marker(latlng, {draggable: true, icon: this.mapPointIcon}).addTo(map);
+                marker.on('dragend', (event) => {
+                    map.myDrawData.clickedPoints[idx] = [marker.getLatLng().lat, marker.getLatLng().lng];
+                })
+            },
+            beginDrawingAssetArea() {
+                const mode = this.currentAsset.mode;
+                this.maps.forEach(map => {
+                    map.myDrawData = {
+                        mode: mode,
+                        savedLayers: [],
+                        clickedPoints: [],
+                    };
+                    // store the mode
+                    map.myDrawData.mode = mode;
+                    // store current layers in a stack so we can restore them when resetting
+                    map.eachLayer(layer => {
+                        if (!(layer instanceof L.TileLayer)) {
+                            map.myDrawData.savedLayers.push(layer);
+                        }
+                    });
+                    map.on('click', this.clickOnMap);
+                });
+            },
+            endDrawingAssetArea() {
+                this.maps.forEach(map => {
+                    // if there are less than 3 points, reset map
+                    if (map.myDrawData.clickedPoints.length < 3) {
+                        this.resetDrawingAssetArea(map);
+                        window.alert("You should specify more than 3 points to shape a polygon.");
+                    }
+                    // destroy all layers on the map
+                    map.eachLayer(layer => {
+                        if (!(layer instanceof L.TileLayer)) {
+                            map.removeLayer(layer);
+                        }
+                    });
+                    // then generate the new polygon area according to the mode
+                    if (!map.myDrawData.mode || map.myDrawData.mode === 'convex') {
+                        console.log(map.myDrawData.clickedPoints)
+                        let polygonLayer = L.polygon(this.convexHull(map.myDrawData.clickedPoints)).addTo(map);
+                        map.myDrawData.geojson = polygonLayer.toGeoJSON();
+                    }
+                    else if (map.myDrawData.mode === 'sequence') {
+                        let polygonLayer = L.polygon(map.myDrawData.clickedPoints).addTo(map);
+                        map.myDrawData.geojson = polygonLayer.toGeoJSON();
+                    }
+                    map.off('click', this.clickOnMap);
+                    map.myDrawData.savedLayers = [];
+                });
+            },
+            UpdateDrawingAssetArea() {
+                const mode = this.currentAsset.mode;
+                this.maps.forEach(map => {
+                    if(!map.myDrawData){
+                        map.myDrawData = {
+                            mode: mode,
+                            savedLayers: [],
+                            clickedPoints: [],
+                        };
+                    }
+                    map.eachLayer(layer => {
+                        if (!(layer instanceof L.TileLayer)) {
+                            map.myDrawData.savedLayers.push(layer);
+                        }
+                    });
+                    // generate points according to polygon
+                    map.eachLayer(layer => {
+                        if (layer instanceof L.Polygon) {
+                            map.myDrawData.clickedPoints = layer.getLatLngs()[0].map(p => [p.lat, p.lng]);
+                        }
+                        if (layer instanceof L.GeoJSON) {
+                            layer.eachLayer(subLayer => {
+                                if (subLayer instanceof L.Polygon || subLayer instanceof L.Polyline) {
+                                    map.myDrawData.clickedPoints = subLayer.getLatLngs()[0].map(p => [p.lat, p.lng]);
+                                }
+                            });
+                        }
+                    });
+                    // destroy all layers
+                    map.eachLayer(layer => {
+                        if (!(layer instanceof L.TileLayer)) {
+                            map.removeLayer(layer);
+                        }
+                    });
+                    // generate markers
+                    map.myDrawData.clickedPoints.forEach((latlng, idx) => {
+                        const marker = L.marker(latlng, {draggable: true, icon: this.mapPointIcon}).addTo(map);
+                        marker.on('dragend', (event) => {
+                            map.myDrawData.clickedPoints[idx] = [marker.getLatLng().lat, marker.getLatLng().lng];
+                        })
+                    })
+                    map.on('click', this.clickOnMap);
+                });
+            },
+            restoreMapLayers(map) {
+                if (!map.myDrawData.savedLayers || map.myDrawData.savedLayers.length === 0) return;
+                map.eachLayer(layer => {
+                    if (!(layer instanceof L.TileLayer)) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // restore all layers
+                if (map.myDrawData && Array.isArray(map.myDrawData.savedLayers)) {
+                    map.myDrawData.savedLayers.forEach(layer => {
+                        layer.addTo(map);
+                    });
+                }
+                map.myDrawData.savedLayers = [];
+            },
+            resetDrawingAssetArea(map) {
+                if (!map) {
+                    // reset all maps
+                    this.maps.forEach(map => {
+                        this.restoreMapLayers(map)
+                    });
+                } else {
+                    this.restoreMapLayers(map);
+                }
+            },
+            async updateCurrentAsset() {
+                const body = {
+                    id: this.currentAsset.asset.id,
+                    drainArea: JSON.stringify(this.maps[0].myDrawData.geojson.geometry)
+                };
+                const response = (await (await fetch(`/user/api/asset`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
+                    body: JSON.stringify(body),
+                })).json());
+            }
         },
         watch: {
             sidebarActive: {
@@ -548,6 +735,12 @@
                     await this.loadAllAssets();
                 }
             }
+            this.mapPointIcon = L.icon({
+                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                iconSize: [12, 20],
+                iconAnchor: [6, 20],
+                popupAnchor: [0, -20]
+            });
         },
         beforeDestroy() {
             this.cleanMaps();

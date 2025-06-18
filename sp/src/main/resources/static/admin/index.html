@@ -110,7 +110,7 @@
             </div>
         </div>
         <div v-if="sidebarActive === 'warnings'" class="content">
-            <div id="allWarningsMap" style="height: 500px; width: 50vh;"></div>
+            <div id="allWarningsMap" style="height: 500px; width: 50vw;"></div>
             <div v-if="allWarnings.length > 0">
                 <table>
                     <thead>
@@ -211,7 +211,6 @@
             allWarnings: [],
             currentWarning: null,
             maps: [],
-            geoLayers: [],
         },
         methods: {
             async sendNotification() {
@@ -343,12 +342,16 @@
                     const geoLayer = L.geoJSON(geoArray, {style: feature => feature.geometry.style}).addTo(map);
                     map.fitBounds(geoLayer.getBounds());
                     this.maps.push(map);
-                    this.geoLayers.push(geoLayer);
                 });
             },
             cleanMaps() {
                 if (this.maps.length > 0) {
                     this.maps.forEach(map => {
+                        map.eachLayer(layer => {
+                            if (!(layer instanceof L.TileLayer)) {
+                                map.removeLayer(layer);
+                            }
+                        });
                         const container = map.getContainer();
                         map.remove();
                         if (container && container._leaflet_id) {
@@ -358,12 +361,9 @@
                     });
                     this.maps = [];
                 }
-                if (this.geoLayers.length > 0) {
-                    this.geoLayers.forEach(layer => layer.remove());
-                    this.geoLayers = [];
-                }
             },
             setSideBar(newState) {
+                if(this.sidebarActive === newState) return;
                 this.cleanMaps();
                 this.sidebarActive = newState;
             },

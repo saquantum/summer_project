@@ -1,5 +1,6 @@
 package uk.ac.bristol.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import uk.ac.bristol.pojo.*;
 import org.apache.ibatis.annotations.Param;
 
@@ -36,7 +37,7 @@ public interface SqlService {
 
     int insertAsset(Asset asset);
 
-    int updateAsset(Asset asset);
+    int updateAsset(Asset asset) throws JsonProcessingException;
 
     int deleteByAsset(Asset asset);
 

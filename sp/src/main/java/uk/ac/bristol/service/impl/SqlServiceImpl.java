@@ -1,5 +1,7 @@
 package uk.ac.bristol.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.SqlMapper;
@@ -75,7 +77,9 @@ public class SqlServiceImpl implements SqlService {
     }
 
     @Override
-    public List<AssetWithWeatherWarnings> selectAllAssets(){ return sqlMapper.selectAllAssets();}
+    public List<AssetWithWeatherWarnings> selectAllAssets() {
+        return sqlMapper.selectAllAssets();
+    }
 
     @Override
     public List<AssetWithWeatherWarnings> selectAssetByID(Integer id) {
@@ -99,13 +103,14 @@ public class SqlServiceImpl implements SqlService {
 
     @Override
     public int updateAsset(Asset asset) {
-        List<AssetWithWeatherWarnings> old = this.selectByAsset(asset);
-        if(old.size() != 1) return 0;
+        List<AssetWithWeatherWarnings> old = this.selectAssetByID(asset.getId());
+        if (old.size() != 1) return 0;
         List<AssetHolder> assetHolder = this.selectAssetHolderByID(old.get(0).getAsset().getAssetHolderId());
-        if(assetHolder.size() != 1) return 0;
+        if (assetHolder.size() != 1) return 0;
         Instant now = Instant.now();
         assetHolder.get(0).setLastModified(now);
         asset.setLastModified(now);
+        System.out.println(asset.getDrainAreaAsJson());
         return sqlMapper.updateAsset(asset);
     }
 
@@ -127,11 +132,11 @@ public class SqlServiceImpl implements SqlService {
     }
 
     @Override
-    public User login(User user){
+    public User login(User user) {
         List<User> list = sqlMapper.loginQuery(user);
-        if(list.size() != 1) return null;
+        if (list.size() != 1) return null;
         User u = list.get(0);
-        Map<String,Object> claims = new HashMap<>();
+        Map<String, Object> claims = new HashMap<>();
         claims.put("id", u.getId());
         claims.put("username", u.getUsername());
         claims.put("assetHolderId", u.getAssetHolderId());
