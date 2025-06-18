@@ -1,4 +1,25 @@
-<script setup></script>
+<script setup>
+import { useAssetsStore } from '@/stores/modules/assets'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+import { useRoute } from 'vue-router'
+import { onMounted } from 'vue'
+
+const route = useRoute()
+const assetsStore = useAssetsStore()
+
+onMounted(() => {
+  const id = Number(route.params.id)
+  const asset = assetsStore.assets.find((item) => item.id === id)
+  const map = L.map('map').setView([0, 0], 13)
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map)
+  const geoLayer = L.geoJSON(asset.drainArea).addTo(map)
+  map.fitBounds(geoLayer.getBounds())
+})
+</script>
+
 <template>
   <el-row>
     <el-col :span="12">
@@ -8,7 +29,7 @@
             <span>Map</span>
           </div>
         </template>
-        <p v-for="o in 4" :key="o" class="text item">{{ 'List item ' + o }}</p>
+        <div id="map" style="height: 400px"></div>
         <template #footer>Footer content</template>
       </el-card>
     </el-col>

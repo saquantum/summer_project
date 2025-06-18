@@ -2,7 +2,6 @@
 import { User, Lock } from '@element-plus/icons-vue'
 import { ref, watch } from 'vue'
 import { userRegisterService, userLoginService } from '@/api/user'
-import { useUserStore } from '@/stores'
 import { useRouter } from 'vue-router'
 
 const form = ref()
@@ -62,13 +61,11 @@ const register = async () => {
   isRegister.value = false
 }
 
-const userStore = useUserStore()
 const router = useRouter()
 const login = async () => {
   await form.value.validate()
   const res = await userLoginService(formModel.value)
   console.log(res)
-  userStore.setToken(res.data.token)
   ElMessage.success('success')
   router.push('/')
 }
@@ -86,6 +83,59 @@ watch(isRegister, () => {
   <div class="login-page">
     <div class="card-wrapper">
       <el-card class="glass-effect" style="width: 90%; max-width: 400px">
+        <!-- Sign in form -->
+        <el-form
+          :model="formModel"
+          :rules="rules"
+          ref="form"
+          size="large"
+          autocomplete="off"
+          class="form-style"
+          v-if="isRegister"
+        >
+          <el-form-item>
+            <h1>Sign in</h1>
+          </el-form-item>
+          <el-form-item prop="username">
+            <el-input
+              v-model="formModel.username"
+              :prefix-icon="User"
+              placeholder="Please input username"
+            ></el-input>
+          </el-form-item>
+          <el-form-item prop="password">
+            <el-input
+              v-model="formModel.password"
+              name="password"
+              :prefix-icon="Lock"
+              type="password"
+              placeholder="Please input password"
+            ></el-input>
+          </el-form-item>
+          <el-form-item>
+            <div class="flex">
+              <el-checkbox>Remember me</el-checkbox>
+              <el-link type="primary" :underline="false"
+                >Forget password?</el-link
+              >
+            </div>
+          </el-form-item>
+          <el-form-item>
+            <el-button
+              @click="login"
+              class="button"
+              type="primary"
+              auto-insert-space
+              >Sign in</el-button
+            >
+          </el-form-item>
+          <el-form-item class="flex">
+            <el-link type="info" :underline="false" @click="isRegister = true">
+              Register →
+            </el-link>
+          </el-form-item>
+        </el-form>
+
         <!-- Register form -->
         <el-form
           class="form-style"
@@ -94,7 +144,7 @@ watch(isRegister, () => {
           ref="form"
           size="large"
           autocomplete="off"
-          v-if="isRegister"
+          v-else
         >
           <el-form-item>
             <h1>Register</h1>
@@ -136,58 +186,6 @@ watch(isRegister, () => {
           <el-form-item class="flex">
             <el-link type="info" :underline="false" @click="isRegister = false">
               ← Back
-            </el-link>
-          </el-form-item>
-        </el-form>
-        <!-- Sign in form -->
-        <el-form
-          :model="formModel"
-          :rules="rules"
-          ref="form"
-          size="large"
-          autocomplete="off"
-          class="form-style"
-          v-else
-        >
-          <el-form-item>
-            <h1>Sign in</h1>
-          </el-form-item>
-          <el-form-item prop="username">
-            <el-input
-              v-model="formModel.username"
-              :prefix-icon="User"
-              placeholder="Please input username"
-            ></el-input>
-          </el-form-item>
-          <el-form-item prop="password">
-            <el-input
-              v-model="formModel.password"
-              name="password"
-              :prefix-icon="Lock"
-              type="password"
-              placeholder="Please input password"
-            ></el-input>
-          </el-form-item>
-          <el-form-item>
-            <div class="flex">
-              <el-checkbox>Remember me</el-checkbox>
-              <el-link type="primary" :underline="false"
-                >Forget password?</el-link
-              >
-            </div>
-          </el-form-item>
-          <el-form-item>
-            <el-button
-              @click="login"
-              class="button"
-              type="primary"
-              auto-insert-space
-              >Sign in</el-button
-            >
-          </el-form-item>
-          <el-form-item class="flex">
-            <el-link type="info" :underline="false" @click="isRegister = true">
-              Register →
             </el-link>
           </el-form-item>
         </el-form>

@@ -3,7 +3,7 @@ import { useUserStore } from '@/stores'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
 
-const baseURL = '/api/'
+const baseURL = '/api'
 
 const instance = axios.create({
   baseURL,
@@ -37,7 +37,7 @@ instance.interceptors.response.use(
       return response
     }
     // failure
-    ElMessage.error(response.data.message)
+    ElMessage.error(response)
     return Promise.reject(response.data)
   },
   function (error) {
@@ -50,7 +50,7 @@ instance.interceptors.response.use(
     }
 
     // default
-    ElMessage.error(error.response.data.message)
+    ElMessage.error(error.response)
     return Promise.reject(error)
   }
 )
