@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User - Add Email</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 60px;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        form {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="email"] {
+            padding: 10px;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #msg {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #007BFF;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Add Your Email Address</h2>
+
+<form id="emailForm">
+    <input type="email" id="email" placeholder="Please enter email address!" required>
+    <button type="submit">Add</button>
+</form>
+
+<p id="msg"></p>
+
+<script>
+    document.getElementById("emailForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const email = document.getElementById("email").value;
+        try {
+            const res = await fetch("/api/user/add?email=" + encodeURIComponent(email), {
+                method: "POST"
+            });
+            const text = await res.text();
+            document.getElementById("msg").innerText = text;
+        } catch (error) {
+            document.getElementById("msg").innerText = "Error: " + error;
+        }
+    });
+</script>
+
+</body>
+</html>
