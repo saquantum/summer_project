@@ -37,7 +37,7 @@
         <button @click="setSideBar('warnings')" :class="{ active: sidebarActive === 'warnings' }">All Warnings
         </button>
         <button v-show="sidebarActive === 'currentWarning'" @click="setSideBar('currentWarning')"
-                :class="{ active: sidebarActive === 'currentWarning' }">Current Warning
+                :class="{ active: sidebarActive === 'currentWarning' }">Warning {{currentWarning ? currentWarning.id : 'unknown'}}
         </button>
     </div>
     <!-- main -->
@@ -56,10 +56,15 @@
                 <table>
                     <thead>
                     <tr>
-                        <th>UID</th>
-                        <th>AssetHolderID</th>
-                        <th>Username</th>
-                        <th>#Assets</th>
+                        <th v-for="col in assetHolderColumns" :key="col.column"
+                            @click="sortTable(col.column, allAssetHolders, assetHolderColumns, 'assetHolders')"
+                            class="sortable">
+                            {{ col.column }}
+                            <span style="font-size: 0.8em; margin-left: 5px;"
+                                  :style="{ opacity: sortState.assetHolders.column === col.column ? 1 : 0.1 }">
+                                {{sortState.assetHolders.column === col.column ? (sortState.assetHolders.order === 'asc' ? '↑' : '↓') : '↕'}}
+                            </span>
+                        </th>
                         <th>Performable Actions(You should not see this)</th>
                     </tr>
                     </thead>
@@ -84,12 +89,18 @@
                 <table>
                     <thead>
                     <tr>
-                        <th>Asset ID</th>
-                        <th>Asset Name</th>
-                        <th>Asset Holder ID</th>
-                        <th>Warning Level</th>
+                        <th v-for="col in assetColumns" :key="col.column"
+                            @click="sortTable(col.column, allAssets, assetColumns, 'assets')"
+                            class="sortable">
+                            {{ col.column }}
+                            <span style="font-size: 0.8em; margin-left: 5px;"
+                                  :style="{ opacity: sortState.assets.column === col.column ? 1 : 0.1 }">
+                                {{sortState.assets.column === col.column ? (sortState.assets.order === 'asc' ? '↑' : '↓') : '↕'}}
+                            </span>
+                        </th>
                         <th>Performable Actions(You should not see this)</th>
                     </tr>
+
                     </thead>
                     <tbody>
                     <tr v-for="(item, index) in allAssets" :key="index">
@@ -206,8 +217,24 @@
             popupNotification: null,
             asUserId: '',
             sidebarActive: 'test',
-            allAssets: [],
+            sortState: {
+                assetHolders: {column: 'UID', order: 'asc'},
+                assets: {column: 'Asset ID', order: 'asc'}
+            },
             allAssetHolders: [],
+            assetHolderColumns: [
+                {column: 'UID', compare: (a, b) => a.user.id - b.user.id},
+                {column: 'Asset Holder ID', compare: (a, b) => a.assetHolder.id - b.assetHolder.id},
+                {column: 'Username', compare: (a, b) => a.user.username.localeCompare(b.user.username)},
+                {column: 'Assets', compare: (a, b) => a.assetCount - b.assetCount},
+            ],
+            allAssets: [],
+            assetColumns: [
+                {column: 'Asset ID', compare: (a, b) => a.asset.id - b.asset.id},
+                {column: 'Asset Name', compare: (a, b) => a.asset.name.localeCompare(b.asset.name)},
+                {column: 'Asset Holder ID', compare: (a, b) => a.asset.assetHolderId - b.asset.assetHolderId},
+                {column: 'Warning Level', compare: () => {}},
+            ],
             allWarnings: [],
             currentWarning: null,
             maps: [],
@@ -253,6 +280,7 @@
                     credentials: 'include',
                 });
                 this.allAssetHolders = (await response.json()).data;
+                this.sortTable(this.sortState.assetHolders.column, this.allAssetHolders, this.assetHolderColumns, this.sortState.assetHolders.order);
             },
             async loadAllAssets() {
                 const response = await fetch(`/api/user/asset`, {
@@ -261,6 +289,7 @@
                     credentials: 'include',
                 });
                 this.allAssets = (await response.json()).data;
+                this.sortTable(this.sortState.assets.column, this.allAssets, this.assetColumns, this.sortState.assets.order);
             },
             async loadAllWarnings() {
                 const response = await fetch(`/api/user/warning`, {
@@ -269,6 +298,7 @@
                     credentials: 'include',
                 });
                 this.allWarnings = (await response.json()).data;
+                this.allWarnings.sort((a, b) => a.id - b.id);
                 this.displayMap('allWarningsMap', this.allWarnings.map(w => {
                     let geoJson = w.polygon;
                     geoJson.style = this.setWarningLevelStyle(w.warningLevel);
@@ -363,10 +393,47 @@
                 }
             },
             setSideBar(newState) {
-                if(this.sidebarActive === newState) return;
+                if (this.sidebarActive === newState) return;
                 this.cleanMaps();
                 this.sidebarActive = newState;
             },
+            sortTable(column, data, columns, type) {
+                const state = this.sortState[type];
+                if (state.column === column) {
+                    state.order = state.order === 'asc' ? 'desc' : 'asc';
+                } else {
+                    state.column = column;
+                    state.order = 'asc';
+                }
+
+                const sortedRules = [
+                    ...columns.filter(r => r.column === column),
+                    ...columns.filter(r => r.column !== column)
+                ];
+
+                data.sort((a, b) => {
+                    for (let {compare} of sortedRules) {
+                        let result = compare(a, b);
+                        if (state.order === 'desc') result = -result;
+                        if (result !== 0) return result;
+                    }
+                    return 0;
+                });
+            }
+        },
+        created() {
+            const priority = {
+                red: 3,
+                amber: 2,
+                yellow: 1,
+                none: 0
+            };
+            this.assetColumns.find(c => c.column === 'Warning Level').compare = (a, b) => {
+                return (
+                    priority[this.findHighestLevel(b.warnings)] -
+                    priority[this.findHighestLevel(a.warnings)]
+                );
+            };
         },
         watch: {
             sidebarActive: {
