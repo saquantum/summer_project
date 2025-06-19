@@ -15,10 +15,8 @@ public class SpInterceptor implements HandlerInterceptor {
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
-        System.out.println("Request Method：" + request.getMethod() + ", URI：" + request.getRequestURI());
-
         String uri = request.getRequestURI();
-        if (uri.startsWith("/admin")) {
+        if (uri.contains("admin")) {
             String token = JwtUtil.getJWTFromCookie(request, response);
             if (token == null) {
                 return false;

@@ -377,7 +377,7 @@
                 });
             },
             async findPersonalInfo() {
-                const response = await fetch(`/user/api/holder/${this.asset.assetHolderId}`, {
+                const response = await fetch(`/api/user/holder/${this.asset.assetHolderId}`, {
                     method: 'GET',
                     headers: {'Content-Type': 'application/json'},
                     credentials: 'include',
@@ -387,7 +387,7 @@
             },
             async updatePersonalInfo() {
                 const body = JSON.stringify(this.currentUserProfile.assetHolder);
-                const response = await fetch(`/user/api/holder/`, {
+                const response = await fetch(`/api/user/holder/`, {
                     method: 'PUT',
                     headers: {'Content-Type': 'application/json'},
                     credentials: 'include',
@@ -407,7 +407,7 @@
                 });
             },
             async loadAllAssets() {
-                const response = await fetch(`/user/api/holder/${this.currentUserProfile.assetHolder.id}/asset/`, {
+                const response = await fetch(`/api/user/holder/${this.currentUserProfile.assetHolder.id}/asset/`, {
                     method: 'GET',
                     headers: {'Content-Type': 'application/json'},
                     credentials: 'include',
@@ -420,7 +420,7 @@
                 return this.contactOptions.find(o => o.value === this.selectedContact);
             },
             async goBackToAdminDashboard() {
-                await fetch(`/admin/api/as/clear`, {
+                await fetch(`/api/admin/as/clear`, {
                     method: 'GET',
                     headers: {'Content-Type': 'application/json'},
                     credentials: 'include',
@@ -428,13 +428,13 @@
                 window.location.href = '/admin/';
             },
             async getCurrentUser() {
-                const response = await fetch('/user/api/me', {
+                const response = await fetch('/api/user/me', {
                     method: 'GET',
                     credentials: 'include'
                 });
                 const info = await response.json();
                 // fetch user's personal profile
-                const profile = (await (await fetch(`/user/api/${info.data.id}`, {
+                const profile = (await (await fetch(`/api/user/${info.data.id}`, {
                     method: 'GET',
                     headers: {'Content-Type': 'application/json'},
                     credentials: 'include',
@@ -443,7 +443,7 @@
                 this.isAdminAccessing = info.data.isAdmin;
                 // fetch asset data if admin is in asset
                 if (info.data.asUserInAssetId) {
-                    const assetList = (await (await fetch(`/user/api/asset/${info.data.asUserInAssetId}`, {
+                    const assetList = (await (await fetch(`/api/user/asset/${info.data.asUserInAssetId}`, {
                         method: 'GET',
                         headers: {'Content-Type': 'application/json'},
                         credentials: 'include',
@@ -663,7 +663,7 @@
                     id: this.currentAsset.asset.id,
                     drainArea: JSON.stringify(this.maps[0].myDrawData.geojson.geometry)
                 };
-                const response = (await (await fetch(`/user/api/asset`, {
+                const response = (await (await fetch(`/api/user/asset`, {
                     method: 'PUT',
                     headers: {'Content-Type': 'application/json'},
                     credentials: 'include',

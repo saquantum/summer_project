@@ -9,14 +9,14 @@ import uk.ac.bristol.util.JwtUtil;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/login")
 @CrossOrigin
 public class LoginController {
 
     @Autowired
     private SqlService sqlService;
 
-    @PostMapping("/login")
+    @PostMapping()
     public ResponseResult login(@RequestBody User user, HttpServletResponse response) {
         User u = sqlService.login(user);
         if (u == null) return new ResponseResult(Code.BUSINESS_ERR, null, "The username or password is incorrect.");

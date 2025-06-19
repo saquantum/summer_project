@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/user/api")
+@RequestMapping("/api/user")
 @CrossOrigin
 public class CrudController {
 

@@ -110,7 +110,6 @@ public class SqlServiceImpl implements SqlService {
         Instant now = Instant.now();
         assetHolder.get(0).setLastModified(now);
         asset.setLastModified(now);
-        System.out.println(asset.getDrainAreaAsJson());
         return sqlMapper.updateAsset(asset);
     }
 

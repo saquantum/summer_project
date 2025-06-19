@@ -12,8 +12,8 @@ public class FilterConfig {
         FilterRegistrationBean<TokenFilter> registration = new FilterRegistrationBean<>();
 
         registration.setFilter(new TokenFilter());
-        registration.addUrlPatterns("/user/*");
-        registration.addUrlPatterns("/admin/*");
+        registration.addUrlPatterns("/api/user/*");
+        registration.addUrlPatterns("/api/admin/*");
         registration.setOrder(1);
         return registration;
     }

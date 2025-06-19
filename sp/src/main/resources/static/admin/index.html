@@ -215,7 +215,7 @@
         methods: {
             async sendNotification() {
                 const body = {"message": this.notification};
-                const response = await fetch(`/admin/api/notify`, {
+                const response = await fetch(`/api/admin/notify`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     credentials: 'include',
@@ -223,7 +223,7 @@
                 });
             },
             async proxyAsUser() {
-                await fetch(`/admin/api/as/${this.asUserId}`, {
+                await fetch(`/api/admin/as/${this.asUserId}`, {
                     method: 'GET',
                     headers: {'Content-Type': 'application/json'},
                     credentials: 'include',
@@ -235,7 +235,7 @@
                 await this.proxyAsUser();
             },
             async proxyAsUserInAsset(assetID) {
-                await fetch(`/admin/api/as/${this.asUserId}/inAsset/${assetID}`, {
+                await fetch(`/api/admin/as/${this.asUserId}/inAsset/${assetID}`, {
                     method: 'GET',
                     headers: {'Content-Type': 'application/json'},
                     credentials: 'include',
@@ -247,7 +247,7 @@
                 await this.proxyAsUserInAsset(this.allAssets[index].asset.id);
             },
             async loadAllUsers() {
-                const response = await fetch(`/user/api/holder`, {
+                const response = await fetch(`/api/user/holder`, {
                     method: 'GET',
                     headers: {'Content-Type': 'application/json'},
                     credentials: 'include',
@@ -255,7 +255,7 @@
                 this.allAssetHolders = (await response.json()).data;
             },
             async loadAllAssets() {
-                const response = await fetch(`/user/api/asset`, {
+                const response = await fetch(`/api/user/asset`, {
                     method: 'GET',
                     headers: {'Content-Type': 'application/json'},
                     credentials: 'include',
@@ -263,7 +263,7 @@
                 this.allAssets = (await response.json()).data;
             },
             async loadAllWarnings() {
-                const response = await fetch(`/user/api/warning`, {
+                const response = await fetch(`/api/user/warning`, {
                     method: 'GET',
                     headers: {'Content-Type': 'application/json'},
                     credentials: 'include',
