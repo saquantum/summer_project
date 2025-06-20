@@ -21,3 +21,13 @@ Run init.sql in PostgreSQL(pgAdmin)
 Run MailApplication.java and visit localhost:8080
 
 Before this step, you may still need some pre-work(just like what you need to do before running code in main branch)
+
+# For WhatsApp Part
+
+## First set up test
+
+https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn?frameUrl=%2Fconsole%2Fsms%2Fwhatsapp%2Flearn%3Fx-target-region%3Dus1
+
+You can switch your new twilio setting(in file application.properties)
+
+The phone numbers you send message to should be added into your/my Twilio Sandbox
