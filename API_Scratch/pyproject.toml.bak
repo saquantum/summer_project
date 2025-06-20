@@ -1,36 +1,24 @@
 [tool.poetry]
-name = "Weather_Location_API_Data"
-version = "0.1.0"
+name        = "weather-location-api-data"
+version     = "0.1.0"
 description = "MacroLab AutoFlow Podcast 工具"
-authors = ["jproacademic@gmail.com"]
-# readme = "README.md" # 通常 poetry init 會加上
+authors     = ["jproacademic@gmail.com"]
+readme      = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"  # <--- 非常重要！確保這一行存在且正確
-# 如果 poetry init 執行了，您的其他依賴 (feedparser 等) 會出現在這裡
-# 例如：
-# feedparser = "..."
-# newspaper3k = "..."
-# python-dotenv = "..."
-# notion-client = "..."
+python            = "^3.10"
+beautifulsoup4    = "^4.13"
+requests          = "^2.32"
+lxml              = "^5.4"
+selenium          = "^4.32"
+python-dotenv     = "^1.0"
+notion-client     = "^2.3"
 
-# [tool.poetry.dev-dependencies] # 腳本會嘗試加入這個區塊
-# pytest = "..."
-# pytest-cov = "..."
-# flake8 = "..."
-
-# Poetry 1.2+ 會使用 group.dev.dependencies
-beautifulsoup4 = "^4.13.4"
-requests = "^2.32.3"
-lxml = "^5.4.0"
-selenium = "^4.32.0"
-dotenv = "^0.9.9"
-notion-client = "^2.3.0"
 [tool.poetry.group.dev.dependencies]
-pytest = "*" # 實際版本會由 poetry add 決定
+pytest     = "*"
 pytest-cov = "*"
-flake8 = "*"
+flake8     = "*"
 
 [build-system]
-requires = ["poetry-core"]
+requires      = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
