@@ -16,7 +16,7 @@ build:            ## 建 dev image
 	docker build -t wlapi:dev .
 
 run:              ## 用 dev image 執行 poller
-	docker run --rm -v $(pwd)/data:/data wlapi:dev
+	docker run --rm -v $$(pwd)/data:/data wlapi:dev
 
 shell:            ## 進容器除錯
-	docker run --rm -it -v $(pwd):/app wlapi:dev bash
+	docker run --rm -it -v $$(pwd):/app wlapi:dev bash
