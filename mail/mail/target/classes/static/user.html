@@ -34,6 +34,15 @@
             font-size: 14px;
         }
 
+        input[type="phoneNumber"] {
+            padding: 10px;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+
         button {
             padding: 10px 20px;
             background-color: #4CAF50;
@@ -57,14 +66,21 @@
 </head>
 <body>
 
-<h2>Add Your Email Address</h2>
+<h2>Add Your Contact Address</h2>
 
 <form id="emailForm">
     <input type="email" id="email" placeholder="Please enter email address!" required>
     <button type="submit">Add</button>
 </form>
 
-<p id="msg"></p>
+<p id="msg1"></p>
+
+<form id="whatsappForm">
+    <input type="phoneNumber" id="phoneNumber" placeholder="Please enter whatsapp number!" required>
+    <button type="submit">Add</button>
+</form>
+
+<p id="msg2"></p>
 
 <script>
     document.getElementById("emailForm").addEventListener("submit", async function(e) {
@@ -75,9 +91,23 @@
                 method: "POST"
             });
             const text = await res.text();
-            document.getElementById("msg").innerText = text;
+            document.getElementById("msg1").innerText = text;
         } catch (error) {
-            document.getElementById("msg").innerText = "Error: " + error;
+            document.getElementById("msg1").innerText = "Error: " + error;
+        }
+    });
+
+    document.getElementById("whatsappForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const phoneNumber = document.getElementById("phoneNumber").value;
+        try {
+            const res = await fetch("/api/user/add-whatsapp?phoneNumber=" + encodeURIComponent(phoneNumber), {
+                method: "POST"
+            });
+            const text = await res.text();
+            document.getElementById("msg2").innerText = text;
+        } catch (error) {
+            document.getElementById("msg2").innerText = "Error: " + error;
         }
     });
 </script>

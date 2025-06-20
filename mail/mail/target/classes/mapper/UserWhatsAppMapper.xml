@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.example.mail.dao.UserWhatsAppMapper">
+
+    <insert id="insert" parameterType="org.example.mail.pojo.UserWhatsApp">
+        INSERT INTO user_whatsapp (phoneNumber) VALUES (#{phoneNumber})
+    </insert>
+
+    <select id="selectAll" resultType="org.example.mail.pojo.UserWhatsApp">
+        SELECT id, phoneNumber FROM user_whatsapp
+    </select>
+
+    <select id="existsByWhatsApp" resultType="boolean" parameterType="string">
+        SELECT COUNT(*) > 0 FROM user_whatsapp WHERE phoneNumber = #{phoneNumber}
+    </select>
+
+</mapper>

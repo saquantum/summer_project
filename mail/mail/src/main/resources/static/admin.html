@@ -45,7 +45,7 @@
   </style>
 </head>
 <body>
-<h2>Email Sending System</h2>
+<h2>Message Sending System</h2>
 
 <label for="subject">Subject:</label>
 <input type="text" id="subject" placeholder="Please enter subject" />
@@ -54,12 +54,14 @@
 <textarea id="content" placeholder="Please enter the content，add unsubscribe link:{unsubscribeUrl}"></textarea>
 
 <button id="sendBtn">Click To Send Email</button>
+<button id="sendWhatsAppBtn">Send WhatsApp Message</button>
 
 <div id="result"></div>
 <div id="error"></div>
 
 <script>
   const sendBtn = document.getElementById('sendBtn');
+  const sendBtn2 = document.getElementById('sendWhatsAppBtn');
   const resultDiv = document.getElementById('result');
   const errorDiv = document.getElementById('error');
   const subjectInput = document.getElementById('subject');
@@ -106,6 +108,50 @@
               errorDiv.textContent = 'Sending Error：' + err.message;
               sendBtn.textContent = 'Click To Send Email';
               sendBtn.disabled = false;
+            });
+  });
+
+  sendBtn2.addEventListener('click', () => {
+    const subject = subjectInput.value.trim();
+    const content = contentInput.value.trim();
+
+    resultDiv.textContent = '';
+    errorDiv.textContent = '';
+
+    if (!subject) {
+      errorDiv.textContent = 'Whatsapp subject cannot be empty';
+      return;
+    }
+    if (!content) {
+      errorDiv.textContent = 'Whatsapp content cannot be empty';
+      return;
+    }
+
+    sendBtn2.disabled = true;
+    sendBtn2.textContent = 'Sending...';
+
+    fetch('/admin/send-whatsapp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ subject, content })
+    })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Network Error');
+              }
+              return response.text();
+            })
+            .then(text => {
+              resultDiv.textContent = text;
+              sendBtn2.textContent = 'Send WhatsApp Message';
+              sendBtn2.disabled = false;
+            })
+            .catch(err => {
+              errorDiv.textContent = 'Sending Error：' + err.message;
+              sendBtn2.textContent = 'Send WhatsApp Message';
+              sendBtn2.disabled = false;
             });
   });
 </script>
