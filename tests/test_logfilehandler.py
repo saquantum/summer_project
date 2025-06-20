@@ -4,6 +4,7 @@ import pytest
 
 from macrolab_autoflow.utils.LogFileHandler import LogFileHandler
 
+
 @pytest.fixture(autouse=True)
 def clear_logging_handlers():
     """
@@ -19,7 +20,9 @@ def clear_logging_handlers():
         root_logger.removeHandler(h)
 
 
-def test_log_init_GivenCustomDirAndFilename_ShouldCreateFileAndLogInfo(tmp_path, caplog):
+def test_log_init_GivenCustomDirAndFilename_ShouldCreateFileAndLogInfo(
+    tmp_path, caplog
+):
     # Arrange
     log_dir = tmp_path / "logs"
     log_fname = "mytest.log"
@@ -48,9 +51,9 @@ def test_log_init_GivenShowArgs_ShouldLogConfiguration(tmp_path, caplog):
     caplog.set_level(logging.INFO)
 
     # Act: 第三個參數包含 "show detailed parameters"，會觸發 should_show=True
-    returned = LogFileHandler.log_init(str(log_dir),
-                                       log_fname,
-                                       "show detailed parameters")
+    returned = LogFileHandler.log_init(
+        str(log_dir), log_fname, "show detailed parameters"
+    )
 
     # 從回傳的路徑字串建立 Path 物件
     returned_log_file_path = Path(returned_path_string)
@@ -60,32 +63,38 @@ def test_log_init_GivenShowArgs_ShouldLogConfiguration(tmp_path, caplog):
 
     # Assert: 有「Current logging configuration」的 log 訊息 (從檔案讀取)
     log_content = ""
-    if returned_log_file_path.is_file(): # 確保是檔案再讀取 (使用新的 Path 物件變數)
-        with open(returned_log_file_path, 'r', encoding='utf-8') as f: # (使用新的 Path 物件變數)
+    if returned_log_file_path.is_file():  # 確保是檔案再讀取 (使用新的 Path 物件變數)
+        with open(
+            returned_log_file_path, "r", encoding="utf-8"
+        ) as f:  # (使用新的 Path 物件變數)
             log_content = f.read()
-            
-    assert "Current logging configuration" in log_content, \
-        f"預期的日誌訊息 'Current logging configuration' 未在檔案 {returned_log_file_path} 中找到。\n檔案內容：\n{log_content[:500]}..." # (使用新的 Path 物件變數)
+
+    assert (
+        "Current logging configuration" in log_content
+    ), f"預期的日誌訊息 'Current logging configuration' 未在檔案 {returned_log_file_path} 中找到。\n檔案內容：\n{log_content[:500]}..."  # (使用新的 Path 物件變數)
 
     # (可選) 也可以檢查另一條在 basicConfig 之後的日誌訊息
-    assert "Log file created" in log_content, \
-        f"預期的日誌訊息 'Log file created' 未在檔案 {returned_log_file_path} 中找到。\n檔案內容：\n{log_content[:500]}..." # (使用新的 Path 物件變數)
+    assert (
+        "Log file created" in log_content
+    ), f"預期的日誌訊息 'Log file created' 未在檔案 {returned_log_file_path} 中找到。\n檔案內容：\n{log_content[:500]}..."  # (使用新的 Path 物件變數)
 
     # Assert: 檔案仍建立
     assert Path(returned).exists()
 
     # Assert: 有「Current logging configuration」的 log 訊息 (從檔案讀取)
     log_content = ""
-    if returned_log_file_path.is_file(): # 確保是檔案再讀取
-        with open(returned_log_file_path, 'r', encoding='utf-8') as f:
+    if returned_log_file_path.is_file():  # 確保是檔案再讀取
+        with open(returned_log_file_path, "r", encoding="utf-8") as f:
             log_content = f.read()
-            
-    assert "Current logging configuration" in log_content, \
-        f"預期的日誌訊息 'Current logging configuration' 未在檔案 {returned_log_file_path} 中找到。\n檔案內容：\n{log_content[:500]}..." # 顯示部分內容幫助除錯
+
+    assert (
+        "Current logging configuration" in log_content
+    ), f"預期的日誌訊息 'Current logging configuration' 未在檔案 {returned_log_file_path} 中找到。\n檔案內容：\n{log_content[:500]}..."  # 顯示部分內容幫助除錯
 
     # (可選) 也可以檢查另一條在 basicConfig 之後的日誌訊息
-    assert "Log file created" in log_content, \
-        f"預期的日誌訊息 'Log file created' 未在檔案 {returned_log_file_path} 中找到。\n檔案內容：\n{log_content[:500]}..."
+    assert (
+        "Log file created" in log_content
+    ), f"預期的日誌訊息 'Log file created' 未在檔案 {returned_log_file_path} 中找到。\n檔案內容：\n{log_content[:500]}..."
 
 
 def test_view_AfterInit_ShouldReturnValidConfigStructure(tmp_path):

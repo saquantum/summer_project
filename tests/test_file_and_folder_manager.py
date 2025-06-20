@@ -2,6 +2,7 @@ import shutil
 import pytest
 from macrolab_autoflow.utils.FileAndFolderManager import FileAndFolderManager
 
+
 def test_create_new_folder(tmp_path, caplog):
     """
     測試當資料夾不存在時，create_folder 會建立該資料夾，
@@ -22,6 +23,7 @@ def test_create_new_folder(tmp_path, caplog):
     # 檢查 logging：
     # 遍歷 caplog.records（捕捉到的 log 訊息列表），只要其中有任何一筆 rec.message 包含子字串 "已建立資料夾"，測試就通過
     assert any("已建立資料夾" in rec.message for rec in caplog.records)
+
 
 def test_create_existing_folder(tmp_path, caplog):
     """

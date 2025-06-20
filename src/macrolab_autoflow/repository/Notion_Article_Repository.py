@@ -8,7 +8,9 @@ from notion_client import Client, APIResponseError
 
 from macrolab_autoflow.common.Result import Result
 from macrolab_autoflow.repository.entities import Article
-from macrolab_autoflow.repository.Abstract_Article_Repository import AbstractArticleRepository
+from macrolab_autoflow.repository.Abstract_Article_Repository import (
+    AbstractArticleRepository,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -26,18 +28,18 @@ class NotionArticleRepository(AbstractArticleRepository):
         self,
         api_token: str,
         database_id: str,
-        property_map: dict[str, str] | None = None,   # ← NEW
+        property_map: dict[str, str] | None = None,  # ← NEW
     ) -> None:
         self._client = Client(auth=api_token)
         self._db_id = database_id
 
         # 預設對應（左＝程式用的標準名稱，右＝實際 Notion 欄位名）
         default_map = {
-            "title": "Name",          # 你資料庫現在的標題欄位
-            "url": "URL",            # 假設你要塞進 Text 欄
+            "title": "Name",  # 你資料庫現在的標題欄位
+            "url": "URL",  # 假設你要塞進 Text 欄
             "category": "Category",
             "published_at": "PublishedAt",  # 只是示範，請換成你的 Date 欄位
-            "content": "Content",        # 也可以另外加一個 Rich-text 欄
+            "content": "Content",  # 也可以另外加一個 Rich-text 欄
         }
         if property_map:
             default_map.update(property_map)  # 讓呼叫端可以覆寫
@@ -48,8 +50,10 @@ class NotionArticleRepository(AbstractArticleRepository):
     def add(self, article: Article) -> Result[Article]:
         """Create & return Article（含 Notion 內部 id）"""
         try:
-            page = self._client.pages.create(parent={"database_id": self._db_id},
-                                             properties=self._article_to_properties(article))
+            page = self._client.pages.create(
+                parent={"database_id": self._db_id},
+                properties=self._article_to_properties(article),
+            )
             # saved = article.__class__(**{**article.__dict__, "id": page["id"]})
             saved = replace(article, id=page["id"])
             logger.info("文章已寫入 Notion：%s", article.title)
@@ -95,8 +99,8 @@ class NotionArticleRepository(AbstractArticleRepository):
     # @staticmethod
     # def _article_to_properties(article: Article) -> dict:
     def _article_to_properties(self, article: Article) -> dict:
-        """ 將 Article 轉為 Notion Database properties 結構（範例欄位：可自行修改）
-            依照 self._prop 產生 Notion properties """        
+        """將 Article 轉為 Notion Database properties 結構（範例欄位：可自行修改）
+        依照 self._prop 產生 Notion properties"""
         # # published_at 可能是 datetime，也可能是字串
         # if article.published_at:
         #     if isinstance(article.published_at, datetime):
@@ -134,18 +138,16 @@ class NotionArticleRepository(AbstractArticleRepository):
         # 2) 組 properties，用 self._prop 把程式欄位 → Notion 欄位
         return {
             self._prop["title"]: {"title": [{"text": {"content": article.title}}]},
-            self._prop["url"]:   {"url": article.url},
+            self._prop["url"]: {"url": article.url},
             # --------- 這裡換成 multi_select --------- ↩️
             self._prop["category"]: {
                 "multi_select": [{"name": article.category}] if article.category else []
             },
             self._prop["published_at"]: {"date": {"start": pub_iso}},
             self._prop["content"]: {
-                "rich_text": [{"text": {"content": (article.content or '')[:2000]}}],
+                "rich_text": [{"text": {"content": (article.content or "")[:2000]}}],
             },
         }
-
-
 
     # @staticmethod
     # def _page_to_article(page: dict) -> Article:
@@ -166,7 +168,8 @@ class NotionArticleRepository(AbstractArticleRepository):
 
         # 用 self._prop 取得實際欄位名 ─┐
         dt_prop = p[self._prop["published_at"]]["date"]
-                                                  # ─┘
+
+        # ─┘
         def get(alias: str) -> str:
             notion_key = self._prop[alias]
             src = p[notion_key]
@@ -175,7 +178,7 @@ class NotionArticleRepository(AbstractArticleRepository):
                 return "".join(t["plain_text"] for t in pieces)
             elif src.get("rich_text") is not None:
                 return "".join(t["plain_text"] for t in src["rich_text"])
-            elif src.get("multi_select") is not None:          # ←↩️ 新增
+            elif src.get("multi_select") is not None:  # ←↩️ 新增
                 return ", ".join(o["name"] for o in src["multi_select"])
             else:
                 return ""
@@ -188,11 +191,10 @@ class NotionArticleRepository(AbstractArticleRepository):
             content=get("content"),
             published_at=(
                 datetime.fromisoformat(dt_prop["start"])
-                if dt_prop and dt_prop["start"] else None
+                if dt_prop and dt_prop["start"]
+                else None
             ),
         )
-
-
 
     # -------- health check -------- #
     def health_check(self) -> Result[dict]:

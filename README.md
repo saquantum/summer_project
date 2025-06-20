@@ -16,6 +16,8 @@ curl -sSL https://install.python-poetry.org | python -
 # 建立 / 重新計算 lockfile
 poetry lock
 
+---
+
 # 其他開發者（other developer）
 ## 重現環境: poetry install --with dev
 make install

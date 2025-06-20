@@ -14,8 +14,8 @@ from macrolab_autoflow.repository.entities import Article  # ← NEW
 logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
 load_dotenv()
 
-token  = os.getenv("NOTION_API_KEY") or os.getenv("NOTION_API_TOKEN")
-db_id  = os.getenv("NOTION_DATABASE_ID")
+token = os.getenv("NOTION_API_KEY") or os.getenv("NOTION_API_TOKEN")
+db_id = os.getenv("NOTION_DATABASE_ID")
 if not (token and db_id):
     raise SystemExit("❌  尚未設定 NOTION_API_KEY / NOTION_DATABASE_ID")
 
@@ -27,7 +27,7 @@ if meta_res.is_failure():
     logging.error("❌  讀取連線失敗：%s", meta_res.error_msg)
     quit(1)
 
-meta  = meta_res.value
+meta = meta_res.value
 title = meta["title"][0]["plain_text"] if meta["title"] else "(未命名)"
 logging.info("✅  讀取 OK！Database title = %s", title)
 print("\n前 10 個 property：")
@@ -35,12 +35,12 @@ pprint.pprint(list(meta["properties"].keys())[:10])
 
 # ---------- 2) 寫入健康檢查 ----------
 dummy_article = Article(
-    title = f"Health-Check Ping {uuid.uuid4()}",
-    url   = "https://techcrunch.com/",
-    category = "HealthCheck",
-    published_at = datetime.now(timezone.utc),
-    content = "This page was created by an automated health-check script "
-              "and archived immediately."
+    title=f"Health-Check Ping {uuid.uuid4()}",
+    url="https://techcrunch.com/",
+    category="HealthCheck",
+    published_at=datetime.now(timezone.utc),
+    content="This page was created by an automated health-check script "
+    "and archived immediately.",
 )
 
 add_res = repo.add(dummy_article)

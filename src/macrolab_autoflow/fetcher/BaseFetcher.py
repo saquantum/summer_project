@@ -5,14 +5,15 @@ from macrolab_autoflow.common.Result import Result
 T = TypeVar("T")
 U = TypeVar("U")
 
+
 class BaseFetcher(ABC, Generic[T, U]):
     """
     BaseFetcher 抽象類別，定義了「Fetch → Parse → Run」的流程骨架 (Template Method)。
 
     流程：
-      1. run(): 外部呼叫，各子類都從這裡開始 → 
-      2. fetch(): 取得「原始資料」(HTML, JSON, binary...) → 
-      3. parse(): 解析「原始資料」成標準化的資料結構 → 
+      1. run(): 外部呼叫，各子類都從這裡開始 →
+      2. fetch(): 取得「原始資料」(HTML, JSON, binary...) →
+      3. parse(): 解析「原始資料」成標準化的資料結構 →
       4. 回傳 Result.ok 或 Result.fail
 
     泛型參數：

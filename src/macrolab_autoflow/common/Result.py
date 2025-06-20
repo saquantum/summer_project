@@ -4,13 +4,14 @@ from typing import Generic, Optional, TypeVar
 
 T = TypeVar("T")
 
+
 @dataclass(frozen=True)
 class Result(Generic[T]):
     """
     泛型 Result: 成功時帶 value ; 失敗時帶 error 與 code
 
     Result 類別用於統一包裝函式返回結果。
-    
+
     Attributes:
         success (bool): 表示操作是否成功。
         value: 操作成功時返回的數據，可能是任意型態。
@@ -43,7 +44,6 @@ class Result(Generic[T]):
     #         self.traceback_str  == other.traceback_str
     #     )
 
-
     success: bool
     value: Optional[T] = None
     error_msg: Optional[str] = None
@@ -65,10 +65,13 @@ class Result(Generic[T]):
         return Result(True, value=value, error_msg=None, traceback_str=None)
 
     @staticmethod
-    def fail(error_msg, code: int | None = None, traceback_str: str | None = None) -> "Result[T]":
+    def fail(
+        error_msg, code: int | None = None, traceback_str: str | None = None
+    ) -> "Result[T]":
         """建立一個失敗的 Result 對象。"""
-        return Result(False, error_msg=error_msg, code=code, traceback_str=traceback_str)
+        return Result(
+            False, error_msg=error_msg, code=code, traceback_str=traceback_str
+        )
 
     def __repr__(self) -> str:
         return f"Success({self.value})" if self.success else f"Fail({self.error_msg})"
-

@@ -23,6 +23,7 @@ from macrolab_autoflow.repository.Notion_Article_Repository import (
 from macrolab_autoflow.repository.entities import Article
 from macrolab_autoflow.service.Article_To_Repository import ArticleIngestService
 
+
 # ---------- 2) 輔助函式 ----------
 def write_unique(
     service: ArticleIngestService,
@@ -41,6 +42,7 @@ def write_unique(
         return Result.ok([])
 
     return service._repo.add_many(uniques)  # type: ignore[protected-access]
+
 
 # ---------- 3) 主流程 ----------
 def main() -> None:

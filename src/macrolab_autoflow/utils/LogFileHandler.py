@@ -8,7 +8,6 @@ from macrolab_autoflow.utils.FileAndFolderManager import FileAndFolderManager
 logger = logging.getLogger(__name__)
 
 
-
 class LogFileHandler:
     @staticmethod
     def log_init(log_dir="log_file", log_filename=None, *args, **kwargs):
@@ -28,33 +27,32 @@ class LogFileHandler:
         """
         # 建立 log 資料夾（若不存在則建立）
         abs_log_dir = FileAndFolderManager.create_folder(log_dir)
-        
+
         # 若未指定 log_filename，則依當前時間動態生成 log 檔案名稱
         if log_filename is None:
             # 動態產生檔名 (yyyyMMdd_HHMMSS)
             from datetime import datetime
+
             log_filename = datetime.now().strftime("Debugging_%Y%m%d_%H%M%S.log")
-        
+
         # 組合完整的 log 檔案路徑
         merged_log_filename = Path(abs_log_dir) / log_filename
         merged_log_filename = str(merged_log_filename)
 
-        
         # 顯示建立 log 資料夾與 log 檔案路徑（除錯用）
         print("已建立資料夾:", abs_log_dir)
         print(f"Log file 應該儲存在：{merged_log_filename}")
-        
+
         logger.info("已建立資料夾: %s", abs_log_dir)
         logger.info("Log file 儲存路徑: %s", merged_log_filename)
 
-        
         # 設定預設的 logging 配置參數
         defaults = {
             "filename": merged_log_filename,
             "filemode": "w",  # 若需要追加模式，可改為 "a"
             "level": logging.INFO,
             "format": "%(asctime)s - %(levelname)s - %(message)s",
-            "force": True  # 強制重新設定 logging 配置，清除所有現有的 handler
+            "force": True,  # 強制重新設定 logging 配置，清除所有現有的 handler
         }
         # 覆蓋相同鍵的值： 如果 kwargs 裡有和 defaults 中相同的鍵，
         # 那 defaults 中的相應值就會被 kwargs 中的值取代
@@ -62,7 +60,7 @@ class LogFileHandler:
 
         # 呼叫 logging.basicConfig 配置 logging
         logging.basicConfig(**defaults)
-        
+
         # 解析 *args 中的每個字串參數，檢查是否需觸發詳細顯示
         should_show = False
         for arg in args:
@@ -71,19 +69,21 @@ class LogFileHandler:
                 arg_lower = arg.lower()
                 # 檢查是否包含 "show" 以及至少一個詳細資訊關鍵字
                 has_show_keyword = "show" in arg_lower
-                has_detail_keyword = ("detailed" in arg_lower or
-                                      "parameter" in arg_lower or
-                                      "parameters" in arg_lower)
-                
+                has_detail_keyword = (
+                    "detailed" in arg_lower
+                    or "parameter" in arg_lower
+                    or "parameters" in arg_lower
+                )
+
                 if has_show_keyword and has_detail_keyword:
                     should_show = True
                     break  # 找到符合條件的參數，即可跳出迴圈
-        
+
         if should_show:
             # 呼叫 view() 取得當前 logging 的設定，然後利用 pprint 整齊格式化後記錄到 log 檔中
             config = LogFileHandler.view()
             logging.info("Current logging configuration:\n%s", config)
-        
+
         # 記錄一筆初始訊息確認 log 配置啟動
         logger.info("Log file created: %s", merged_log_filename)
         return merged_log_filename
