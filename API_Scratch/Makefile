@@ -1,12 +1,12 @@
 .PHONY: install lock test lint build run shell
 
 install:          ## 安裝依賴 (含 dev)
-	poetry install --with dev
+	poetry install --with dev --no-root
 
 lock:             ## 重新產生 lockfile
-	poetry lock --no-update
+	poetry lock
 
-test:             ## 執行 pytest ## poetry run pytest -q
+test:             ## 執行 pytest ## poetry run pytest -q    poetry run pytest -q $(TEST_PATH)
 	poetry run pytest -q $(TEST_PATH)
 
 lint:             ## flake8
@@ -20,3 +20,9 @@ run:              ## 用 dev image 執行 poller
 
 shell:            ## 進容器除錯
 	docker run --rm -it -v $$(pwd):/app wlapi:dev bash
+
+update:
+	poetry update
+
+clean:
+	rm -rf .venv __pycache__ data/*
