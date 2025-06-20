@@ -45,4 +45,8 @@ public interface SqlService {
     int deleteByAssetIDs(@Param("ids") List<Integer> ids);
 
     User login(User user);
+
+    int insertUser(UserAsAssetHolder uh);
+
+    int updateUser(UserAsAssetHolder uh);
 }

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="uk.ac.bristol.dao.UserMapper">
+    <select id="selectUserByAssetHolderId" resultMap="ResultMaps.UserAsAssetHolderMap">
+        select t1.id   user_id,
+               t1.username,
+               t1.password,
+               t1.asset_holder_id,
+               t1.is_admin,
+               t2.id   holder_id,
+               t2.name holder_name,
+               t2.email,
+               t2.phone,
+               t2.contact_preference,
+               t2.last_modified
+        from users t1
+                 join asset_holders t2 on t1.asset_holder_id = t2.id
+        where t1.asset_holder_id = #{id}
+    </select>
+
+    <insert id="insertUser">
+        <selectKey keyProperty="id" resultType="int" order="AFTER">
+            select currval(pg_get_serial_sequence('users', 'id'))
+        </selectKey>
+        insert into users (username, password, asset_holder_id, is_admin)
+        values (#{username}, #{password}, #{assetHolderId}, #{admin});
+    </insert>
+
+    <update id="updateUser">
+        update users
+        <set>
+            <if test="username != null and username != ''">username = #{username},</if>
+            <if test="password != null and password != ''">password = #{password},</if>
+            <if test="asset_holder_id != null">asset_holder_id = #{asset_holder_id},</if>
+            <if test="is_admin != null">is_admin = #{is_admin},</if>
+        </set>
+        where id = #{id};
+    </update>
+
+    <select id="loginQuery" resultMap="ResultMaps.UserMap">
+        select *
+        from users
+        where username = #{username}
+          and password = #{password}
+    </select>
+</mapper>

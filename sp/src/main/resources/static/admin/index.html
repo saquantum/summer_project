@@ -37,13 +37,15 @@
         <button @click="setSideBar('warnings')" :class="{ active: sidebarActive === 'warnings' }">All Warnings
         </button>
         <button v-show="sidebarActive === 'currentWarning'" @click="setSideBar('currentWarning')"
-                :class="{ active: sidebarActive === 'currentWarning' }">Warning {{currentWarning ? currentWarning.id : 'unknown'}}
+                :class="{ active: sidebarActive === 'currentWarning' }">Warning
+            {{currentWarning ? currentWarning.id : 'unknown'}}
         </button>
     </div>
     <!-- main -->
     <div class="main">
-        <div class="topbar">
-            <h3>Admin Interface</h3>
+        <!-- websocket test -->
+        <div v-if="sidebarActive === 'test'" class="topbar">
+            <h3>Send Notification</h3>
         </div>
         <div v-if="sidebarActive === 'test'" class="content">
             <div>
@@ -51,18 +53,74 @@
                 <button class="submit" @click="sendNotification">send</button>
             </div>
         </div>
+
+        <!-- users -->
+        <div v-if="sidebarActive === 'users'" class="topbar">
+            <div style="flex-grow: 1;"></div>
+            <button v-if="!isAddingAssetHolder" class="submit" @click="isAddingAssetHolder = true;">Add Asset Holder
+            </button>
+            <button v-if="isAddingAssetHolder" class="submit" @click="">Import CSV File</button>
+        </div>
         <div v-if="sidebarActive === 'users'" class="content">
-            <div v-if="allAssetHolders.length > 0">
+            <div v-if="isAddingAssetHolder === true">
+                <div class="new-asset-holder-register-container">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>username</th>
+                            <th>password</th>
+                            <th>name</th>
+                            <th>contact preference</th>
+                            <th>email</th>
+                            <th>phone</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="(row, index) in newAssetHoldersArray" :key="index">
+                            <td><input v-model="row.user.username" type="text"/></td>
+                            <td><input v-model="row.user.password" type="text"/></td>
+                            <td><input v-model="row.assetHolder.name" type="text"/></td>
+                            <td>
+                                <select v-model="row.assetHolder.contactPreference">
+                                    <option value="EMAIL">Email</option>
+                                    <option value="SMS">SMS</option>
+                                    <option value="DISCORD">Discord</option>
+                                    <option value="TELEGRAM">Telegram</option>
+                                    <option value="WHATSAPP">WhatsApp</option>
+                                </select>
+                            </td>
+                            <td><input v-model="row.assetHolder.email" type="email"/></td>
+                            <td><input v-model="row.assetHolder.phone" type="text"/></td>
+                            <td>
+                                <button class="submit" @click="addAssetHolderRemoveRow(index)">🗑</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <button class="submit" @click="addAssetHolderAppendRow()">Add new template</button>
+                <p class="short-p"></p>
+                <div style="display: flex; justify-content: right">
+                    <button class="submit" @click="submitNewAssetHolders()">Submit</button>
+                    <button class="submit" style="margin-left:10px" @click="
+                newAssetHoldersArray = [{ user:{username: '', password: ''}, assetHolder:{name: '', contactPreference: 'EMAIL', email: '', phone: ''} }];
+                isAddingAssetHolder = false;">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+            <div v-if="allAssetHolders.length > 0 && !isAddingAssetHolder">
                 <table>
                     <thead>
                     <tr>
                         <th v-for="col in assetHolderColumns" :key="col.column"
-                            @click="sortTable(col.column, allAssetHolders, assetHolderColumns, 'assetHolders')"
+                            @click="onSortableColumnClick(col.column, allAssetHolders, assetHolderColumns, 'assetHolders')"
                             class="sortable">
                             {{ col.column }}
                             <span style="font-size: 0.8em; margin-left: 5px;"
                                   :style="{ opacity: sortState.assetHolders.column === col.column ? 1 : 0.1 }">
-                                {{sortState.assetHolders.column === col.column ? (sortState.assetHolders.order === 'asc' ? '↑' : '↓') : '↕'}}
+                                {{sortState.assetHolders.column === col.column ? (sortState.assetHolders.order === 'desc' ? '↑' : '↓') : '↕'}}
                             </span>
                         </th>
                         <th>Performable Actions(You should not see this)</th>
@@ -84,18 +142,23 @@
                 </table>
             </div>
         </div>
+
+        <!-- assets -->
+        <div v-if="sidebarActive === 'assets'" class="topbar">
+            <h3>All Assets</h3>
+        </div>
         <div v-if="sidebarActive === 'assets'" class="content">
             <div v-if="allAssets.length > 0">
                 <table>
                     <thead>
                     <tr>
                         <th v-for="col in assetColumns" :key="col.column"
-                            @click="sortTable(col.column, allAssets, assetColumns, 'assets')"
+                            @click="onSortableColumnClick(col.column, allAssets, assetColumns, 'assets')"
                             class="sortable">
                             {{ col.column }}
                             <span style="font-size: 0.8em; margin-left: 5px;"
                                   :style="{ opacity: sortState.assets.column === col.column ? 1 : 0.1 }">
-                                {{sortState.assets.column === col.column ? (sortState.assets.order === 'asc' ? '↑' : '↓') : '↕'}}
+                                {{sortState.assets.column === col.column ? (sortState.assets.order === 'desc' ? '↑' : '↓') : '↕'}}
                             </span>
                         </th>
                         <th>Performable Actions(You should not see this)</th>
@@ -119,6 +182,11 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+
+        <!-- warnings -->
+        <div v-if="sidebarActive === 'warnings'" class="topbar">
+            <h3>All Warnings</h3>
         </div>
         <div v-if="sidebarActive === 'warnings'" class="content">
             <div id="allWarningsMap" style="height: 500px; width: 50vw;"></div>
@@ -154,6 +222,11 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+
+        <!-- specific warning -->
+        <div v-if="sidebarActive === 'currentWarning'" class="topbar">
+            <h3>{{currentWarning.id || ''}}</h3>
         </div>
         <div v-if="sidebarActive === 'currentWarning'" class="content">
             <div id="warningMap" style="height: 500px; width: 50vw;"></div>
@@ -228,12 +301,22 @@
                 {column: 'Username', compare: (a, b) => a.user.username.localeCompare(b.user.username)},
                 {column: 'Assets', compare: (a, b) => a.assetCount - b.assetCount},
             ],
+            isAddingAssetHolder: false,
+            newAssetHoldersArray: [
+                {
+                    user: {username: '', password: ''},
+                    assetHolder: {name: '', contactPreference: 'EMAIL', email: '', phone: ''}
+                }
+            ],
             allAssets: [],
             assetColumns: [
                 {column: 'Asset ID', compare: (a, b) => a.asset.id - b.asset.id},
                 {column: 'Asset Name', compare: (a, b) => a.asset.name.localeCompare(b.asset.name)},
                 {column: 'Asset Holder ID', compare: (a, b) => a.asset.assetHolderId - b.asset.assetHolderId},
-                {column: 'Warning Level', compare: () => {}},
+                {
+                    column: 'Warning Level', compare: () => {
+                    }
+                },
             ],
             allWarnings: [],
             currentWarning: null,
@@ -280,7 +363,7 @@
                     credentials: 'include',
                 });
                 this.allAssetHolders = (await response.json()).data;
-                this.sortTable(this.sortState.assetHolders.column, this.allAssetHolders, this.assetHolderColumns, this.sortState.assetHolders.order);
+                this.sortTable(this.sortState.assetHolders.column, this.allAssetHolders, this.assetHolderColumns, 'assetHolders');
             },
             async loadAllAssets() {
                 const response = await fetch(`/api/user/asset`, {
@@ -289,7 +372,7 @@
                     credentials: 'include',
                 });
                 this.allAssets = (await response.json()).data;
-                this.sortTable(this.sortState.assets.column, this.allAssets, this.assetColumns, this.sortState.assets.order);
+                this.sortTable(this.sortState.assets.column, this.allAssets, this.assetColumns, 'assets');
             },
             async loadAllWarnings() {
                 const response = await fetch(`/api/user/warning`, {
@@ -397,13 +480,20 @@
                 this.cleanMaps();
                 this.sidebarActive = newState;
             },
-            sortTable(column, data, columns, type) {
-                const state = this.sortState[type];
-                if (state.column === column) {
-                    state.order = state.order === 'asc' ? 'desc' : 'asc';
+            onSortableColumnClick(column, data, columns, type) {
+                const item = this.sortState[type];
+                if (item.column === column) {
+                    item.order = item.order === 'asc' ? 'desc' : 'asc';
                 } else {
-                    state.column = column;
-                    state.order = 'asc';
+                    item.column = column;
+                    item.order = 'asc';
+                }
+                this.sortTable(column, data, columns, type);
+            },
+            sortTable(column, data, columns, type) {
+                const item = this.sortState[type];
+                if (item.column !== column) {
+                    item.column = column;
                 }
 
                 const sortedRules = [
@@ -414,12 +504,35 @@
                 data.sort((a, b) => {
                     for (let {compare} of sortedRules) {
                         let result = compare(a, b);
-                        if (state.order === 'desc') result = -result;
+                        if (item.order === 'desc') result = -result;
                         if (result !== 0) return result;
                     }
                     return 0;
                 });
-            }
+            },
+            addAssetHolderAppendRow() {
+                this.newAssetHoldersArray.push({
+                    user: {username: '', password: ''},
+                    assetHolder: {name: '', contactPreference: 'EMAIL', email: '', phone: ''}
+                });
+            },
+            addAssetHolderRemoveRow(index) {
+                this.newAssetHoldersArray.splice(index, 1);
+            },
+            async submitNewAssetHolders() {
+                const response = await(await fetch(`/api/admin/user`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
+                    body: JSON.stringify(this.newAssetHoldersArray),
+                })).json();
+                const code =  response.code;
+                if(code !== 20011){
+                    window.alert("Failed to submit.");
+                }else{
+                    window.alert("Submitted.");
+                }
+            },
         },
         created() {
             const priority = {

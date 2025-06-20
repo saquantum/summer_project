@@ -1,14 +1,12 @@
 package uk.ac.bristol.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import uk.ac.bristol.dao.SqlMapper;
-import uk.ac.bristol.pojo.*;
-import uk.ac.bristol.service.SqlService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import uk.ac.bristol.dao.*;
+import uk.ac.bristol.pojo.*;
+import uk.ac.bristol.service.SqlService;
 import uk.ac.bristol.util.JwtUtil;
 
 import java.time.Instant;
@@ -21,84 +19,90 @@ import java.util.Map;
 public class SqlServiceImpl implements SqlService {
 
     @Autowired
-    private SqlMapper sqlMapper;
+    private UserMapper userMapper;
+    @Autowired
+    private WarningMapper warningMapper;
+    @Autowired
+    private AssetHolderMapper assetHolderMapper;
+    @Autowired
+    private AssetMapper assetMapper;
 
     @Override
     public List<UserAsAssetHolder> selectUserByAssetHolderId(Integer id) {
-        return sqlMapper.selectUserByAssetHolderId(id);
+        return userMapper.selectUserByAssetHolderId(id);
     }
 
     @Override
     public List<Warning> selectAllWarnings() {
-        return sqlMapper.selectAllWarnings();
+        return warningMapper.selectAllWarnings();
     }
 
     @Override
     public List<UserAsAssetHolder> selectAllAssetHolders() {
-        return sqlMapper.selectAllAssetHolders();
+        return assetHolderMapper.selectAllAssetHolders();
     }
 
     @Override
     public List<AssetHolder> selectAssetHolderByID(Integer id) {
-        return sqlMapper.selectAssetHolderByID(id);
+        return assetHolderMapper.selectAssetHolderByID(id);
     }
 
     @Override
     public List<AssetHolder> selectByAssetHolder(AssetHolder assetHolder) {
-        return sqlMapper.selectByAssetHolder(assetHolder);
+        return assetHolderMapper.selectByAssetHolder(assetHolder);
     }
 
     @Override
     public int insertAssetHolder(AssetHolder assetHolder) {
-        return sqlMapper.insertAssetHolder(assetHolder);
+        return assetHolderMapper.insertAssetHolder(assetHolder);
     }
 
     @Override
     public int updateAssetHolder(AssetHolder assetHolder) {
         assetHolder.setLastModified(Instant.now());
-        return sqlMapper.updateAssetHolder(assetHolder);
+        return assetHolderMapper.updateAssetHolder(assetHolder);
     }
 
     @Override
     public int deleteByAssetHolder(AssetHolder assetHolder) {
-        List<Integer> ids = sqlMapper.selectByAssetHolder(assetHolder).stream().map(AssetHolder::getId).toList();
+        List<Integer> ids = assetHolderMapper.selectByAssetHolder(assetHolder).stream().map(AssetHolder::getId).toList();
         if (ids.isEmpty()) return 0;
-        return sqlMapper.deleteByAssetHolderIDs(ids);
+        return assetHolderMapper.deleteByAssetHolderIDs(ids);
     }
 
     @Override
     public int deleteByAssetHolderIDs(int[] ids) {
-        return sqlMapper.deleteByAssetHolderIDs(ids);
+        return assetHolderMapper.deleteByAssetHolderIDs(ids);
     }
 
     @Override
     public int deleteByAssetHolderIDs(List<Integer> ids) {
-        return sqlMapper.deleteByAssetHolderIDs(ids);
+        return assetHolderMapper.deleteByAssetHolderIDs(ids);
     }
 
     @Override
     public List<AssetWithWeatherWarnings> selectAllAssets() {
-        return sqlMapper.selectAllAssets();
+        return assetMapper.selectAllAssets();
     }
 
     @Override
     public List<AssetWithWeatherWarnings> selectAssetByID(Integer id) {
-        return sqlMapper.selectAssetByID(id);
+        return assetMapper.selectAssetByID(id);
     }
 
     @Override
     public List<AssetWithWeatherWarnings> selectByAsset(Asset asset) {
-        return sqlMapper.selectByAsset(asset);
+        return assetMapper.selectByAsset(asset);
     }
 
     @Override
     public List<AssetWithWeatherWarnings> selectAllAssetsOfHolder(Integer id) {
-        return sqlMapper.selectAllAssetsOfHolder(id);
+        return assetMapper.selectAllAssetsOfHolder(id);
     }
 
     @Override
     public int insertAsset(Asset asset) {
-        return sqlMapper.insertAsset(asset);
+        return assetMapper.insertAsset(asset);
     }
 
     @Override
@@ -110,29 +114,29 @@ public class SqlServiceImpl implements SqlService {
         Instant now = Instant.now();
         assetHolder.get(0).setLastModified(now);
         asset.setLastModified(now);
-        return sqlMapper.updateAsset(asset);
+        return assetMapper.updateAsset(asset);
     }
 
     @Override
     public int deleteByAsset(Asset asset) {
-        List<Integer> ids = sqlMapper.selectByAsset(asset).stream().map(a -> a.getAsset().getId()).toList();
+        List<Integer> ids = assetMapper.selectByAsset(asset).stream().map(a -> a.getAsset().getId()).toList();
         if (ids.isEmpty()) return 0;
-        return sqlMapper.deleteByAssetIDs(ids);
+        return assetMapper.deleteByAssetIDs(ids);
     }
 
     @Override
     public int deleteByAssetIDs(int[] ids) {
-        return sqlMapper.deleteByAssetIDs(ids);
+        return assetMapper.deleteByAssetIDs(ids);
     }
 
     @Override
     public int deleteByAssetIDs(List<Integer> ids) {
-        return sqlMapper.deleteByAssetIDs(ids);
+        return assetMapper.deleteByAssetIDs(ids);
     }
 
     @Override
     public User login(User user) {
-        List<User> list = sqlMapper.loginQuery(user);
+        List<User> list = userMapper.loginQuery(user);
         if (list.size() != 1) return null;
         User u = list.get(0);
         Map<String, Object> claims = new HashMap<>();
@@ -142,5 +146,17 @@ public class SqlServiceImpl implements SqlService {
         claims.put("isAdmin", u.isAdmin());
         u.setToken(JwtUtil.generateJWT(claims));
         return u;
+    }
+
+    @Override
+    public int insertUser(UserAsAssetHolder uh) {
+        assetHolderMapper.insertAssetHolder(uh.getAssetHolder());
+        uh.getUser().setAssetHolderId(uh.getAssetHolder().getId());
+        return userMapper.insertUser(uh.getUser());
+    }
+
+    @Override
+    public int updateUser(UserAsAssetHolder uh) {
+        return 0;
     }
 }

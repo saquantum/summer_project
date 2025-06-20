@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="uk.ac.bristol.dao.AssetHolderMapper">
+    <select id="selectAllAssetHolders" resultMap="ResultMaps.UserAsAssetHolderMap">
+        select t1.id                       user_id,
+               t1.username,
+               t1.password,
+               t1.asset_holder_id,
+               t1.is_admin,
+               t2.id                       holder_id,
+               t2.name                     holder_name,
+               t2.email,
+               t2.phone,
+               t2.contact_preference,
+               t2.last_modified,
+               coalesce(ac.asset_count, 0) asset_count
+        from users t1
+                 join asset_holders t2 on t1.asset_holder_id = t2.id
+                 left join (select asset_holder_id, COUNT(*) asset_count
+                            from assets
+                            group by asset_holder_id) ac on ac.asset_holder_id = t2.id
+    </select>
+
+    <select id="selectAssetHolderByID" resultMap="ResultMaps.AssetHolderMap">
+        select *
+        from asset_holders
+        where id = #{id};
+    </select>
+
+    <select id="selectByAssetHolder" resultMap="ResultMaps.AssetHolderMap">
+        select * from asset_holders
+        <where>
+            <if test="id != null">and id = #{id}</if>
+            <if test="name != null and name != ''">and name like #{name}</if>
+            <if test="email != null and email != ''">and email like #{email}</if>
+            <if test="phone != null and phone != ''">and phone like #{phone}</if>
+            <if test="contactPreference != null and contactPreference != ''">and contact_preference =
+                #{contactPreference}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertAssetHolder" >
+        <selectKey keyProperty="id" resultType="int" order="AFTER">
+            select currval(pg_get_serial_sequence('asset_holders', 'id'))
+        </selectKey>
+        insert into asset_holders (name, email, phone, contact_preference, last_modified)
+        values (#{name}, #{email}, #{phone}, #{contactPreference}::contact_preference, #{lastModified});
+    </insert>
+
+    <update id="updateAssetHolder">
+        update asset_holders
+        <set>
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="email != null and email != ''">email = #{email},</if>
+            <if test="phone != null and phone != ''">phone = #{phone},</if>
+            <if test="contactPreference != null and contactPreference != ''">contact_preference =
+                cast(#{contactPreference} as contact_preference),
+            </if>
+            <if test="lastModified != null">last_modified = #{lastModified},</if>
+        </set>
+        where id = #{id};
+    </update>
+
+    <delete id="deleteByAssetHolderIDs">
+        delete from asset_holders where id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
+    </delete>
+</mapper>

@@ -6,6 +6,17 @@ public class AssetWithWeatherWarnings {
     private Asset asset;
     private List<Warning> warnings;
 
+    public AssetWithWeatherWarnings() {
+    }
+
+    @Override
+    public String toString() {
+        return "AssetWithWeatherWarnings{" +
+                "asset=" + asset +
+                ", warnings=" + warnings +
+                '}';
+    }
+
     public Asset getAsset() {
         return asset;
     }

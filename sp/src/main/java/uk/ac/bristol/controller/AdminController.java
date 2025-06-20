@@ -4,13 +4,18 @@ import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.bristol.pojo.UserAsAssetHolder;
 import uk.ac.bristol.service.SqlService;
 import uk.ac.bristol.util.JwtUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -19,6 +24,9 @@ public class AdminController {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private SqlService sqlService;
 
     /**
      * Instant Messaging: Client receives a message only when it's online.
@@ -32,9 +40,6 @@ public class AdminController {
         messagingTemplate.convertAndSend("/topic/notify", m);
         return new ResponseResult(Code.SUCCESS, null, "Notification sent");
     }
-
-    @Autowired
-    private SqlService sqlService;
 
     @GetMapping("/as/{id}")
     public ResponseResult asUser(HttpServletResponse response, HttpServletRequest request, @PathVariable Integer id) throws IOException {
@@ -60,5 +65,13 @@ public class AdminController {
         claims.remove("asUserInAssetId");
         JwtUtil.bindJWTAsCookie(response, JwtUtil.generateJWT(claims));
         return new ResponseResult(Code.SUCCESS, null, "Proxy mode cleared.");
+    }
+
+    @PostMapping("/user")
+    public ResponseResult insertAssetHolders(@RequestBody List<UserAsAssetHolder> list){
+        for (UserAsAssetHolder u : list) {
+            sqlService.insertUser(u);
+        }
+        return new ResponseResult(Code.INSERT_OK, null);
     }
 }

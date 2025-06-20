@@ -13,6 +13,15 @@ public class UserAsAssetHolder {
         this.assetHolder = assetHolder;
     }
 
+    @Override
+    public String toString() {
+        return "UserAsAssetHolder{" +
+                "user=" + user +
+                ", assetHolder=" + assetHolder +
+                ", assetCount=" + assetCount +
+                '}';
+    }
+
     public User getUser() {
         return user;
     }

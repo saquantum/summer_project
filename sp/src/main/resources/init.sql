@@ -13,7 +13,7 @@ BEGIN
 END$$;
 
 CREATE TABLE IF NOT EXISTS asset_holders (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100),
     phone VARCHAR(20),
@@ -22,19 +22,19 @@ CREATE TABLE IF NOT EXISTS asset_holders (
 );
 
 CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     username VARCHAR(100) NOT NULL,
     password VARCHAR(100) NOT NULL,
-    asset_holder_id INTEGER REFERENCES asset_holders(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    asset_holder_id BIGINT REFERENCES asset_holders(id) ON UPDATE CASCADE ON DELETE CASCADE,
     is_admin BOOLEAN NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS assets (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     region VARCHAR(50) NOT NULL,
     drain_area GEOMETRY(POLYGON, 4326) NOT NULL,
-    asset_holder_id INTEGER REFERENCES asset_holders(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    asset_holder_id BIGINT REFERENCES asset_holders(id) ON UPDATE CASCADE ON DELETE CASCADE,
     email VARCHAR(100),
     phone VARCHAR(20),
     contact_preference contact_preference,
@@ -86,7 +86,7 @@ INSERT INTO assets (name, region, drain_area, asset_holder_id) VALUES
 ('Edinburgh Castle', 'Dumfries, Galloway, Lothian & Borders', ST_GeomFromText('POLYGON((-3.2010 55.9486, -3.1995 55.9486, -3.1995 55.9501, -3.2010 55.9501, -3.2010 55.9486))', 4326), 1);
 
 CREATE TABLE weather_warnings (
-    warning_id INT PRIMARY KEY,
+    warning_id BIGINT PRIMARY KEY,
     weather_type VARCHAR,
     warning_level VARCHAR,
     warning_head_line TEXT,

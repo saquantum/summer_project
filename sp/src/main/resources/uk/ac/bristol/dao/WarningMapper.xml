@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="uk.ac.bristol.dao.WarningMapper">
+    <select id="selectAllWarnings" resultMap="ResultMaps.WarningMap">
+        select warning_id,
+               weather_type,
+               warning_level,
+               warning_head_line,
+               valid_from,
+               valid_to,
+               warning_impact,
+               warning_likelihood,
+               affected_areas,
+               what_to_expect,
+               warning_further_details,
+               warning_update_description,
+               ST_AsGeoJSON(polygon) polygon
+        from weather_warnings
+        where now() between valid_from and valid_to
+    </select>
+</mapper>

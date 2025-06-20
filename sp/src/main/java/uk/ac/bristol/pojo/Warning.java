@@ -27,6 +27,25 @@ public class Warning {
     public Warning() {
     }
 
+    @Override
+    public String toString() {
+        return "Warning{" +
+                "id=" + id +
+                ", weatherType='" + weatherType + '\'' +
+                ", warningLevel='" + warningLevel + '\'' +
+                ", warningHeadLine='" + warningHeadLine + '\'' +
+                ", validFrom=" + validFrom +
+                ", validTo=" + validTo +
+                ", warningImpact='" + warningImpact + '\'' +
+                ", warningLikelihood='" + warningLikelihood + '\'' +
+                ", affectedAreas='" + affectedAreas + '\'' +
+                ", whatToExpect='" + whatToExpect + '\'' +
+                ", warningFurtherDetails='" + warningFurtherDetails + '\'' +
+                ", warningUpdateDescription='" + warningUpdateDescription + '\'' +
+                ", polygon=" + polygon +
+                '}';
+    }
+
     public Integer getId() {
         return id;
     }
