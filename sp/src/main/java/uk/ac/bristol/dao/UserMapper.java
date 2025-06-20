@@ -9,11 +9,11 @@ import java.util.List;
 @Mapper
 public interface UserMapper {
 
-    List<UserAsAssetHolder> selectUserByAssetHolderId(@Param("id") Integer id);
+    List<UserAsAssetHolder> selectUserByAssetHolderId(@Param("id") Long id);
 
-    int insertUser(User user);
+    long insertUser(User user);
 
-    int updateUser(User user);
+    long updateUser(User user);
 
     List<User> loginQuery(User user);
 }

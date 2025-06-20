@@ -8,45 +8,45 @@ import java.util.List;
 
 public interface SqlService {
 
-    List<UserAsAssetHolder> selectUserByAssetHolderId(@Param("id") Integer id);
+    List<UserAsAssetHolder> selectUserByAssetHolderId(@Param("id") Long id);
 
     List<Warning> selectAllWarnings();
 
     List<UserAsAssetHolder> selectAllAssetHolders();
 
-    List<AssetHolder> selectAssetHolderByID(@Param("id") Integer id);
+    List<AssetHolder> selectAssetHolderByID(@Param("id") Long id);
 
     List<AssetHolder> selectByAssetHolder(AssetHolder assetHolder);
 
-    int insertAssetHolder(AssetHolder assetHolder);
+    long insertAssetHolder(AssetHolder assetHolder);
 
-    int updateAssetHolder(AssetHolder assetHolder);
+    long updateAssetHolder(AssetHolder assetHolder);
 
-    int deleteByAssetHolder(AssetHolder assetHolder);
+    long deleteByAssetHolder(AssetHolder assetHolder);
 
-    int deleteByAssetHolderIDs(@Param("ids") int[] ids);
-    int deleteByAssetHolderIDs(@Param("ids") List<Integer> ids);
+    long deleteByAssetHolderIDs(@Param("ids") long[] ids);
+    long deleteByAssetHolderIDs(@Param("ids") List<Long> ids);
 
     List<AssetWithWeatherWarnings> selectAllAssets();
 
-    List<AssetWithWeatherWarnings> selectAssetByID(@Param("id") Integer id);
+    List<AssetWithWeatherWarnings> selectAssetByID(@Param("id") Long id);
 
     List<AssetWithWeatherWarnings> selectByAsset(Asset asset);
 
-    List<AssetWithWeatherWarnings> selectAllAssetsOfHolder(@Param("id") Integer id);
+    List<AssetWithWeatherWarnings> selectAllAssetsOfHolder(@Param("id") Long id);
 
-    int insertAsset(Asset asset);
+    long insertAsset(Asset asset);
 
-    int updateAsset(Asset asset) throws JsonProcessingException;
+    long updateAsset(Asset asset) throws JsonProcessingException;
 
-    int deleteByAsset(Asset asset);
+    long deleteByAsset(Asset asset);
 
-    int deleteByAssetIDs(@Param("ids") int[] ids);
-    int deleteByAssetIDs(@Param("ids") List<Integer> ids);
+    long deleteByAssetIDs(@Param("ids") long[] ids);
+    long deleteByAssetIDs(@Param("ids") List<Long> ids);
 
     User login(User user);
 
-    int insertUser(UserAsAssetHolder uh);
+    long insertUser(UserAsAssetHolder uh);
 
-    int updateUser(UserAsAssetHolder uh);
+    long updateUser(UserAsAssetHolder uh);
 }

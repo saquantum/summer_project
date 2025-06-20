@@ -3,7 +3,7 @@ package uk.ac.bristol.pojo;
 import java.time.Instant;
 
 public class AssetHolder {
-    private Integer id;
+    private Long id;
     private String name;
     private String email;
     private String phone;
@@ -13,7 +13,7 @@ public class AssetHolder {
     public AssetHolder() {
     }
 
-    public AssetHolder(Integer id) {
+    public AssetHolder(Long id) {
         this.id = id;
     }
 
@@ -21,7 +21,7 @@ public class AssetHolder {
         this.name = name;
     }
 
-    public AssetHolder(Integer id, String name, String email, String phone, String contactPreference) {
+    public AssetHolder(Long id, String name, String email, String phone, String contactPreference) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -40,11 +40,11 @@ public class AssetHolder {
                 '}';
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

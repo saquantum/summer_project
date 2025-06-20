@@ -28,7 +28,7 @@ public class SqlServiceImpl implements SqlService {
     private AssetMapper assetMapper;
 
     @Override
-    public List<UserAsAssetHolder> selectUserByAssetHolderId(Integer id) {
+    public List<UserAsAssetHolder> selectUserByAssetHolderId(Long id) {
         return userMapper.selectUserByAssetHolderId(id);
     }
 
@@ -43,7 +43,7 @@ public class SqlServiceImpl implements SqlService {
     }
 
     @Override
-    public List<AssetHolder> selectAssetHolderByID(Integer id) {
+    public List<AssetHolder> selectAssetHolderByID(Long id) {
         return assetHolderMapper.selectAssetHolderByID(id);
     }
 
@@ -53,30 +53,30 @@ public class SqlServiceImpl implements SqlService {
     }
 
     @Override
-    public int insertAssetHolder(AssetHolder assetHolder) {
+    public long insertAssetHolder(AssetHolder assetHolder) {
         return assetHolderMapper.insertAssetHolder(assetHolder);
     }
 
     @Override
-    public int updateAssetHolder(AssetHolder assetHolder) {
+    public long updateAssetHolder(AssetHolder assetHolder) {
         assetHolder.setLastModified(Instant.now());
         return assetHolderMapper.updateAssetHolder(assetHolder);
     }
 
     @Override
-    public int deleteByAssetHolder(AssetHolder assetHolder) {
-        List<Integer> ids = assetHolderMapper.selectByAssetHolder(assetHolder).stream().map(AssetHolder::getId).toList();
+    public long deleteByAssetHolder(AssetHolder assetHolder) {
+        List<Long> ids = assetHolderMapper.selectByAssetHolder(assetHolder).stream().map(AssetHolder::getId).toList();
         if (ids.isEmpty()) return 0;
         return assetHolderMapper.deleteByAssetHolderIDs(ids);
     }
 
     @Override
-    public int deleteByAssetHolderIDs(int[] ids) {
+    public long deleteByAssetHolderIDs(long[] ids) {
         return assetHolderMapper.deleteByAssetHolderIDs(ids);
     }
 
     @Override
-    public int deleteByAssetHolderIDs(List<Integer> ids) {
+    public long deleteByAssetHolderIDs(List<Long> ids) {
         return assetHolderMapper.deleteByAssetHolderIDs(ids);
     }
 
@@ -86,7 +86,7 @@ public class SqlServiceImpl implements SqlService {
     }
 
     @Override
-    public List<AssetWithWeatherWarnings> selectAssetByID(Integer id) {
+    public List<AssetWithWeatherWarnings> selectAssetByID(Long id) {
         return assetMapper.selectAssetByID(id);
     }
 
@@ -96,17 +96,17 @@ public class SqlServiceImpl implements SqlService {
     }
 
     @Override
-    public List<AssetWithWeatherWarnings> selectAllAssetsOfHolder(Integer id) {
+    public List<AssetWithWeatherWarnings> selectAllAssetsOfHolder(Long id) {
         return assetMapper.selectAllAssetsOfHolder(id);
     }
 
     @Override
-    public int insertAsset(Asset asset) {
+    public long insertAsset(Asset asset) {
         return assetMapper.insertAsset(asset);
     }
 
     @Override
-    public int updateAsset(Asset asset) {
+    public long updateAsset(Asset asset) {
         List<AssetWithWeatherWarnings> old = this.selectAssetByID(asset.getId());
         if (old.size() != 1) return 0;
         List<AssetHolder> assetHolder = this.selectAssetHolderByID(old.get(0).getAsset().getAssetHolderId());
@@ -118,19 +118,19 @@ public class SqlServiceImpl implements SqlService {
     }
 
     @Override
-    public int deleteByAsset(Asset asset) {
-        List<Integer> ids = assetMapper.selectByAsset(asset).stream().map(a -> a.getAsset().getId()).toList();
+    public long deleteByAsset(Asset asset) {
+        List<Long> ids = assetMapper.selectByAsset(asset).stream().map(a -> a.getAsset().getId()).toList();
         if (ids.isEmpty()) return 0;
         return assetMapper.deleteByAssetIDs(ids);
     }
 
     @Override
-    public int deleteByAssetIDs(int[] ids) {
+    public long deleteByAssetIDs(long[] ids) {
         return assetMapper.deleteByAssetIDs(ids);
     }
 
     @Override
-    public int deleteByAssetIDs(List<Integer> ids) {
+    public long deleteByAssetIDs(List<Long> ids) {
         return assetMapper.deleteByAssetIDs(ids);
     }
 
@@ -149,14 +149,14 @@ public class SqlServiceImpl implements SqlService {
     }
 
     @Override
-    public int insertUser(UserAsAssetHolder uh) {
+    public long insertUser(UserAsAssetHolder uh) {
         assetHolderMapper.insertAssetHolder(uh.getAssetHolder());
         uh.getUser().setAssetHolderId(uh.getAssetHolder().getId());
         return userMapper.insertUser(uh.getUser());
     }
 
     @Override
-    public int updateUser(UserAsAssetHolder uh) {
+    public long updateUser(UserAsAssetHolder uh) {
         return 0;
     }
 }

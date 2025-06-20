@@ -11,17 +11,17 @@ public interface AssetMapper {
 
     List<AssetWithWeatherWarnings> selectAllAssets();
 
-    List<AssetWithWeatherWarnings> selectAssetByID(@Param("id") Integer id);
+    List<AssetWithWeatherWarnings> selectAssetByID(@Param("id") Long id);
 
     List<AssetWithWeatherWarnings> selectByAsset(Asset asset);
 
-    List<AssetWithWeatherWarnings> selectAllAssetsOfHolder(@Param("id") Integer id);
+    List<AssetWithWeatherWarnings> selectAllAssetsOfHolder(@Param("id") Long id);
 
-    int insertAsset(Asset asset);
+    long insertAsset(Asset asset);
 
-    int updateAsset(Asset asset);
+    long updateAsset(Asset asset);
 
-    int deleteByAssetIDs(@Param("ids") int[] ids);
+    long deleteByAssetIDs(@Param("ids") long[] ids);
 
-    int deleteByAssetIDs(@Param("ids") List<Integer> ids);
+    long deleteByAssetIDs(@Param("ids") List<Long> ids);
 }

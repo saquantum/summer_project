@@ -3,7 +3,7 @@ package uk.ac.bristol.pojo;
 public class UserAsAssetHolder {
     private User user;
     private AssetHolder assetHolder;
-    private int assetCount;
+    private long assetCount;
 
     public UserAsAssetHolder() {
     }
@@ -38,11 +38,11 @@ public class UserAsAssetHolder {
         this.assetHolder = assetHolder;
     }
 
-    public int getAssetCount() {
+    public long getAssetCount() {
         return assetCount;
     }
 
-    public void setAssetCount(int assetCount) {
+    public void setAssetCount(long assetCount) {
         this.assetCount = assetCount;
     }
 }

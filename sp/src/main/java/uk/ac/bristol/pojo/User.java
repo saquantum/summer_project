@@ -1,17 +1,17 @@
 package uk.ac.bristol.pojo;
 
 public class User {
-    private Integer id;
+    private Long id;
     private String username;
     private String password;
-    private Integer assetHolderId;
+    private Long assetHolderId;
     private boolean admin;
     private String token;
 
     public User() {
     }
 
-    public User(Integer id, String username, String password, Integer assetHolderId, boolean admin, String token) {
+    public User(Long id, String username, String password, Long assetHolderId, boolean admin, String token) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -64,19 +64,19 @@ public class User {
         this.token = token;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Integer getAssetHolderId() {
+    public Long getAssetHolderId() {
         return assetHolderId;
     }
 
-    public void setAssetHolderId(Integer assetHolderId) {
+    public void setAssetHolderId(Long assetHolderId) {
         this.assetHolderId = assetHolderId;
     }
 }

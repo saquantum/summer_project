@@ -117,7 +117,7 @@
     </select>
 
     <insert id="insertAsset">
-        <selectKey keyProperty="id" resultType="int" order="AFTER">
+        <selectKey keyProperty="id" resultType="long" order="AFTER">
             select currval(pg_get_serial_sequence('assets', 'id'))
         </selectKey>
         insert into assets (name, region, drain_area, asset_holder_id, last_modified)

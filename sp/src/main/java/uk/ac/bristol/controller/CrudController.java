@@ -31,16 +31,16 @@ public class CrudController {
         data.put("isAdmin", isAdmin);
         // for user, must get asset holder id, or something has gone wrong
         if(!isAdmin){
-            data.put("id", claims.get("assetHolderId", Integer.class));
+            data.put("id", claims.get("assetHolderId", Long.class));
             return new ResponseResult(Code.SUCCESS, data);
         }
         // for admin, two possibilities:
         else{
             // 1. with proxy id
             if(claims.containsKey("asUserId")){
-                data.put("id", claims.get("asUserId", Integer.class));
+                data.put("id", claims.get("asUserId", Long.class));
                 if(claims.containsKey("asUserInAssetId")){
-                    data.put("asUserInAssetId", claims.get("asUserInAssetId", Integer.class));
+                    data.put("asUserInAssetId", claims.get("asUserInAssetId", Long.class));
                 }
                 return new ResponseResult(Code.SUCCESS, data);
             }
@@ -53,7 +53,7 @@ public class CrudController {
     }
 
     @GetMapping("/{id}")
-    public ResponseResult getUserByAssetHolderId(@PathVariable Integer id){
+    public ResponseResult getUserByAssetHolderId(@PathVariable Long id){
         return new ResponseResult(Code.SELECT_OK, sqlService.selectUserByAssetHolderId(id));
     }
 
@@ -68,12 +68,12 @@ public class CrudController {
     }
 
     @GetMapping("/asset/{id}")
-    public ResponseResult getAssetsById(@PathVariable Integer id) {
+    public ResponseResult getAssetsById(@PathVariable Long id) {
         return new ResponseResult(Code.SELECT_OK, sqlService.selectByAsset(new Asset(id)));
     }
 
     @GetMapping("holder/{id}/asset")
-    public ResponseResult getAllAssetsOfHolder(@PathVariable Integer id) {
+    public ResponseResult getAllAssetsOfHolder(@PathVariable Long id) {
         return new ResponseResult(Code.SELECT_OK, sqlService.selectAllAssetsOfHolder(id));
     }
 
@@ -83,7 +83,7 @@ public class CrudController {
     }
 
     @GetMapping("/holder/{id}")
-    public ResponseResult getAssetHolderByName(@PathVariable Integer id) {
+    public ResponseResult getAssetHolderByName(@PathVariable Long id) {
         return new ResponseResult(Code.SELECT_OK, sqlService.selectByAssetHolder(new AssetHolder(id)));
     }
 

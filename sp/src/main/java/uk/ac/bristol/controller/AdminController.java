@@ -42,7 +42,7 @@ public class AdminController {
     }
 
     @GetMapping("/as/{id}")
-    public ResponseResult asUser(HttpServletResponse response, HttpServletRequest request, @PathVariable Integer id) throws IOException {
+    public ResponseResult asUser(HttpServletResponse response, HttpServletRequest request, @PathVariable Long id) throws IOException {
         Claims claims = JwtUtil.parseJWT(JwtUtil.getJWTFromCookie(request, response));
         claims.put("asUserId", id);
         JwtUtil.bindJWTAsCookie(response, JwtUtil.generateJWT(claims));
@@ -50,7 +50,7 @@ public class AdminController {
     }
 
     @GetMapping("/as/{id}/inAsset/{assetId}")
-    public ResponseResult asUserInAsset(HttpServletResponse response, HttpServletRequest request, @PathVariable Integer id, @PathVariable Integer assetId) throws IOException {
+    public ResponseResult asUserInAsset(HttpServletResponse response, HttpServletRequest request, @PathVariable Long id, @PathVariable Long assetId) throws IOException {
         Claims claims = JwtUtil.parseJWT(JwtUtil.getJWTFromCookie(request, response));
         claims.put("asUserId", id);
         claims.put("asUserInAssetId", assetId);

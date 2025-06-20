@@ -22,7 +22,7 @@
     </select>
 
     <insert id="insertUser">
-        <selectKey keyProperty="id" resultType="int" order="AFTER">
+        <selectKey keyProperty="id" resultType="long" order="AFTER">
             select currval(pg_get_serial_sequence('users', 'id'))
         </selectKey>
         insert into users (username, password, asset_holder_id, is_admin)

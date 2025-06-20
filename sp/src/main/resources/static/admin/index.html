@@ -56,6 +56,7 @@
 
         <!-- users -->
         <div v-if="sidebarActive === 'users'" class="topbar">
+            <h3>All Users</h3>
             <div style="flex-grow: 1;"></div>
             <button v-if="!isAddingAssetHolder" class="submit" @click="isAddingAssetHolder = true;">Add Asset Holder
             </button>
@@ -528,10 +529,11 @@
                 })).json();
                 const code =  response.code;
                 if(code !== 20011){
-                    window.alert("Failed to submit.");
+                    this.popupNotification = "Failed to submit.";
                 }else{
-                    window.alert("Submitted.");
+                    this.popupNotification = "Submitted.";
                 }
+                this.hasNotification = true;
             },
         },
         created() {

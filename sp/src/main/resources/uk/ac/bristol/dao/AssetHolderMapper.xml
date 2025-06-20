@@ -44,7 +44,7 @@
     </select>
 
     <insert id="insertAssetHolder" >
-        <selectKey keyProperty="id" resultType="int" order="AFTER">
+        <selectKey keyProperty="id" resultType="long" order="AFTER">
             select currval(pg_get_serial_sequence('asset_holders', 'id'))
         </selectKey>
         insert into asset_holders (name, email, phone, contact_preference, last_modified)

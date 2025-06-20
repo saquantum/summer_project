@@ -11,15 +11,15 @@ public interface AssetHolderMapper {
 
     List<UserAsAssetHolder> selectAllAssetHolders();
 
-    List<AssetHolder> selectAssetHolderByID(@Param("id") Integer id);
+    List<AssetHolder> selectAssetHolderByID(@Param("id") Long id);
 
     List<AssetHolder> selectByAssetHolder(AssetHolder assetHolder);
 
-    int insertAssetHolder(AssetHolder assetHolder);
+    long insertAssetHolder(AssetHolder assetHolder);
 
-    int updateAssetHolder(AssetHolder assetHolder);
+    long updateAssetHolder(AssetHolder assetHolder);
 
-    int deleteByAssetHolderIDs(@Param("ids") int[] ids);
+    long deleteByAssetHolderIDs(@Param("ids") long[] ids);
 
-    int deleteByAssetHolderIDs(@Param("ids") List<Integer> ids);
+    long deleteByAssetHolderIDs(@Param("ids") List<Long> ids);
 }

@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.util.Map;
 
 public class Warning {
-    private Integer id;
+    private Long id;
     private String weatherType;
     private String warningLevel;
     private String warningHeadLine;
@@ -46,11 +46,11 @@ public class Warning {
                 '}';
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

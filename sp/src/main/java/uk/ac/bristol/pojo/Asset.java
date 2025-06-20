@@ -10,17 +10,17 @@ import java.time.Instant;
 import java.util.Map;
 
 public class Asset {
-    private Integer id;
+    private Long id;
     private String name;
     private String region;
     private Map<String, Object> drainArea;
-    private Integer assetHolderId;
+    private Long assetHolderId;
     private Instant lastModified;
 
     public Asset() {
     }
 
-    public Asset(Integer id) {
+    public Asset(Long id) {
         this.id = id;
     }
 
@@ -34,11 +34,11 @@ public class Asset {
                 '}';
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -73,11 +73,11 @@ public class Asset {
         }
     }
 
-    public Integer getAssetHolderId() {
+    public Long getAssetHolderId() {
         return assetHolderId;
     }
 
-    public void setAssetHolderId(Integer assetHolderId) {
+    public void setAssetHolderId(Long assetHolderId) {
         this.assetHolderId = assetHolderId;
     }
 
