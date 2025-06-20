@@ -126,3 +126,36 @@ $ docker ps -a
 四. 验证服务器可访问
 
 用浏览器访问`http://192.168.48.131:8080/`.
+
+
+
+### windows运行docker
+
+新建文件夹test, 放入如下文件
+
+frontend目录下为前端源码，全部复制过来
+
+```
+test/
+├── backend/
+│   ├── app.jar
+│   └── Dockerfile
+└── frontend/
+│   └── Dockerfile
+│   .
+│   .
+│   └── nginx.conf
+│
+│
+├── docker-compose.yml
+└── init.sql
+```
+
+在test目录下，运行如下命令
+
+```
+$ docker compose up --build
+```
+
+访问localhost
+
