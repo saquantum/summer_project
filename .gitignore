@@ -35,3 +35,9 @@ build/
 
 ### custom log file
 logs/
+
+# ----- 執行產生的檔案 -----
+/API_Scratch/data/
+
+# ----- 其他不需納入版本控制的目錄 -----
+/sp/
