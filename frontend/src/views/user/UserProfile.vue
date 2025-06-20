@@ -1,10 +1,15 @@
 <script setup>
-import { reactive } from 'vue'
+import { ref } from 'vue'
+import { useUserStore } from '@/stores'
+const userStore = useUserStore()
 
-const form = reactive({
-  firstName: '',
-  lastName: '',
-  email: '',
+const { assetHolder } = userStore.user
+console.log(assetHolder)
+const arr = userStore.user.assetHolder.name.split(' ')
+const form = ref({
+  firstName: arr[0],
+  lastName: arr[1],
+  email: assetHolder.email,
   address: {
     street: '',
     postCode: '',

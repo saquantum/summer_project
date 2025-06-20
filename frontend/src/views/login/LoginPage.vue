@@ -3,7 +3,7 @@ import { User, Lock } from '@element-plus/icons-vue'
 import { ref, watch } from 'vue'
 import { userRegisterService, userLoginService } from '@/api/user'
 import { useRouter } from 'vue-router'
-
+import { useUserStore } from '@/stores'
 const form = ref()
 const isRegister = ref(true)
 const formModel = ref({
@@ -27,12 +27,12 @@ const rules = {
       required: true,
       message: 'Please input password',
       trigger: 'blur'
-    },
-    {
-      pattern: /^\S{6,15}$/,
-      message: 'password must between 6 to 15 characters',
-      trigger: 'blur'
     }
+    // {
+    //   pattern: /^\S{6,15}$/,
+    //   message: 'password must between 6 to 15 characters',
+    //   trigger: 'blur'
+    // }
   ],
   repassword: [
     { required: true, message: 'Please input password', trigger: 'blur' },
@@ -62,10 +62,12 @@ const register = async () => {
 }
 
 const router = useRouter()
+const userStore = useUserStore()
 const login = async () => {
   await form.value.validate()
-  const res = await userLoginService(formModel.value)
-  console.log(res)
+  await userLoginService(formModel.value)
+  await userStore.getUser()
+  console.log(userStore.user)
   ElMessage.success('success')
   router.push('/')
 }

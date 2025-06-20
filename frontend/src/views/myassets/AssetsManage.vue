@@ -1,52 +1,186 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useAssetsStore } from '@/stores/modules/assets'
-import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useRouter } from 'vue-router'
-
+import { ref, watch, computed } from 'vue'
+import { useUserStore, useAdminStore } from '@/stores'
 const assetsStore = useAssetsStore()
+const userStore = useUserStore()
+const adminStore = useAdminStore()
 const router = useRouter()
 
-onMounted(() => {
-  assetsStore.getAssets()
+// filter value
+const assetName = ref('')
+const assetWarningLevel = ref('')
+const assetRegion = ref('')
 
-  assetsStore.assets.forEach((asset, index) => {
-    const map = L.map('map-' + index).setView([0, 0], 13)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map)
-    const geoLayer = L.geoJSON(asset.drainArea).addTo(map)
-    map.fitBounds(geoLayer.getBounds())
-  })
+// filtered assets
+const currentAssets = ref([])
+
+//select value
+const warningLevelOptions = [
+  {
+    value: '',
+    label: 'Select warning level'
+  },
+  {
+    value: 'No Warning',
+    label: 'No Warning'
+  },
+  {
+    value: 'Yellow Warning',
+    label: 'Yellow Warning'
+  },
+  {
+    value: 'Amber Warning',
+    label: 'Amber Warning'
+  },
+  {
+    value: 'Red Warning',
+    label: 'Red Warning'
+  }
+]
+const warningRegion = [
+  {
+    value: '',
+    label: 'Select Region'
+  },
+  { value: 'North East England', label: 'North East England' },
+  { value: 'North West England', label: 'North West England' },
+  { value: 'Yorkshire & Humber', label: 'Yorkshire & Humber' },
+  { value: 'East Midlands', label: 'East Midlands' },
+  { value: 'West Midlands', label: 'West Midlands' },
+  { value: 'East of England', label: 'East of England' },
+  {
+    value: 'London & South East England',
+    label: 'London & South East England'
+  },
+  { value: 'South West England', label: 'South West England' },
+  { value: 'Orkney & Shetland', label: 'Orkney & Shetland' },
+  { value: 'Highlands & Eilean Siar', label: 'Highlands & Eilean Siar' },
+  { value: 'Grampian', label: 'Grampian' },
+  { value: 'Central, Tayside & Fife', label: 'Central, Tayside & Fife' },
+  { value: 'Strathclyde', label: 'Strathclyde' },
+  {
+    value: 'Dumfries, Galloway, Lothian & Borders',
+    label: 'Dumfries, Galloway, Lothian & Borders'
+  },
+  { value: 'Northern Ireland', label: 'Northern Ireland' },
+  { value: 'Wales', label: 'Wales' }
+]
+
+// page change
+const currentPage = ref(1)
+const pageSize = 6
+const handlePageChange = (page) => {
+  currentPage.value = page
+}
+
+const currentPageAssets = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  const end = start + pageSize
+  return currentAssets.value.slice(start, end)
 })
+
+onMounted(async () => {
+  currentAssets.value = []
+  let id
+  if (!userStore.user.isAdmin) {
+    id = userStore.user.user.assetHolderId
+  } else {
+    id = adminStore.proxyId
+  }
+  await assetsStore.getAssets(id)
+  currentAssets.value = assetsStore.assets
+})
+
+watch(
+  [assetName, assetWarningLevel, assetRegion],
+  async () => {
+    currentAssets.value = assetsStore.assets.filter((item) => {
+      const matchName = assetName.value
+        ? item.asset.name?.toLowerCase().includes(assetName.value.toLowerCase())
+        : true
+      const matchLevel = assetWarningLevel.value
+        ? assetWarningLevel.value
+            .toLowerCase()
+            .includes(item.warnings[0]?.warningLevel?.toLowerCase() || '')
+        : true
+      const matchRegion = assetRegion.value
+        ? item.asset.region === assetRegion.value
+        : true
+      return matchName && matchLevel && matchRegion
+    })
+    currentPage.value = 1
+  },
+  {
+    immediate: true
+  }
+)
 </script>
 
 <template>
+  <!-- assets filter -->
+  <div style="margin-bottom: 10px">
+    <el-input v-model="assetName" style="width: 240px"></el-input>
+    <el-select
+      v-model="assetWarningLevel"
+      placeholder="Select warning level"
+      size="large"
+      style="width: 240px"
+    >
+      <el-option
+        v-for="item in warningLevelOptions"
+        :key="item.value"
+        :label="item.label"
+        :value="item.value"
+      ></el-option>
+    </el-select>
+
+    <el-select
+      v-model="assetRegion"
+      placeholder="Select Region"
+      size="large"
+      style="width: 240px"
+    >
+      <el-option
+        v-for="item in warningRegion"
+        :key="item.value"
+        :label="item.label"
+        :value="item.value"
+      ></el-option>
+    </el-select>
+  </div>
+
+  <!-- cards for assets -->
   <div class="assets-container">
     <div class="card-grid">
       <el-card
-        v-for="(asset, index) in assetsStore.assets"
-        :key="asset.id"
+        v-for="(item, index) in currentPageAssets"
+        :key="item.asset.id"
         class="asset-card"
         shadow="hover"
       >
         <template #header>
           <div class="card-header">
-            <h3 class="asset-title">{{ asset.name || 'Asset Name' }}</h3>
-            <span class="asset-id">ID: {{ asset.id }}</span>
+            <h3 class="asset-title">{{ item.asset.name || 'Asset Name' }}</h3>
+            <span class="asset-id">ID: {{ item.asset.id }}</span>
           </div>
         </template>
 
         <div class="map-container">
-          <div :id="'map-' + index" class="map"></div>
+          <MapCard
+            :map-id="'map-' + index"
+            :drain-area="item.asset.drainArea"
+          />
         </div>
 
         <template #footer>
           <div class="card-footer">
             <el-button
               type="primary"
-              @click="router.push(`/asset/${asset.id}`)"
+              @click="router.push(`/asset/${item.asset.id}`)"
               class="view-details-btn"
             >
               Show Detail
@@ -55,6 +189,20 @@ onMounted(() => {
         </template>
       </el-card>
     </div>
+
+    <el-pagination
+      :current-page="currentPage"
+      :page-size="pageSize"
+      :total="currentAssets.length"
+      layout="prev, pager, next"
+      @current-change="handlePageChange"
+      style="
+        display: flex;
+        justify-content: center;
+        text-align: center;
+        margin-top: 20px;
+      "
+    />
   </div>
 </template>
 
@@ -160,6 +308,7 @@ onMounted(() => {
   }
 }
 
+/* change defalut style */
 :deep(.el-card__header) {
   padding: 12px 16px;
 }

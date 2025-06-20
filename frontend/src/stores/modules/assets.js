@@ -7,11 +7,15 @@ export const useAssetsStore = defineStore(
   () => {
     const assets = ref([])
 
-    const getAssets = async () => {
-      const res = await assetsGetInfoService(1)
+    const getAssets = async (id) => {
+      const res = await assetsGetInfoService(id)
       assets.value = res.data.data
     }
-    return { assets, getAssets }
+
+    const reset = () => {
+      assets.value = []
+    }
+    return { assets, getAssets, reset }
   },
   {
     persist: true

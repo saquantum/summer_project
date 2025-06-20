@@ -9,20 +9,29 @@ import {
   Bell
 } from '@element-plus/icons-vue'
 import avatar from '@/assets/default.png'
-import { onMounted, ref } from 'vue'
-import { useUserStore } from '@/stores'
+import { ref } from 'vue'
+import { useAssetsStore, useUserStore, useAdminStore } from '@/stores'
+import { useRouter } from 'vue-router'
 
 const userStore = useUserStore()
-onMounted(() => {
-  userStore.getUser()
-})
-
+const assetsStore = useAssetsStore()
+const adminStore = useAdminStore()
+const router = useRouter()
+const handleCommand = (command) => {
+  if (command === 'logout') {
+    userStore.reset()
+    assetsStore.reset()
+    adminStore.reset()
+    router.push('/login')
+  }
+}
 const dialogVisible = ref(false)
 </script>
 
 <template>
   <el-container class="layout-container">
-    <el-aside width="200px">
+    <!-- user interface -->
+    <el-aside v-if="userStore.user.isAdmin === false" width="200px">
       <div class="el-aside__logo"></div>
       <el-menu
         active-text-color="#ffd04b"
@@ -43,6 +52,33 @@ const dialogVisible = ref(false)
       </el-menu>
     </el-aside>
 
+    <!-- admin interface -->
+    <el-aside v-else width="200px">
+      <div class="el-aside__logo"></div>
+      <el-menu
+        active-text-color="#ffd04b"
+        background-color="#528add"
+        :default-active="$route.path"
+        text-color="#fff"
+        router
+      >
+        <el-menu-item index="/admin/users">
+          <el-icon><Management /></el-icon>
+          <span>All Users</span>
+        </el-menu-item>
+
+        <el-menu-item index="/admin/assets">
+          <el-icon><User /></el-icon>
+          <span>All Assets</span>
+        </el-menu-item>
+
+        <el-menu-item index="/admin/warnings">
+          <el-icon><User /></el-icon>
+          <span>All Warnings</span>
+        </el-menu-item>
+      </el-menu>
+    </el-aside>
+
     <el-container>
       <el-header>
         <div>username</div>
@@ -52,7 +88,7 @@ const dialogVisible = ref(false)
             <Bell />
           </el-icon>
 
-          <el-dropdown placement="bottom-end">
+          <el-dropdown placement="bottom-end" @command="handleCommand">
             <span class="el-dropdown__box">
               <el-avatar :src="avatar" />
               <el-icon><CaretBottom /></el-icon>
@@ -92,8 +128,6 @@ const dialogVisible = ref(false)
       <el-main>
         <router-view></router-view>
       </el-main>
-
-      <el-footer>This is a footer</el-footer>
     </el-container>
   </el-container>
 </template>

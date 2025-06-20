@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-
+import { useUserStore } from '@/stores'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -7,7 +7,6 @@ const router = createRouter({
     {
       path: '/',
       component: () => import('@/views/layout/LayoutContainer.vue'),
-      redirect: '/myassets/manage',
       children: [
         {
           path: 'myassets/manage',
@@ -20,6 +19,18 @@ const router = createRouter({
         {
           path: 'asset/:id',
           component: () => import('@/views/assetdetail/index.vue')
+        },
+        {
+          path: 'admin/users',
+          component: () => import('@/views/admin/AllUsers.vue')
+        },
+        {
+          path: 'admin/assets',
+          component: () => import('@/views/admin/AllAssets.vue')
+        },
+        {
+          path: 'admin/warnings',
+          component: () => import('@/views/admin/AllWarnings.vue')
         }
       ]
     }
@@ -33,9 +44,27 @@ Navigation Guards, enable when deploying
 3. based on path redirecting it
 */
 
-// router.beforeEach((to) => {
-//   const userstore = useUserStore()
-//   if (!userstore.token && to.path !== '/login') return '/login'
-// })
+router.beforeEach((to) => {
+  const userStore = useUserStore()
+  const isLoggedIn = Object.keys(userStore.user).length > 0
+  const isAdmin = isLoggedIn && userStore.user.isAdmin === true
+
+  if (!isLoggedIn && to.path !== '/login') {
+    return '/login'
+  }
+
+  if (to.path === '/') {
+    if (!isLoggedIn) return '/login'
+    return isAdmin ? '/admin/users' : '/myassets/manage'
+  }
+
+  if (isLoggedIn && to.path === '/login') {
+    return isAdmin ? '/admin/users' : '/myassets/manage'
+  }
+
+  if (!isAdmin && to.path.startsWith('/admin')) {
+    return '/myassets/manage'
+  }
+})
 
 export default router
