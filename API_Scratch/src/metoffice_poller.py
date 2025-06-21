@@ -22,7 +22,7 @@ import logging
 import signal  # 捕捉系統信號，Ex：Ctrl+C
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional  # 類型註解
 
@@ -62,7 +62,17 @@ class DataProcessor:
     # ────────────────────────────────────────────────────────────
     def process(self, raw_json: dict) -> Result[Path]:
         """依目前 UTC timestamp 建立檔名，完整走一次驗證+輸出流程。"""
-        now = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+
+        # # 若沒有任何 warnings，就直接寫入 *_no_warning.json，
+        # # 並回傳成功，讓上層可以決定要不要再做其他事。
+        # if len(raw_json.get("features", [])) == 0:
+        #     now = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        #     no_warn_path = self.output_dir / f"metoffice_no_warning_{now}.json"
+        #     write_res = self._write_json(raw_json, no_warn_path)
+        #     return write_res if write_res.is_success() else Result.fail(write_res.error_msg)
+
+        # now = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        now = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         raw_path = self.output_dir / f"metoffice_raw_{now}.json"  # 爬取下來後的原始文件 metoffice_raw.json
         formatted_path = self.output_dir / f"metoffice_raw_formatted_{now}.json"
         failed_path = self.output_dir / f"metoffice_raw_failed_validation_{now}.json"
@@ -133,15 +143,19 @@ class MetOfficePoller:
         3. 循環結束後，輸出結束日誌
         '''
         # logging.info("開始輪詢，每 %d 秒一次 (Ctrl+C 停止)", self.interval_sec)
-        print("開始輪詢，每 %d 秒一次 (Ctrl+C 停止)", self.interval_sec)
-        while self._running:  # 初始：self.running為True，進入主循環
-            start = time.time()
-            self._process_cycle()
-            sleep_sec = max(self.interval_sec - (time.time() - start), 0)
-            if sleep_sec:
-                time.sleep(sleep_sec)
-        # logging.info("Poller 已結束。")
-        print("Poller 已結束。")
+        print(f"開始輪詢，每 {self.interval_sec} 秒一次 (Ctrl+C 停止)")
+        try:
+            while self._running:  # 初始：self.running為True，進入主循環
+                start = time.time()
+                self._process_cycle()
+                sleep_sec = max(self.interval_sec - (time.time() - start), 0)
+                if sleep_sec:
+                    time.sleep(sleep_sec)
+        except KeyboardInterrupt:  # 如果在 sleep 時按 Ctrl-C，也能直接跳出
+            pass
+        finally:
+            # logging.info("Poller 已結束")
+            print("Poller 已結束")
 
     # ────────────────────────────────────────────────────────────
     #     Private Functions
@@ -154,7 +168,14 @@ class MetOfficePoller:
         fetch_res = self.fetcher.fetch()
         if fetch_res.is_failure():
             # logging.error("Fetch 失敗: %s", fetch_res.error_msg)
-            print("Fetch 失敗: %s", fetch_res.error_msg)
+            print(f"Fetch 失敗: {fetch_res.error_msg}")
+            return
+
+        # NSWWS 有時會回傳 features=[]，代表目前沒有任何天氣預警。
+        # 這種情況下，我們不必再跑驗證／寫檔，
+        # 直接提示使用者並提早結束本輪循環即可。
+        if len(fetch_res.value.get("features", [])) == 0:
+            print("🔔 無天氣預警（NSWWS features 為空）")
             return
 
         # 2) Process
@@ -162,10 +183,10 @@ class MetOfficePoller:
         if proc_res.is_success():
             num_feats = len(fetch_res.value.get("features", []))  # type: ignore[attr-defined]
             # logging.info("✅ 驗證通過 (%d features) → %s", num_feats, proc_res.value)
-            print("✅ 驗證通過 (%d features) → %s", num_feats, proc_res.value)
+            print(f"✅ 驗證通過 ({num_feats} features) → {proc_res.value}")
         else:
             # logging.warning("❌ 驗證失敗：%s", proc_res.error_msg)
-            print("❌ 驗證失敗：%s", proc_res.error_msg)
+            print(f"❌ 驗證失敗：{proc_res.error_msg}")
 
     def _register_signal_handlers(self) -> None:
         '''
@@ -188,11 +209,16 @@ class MetOfficePoller:
                註冊後，系統一旦發出上述任意信號，Python Interpreter就會在主線程上調用 _shutdown(signum, frame)，
                而不是直接拋出 KeyboardInterrupt 異常 或 硬退出
             '''
-            # logging.info("Received %s, shutting down gracefully ...", signal.Signals(signum).name)
-            print("Received %s, shutting down gracefully ...", signal.Signals(signum).name)
-            ## 利用 Signals枚舉，將編號（如：2）轉換成可讀的名稱（如："SIGINT"）
+            if self._running:  # 只在「第一次」收到訊號時印出提示、改旗標
+                # logging.info("Received %s, shutting down gracefully ...", signal.Signals(signum).name)
+                name = signal.Signals(signum).name
+                print(f"Received {name}, shutting down gracefully …")
+                ## 利用 Signals枚舉，將編號（如：2）轉換成可讀的名稱（如："SIGINT"）
 
-            self._running = False  # 通過修改實例屬性，告訴 run() 方法的主循環「下次檢查到這個標誌就是 False，請跳出循環，並結束程序」
+                self._running = False  # 通過修改實例屬性，告訴 run() 方法的主循環「下次檢查到這個標誌就是 False，請跳出循環，並結束程序」
+            else:  # 關閉流程，後續 SIGINT 直接把 sleep 中斷
+                raise KeyboardInterrupt
+
 
         for sig in (signal.SIGINT, signal.SIGTERM):
             signal.signal(sig, _shutdown)
