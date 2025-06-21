@@ -26,6 +26,9 @@ public class AdminController {
     @Autowired
     private UserWhatsAppMapper whatsAppMapper;
 
+    @Autowired
+    private WhatsAppController whatsAppController;
+
     @PostMapping("/send")
     public String sendToAllUsers(@RequestBody Map<String, String> mailData) {
         String subject = mailData.get("subject");
@@ -44,7 +47,7 @@ public class AdminController {
             message.setSubject(subject);
 
             String token = JwtUtil.generateToken(user.getEmail());
-            String unsubscribeUrl = "http://localhost:8080/unsubscribe?token=" + token;
+            String unsubscribeUrl = "http://localhost:8080/unsubscribe-email?token=" + token;
 
             String content = contentTemplate.replace("{unsubscribeUrl}", unsubscribeUrl);
 
@@ -58,14 +61,25 @@ public class AdminController {
 
     //whatsapp
     @PostMapping("/send-whatsapp")
-    public String sendWhatsAppToAll() {
+    public String sendWhatsAppToAll(@RequestBody Map<String, String> mailData) {
         List<UserWhatsApp> all = whatsAppMapper.selectAll();
+
+        String contentTemplate = mailData.get("content");
+
+        if (contentTemplate == null || contentTemplate.isEmpty()) {
+            return "Content is empty!";
+        }
 
         for (UserWhatsApp user : all) {
             String number = user.getPhoneNumber();
 
             // 模拟发送（实际中可替换为调用 WhatsApp API）
-            System.out.println("Sending WhatsApp message to ：" + number + " Content : Hello!");
+
+            String token = JwtUtil.createToken(user.getPhoneNumber());
+            String unsubscribeUrl = "http://localhost:8080/unsubscribe-whatsapp?token=" + token;
+
+            System.out.println("Sending WhatsApp message to ：" + number);
+            whatsAppController.sendMessage(number,contentTemplate + unsubscribeUrl);
         }
 
         return "WhatsApp is sent to " + all.size() + " account.";

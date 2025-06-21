@@ -17,4 +17,8 @@
         SELECT COUNT(*) > 0 FROM user_whatsapp WHERE phoneNumber = #{phoneNumber}
     </select>
 
+    <delete id="deleteByWhatsApp" parameterType="java.lang.String">
+        DELETE FROM user_whatsapp WHERE phoneNumber = #{phoneNumber}
+    </delete>
+
 </mapper>

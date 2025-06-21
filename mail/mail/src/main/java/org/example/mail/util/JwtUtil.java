@@ -19,6 +19,15 @@ public class JwtUtil {
                 .compact();
     }
 
+    public static String createToken(String phoneNumber) {
+        return Jwts.builder()
+                .setSubject(phoneNumber)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis()+ 1000L * 60 * 60 * 24)) // 1 天有效
+                .signWith(key)
+                .compact();
+    }
+
     public static String parseToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build()
                 .parseClaimsJws(token)
