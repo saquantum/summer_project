@@ -7,7 +7,7 @@ lock:             ## 重新產生 lockfile
 	poetry lock
 
 test:             ## 執行 pytest ## poetry run pytest -q    poetry run pytest -q $(TEST_PATH)
-	poetry run pytest -q $(TEST_PATH)
+	PYTHONPATH=src poetry run pytest -q $(TEST_PATH)
 
 lint:             ## flake8
 	poetry run flake8 src tests
