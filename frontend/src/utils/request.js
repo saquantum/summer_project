@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { useUserStore } from '@/stores'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
 
@@ -13,11 +12,6 @@ const instance = axios.create({
 // Add a request interceptor
 instance.interceptors.request.use(
   function (config) {
-    // send token
-    const useStore = useUserStore()
-    if (useStore.token) {
-      config.headers.Authorization = useStore.token
-    }
     return config
   },
   function (error) {

@@ -7,10 +7,7 @@ import { useAdminStore } from '@/stores/modules/admin'
 const router = useRouter()
 const users = ref([])
 const adminStore = useAdminStore()
-const handleRowClick = async (row) => {
-  console.log(row.uid)
-  console.log(`triggered`)
-  // const res = await adminProxyUserService(row.uid)
+const handleShowDetail = async (row) => {
   adminStore.setProxyId(row.assetHolderId)
 
   // goto user interface
@@ -36,7 +33,25 @@ onMounted(async () => {
   >
     <el-table-column prop="uid" label="UID" width="180" />
     <el-table-column prop="assetHolderId" label="Asset Holder ID" width="180" />
-    <el-table-column prop="username" label="Username" />
-    <el-table-column prop="assets" label="Assets" />
+    <el-table-column prop="username" label="Username" width="180" />
+    <el-table-column prop="assets" label="Assets" width="180" />
+    <el-table-column label="Actions">
+      <template #default="scope">
+        <el-button
+          text
+          type="primary"
+          size="small"
+          @click="handleShowDetail(scope.row)"
+          >Show Detail</el-button
+        >
+        <el-button
+          text
+          type="danger"
+          size="small"
+          @click="handleDelete(scope.row)"
+          >Delete</el-button
+        >
+      </template>
+    </el-table-column>
   </el-table>
 </template>

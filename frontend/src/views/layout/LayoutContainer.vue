@@ -11,12 +11,13 @@ import {
 import avatar from '@/assets/default.png'
 import { ref } from 'vue'
 import { useAssetsStore, useUserStore, useAdminStore } from '@/stores'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const userStore = useUserStore()
 const assetsStore = useAssetsStore()
 const adminStore = useAdminStore()
 const router = useRouter()
+const route = useRoute()
 const handleCommand = (command) => {
   if (command === 'logout') {
     userStore.reset()
@@ -53,7 +54,10 @@ const dialogVisible = ref(false)
     </el-aside>
 
     <!-- admin interface -->
-    <el-aside v-else width="200px">
+    <el-aside
+      v-else-if="userStore.user.isAdmin && route.path.includes('admin')"
+      width="200px"
+    >
       <div class="el-aside__logo"></div>
       <el-menu
         active-text-color="#ffd04b"
@@ -81,8 +85,12 @@ const dialogVisible = ref(false)
 
     <el-container>
       <el-header>
-        <div>username</div>
-
+        <el-page-header
+          v-if="userStore.user.isAdmin && !route.path.includes('admin')"
+          @back="router.go(-1)"
+        >
+        </el-page-header>
+        <div>information</div>
         <div class="header-right">
           <el-icon @click="dialogVisible = true" class="bell">
             <Bell />
@@ -141,7 +149,7 @@ const dialogVisible = ref(false)
 
     &__logo {
       height: 120px;
-      background: url('@/assets/logo.png') no-repeat center / 120px auto;
+      background: url('@/assets/logo.webp') no-repeat center / 120px auto;
     }
     .el-menu {
       border-right: none;

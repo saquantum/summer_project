@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { adminGetAssetsService } from '@/api/admin'
+import { adminGetAssetsService, adminGetWarningsService } from '@/api/admin'
 export const useAdminStore = defineStore(
   'rain-admin',
   () => {
@@ -16,11 +16,25 @@ export const useAdminStore = defineStore(
     }
 
     const allAssets = ref([])
+    const allWarnings = ref([])
     const getAllAssets = async () => {
       const res = await adminGetAssetsService()
       allAssets.value = res.data.data
     }
-    return { proxyId, setProxyId, reset, allAssets, getAllAssets }
+
+    const getAllWarnings = async () => {
+      const res = await adminGetWarningsService()
+      allWarnings.value = res.data.data
+    }
+    return {
+      proxyId,
+      setProxyId,
+      reset,
+      allAssets,
+      getAllAssets,
+      getAllWarnings,
+      allWarnings
+    }
   },
   {
     persist: true

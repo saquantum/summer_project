@@ -31,6 +31,10 @@ const router = createRouter({
         {
           path: 'admin/warnings',
           component: () => import('@/views/admin/AllWarnings.vue')
+        },
+        {
+          path: 'warning/:id',
+          component: () => import('@/views/warning/index.vue')
         }
       ]
     }

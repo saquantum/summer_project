@@ -1,7 +1,6 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useAssetsStore } from '@/stores/modules/assets'
-import 'leaflet/dist/leaflet.css'
 import { useRouter } from 'vue-router'
 import { ref, watch, computed } from 'vue'
 import { useUserStore, useAdminStore } from '@/stores'
@@ -72,7 +71,7 @@ const warningRegion = [
 
 // page change
 const currentPage = ref(1)
-const pageSize = 6
+const pageSize = 8
 const handlePageChange = (page) => {
   currentPage.value = page
 }
@@ -80,7 +79,22 @@ const handlePageChange = (page) => {
 const currentPageAssets = computed(() => {
   const start = (currentPage.value - 1) * pageSize
   const end = start + pageSize
-  return currentAssets.value.slice(start, end)
+  const arr = currentAssets.value.slice(start, end)
+
+  // set indicator color
+  arr.forEach((item) => {
+    if (item.warnings[0]?.warningLevel.toLowerCase().includes('red')) {
+      item.status = 'warning'
+    } else if (
+      item.warnings[0]?.warningLevel.toLowerCase().includes('yellow')
+    ) {
+      item.status = 'error'
+    } else {
+      item.status = 'success'
+    }
+  })
+
+  return arr
 })
 
 onMounted(async () => {
@@ -95,6 +109,7 @@ onMounted(async () => {
   currentAssets.value = assetsStore.assets
 })
 
+// watch filter condition
 watch(
   [assetName, assetWarningLevel, assetRegion],
   async () => {
@@ -122,7 +137,15 @@ watch(
 
 <template>
   <!-- assets filter -->
-  <div style="margin-bottom: 10px">
+  <div
+    style="
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    "
+  >
     <el-input v-model="assetName" style="width: 240px"></el-input>
     <el-select
       v-model="assetWarningLevel"
@@ -165,14 +188,14 @@ watch(
         <template #header>
           <div class="card-header">
             <h3 class="asset-title">{{ item.asset.name || 'Asset Name' }}</h3>
-            <span class="asset-id">ID: {{ item.asset.id }}</span>
+            <StatusIndicator :status="item.status" />
           </div>
         </template>
 
         <div class="map-container">
           <MapCard
             :map-id="'map-' + index"
-            :drain-area="item.asset.drainArea"
+            :drain-area="[item.asset.drainArea]"
           />
         </div>
 
@@ -217,14 +240,17 @@ watch(
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
+
+  max-width: calc(300px * 4 + 20px * 3);
+  margin-left: auto;
+  margin-right: auto;
+
   justify-content: flex-start;
-  max-width: 1200px;
-  margin: 0 auto;
 }
 
 .asset-card {
   width: 300px;
-  height: 360px;
+  height: 310px;
   border-radius: 12px;
   overflow: hidden;
   transition: all 0.3s ease;
@@ -239,36 +265,46 @@ watch(
 }
 
 .card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  column-gap: 8px;
 }
 
 .asset-title {
+  /* hide overflow text*/
   font-size: 18px;
   font-weight: 600;
   color: #2c3e50;
   margin: 0;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  line-height: 1.2;
+  height: 1.2em;
 }
 
 .asset-id {
-  font-size: 12px;
-  color: #7f8c8d;
-  background: #ecf0f1;
-  padding: 4px 8px;
-  border-radius: 12px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #4caf50;
+  box-shadow: 0 0 4px rgba(76, 175, 80, 0.4);
+  border: 1px solid #c8e6c9;
 }
 
 .map-container {
   padding: 16px 0;
   display: flex;
   justify-content: center;
+  height: 180px;
 }
 
 .map {
   width: 100%;
-  height: 180px;
+  height: 100%;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -281,7 +317,7 @@ watch(
 }
 
 .view-details-btn {
-  width: 100%;
+  width: 80%;
   border-radius: 8px;
   font-weight: 500;
   transition: all 0.3s ease;
@@ -311,15 +347,15 @@ watch(
 /* change defalut style */
 :deep(.el-card__header) {
   padding: 12px 16px;
+  height: 45px;
 }
 
 :deep(.el-card__body) {
-  padding: 16px;
+  padding: 0px 16px 0px 16px;
 }
 
 :deep(.el-card__footer) {
-  background: #fafafa;
-  padding: 12px 16px;
+  padding: 10px 16px;
   border-top: 1px solid #ebeef5;
 }
 </style>

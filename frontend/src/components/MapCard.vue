@@ -1,14 +1,11 @@
-<template>
-  <div :id="mapId" class="map"></div>
-</template>
-
 <script setup>
 import { onMounted, onBeforeUnmount } from 'vue'
 import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 
 const props = defineProps({
   mapId: String,
-  drainArea: Object
+  drainArea: Array
 })
 
 let mapInstance = null
@@ -20,7 +17,9 @@ onMounted(() => {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(mapInstance)
 
-  const geoLayer = L.geoJSON(props.drainArea).addTo(mapInstance)
+  const geoLayer = L.geoJSON(props.drainArea, {
+    style: (feature) => feature.geometry.style
+  }).addTo(mapInstance)
   mapInstance.fitBounds(geoLayer.getBounds())
 })
 
@@ -32,9 +31,13 @@ onBeforeUnmount(() => {
 })
 </script>
 
+<template>
+  <div :id="mapId" class="map"></div>
+</template>
+
 <style scoped>
 .map {
-  height: 200px;
   width: 100%;
+  height: 100%;
 }
 </style>

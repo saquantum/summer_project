@@ -9,7 +9,7 @@ spring:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/rainwaterDB?useSSL=false&serverTimezone=UTC
     username: postgres
-    password: 123456
+    password: 323608196Zr
     type: com.alibaba.druid.pool.DruidDataSource
 
 mybatis:
