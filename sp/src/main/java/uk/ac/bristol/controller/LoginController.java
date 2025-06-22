@@ -3,7 +3,6 @@ package uk.ac.bristol.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.bristol.pojo.User;
-import uk.ac.bristol.service.SqlService;
 import uk.ac.bristol.util.JwtUtil;
 
 import javax.servlet.http.HttpServletResponse;

@@ -5,7 +5,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import uk.ac.bristol.controller.CrudController;
-import uk.ac.bristol.service.SqlService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -28,8 +27,7 @@ class SpApplicationTests {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private SqlService sqlService;
+
 
     @Autowired
     private CrudController crudController;

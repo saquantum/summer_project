@@ -1,4 +1,4 @@
-CREATE EXTENSION IF NOT EXISTS postgis;
+create extension if not exists postgis;
 
 drop table if exists address cascade;
 drop table if exists contact_preferences cascade;

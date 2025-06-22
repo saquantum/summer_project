@@ -1,21 +1,12 @@
 package uk.ac.bristol;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import uk.ac.bristol.dao.AssetHolderMapper;
-import uk.ac.bristol.dao.Settings;
-import uk.ac.bristol.pojo.Asset;
-import uk.ac.bristol.pojo.AssetHolder;
+import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.ImportMockData;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import uk.ac.bristol.service.UserService;
+import uk.ac.bristol.service.WarningService;
 
 @SpringBootTest
 public class TempTest {
@@ -23,10 +14,23 @@ public class TempTest {
     @Autowired
     public ImportMockData importMockData;
 
+    @Autowired
+    public UserService userService;
+
+    @Autowired
+    public AssetService assetService;
+
+    @Autowired
+    public WarningService warningService;
+
     @Test
     public void test() {
         importMockData.resetSchema();
         importMockData.importUsers();
+        importMockData.importAssets();
+        importMockData.importWarnings();
+        System.out.println(userService.getUserByUserId("user_001"));
+        System.out.println(assetService.getAssetWithWarningsById("asset_050"));
     }
 
 }

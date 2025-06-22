@@ -28,8 +28,9 @@
         where address_id = #{assetHolderId};
     </update>
 
-    <delete id="deleteAddressByAssetHolderId">
-        delete from address where address_id = #{assetHolderId};
+    <delete id="deleteAddressByAssetHolderIds">
+        delete from address where asset_holder_id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 
     <select id="selectContactPreferencesByAssetHolderId" resultMap="ResultMaps.ContactPreferencesMap">
@@ -60,8 +61,9 @@
         where contact_preferences_id = #{assetHolderId};
     </update>
 
-    <delete id="deleteContactPreferencesByAssetHolderId">
-        delete from contact_preferences where contact_preferences_id = #{assetHolderId};
+    <delete id="deleteContactPreferencesByAssetHolderIds">
+        delete from contact_preferences where asset_holder_id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 
     <select id="selectAllAssetHolders" resultMap="ResultMaps.AssetHolderMap">

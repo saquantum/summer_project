@@ -38,9 +38,6 @@ public class Warning {
                 ", validTo=" + validTo +
                 ", warningImpact='" + warningImpact + '\'' +
                 ", warningLikelihood='" + warningLikelihood + '\'' +
-                ", affectedAreas='" + affectedAreas + '\'' +
-                ", whatToExpect='" + whatToExpect + '\'' +
-                ", warningFurtherDetails='" + warningFurtherDetails + '\'' +
                 ", warningUpdateDescription='" + warningUpdateDescription + '\'' +
                 ", area=" + area +
                 '}';
@@ -153,6 +150,10 @@ public class Warning {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void setAreaAsMap(Map<String, Object> area) {
+        this.area = area;
     }
 
     public void setArea(String geoJson) throws JsonProcessingException {

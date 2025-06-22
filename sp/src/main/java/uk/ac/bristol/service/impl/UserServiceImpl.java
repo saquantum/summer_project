@@ -10,6 +10,7 @@ import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +30,7 @@ public class UserServiceImpl implements UserService {
         this.userMapper = userMapper;
     }
 
+    // checks uid and password, returns a jwt token
     @Override
     public User login(User user) {
         List<User> list = userMapper.loginQuery(user);
@@ -42,9 +44,21 @@ public class UserServiceImpl implements UserService {
         return u;
     }
 
+    // get all users without asset holder part
     @Override
     public List<User> getAllUsers() {
         return userMapper.selectAllUsers();
+    }
+
+    // get address and contact preferences for the asset holder
+    private AssetHolder prepareAssetHolder(AssetHolder assetHolder) {
+        List<Map<String, String>> address = assetHolderMapper.selectAddressByAssetHolderId(assetHolder.getId());
+        if(address.size()!=1) throw new RuntimeException("Get " + address.size() + " addresses for asset holder " + assetHolder.getId());
+        List<Map<String, Object>> contactPreferences = assetHolderMapper.selectContactPreferencesByAssetHolderId(assetHolder.getId());
+        if(contactPreferences.size()!=1) throw new RuntimeException("Get " + contactPreferences.size() + " contact preferences for asset holder " + assetHolder.getId());
+        assetHolder.setAddress(address.get(0));
+        assetHolder.setContactPreferences(contactPreferences.get(0));
+        return assetHolder;
     }
 
     @Override
@@ -56,14 +70,17 @@ public class UserServiceImpl implements UserService {
         for (User user : users) {
             AssetHolder ah = mapping.get(user.getAssetHolderId());
             if (ah == null) throw new RuntimeException("No asset holder for user " + user.getId());
-            user.setAssetHolder(ah);
+            user.setAssetHolder(this.prepareAssetHolder(ah));
         }
         return users;
     }
 
+    // get all asset holders along with address and contact preferences
     @Override
     public List<AssetHolder> getAllAssetHolders() {
-        return assetHolderMapper.selectAllAssetHolders();
+        List<AssetHolder> assetHolders = assetHolderMapper.selectAllAssetHolders();
+        assetHolders.forEach(this::prepareAssetHolder);
+        return assetHolders;
     }
 
     @Override
@@ -81,7 +98,7 @@ public class UserServiceImpl implements UserService {
         if (assetHolder.size() != 1) {
             throw new RuntimeException("Get " + assetHolder.size() + " asset holders using asset holder id " + assetHolderId);
         }
-        user.get(0).setAssetHolder(assetHolder.get(0));
+        user.get(0).setAssetHolder(this.prepareAssetHolder(assetHolder.get(0)));
         return user.get(0);
     }
 
@@ -91,20 +108,22 @@ public class UserServiceImpl implements UserService {
         if (user.size() != 1) {
             throw new RuntimeException("Get " + user.size() + " users using user id " + uid);
         }
-        List<AssetHolder> assetHolder = assetHolderMapper.selectAssetHolderByID(user.get(0).getAssetHolderId());
-        if (assetHolder.size() != 1) {
-            throw new RuntimeException("Get " + assetHolder.size() + " asset holders using asset holder id " + user.get(0).getAssetHolderId());
+        if(user.get(0).getAssetHolderId() != null){
+            List<AssetHolder> assetHolder = assetHolderMapper.selectAssetHolderByID(user.get(0).getAssetHolderId());
+            if (assetHolder.size() != 1) {
+                throw new RuntimeException("Get " + assetHolder.size() + " asset holders using asset holder id " + user.get(0).getAssetHolderId());
+            }
+            user.get(0).setAssetHolder(this.prepareAssetHolder(assetHolder.get(0)));
         }
-        user.get(0).setAssetHolder(assetHolder.get(0));
         return user.get(0);
     }
 
     @Override
     public int insertUser(User user) {
-        int n1 = userMapper.insertUser(user);
         Integer n2 = null;
         if (user.getAssetHolder() != null) {
             AssetHolder ah = user.getAssetHolder();
+            ah.setLastModified(Instant.now());
             n2 = assetHolderMapper.insertAddress(ah.getAddress());
             int n3 = assetHolderMapper.insertContactPreferences(ah.getContactPreferences());
             int n4 = assetHolderMapper.insertAssetHolder(ah);
@@ -112,6 +131,7 @@ public class UserServiceImpl implements UserService {
                 throw new RuntimeException("Error inserting user " + user.getId() + ": affected rows not compatible");
             }
         }
+        int n1 = userMapper.insertUser(user);
         if (n2 != null && n1 != n2) {
             throw new RuntimeException("Error inserting user " + user.getId() + ": affected rows not compatible");
         }
@@ -133,6 +153,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public int updateAssetHolder(AssetHolder assetHolder) {
+        assetHolder.setLastModified(Instant.now());
         int n1 = assetHolderMapper.updateAddressByAssetHolderId(assetHolder.getAddress());
         int n2 = assetHolderMapper.updateContactPreferencesByAssetHolderId(assetHolder.getContactPreferences());
         int n3 = assetHolderMapper.updateAssetHolder(assetHolder);
@@ -194,16 +215,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public int deleteAssetHolderByAssetHolderIds(List<String> ids) {
-        int sum = 0;
-        for (String id : ids) {
-            int n1 = assetHolderMapper.deleteAddressByAssetHolderId(id);
-            int n2 = assetHolderMapper.deleteContactPreferencesByAssetHolderId(id);
-            int n3 = assetHolderMapper.deleteAssetHolderByAssetHolderIDs(new String[]{id});
-            if (n1 != n2 || n3 != n2) {
-                throw new RuntimeException("Error deleting asset holder " + id + ": affected rows not compatible");
-            }
-            sum += n1;
+        int n1 = assetHolderMapper.deleteAddressByAssetHolderIds(ids);
+        int n2 = assetHolderMapper.deleteContactPreferencesByAssetHolderIds(ids);
+        int n3 = assetHolderMapper.deleteAssetHolderByAssetHolderIDs(ids);
+        if (n1 != n2 || n3 != n2) {
+            throw new RuntimeException("Error deleting asset holders: affected rows not compatible");
         }
-        return sum;
+        return n1;
     }
 }

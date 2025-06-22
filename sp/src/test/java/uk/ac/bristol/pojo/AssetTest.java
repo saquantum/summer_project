@@ -32,7 +32,7 @@ public class AssetTest {
                 """;
 
         Asset asset = new Asset();
-        asset.setLocation(geoJson);
+        asset.setLocationAsJson(geoJson);
 
         Map<String, Object> drainArea = asset.getLocation();
 
@@ -45,7 +45,7 @@ public class AssetTest {
     @Test
     public void testLocationSetterWithNullInput() throws JsonProcessingException {
         Asset asset = new Asset();
-        asset.setLocation((String) null);
+        asset.setLocationAsJson((String) null);
 
         Map<String, Object> result = asset.getLocation();
 
@@ -85,7 +85,7 @@ public class AssetTest {
                 """;
 
         Asset asset = new Asset();
-        asset.setLocation(geoJson);
+        asset.setLocationAsJson(geoJson);
 
         String str = asset.getLocationAsJson();
         assertEquals("{\"type\":\"MultiPolygon\",\"coordinates\":[[[[30.0,10.0],[40.0,40.0],[20.0,40.0],[10.0,20.0],[30.0,10.0]]]]}", str);

@@ -10,7 +10,7 @@ spring:
     url: jdbc:postgresql://db:5432/rainwaterDB?useSSL=false&serverTimezone=UTC
     username: postgres
     password: 123456
-    type: com.alibaba.druid.pool.DruidDataSource
+    type: com.zaxxer.hikari.HikariDataSource
 
 mybatis:
   mapper-locations: classpath:uk/ac/bristol/dao/*.xml

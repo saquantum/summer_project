@@ -1,6 +1,7 @@
 package uk.ac.bristol.dao;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import uk.ac.bristol.pojo.Warning;
 
 import java.util.List;
@@ -10,4 +11,13 @@ public interface WarningMapper {
 
     List<Warning> selectAllWarnings();
 
+    List<Warning> selectAllWarningsIncludingOutdated();
+
+    int insertWarning(Warning warning);
+
+    int updateWarning(Warning warning);
+
+    int deleteWarningByIDs(@Param("ids") Long[] ids);
+
+    int deleteWarningByIDs(@Param("ids") List<Long> ids);
 }

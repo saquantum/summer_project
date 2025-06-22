@@ -17,7 +17,9 @@ public interface AssetHolderMapper {
 
     int updateAddressByAssetHolderId(Map<String, String> map);
 
-    int deleteAddressByAssetHolderId(@Param("assetHolderId") String assetHolderId);
+    int deleteAddressByAssetHolderIds(@Param("ids") String[] ids);
+
+    int deleteAddressByAssetHolderIds(@Param("ids") List<String> ids);
 
     List<Map<String, Object>> selectContactPreferencesByAssetHolderId(@Param("assetHolderId") String assetHolderId);
 
@@ -25,7 +27,9 @@ public interface AssetHolderMapper {
 
     int updateContactPreferencesByAssetHolderId(Map<String, Object> map);
 
-    int deleteContactPreferencesByAssetHolderId(@Param("assetHolderId") String assetHolderId);
+    int deleteContactPreferencesByAssetHolderIds(@Param("ids") String[] ids);
+
+    int deleteContactPreferencesByAssetHolderIds(@Param("ids") List<String> ids);
 
     List<AssetHolder> selectAllAssetHolders();
 

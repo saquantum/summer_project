@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.bristol.pojo.UserAsAssetHolder;
-import uk.ac.bristol.service.SqlService;
 import uk.ac.bristol.util.JwtUtil;
 
 import javax.servlet.http.HttpServletRequest;

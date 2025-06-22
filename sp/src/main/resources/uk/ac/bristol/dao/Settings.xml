@@ -5,14 +5,14 @@
 
 <mapper namespace="uk.ac.bristol.dao.Settings">
     <update id="resetSchema">
-        CREATE EXTENSION IF NOT EXISTS postgis;
-        DROP TABLE IF EXISTS address CASCADE;
-        DROP TABLE IF EXISTS contact_preferences CASCADE;
-        DROP TABLE IF EXISTS asset_holders CASCADE;
-        DROP TABLE IF EXISTS users CASCADE;
-        DROP TABLE IF EXISTS asset_types CASCADE;
-        DROP TABLE IF EXISTS assets CASCADE;
-        DROP TABLE IF EXISTS weather_warnings CASCADE;
+        create extension if not exists postgis;
+        drop table if exists address cascade;
+        drop table if exists contact_preferences cascade;
+        drop table if exists asset_holders cascade;
+        drop table if exists users cascade;
+        drop table if exists asset_types cascade;
+        drop table if exists assets cascade;
+        drop table if exists weather_warnings cascade;
     </update>
 
     <update id="createAddress">

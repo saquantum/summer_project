@@ -11,6 +11,9 @@ public class MockDataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        importMockData.resetAndImport();
+        importMockData.resetSchema();
+        importMockData.importUsers();
+        importMockData.importAssets();
+        importMockData.importWarnings();
     }
 }

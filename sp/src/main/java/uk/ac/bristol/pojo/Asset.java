@@ -104,12 +104,11 @@ public class Asset {
         }
     }
 
-    @JsonSetter("location")
     public void setLocation(Map<String, Object> location) {
         this.location = location;
     }
 
-    public void setLocation(String geoJson) throws JsonProcessingException {
+    public void setLocationAsJson(String geoJson) throws JsonProcessingException {
         if (geoJson == null || geoJson.isBlank()) {
             this.location = Map.ofEntries(Map.entry("type", "MultiPolygon"),  Map.entry("coordinates", List.of(List.of(List.of()))));
             return;

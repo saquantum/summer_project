@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.AssetHolder;
-import uk.ac.bristol.service.SqlService;
 import uk.ac.bristol.util.JwtUtil;
 
 import javax.servlet.http.HttpServletRequest;

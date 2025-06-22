@@ -2,21 +2,20 @@ package uk.ac.bristol.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import uk.ac.bristol.dao.AssetHolderMapper;
-import uk.ac.bristol.dao.AssetMapper;
 import uk.ac.bristol.dao.Settings;
-import uk.ac.bristol.dao.UserMapper;
-import uk.ac.bristol.pojo.Asset;
-import uk.ac.bristol.pojo.AssetHolder;
-import uk.ac.bristol.pojo.User;
+import uk.ac.bristol.pojo.*;
+import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.ImportMockData;
+import uk.ac.bristol.service.UserService;
+import uk.ac.bristol.service.WarningService;
+import uk.ac.bristol.util.Arcgis2GeoJsonConverter;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -25,21 +24,16 @@ import java.util.Map;
 public class ImportMockDataImpl implements ImportMockData {
 
     private final Settings settings;
-    private final AssetHolderMapper assetHolderMapper;
-    private final UserMapper userMapper;
+    private final UserService userService;
+    private final AssetService assetService;
+    private final WarningService warningService;
+    private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
-    public ImportMockDataImpl(Settings settings,  AssetHolderMapper assetHolderMapper, UserMapper userMapper) {
+    public ImportMockDataImpl(Settings settings, UserService userService, AssetService assetService, WarningService warningService) {
         this.settings = settings;
-        this.assetHolderMapper = assetHolderMapper;
-        this.userMapper = userMapper;
-    }
-
-    @Override
-    public void resetAndImport() {
-        this.resetSchema();
-        this.importUsers();
-        this.importAssets();
-        this.importWarnings();
+        this.userService = userService;
+        this.assetService = assetService;
+        this.warningService = warningService;
     }
 
     @Override
@@ -56,7 +50,6 @@ public class ImportMockDataImpl implements ImportMockData {
 
     @Override
     public void importUsers() {
-        ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
         List<AssetHolder> assetHolders = null;
         try {
             assetHolders = mapper.readValue(new File("src/main/resources/data/users.json"), new TypeReference<List<AssetHolder>>() {
@@ -66,43 +59,74 @@ public class ImportMockDataImpl implements ImportMockData {
         }
         for (AssetHolder assetHolder : assetHolders) {
             assetHolder.setAddressId(assetHolder.getId());
-            Map<String, String> address = assetHolder.getAddress();
-            address.put("assetHolderId", assetHolder.getAddressId());
-            assetHolderMapper.insertAddress(address);
-
+            assetHolder.getAddress().put("assetHolderId", assetHolder.getAddressId());
             assetHolder.setContactPreferencesId(assetHolder.getId());
-            Map<String, Object> contactPreferences = assetHolder.getContactPreferences();
-            contactPreferences.put("assetHolderId", assetHolder.getContactPreferencesId());
-            assetHolderMapper.insertContactPreferences(contactPreferences);
-
-            assetHolderMapper.insertAssetHolder(assetHolder);
-
+            assetHolder.getContactPreferences().put("assetHolderId", assetHolder.getContactPreferencesId());
             User user = new User();
             user.setAssetHolderId(assetHolder.getId());
+            user.setAssetHolder(assetHolder);
             user.setId(assetHolder.getId());
             user.setPassword("123456");
             user.setAdmin(false);
-
-            userMapper.insertUser(user);
+            userService.insertUser(user);
         }
-
-        List<User> queryUser = userMapper.selectUserByAssetHolderId("user_001");
-        User user = queryUser.get(0);
-        List<AssetHolder> queryAssetHolder = assetHolderMapper.selectAssetHolderByID("user_001");
-        AssetHolder ah =  queryAssetHolder.get(0);
-        ah.setAddress(assetHolderMapper.selectAddressByAssetHolderId(ah.getId()).get(0));
-        ah.setContactPreferences(assetHolderMapper.selectContactPreferencesByAssetHolderId(ah.getId()).get(0));
-        user.setAssetHolder(ah);
-        System.out.println(user);
     }
 
     @Override
     public void importAssets() {
-
+        List<AssetType> types = null;
+        List<Asset> assets = null;
+        try {
+            types = mapper.readValue(new File("src/main/resources/data/asset_types.json"), new TypeReference<List<AssetType>>() {
+            });
+            assets = mapper.readValue(new File("src/main/resources/data/assets.json"), new TypeReference<List<Asset>>() {
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        for (AssetType type : types) {
+            assetService.insertAssetType(type);
+        }
+        for (Asset asset : assets) {
+            assetService.insertAsset(asset);
+        }
     }
 
     @Override
     public void importWarnings() {
+        try {
+            String geoJson = Arcgis2GeoJsonConverter.arcgisToGeoJSON(
+                    "src/main/resources/js/arcgis-converter.js",
+                    "src/main/resources/data/arcgis-sample.json"
+            );
 
+            Map<String, Object> map = mapper.readValue(geoJson, new TypeReference<>() {
+            });
+            List<Map<String, Object>> features = (List<Map<String, Object>>) map.get("features");
+
+            for (Map<String, Object> feature : features) {
+                Map<String, Object> properties = (Map<String, Object>) feature.get("properties");
+                Map<String, Object> geometry = (Map<String, Object>) feature.get("geometry");
+
+                Warning warning = new Warning();
+                warning.setId(((Number) properties.get("OBJECTID")).longValue());
+                warning.setWeatherType((String) properties.get("weathertype"));
+                warning.setWarningLevel((String) properties.get("warninglevel"));
+                warning.setWarningHeadLine((String) properties.get("warningheadline"));
+                warning.setValidFrom(Instant.ofEpochMilli(((Number) properties.get("validfromdate")).longValue()));
+                warning.setValidTo(Instant.ofEpochMilli(((Number) properties.get("validtodate")).longValue()));
+                warning.setWarningImpact((String) properties.get("warningImpact"));
+                warning.setWarningLikelihood((String) properties.get("warningLikelihood"));
+                warning.setAffectedAreas((String) properties.get("affectedAreas"));
+                warning.setWhatToExpect((String) properties.get("whatToExpect"));
+                warning.setWarningFurtherDetails((String) properties.get("warningFurtherDetails"));
+                warning.setWarningUpdateDescription((String) properties.get("warningUpdateDescription"));
+                warning.setAreaAsMap(geometry);
+
+                warningService.insertWarning(warning);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -42,9 +42,9 @@
     <resultMap id="AssetMap" type="uk.ac.bristol.pojo.Asset">
         <id property="id" column="asset_id"/>
         <result property="name" column="asset_name"/>
-        <result property="assetTypeId" column="asset_type_id"/>
+        <result property="typeId" column="asset_type_id"/>
         <result property="ownerId" column="asset_owner_id"/>
-        <result property="location" column="asset_location" javaType="java.lang.String"/>
+        <result property="locationAsJson" column="asset_location" javaType="java.lang.String"/>
         <result property="capacityLitres" column="asset_capacity_litres"/>
         <result property="material" column="asset_material"/>
         <result property="status" column="asset_status"/>
