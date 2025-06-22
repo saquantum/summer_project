@@ -22,7 +22,7 @@ public class Warning {
     private String whatToExpect;
     private String warningFurtherDetails;
     private String warningUpdateDescription;
-    private Map<String, Object> polygon;
+    private Map<String, Object> area;
 
     public Warning() {
     }
@@ -42,7 +42,7 @@ public class Warning {
                 ", whatToExpect='" + whatToExpect + '\'' +
                 ", warningFurtherDetails='" + warningFurtherDetails + '\'' +
                 ", warningUpdateDescription='" + warningUpdateDescription + '\'' +
-                ", polygon=" + polygon +
+                ", area=" + area +
                 '}';
     }
 
@@ -142,23 +142,23 @@ public class Warning {
         this.warningUpdateDescription = warningUpdateDescription;
     }
 
-    public Map<String, Object> getPolygon() {
-        return polygon;
+    public Map<String, Object> getArea() {
+        return area;
     }
 
     @JsonIgnore
-    public String getPolygonAsJson() {
+    public String getAreaAsJson() {
         try {
-            return new ObjectMapper().writeValueAsString(polygon);
+            return new ObjectMapper().writeValueAsString(area);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void setPolygon(String geoJson) throws JsonProcessingException {
+    public void setArea(String geoJson) throws JsonProcessingException {
         if (geoJson != null) {
             ObjectMapper mapper = new ObjectMapper();
-            this.polygon = mapper.readValue(geoJson, new TypeReference<>() {
+            this.area = mapper.readValue(geoJson, new TypeReference<>() {
             });
         }
     }

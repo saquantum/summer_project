@@ -24,6 +24,8 @@ public class JwtUtil {
     private static String secretKey = System.getenv("JWT_SECRET_KEY");
     private static Long expirePeriod = 86400000L; // 1 day
 
+    private JwtUtil(){}
+
     static {
         if (secretKey == null || secretKey.isBlank()) {
             secretKey = "testSecretKeyJWTWhichMustBeLongerThan32CharactersToSatisfyTheHS256Algorithm";

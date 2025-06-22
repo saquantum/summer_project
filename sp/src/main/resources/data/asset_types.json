@@ -1,0 +1,37 @@
+[
+    {
+        "id": "type_001",
+        "name": "Water Tank",
+        "description": "Storage tank for rainwater harvesting"
+    },
+    {
+        "id": "type_002",
+        "name": "Soakaway",
+        "description": "Underground structure to manage surface water runoff"
+    },
+    {
+        "id": "type_003",
+        "name": "Green Roof",
+        "description": "Roof covered with vegetation for stormwater absorption"
+    },
+    {
+        "id": "type_004",
+        "name": "Permeable Pavement",
+        "description": "Paving that allows water infiltration"
+    },
+    {
+        "id": "type_005",
+        "name": "Swale",
+        "description": "Shallow channel with vegetation for drainage"
+    },
+    {
+        "id": "type_006",
+        "name": "Retention Pond",
+        "description": "Basin that holds runoff water"
+    },
+    {
+        "id": "type_007",
+        "name": "Rain Garden",
+        "description": "Planted depression to absorb rainwater runoff"
+    }
+]

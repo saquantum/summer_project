@@ -2,24 +2,42 @@ package uk.ac.bristol.dao;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import uk.ac.bristol.pojo.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface AssetHolderMapper {
 
-    List<UserAsAssetHolder> selectAllAssetHolders();
+    List<Map<String, String>> selectAddressByAssetHolderId(@Param("assetHolderId") String assetHolderId);
 
-    List<AssetHolder> selectAssetHolderByID(@Param("id") Long id);
+    int insertAddress(Map<String, String> map);
+
+    int updateAddressByAssetHolderId(Map<String, String> map);
+
+    int deleteAddressByAssetHolderId(@Param("assetHolderId") String assetHolderId);
+
+    List<Map<String, Object>> selectContactPreferencesByAssetHolderId(@Param("assetHolderId") String assetHolderId);
+
+    int insertContactPreferences(Map<String, Object> map);
+
+    int updateContactPreferencesByAssetHolderId(Map<String, Object> map);
+
+    int deleteContactPreferencesByAssetHolderId(@Param("assetHolderId") String assetHolderId);
+
+    List<AssetHolder> selectAllAssetHolders();
+
+    List<AssetHolder> selectAssetHolderByID(@Param("id") String id);
 
     List<AssetHolder> selectByAssetHolder(AssetHolder assetHolder);
 
-    long insertAssetHolder(AssetHolder assetHolder);
+    int insertAssetHolder(AssetHolder assetHolder);
 
-    long updateAssetHolder(AssetHolder assetHolder);
+    int updateAssetHolder(AssetHolder assetHolder);
 
-    long deleteByAssetHolderIDs(@Param("ids") long[] ids);
+    int deleteAssetHolderByAssetHolderIDs(@Param("ids") String[] ids);
 
-    long deleteByAssetHolderIDs(@Param("ids") List<Long> ids);
+    int deleteAssetHolderByAssetHolderIDs(@Param("ids") List<String> ids);
 }

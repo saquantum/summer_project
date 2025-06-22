@@ -12,17 +12,17 @@ import javax.servlet.http.HttpServletResponse;
 @RequestMapping("/api/login")
 @CrossOrigin
 public class LoginController {
-
-    @Autowired
-    private SqlService sqlService;
-
-    @PostMapping()
-    public ResponseResult login(@RequestBody User user, HttpServletResponse response) {
-        User u = sqlService.login(user);
-        if (u == null) return new ResponseResult(Code.BUSINESS_ERR, null, "The username or password is incorrect.");
-        JwtUtil.bindJWTAsCookie(response,u.getToken());
-        u.setPassword(null);
-        u.setToken(null);
-        return new ResponseResult(Code.SUCCESS, u);
-    }
+//
+//    @Autowired
+//    private SqlService sqlService;
+//
+//    @PostMapping()
+//    public ResponseResult login(@RequestBody User user, HttpServletResponse response) {
+//        User u = sqlService.login(user);
+//        if (u == null) return new ResponseResult(Code.BUSINESS_ERR, null, "The username or password is incorrect.");
+//        JwtUtil.bindJWTAsCookie(response,u.getToken());
+//        u.setPassword(null);
+//        u.setToken(null);
+//        return new ResponseResult(Code.SUCCESS, u);
+//    }
 }

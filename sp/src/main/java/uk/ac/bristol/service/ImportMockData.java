@@ -1,4 +1,14 @@
 package uk.ac.bristol.service;
 
-public class ImportMockData {
+public interface ImportMockData {
+
+    void resetAndImport();
+
+    void resetSchema();
+
+    void importAssets();
+
+    void importUsers();
+
+    void importWarnings();
 }

@@ -5,7 +5,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import uk.ac.bristol.controller.CrudController;
-import uk.ac.bristol.dao.SqlMapper;
 import uk.ac.bristol.service.SqlService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,19 +29,10 @@ class SpApplicationTests {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private SqlMapper sqlMapper;
-
-    @Autowired
     private SqlService sqlService;
 
     @Autowired
     private CrudController crudController;
-
-    @Test
-    public void testPostgre(){
-        System.out.println(sqlService.selectAllAssetHolders());
-        System.out.println(sqlService.selectAllAssets());
-    }
 
 //    @Test
 //    public void testExceptionHandler() throws Exception {

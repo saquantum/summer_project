@@ -9,11 +9,23 @@ import java.util.List;
 @Mapper
 public interface UserMapper {
 
-    List<UserAsAssetHolder> selectUserByAssetHolderId(@Param("id") Long id);
+    List<User> selectAllUsers();
 
-    long insertUser(User user);
-
-    long updateUser(User user);
+    List<User> selectUserById(@Param("id") String id);
 
     List<User> loginQuery(User user);
+
+    List<User> selectUserByAssetHolderId(@Param("assetHolderId") String assetHolderId);
+
+    List<User> selectUserByAdmin(@Param("isAdmin") Boolean isAdmin);
+
+    int insertUser(User user);
+
+    int updateUser(User user);
+
+    int deleteUserByAssetHolderIDs(@Param("ids") String[] assetHolderIds);
+    int deleteUserByAssetHolderIDs(@Param("ids") List<String> assetHolderIds);
+
+    int deleteUserByIds(@Param("ids") String[] ids);
+    int deleteUserByIds(@Param("ids") List<String> ids);
 }

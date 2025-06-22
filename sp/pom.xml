@@ -139,6 +139,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.graalvm.js</groupId>
+            <artifactId>js</artifactId>
+            <version>21.1.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>

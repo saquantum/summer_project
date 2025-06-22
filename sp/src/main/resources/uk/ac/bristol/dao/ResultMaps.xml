@@ -4,70 +4,79 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="ResultMaps">
-    <resultMap id="AssetHolderMap" type="uk.ac.bristol.pojo.AssetHolder">
-        <id property="id" column="id"/>
-        <result property="name" column="name"/>
-        <result property="email" column="email"/>
-        <result property="phone" column="phone"/>
-        <result property="contactPreference" column="contact_preference"/>
-        <result property="lastModified" column="last_modified"/>
+    <resultMap id="AddressMap" type="java.util.Map">
+        <id property="assetHolderId" column="address_id"/>
+        <result property="street" column="address_street"/>
+        <result property="city" column="address_city"/>
+        <result property="postcode" column="address_postcode"/>
+        <result property="country" column="address_country"/>
     </resultMap>
 
-    <resultMap id="AssetMap" type="uk.ac.bristol.pojo.Asset">
-        <id property="id" column="id"/>
-        <result property="name" column="name"/>
-        <result property="region" column="region"/>
-        <result property="drainArea" column="drain_area" javaType="java.lang.String"/>
-        <result property="assetHolderId" column="asset_holder_id"/>
-        <result property="lastModified" column="last_modified"/>
+    <resultMap id="ContactPreferencesMap" type="java.util.Map">
+        <id property="assetHolderId" column="contact_preferences_id"/>
+        <result property="email" column="contact_preferences_email"/>
+        <result property="phone" column="contact_preferences_phone"/>
+        <result property="post" column="contact_preferences_post"/>
+        <result property="whatsapp" column="contact_preferences_whatsapp"/>
+        <result property="discord" column="contact_preferences_discord"/>
+        <result property="telegram" column="contact_preferences_telegram"/>
+    </resultMap>
+
+    <resultMap id="AssetHolderMap" type="uk.ac.bristol.pojo.AssetHolder">
+        <id property="id" column="asset_holder_id"/>
+        <result property="name" column="asset_holder_name"/>
+        <result property="email" column="asset_holder_email"/>
+        <result property="phone" column="asset_holder_phone"/>
+        <result property="addressId" column="asset_holder_address_id"/>
+        <result property="contactPreferencesId" column="asset_holder_contact_preferences_id"/>
+        <result property="lastModified" column="asset_holder_last_modified"/>
     </resultMap>
 
     <resultMap id="UserMap" type="uk.ac.bristol.pojo.User">
-        <id property="id" column="id"/>
-        <result property="username" column="username"/>
-        <result property="password" column="password"/>
-        <result property="assetHolderId" column="asset_holder_id"/>
-        <result property="admin" column="is_admin"/>
+        <id property="assetHolderId" column="user_asset_holder_id"/>
+        <result property="id" column="user_id"/>
+        <result property="password" column="user_password"/>
+        <result property="admin" column="user_is_admin"/>
     </resultMap>
 
-    <resultMap id="UserAsAssetHolderMap" type="uk.ac.bristol.pojo.UserAsAssetHolder">
-        <id property="assetHolder.id" column="holder_id"/>
-        <result property="assetCount" column="asset_count"/>
-        <association property="assetHolder" javaType="uk.ac.bristol.pojo.AssetHolder">
-            <id property="id" column="holder_id"/>
-            <result property="name" column="holder_name"/>
-            <result property="email" column="email"/>
-            <result property="phone" column="phone"/>
-            <result property="contactPreference" column="contact_preference" javaType="java.lang.String"/>
-            <result property="lastModified" column="last_modified"/>
-        </association>
-        <association property="user" javaType="uk.ac.bristol.pojo.User">
-            <result property="id" column="user_id"/>
-            <result property="username" column="username"/>
-            <result property="password" column="password"/>
-            <result property="assetHolderId" column="asset_holder_id"/>
-            <result property="admin" column="is_admin"/>
-        </association>
+    <resultMap id="AssetMap" type="uk.ac.bristol.pojo.Asset">
+        <id property="id" column="asset_id"/>
+        <result property="name" column="asset_name"/>
+        <result property="assetTypeId" column="asset_type_id"/>
+        <result property="ownerId" column="asset_owner_id"/>
+        <result property="location" column="asset_location" javaType="java.lang.String"/>
+        <result property="capacityLitres" column="asset_capacity_litres"/>
+        <result property="material" column="asset_material"/>
+        <result property="status" column="asset_status"/>
+        <result property="installedAt" column="asset_installed_at"/>
+        <result property="lastInspection" column="asset_last_inspection"/>
+        <result property="lastModified" column="asset_last_modified"/>
+    </resultMap>
+
+    <resultMap id="AssetTypeMap" type="uk.ac.bristol.pojo.AssetType">
+        <id property="id" column="asset_type_id"/>
+        <result property="name" column="asset_type_name"/>
+        <result property="description" column="asset_type_description"/>
     </resultMap>
 
     <resultMap id="WarningMap" type="uk.ac.bristol.pojo.Warning">
-        <id column="warning_id" property="id"/>
-        <result column="weather_type" property="weatherType"/>
-        <result column="warning_level" property="warningLevel"/>
-        <result column="warning_head_line" property="warningHeadLine"/>
-        <result column="valid_from" property="validFrom"/>
-        <result column="valid_to" property="validTo"/>
-        <result column="warning_impact" property="warningImpact"/>
-        <result column="warning_likelihood" property="warningLikelihood"/>
-        <result column="affected_areas" property="affectedAreas"/>
-        <result column="what_to_expect" property="whatToExpect"/>
-        <result column="warning_further_details" property="warningFurtherDetails"/>
-        <result column="warning_update_description" property="warningUpdateDescription"/>
-        <result column="polygon" property="polygon" javaType="java.lang.String"/>
+        <id property="id" column="warning_id"/>
+        <result property="weatherType" column="warning_weather_type"/>
+        <result property="warningLevel" column="warning_level"/>
+        <result property="warningHeadLine" column="warning_head_line"/>
+        <result property="validFrom" column="warning_valid_from"/>
+        <result property="validTo" column="warning_valid_to"/>
+        <result property="warningImpact" column="warning_impact"/>
+        <result property="warningLikelihood" column="warning_likelihood"/>
+        <result property="affectedAreas" column="warning_affected_areas"/>
+        <result property="whatToExpect" column="warning_what_to_expect"/>
+        <result property="warningFurtherDetails" column="warning_further_details"/>
+        <result property="warningUpdateDescription" column="warning_update_description"/>
+        <result property="area" column="warning_area" javaType="java.lang.String"/>
     </resultMap>
 
     <resultMap id="AssetWithWarningsMap" type="uk.ac.bristol.pojo.AssetWithWeatherWarnings">
-        <id property="asset.id" column="id"/>
+        <id property="asset.id" column="asset_id"/>
         <association property="asset" javaType="uk.ac.bristol.pojo.Asset" resultMap="AssetMap"/>
         <collection property="warnings" ofType="uk.ac.bristol.pojo.Warning" resultMap="WarningMap"/>
     </resultMap>
