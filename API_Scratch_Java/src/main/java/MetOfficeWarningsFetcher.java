@@ -10,6 +10,9 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 
 /**
  * 拉取 Met Office 國家級氣象警報 (NSWWS) 的即時資料
@@ -30,7 +33,7 @@ public class MetOfficeWarningsFetcher {
         + "?where=1=1"                                  // 確保回傳全資料
         + "&outFields=*"                                // 取所有屬性欄位
         + "&returnGeometry=false"                       // 不取 geometry（避免過濾）
-        + "&f=pjson";                                   // 回傳 JSON
+        + "&f=pgeojson";                                   // 回傳 GeoJSON
 
     public static void main(String[] args) {
         // 1. 建立 HttpClient（可視需要調 proxy / time-out）
@@ -55,20 +58,46 @@ public class MetOfficeWarningsFetcher {
                 return;
             }
 
-            // 印出 raw JSON 以便 debug 欄位名稱
-            System.out.println("⏎ RAW JSON:\n" + response.body());
-
-
             // 4. ObjectMapper 解析 JSON
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response.body());
+            
+            // 在專案根目錄下建立 data 資料夾，若已存在則跳過
+            Path dataDir = Path.of("data");
+            if (Files.notExists(dataDir)) {
+                Files.createDirectories(dataDir);
+            }
 
-            // 5. 逐筆處理 features
+            // 取得當前時間戳（毫秒）作為檔名一部分
+            String timestamp = String.valueOf(Instant.now().toEpochMilli());
+
+            // 組出 raw_<timestamp>.json，並將整段 JSON 寫入 data/raw.json
+            Path outFile = dataDir.resolve("raw_" + timestamp + ".json");
+            mapper.writerWithDefaultPrettyPrinter()
+                  .writeValue(outFile.toFile(), root);
+
+            System.out.println("已將完整 JSON 結果儲存到：" + outFile.toString());
+            
+
+            // 無天氣預警則提示並退出
             JsonNode features = root.path("features");
-            if (features.isMissingNode() || !features.isArray()) {
-                System.out.println("No features found.");
+            if (features.isArray() && features.size() == 0) {
+                System.out.println("no weather warning at " + timestamp); // 無警報時輸出提示
                 return;
             }
+
+
+            // 印出 raw JSON 以便 debug 欄位名稱
+            System.out.println("⏎ RAW JSON:\n" + response.body());
+            System.out.println(response.body().substring(0, Math.min(200, response.body().length())) + "…");
+
+
+            // // 5. 逐筆處理 features
+            // JsonNode features = root.path("features");
+            // if (features.isMissingNode() || !features.isArray()) {
+            //     System.out.println("No features found.");
+            //     return;
+            // }
 
             // 6. 設定時間格式器（Europe/London 時區）
             DateTimeFormatter fmt = DateTimeFormatter
@@ -105,4 +134,19 @@ public class MetOfficeWarningsFetcher {
             e.printStackTrace();
         }
     }
+
+    // -----------------------------------------------------
+    //     Private Methods
+    // -----------------------------------------------------
+    // 驗證方法：檢查是否有 error 欄位，或 features 格式不對
+    // 目前只能判定是否為「錯誤 error」
+    // 若資料 features 為空，則打印出「no weather warnning」
+    private static boolean isValidResponse(JsonNode root) {
+        if (root.has("error")) {
+            return false;
+        }
+        JsonNode features = root.path("features");
+        return features.isArray();  // 如果features 不是陣列，就視為錯誤
+    }
+
 }
