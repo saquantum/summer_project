@@ -33,8 +33,8 @@
     </resultMap>
 
     <resultMap id="UserMap" type="uk.ac.bristol.pojo.User">
-        <id property="assetHolderId" column="user_asset_holder_id"/>
-        <result property="id" column="user_id"/>
+        <id property="id" column="user_id"/>
+        <result property="assetHolderId" column="user_asset_holder_id"/>
         <result property="password" column="user_password"/>
         <result property="admin" column="user_is_admin"/>
     </resultMap>

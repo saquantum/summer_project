@@ -152,11 +152,11 @@ public class Warning {
         }
     }
 
-    public void setAreaAsMap(Map<String, Object> area) {
+    public void setArea(Map<String, Object> area) {
         this.area = area;
     }
 
-    public void setArea(String geoJson) throws JsonProcessingException {
+    public void setAreaAsJson(String geoJson) throws JsonProcessingException {
         if (geoJson != null) {
             ObjectMapper mapper = new ObjectMapper();
             this.area = mapper.readValue(geoJson, new TypeReference<>() {

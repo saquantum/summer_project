@@ -13,6 +13,8 @@ public interface UserService {
 
     List<User> getAllUsersWithAssetHolder();
 
+    List<User> getAllUnauthorisedUsersWithAssetHolder();
+
     List<AssetHolder> getAllAssetHolders();
 
     List<User> getAllAdmins();

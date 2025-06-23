@@ -2,7 +2,9 @@ package uk.ac.bristol.dao;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import uk.ac.bristol.pojo.*;
+import uk.ac.bristol.pojo.Asset;
+import uk.ac.bristol.pojo.AssetType;
+import uk.ac.bristol.pojo.AssetWithWeatherWarnings;
 
 import java.util.List;
 

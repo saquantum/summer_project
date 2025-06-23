@@ -49,10 +49,10 @@ public class ImportMockDataImpl implements ImportMockData {
     }
 
     @Override
-    public void importUsers() {
+    public void importUsers(String filepath) {
         List<AssetHolder> assetHolders = null;
         try {
-            assetHolders = mapper.readValue(new File("src/main/resources/data/users.json"), new TypeReference<List<AssetHolder>>() {
+            assetHolders = mapper.readValue(new File(filepath), new TypeReference<List<AssetHolder>>() {
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -70,16 +70,22 @@ public class ImportMockDataImpl implements ImportMockData {
             user.setAdmin(false);
             userService.insertUser(user);
         }
+        // register admin
+        User admin = new User();
+        admin.setId("admin");
+        admin.setPassword("admin");
+        admin.setAdmin(true);
+        userService.insertUser(admin);
     }
 
     @Override
-    public void importAssets() {
+    public void importAssets(String typesFile, String assetsFile) {
         List<AssetType> types = null;
         List<Asset> assets = null;
         try {
-            types = mapper.readValue(new File("src/main/resources/data/asset_types.json"), new TypeReference<List<AssetType>>() {
+            types = mapper.readValue(new File(typesFile), new TypeReference<List<AssetType>>() {
             });
-            assets = mapper.readValue(new File("src/main/resources/data/assets.json"), new TypeReference<List<Asset>>() {
+            assets = mapper.readValue(new File(assetsFile), new TypeReference<List<Asset>>() {
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -93,11 +99,11 @@ public class ImportMockDataImpl implements ImportMockData {
     }
 
     @Override
-    public void importWarnings() {
+    public void importWarnings(String filepath) {
         try {
             String geoJson = Arcgis2GeoJsonConverter.arcgisToGeoJSON(
                     "src/main/resources/js/arcgis-converter.js",
-                    "src/main/resources/data/arcgis-sample.json"
+                    filepath
             );
 
             Map<String, Object> map = mapper.readValue(geoJson, new TypeReference<>() {
@@ -121,7 +127,7 @@ public class ImportMockDataImpl implements ImportMockData {
                 warning.setWhatToExpect((String) properties.get("whatToExpect"));
                 warning.setWarningFurtherDetails((String) properties.get("warningFurtherDetails"));
                 warning.setWarningUpdateDescription((String) properties.get("warningUpdateDescription"));
-                warning.setAreaAsMap(geometry);
+                warning.setArea(geometry);
 
                 warningService.insertWarning(warning);
             }

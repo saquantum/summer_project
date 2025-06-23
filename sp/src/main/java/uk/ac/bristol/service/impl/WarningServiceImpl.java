@@ -30,6 +30,11 @@ public class WarningServiceImpl implements WarningService {
     }
 
     @Override
+    public List<Warning> getWarningById(Long id) {
+        return warningMapper.selectWarningById(id);
+    }
+
+    @Override
     public int insertWarning(Warning warning) {
         return warningMapper.insertWarning(warning);
     }
@@ -41,6 +46,11 @@ public class WarningServiceImpl implements WarningService {
 
     @Override
     public int deleteWarningByIDs(Long[] ids) {
+        return warningMapper.deleteWarningByIDs(ids);
+    }
+
+    @Override
+    public int deleteWarningByIDs(List<Long> ids) {
         return warningMapper.deleteWarningByIDs(ids);
     }
 }

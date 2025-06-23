@@ -53,14 +53,19 @@ public class UserServiceImpl implements UserService {
     // get address and contact preferences for the asset holder
     private AssetHolder prepareAssetHolder(AssetHolder assetHolder) {
         List<Map<String, String>> address = assetHolderMapper.selectAddressByAssetHolderId(assetHolder.getId());
-        if(address.size()!=1) throw new RuntimeException("Get " + address.size() + " addresses for asset holder " + assetHolder.getId());
+        if (address.size() != 1) {
+            throw new RuntimeException("Get " + address.size() + " addresses for asset holder " + assetHolder.getId());
+        }
         List<Map<String, Object>> contactPreferences = assetHolderMapper.selectContactPreferencesByAssetHolderId(assetHolder.getId());
-        if(contactPreferences.size()!=1) throw new RuntimeException("Get " + contactPreferences.size() + " contact preferences for asset holder " + assetHolder.getId());
+        if (contactPreferences.size() != 1) {
+            throw new RuntimeException("Get " + contactPreferences.size() + " contact preferences for asset holder " + assetHolder.getId());
+        }
         assetHolder.setAddress(address.get(0));
         assetHolder.setContactPreferences(contactPreferences.get(0));
         return assetHolder;
     }
 
+    // This method returns all users, with asset holder info if possible
     @Override
     public List<User> getAllUsersWithAssetHolder() {
         List<User> users = userMapper.selectAllUsers();
@@ -73,6 +78,22 @@ public class UserServiceImpl implements UserService {
             user.setAssetHolder(this.prepareAssetHolder(ah));
         }
         return users;
+    }
+
+    // This method only returns users with asset holder info (i.e. excluding admins)
+    @Override
+    public List<User> getAllUnauthorisedUsersWithAssetHolder() {
+        List<User> users = userMapper.selectAllUsers();
+        List<AssetHolder> assetHolders = assetHolderMapper.selectAllAssetHolders();
+        Map<String, AssetHolder> mapping = assetHolders.stream()
+                .collect(Collectors.toMap(AssetHolder::getId, ah -> ah));
+        return users.stream()
+                .filter(user -> mapping.containsKey(user.getAssetHolderId()))
+                .map(user -> {
+                    user.setAssetHolder(this.prepareAssetHolder(mapping.get(user.getAssetHolderId())));
+                    return user;
+                })
+                .collect(Collectors.toList());
     }
 
     // get all asset holders along with address and contact preferences
@@ -108,7 +129,7 @@ public class UserServiceImpl implements UserService {
         if (user.size() != 1) {
             throw new RuntimeException("Get " + user.size() + " users using user id " + uid);
         }
-        if(user.get(0).getAssetHolderId() != null){
+        if (user.get(0).getAssetHolderId() != null) {
             List<AssetHolder> assetHolder = assetHolderMapper.selectAssetHolderByID(user.get(0).getAssetHolderId());
             if (assetHolder.size() != 1) {
                 throw new RuntimeException("Get " + assetHolder.size() + " asset holders using asset holder id " + user.get(0).getAssetHolderId());

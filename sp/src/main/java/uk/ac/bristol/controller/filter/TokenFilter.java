@@ -27,10 +27,10 @@ public class TokenFilter implements Filter {
         }
 
         String token = JwtUtil.getJWTFromCookie(request, response);
-        if(token == null) return;
-        try{
+        if (token == null) return;
+        try {
             JwtUtil.parseJWT(token);
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             response.setStatus(Code.LOGIN_TOKEN_ERR);
             response.setContentType("application/json;charset=UTF-8");

@@ -37,8 +37,8 @@ create table if not exists asset_holders (
 );
 
 create table if not exists users (
-    user_asset_holder_id varchar(50) primary key references asset_holders(asset_holder_id) on update cascade,
-    user_id varchar(100) unique not null,
+    user_id varchar(100) primary key,
+    user_asset_holder_id varchar(50),
     user_password varchar(100) not null,
     user_is_admin boolean not null
 );

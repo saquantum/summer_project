@@ -12,7 +12,6 @@ import uk.ac.bristol.pojo.AssetWithWeatherWarnings;
 import uk.ac.bristol.service.AssetService;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -123,7 +122,7 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public int deleteAssetTypeByIDs(String[] ids) {
-        return this.deleteAssetTypeByIDs(Arrays.asList(ids));
+        return assetMapper.deleteAssetTypeByIDs(ids);
     }
 
     @Override
@@ -133,7 +132,7 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public int deleteAssetByIDs(String[] ids) {
-        return this.deleteAssetByIDs(Arrays.asList(ids));
+        return assetMapper.deleteAssetByIDs(ids);
     }
 
     @Override

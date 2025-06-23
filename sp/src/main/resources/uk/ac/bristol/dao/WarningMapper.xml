@@ -39,6 +39,24 @@
         from weather_warnings;
     </select>
 
+    <select id="selectWarningById" resultMap="ResultMaps.WarningMap">
+        select warning_id,
+               warning_weather_type,
+               warning_level,
+               warning_head_line,
+               warning_valid_from,
+               warning_valid_to,
+               warning_impact,
+               warning_likelihood,
+               warning_affected_areas,
+               warning_what_to_expect,
+               warning_further_details,
+               warning_update_description,
+               ST_AsGeoJSON(warning_area) as warning_area
+        from weather_warnings
+        where warning_id = #{id};
+    </select>
+
     <insert id="insertWarning">
         insert into weather_warnings (warning_id,
                                       warning_weather_type,

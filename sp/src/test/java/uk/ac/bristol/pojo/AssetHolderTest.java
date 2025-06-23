@@ -15,11 +15,12 @@ public class AssetHolderTest {
     public void testAddressSetterWithNullInput() {
         AssetHolder holder = new AssetHolder();
         holder.setAddress(null);
+        assertNull(holder.getAddress().get("assetHolderId"));
         assertNull(holder.getAddress().get("street"));
         assertNull(holder.getAddress().get("city"));
         assertNull(holder.getAddress().get("postcode"));
         assertNull(holder.getAddress().get("country"));
-        assertEquals(4, holder.getAddress().size());
+        assertEquals(5, holder.getAddress().size());
     }
 
     @Test
@@ -29,13 +30,14 @@ public class AssetHolderTest {
 
         Map<String, Object> result = holder.getContactPreferences();
 
+        assertNull(result.get("assetHolderId"));
         assertNull(result.get("email"));
         assertNull(result.get("phone"));
         assertNull(result.get("post"));
         assertNull(result.get("whatsapp"));
         assertNull(result.get("discord"));
         assertNull(result.get("telegram"));
-        assertEquals(6, result.size());
+        assertEquals(7, result.size());
     }
 
     @Test
@@ -43,6 +45,7 @@ public class AssetHolderTest {
         AssetHolder holder = new AssetHolder();
 
         Map<String, String> input = new HashMap<>();
+        input.put("assetHolderId", "user_001");
         input.put("street", "123 Main St");
         input.put("city", "Testville");
         input.put("postcode", "ABC123");
@@ -52,12 +55,13 @@ public class AssetHolderTest {
         holder.setAddress(input);
         Map<String, String> result = holder.getAddress();
 
+        assertEquals("user_001", result.get("assetHolderId"));
         assertEquals("123 Main St", result.get("street"));
         assertEquals("Testville", result.get("city"));
         assertEquals("ABC123", result.get("postcode"));
         assertEquals("Testland", result.get("country"));
         assertFalse(result.containsKey("extra"));
-        assertEquals(4, result.size());
+        assertEquals(5, result.size());
     }
 
     @Test
@@ -74,7 +78,7 @@ public class AssetHolderTest {
         assertNull(result.get("city"));
         assertNull(result.get("postcode"));
         assertNull(result.get("country"));
-        assertEquals(4, result.size());
+        assertEquals(5, result.size());
     }
 
     @Test
@@ -82,6 +86,7 @@ public class AssetHolderTest {
         AssetHolder holder = new AssetHolder();
 
         Map<String, Object> input = new HashMap<>();
+        input.put("assetHolderId", "user_001");
         input.put("email", true);
         input.put("phone", false);
         input.put("post", true);
@@ -94,6 +99,7 @@ public class AssetHolderTest {
         holder.setContactPreferences(input);
         Map<String, Object> result = holder.getContactPreferences();
 
+        assertEquals("user_001", result.get("assetHolderId"));
         assertEquals(true, result.get("email"));
         assertEquals(false, result.get("phone"));
         assertEquals(true, result.get("post"));
@@ -102,7 +108,7 @@ public class AssetHolderTest {
         assertEquals(true, result.get("telegram"));
         assertFalse(result.containsKey("weixin"));
         assertFalse(result.containsKey("qq"));
-        assertEquals(6, result.size());
+        assertEquals(7, result.size());
     }
 
     @Test
@@ -122,6 +128,6 @@ public class AssetHolderTest {
         assertNull(result.get("whatsapp"));
         assertNull(result.get("discord"));
         assertNull(result.get("telegram"));
-        assertEquals(6, result.size());
+        assertEquals(7, result.size());
     }
 }

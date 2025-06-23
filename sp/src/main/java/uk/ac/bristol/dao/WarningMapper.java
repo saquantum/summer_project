@@ -13,6 +13,8 @@ public interface WarningMapper {
 
     List<Warning> selectAllWarningsIncludingOutdated();
 
+    List<Warning> selectWarningById(@Param("id") Long id);
+
     int insertWarning(Warning warning);
 
     int updateWarning(Warning warning);

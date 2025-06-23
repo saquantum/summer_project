@@ -5,9 +5,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class SpExceptionHandler {
+
+    // TODO: use customized exceptions and handle them here
+
     @ExceptionHandler(Throwable.class)
-    public ResponseResult handleException(Throwable e) {
+    public ResponseBody handleException(Throwable e) {
         e.printStackTrace();
-        return new ResponseResult(Code.SYSTEM_ERR, null, e.toString());
+        return new ResponseBody(Code.SYSTEM_ERR, null, e.toString());
     }
 }

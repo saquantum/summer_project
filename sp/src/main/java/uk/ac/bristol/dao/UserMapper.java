@@ -2,7 +2,7 @@ package uk.ac.bristol.dao;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import uk.ac.bristol.pojo.*;
+import uk.ac.bristol.pojo.User;
 
 import java.util.List;
 
@@ -24,8 +24,10 @@ public interface UserMapper {
     int updateUser(User user);
 
     int deleteUserByAssetHolderIDs(@Param("ids") String[] assetHolderIds);
+
     int deleteUserByAssetHolderIDs(@Param("ids") List<String> assetHolderIds);
 
     int deleteUserByIds(@Param("ids") String[] ids);
+
     int deleteUserByIds(@Param("ids") List<String> ids);
 }

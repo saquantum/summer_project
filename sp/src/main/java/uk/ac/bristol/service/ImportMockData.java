@@ -4,9 +4,9 @@ public interface ImportMockData {
 
     void resetSchema();
 
-    void importAssets();
+    void importAssets(String types, String assets);
 
-    void importUsers();
+    void importUsers(String filepath);
 
-    void importWarnings();
+    void importWarnings(String filepath);
 }

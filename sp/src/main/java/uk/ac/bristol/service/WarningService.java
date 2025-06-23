@@ -10,9 +10,13 @@ public interface WarningService {
 
     List<Warning> getAllWarningsIncludingOutdated();
 
+    List<Warning> getWarningById(Long id);
+
     int insertWarning(Warning warning);
 
     int updateWarning(Warning warning);
 
     int deleteWarningByIDs(Long[] ids);
+
+    int deleteWarningByIDs(List<Long> ids);
 }
