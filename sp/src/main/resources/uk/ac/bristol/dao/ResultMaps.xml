@@ -72,7 +72,7 @@
         <result property="whatToExpect" column="warning_what_to_expect"/>
         <result property="warningFurtherDetails" column="warning_further_details"/>
         <result property="warningUpdateDescription" column="warning_update_description"/>
-        <result property="area" column="warning_area" javaType="java.lang.String"/>
+        <result property="areaAsJson" column="warning_area" javaType="java.lang.String"/>
     </resultMap>
 
     <resultMap id="AssetWithWarningsMap" type="uk.ac.bristol.pojo.AssetWithWeatherWarnings">

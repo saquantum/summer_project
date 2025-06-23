@@ -14,6 +14,8 @@ public class FilterConfig {
         registration.setFilter(new TokenFilter());
         registration.addUrlPatterns("/api/user/*");
         registration.addUrlPatterns("/api/admin/*");
+        registration.addUrlPatterns("/api/asset/*");
+        registration.addUrlPatterns("/api/warning/*");
         registration.setOrder(1);
         return registration;
     }

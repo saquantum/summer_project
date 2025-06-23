@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -141,6 +143,7 @@ public class Asset {
         this.material = material;
     }
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     public LocalDate getInstalledAt() {
         return installedAt;
     }
@@ -149,6 +152,7 @@ public class Asset {
         this.installedAt = installedAt;
     }
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     public LocalDate getLastInspection() {
         return lastInspection;
     }

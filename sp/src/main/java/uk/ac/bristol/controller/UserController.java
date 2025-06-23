@@ -52,14 +52,19 @@ public class UserController {
         }
     }
 
+    // for safety considerations, the user should not see password.
     @GetMapping("/uid/{id}")
     public ResponseBody getUserByUserId(@PathVariable String id) {
-        return new ResponseBody(Code.SELECT_OK, userService.getUserByUserId(id));
+        User user = userService.getUserByUserId(id);
+        user.setPassword(null);
+        return new ResponseBody(Code.SELECT_OK, user);
     }
 
     @GetMapping("/aid/{id}")
     public ResponseBody getUserByAssetHolderId(@PathVariable String id) {
-        return new ResponseBody(Code.SELECT_OK, userService.getUserByAssetHolderId(id));
+        User user = userService.getUserByAssetHolderId(id);
+        user.setPassword(null);
+        return new ResponseBody(Code.SELECT_OK, user);
     }
 
     // NOTICE: No Post Mapping. A common user cannot insert new users, unless they access login controller to register

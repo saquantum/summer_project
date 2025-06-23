@@ -1,9 +1,5 @@
 This packages stores all the object prototypes. When retrieving data from databases with MyBatis, one needs to define such a prototype to receive all the columns of a record from a table.
 
-## !important
-
-To pass a standard GeoJSON to backend packaged into `Asset.location` or `Warning.area` (e.g. a controller method that has `@RequestBody Asset asset` as parameter), do use `{locationAsJson: ...}` and  `{areaAsJson: ...}`. See the setters to grasp the idea.
-
 ## Asset 
 
 #### type

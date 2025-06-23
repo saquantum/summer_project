@@ -28,6 +28,7 @@ public class AssetController {
 
     @GetMapping("/asset/{id}")
     public ResponseBody getAssetsById(@PathVariable String id) {
+        System.out.println(assetService.getAssetWithWarningsById(id));
         return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(id));
     }
 
@@ -54,22 +55,22 @@ public class AssetController {
 
     /* ---------------- Asset Types ---------------- */
 
-    @GetMapping("/asset")
+    @GetMapping("/asset/type")
     public ResponseBody getAllAssetsTypes() {
-        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetsWithWarnings());
+        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetTypes());
     }
 
-    @PostMapping("/asset")
+    @PostMapping("/asset/type")
     public ResponseBody insertAssetType(@RequestBody AssetType type) {
         return new ResponseBody(Code.INSERT_OK, assetService.insertAssetType(type));
     }
 
-    @PutMapping("/asset")
+    @PutMapping("/asset/type")
     public ResponseBody updateAssetType(@RequestBody AssetType type) {
         return new ResponseBody(Code.UPDATE_OK, assetService.updateAssetType(type));
     }
 
-    @DeleteMapping("/asset")
+    @DeleteMapping("/asset/type")
     public ResponseBody deleteByAssetTypesByIds(@RequestBody Map<String, Object> body) {
         List<String> ids = (List<String>) body.get("ids");
         return new ResponseBody(Code.DELETE_OK, assetService.deleteAssetTypeByIDs(ids));

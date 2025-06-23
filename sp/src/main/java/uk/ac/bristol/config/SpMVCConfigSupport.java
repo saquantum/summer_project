@@ -21,6 +21,10 @@ public class SpMVCConfigSupport extends WebMvcConfigurationSupport {
 
     @Override
     protected void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(spInterceptor).addPathPatterns("/api/user/**").addPathPatterns("/**/admin/**");
+        registry.addInterceptor(spInterceptor)
+                .addPathPatterns("/api/user/**")
+                .addPathPatterns("/api/asset/**")
+                .addPathPatterns("/api/warning/**")
+                .addPathPatterns("/**/admin/**");
     }
 }

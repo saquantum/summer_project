@@ -73,6 +73,7 @@ public class UserServiceImpl implements UserService {
         Map<String, AssetHolder> mapping = assetHolders.stream()
                 .collect(Collectors.toMap(AssetHolder::getId, ah -> ah));
         for (User user : users) {
+            if (user.getAssetHolderId() == null) continue;
             AssetHolder ah = mapping.get(user.getAssetHolderId());
             if (ah == null) throw new RuntimeException("No asset holder for user " + user.getId());
             user.setAssetHolder(this.prepareAssetHolder(ah));
