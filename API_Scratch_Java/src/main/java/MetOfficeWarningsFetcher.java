@@ -27,14 +27,20 @@ public class MetOfficeWarningsFetcher {
     //   + "Met_Office_National_Severe_Weather_Warning_Service_Live/FeatureServer/0/query"
     //   + "?where=1%3D1&outFields=*&returnGeometry=true&f=pjson&token=";
 
-    private static final String BASE_URL =
+    private static final String DEFAULT_URL =
         "https://services.arcgis.com/Lq3V5RFuTBC9I7kv/arcgis/rest/services/"
         + "Met_Office_National_Severe_Weather_Warning_Service_Live/FeatureServer/0/query"
         + "?where=1=1"                                  // 確保回傳全資料
         + "&outFields=*"                                // 取所有屬性欄位
         + "&returnGeometry=false"                       // 不取 geometry（避免過濾）
-        + "&f=pgeojson";                                   // 回傳 GeoJSON
+        + "&f=pgeojson";                                // 回傳 GeoJSON
 
+    // 從 System property 讀取覆寫值，否則回 DEFAULT_URL
+    private static String getBaseUrl() {
+        return System.getProperty("metoffice.url", DEFAULT_URL);
+    }
+
+    
     public static void main(String[] args) {
         // 1. 建立 HttpClient（可視需要調 proxy / time-out）
         HttpClient client = HttpClient.newBuilder()
@@ -43,7 +49,7 @@ public class MetOfficeWarningsFetcher {
 
         // 2. 建立 GET 請求
         HttpRequest request = HttpRequest.newBuilder()
-                                         .uri(URI.create(BASE_URL))
+                                         .uri(URI.create(getBaseUrl()))
                                          .timeout(Duration.ofSeconds(30))
                                          .header("Accept", "application/json")
                                          .build();
@@ -62,6 +68,15 @@ public class MetOfficeWarningsFetcher {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response.body());
             
+            // 在任何寫檔動作之前，先驗證回應是否有效
+            if (!isValidResponse(root)) {
+                JsonNode err = root.path("error");
+                System.err.println("API 回傳錯誤 code="
+                    + err.path("code").asText("") 
+                    + ", message=" + err.path("message").asText(""));
+                return;
+            }
+
             // 在專案根目錄下建立 data 資料夾，若已存在則跳過
             Path dataDir = Path.of("data");
             if (Files.notExists(dataDir)) {
