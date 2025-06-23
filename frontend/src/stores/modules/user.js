@@ -6,6 +6,7 @@ export const useUserStore = defineStore(
   'rain-user',
   () => {
     const user = ref({})
+    const proxyId = ref('')
     const getUser = async () => {
       const { data } = await userGetIdService()
       if (!data.data.isAdmin) {
@@ -15,10 +16,14 @@ export const useUserStore = defineStore(
       user.value.isAdmin = data.data.isAdmin
     }
 
+    const setProxyId = (id) => {
+      proxyId.value = id
+    }
+
     const reset = () => {
       user.value = {}
     }
-    return { user, getUser, reset }
+    return { user, getUser, reset, proxyId, setProxyId }
   },
   {
     persist: true

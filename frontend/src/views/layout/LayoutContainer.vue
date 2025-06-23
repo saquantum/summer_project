@@ -26,6 +26,10 @@ const handleCommand = (command) => {
     router.push('/login')
   }
 }
+const tabs = [
+  { label: 'My Assets', path: '/', icon: Management },
+  { label: 'My Profile', path: '/user/profile', icon: User }
+]
 const dialogVisible = ref(false)
 </script>
 
@@ -135,6 +139,7 @@ const dialogVisible = ref(false)
 
       <el-main>
         <router-view></router-view>
+        <TabBar :tabs="tabs" class="tabbar-disply"></TabBar>
       </el-main>
     </el-container>
   </el-container>
@@ -197,5 +202,20 @@ const dialogVisible = ref(false)
     font-size: 14px;
     color: #666;
   }
+}
+
+@media (min-width: 768px) {
+  .tabbar-disply {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .el-aside {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
 }
 </style>

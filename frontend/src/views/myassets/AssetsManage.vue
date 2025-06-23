@@ -1,12 +1,10 @@
 <script setup>
 import { onMounted } from 'vue'
-import { useAssetsStore } from '@/stores/modules/assets'
 import { useRouter } from 'vue-router'
 import { ref, watch, computed } from 'vue'
-import { useUserStore, useAdminStore } from '@/stores'
+import { useUserStore, useAssetsStore } from '@/stores'
 const assetsStore = useAssetsStore()
 const userStore = useUserStore()
-const adminStore = useAdminStore()
 const router = useRouter()
 
 // filter value
@@ -76,6 +74,7 @@ const handlePageChange = (page) => {
   currentPage.value = page
 }
 
+const addAssetVisible = ref(false)
 const currentPageAssets = computed(() => {
   const start = (currentPage.value - 1) * pageSize
   const end = start + pageSize
@@ -84,11 +83,11 @@ const currentPageAssets = computed(() => {
   // set indicator color
   arr.forEach((item) => {
     if (item.warnings[0]?.warningLevel.toLowerCase().includes('red')) {
-      item.status = 'warning'
+      item.status = 'error'
     } else if (
       item.warnings[0]?.warningLevel.toLowerCase().includes('yellow')
     ) {
-      item.status = 'error'
+      item.status = 'warning'
     } else {
       item.status = 'success'
     }
@@ -103,17 +102,18 @@ onMounted(async () => {
   if (!userStore.user.isAdmin) {
     id = userStore.user.user.assetHolderId
   } else {
-    id = adminStore.proxyId
+    id = userStore.proxyId
   }
-  await assetsStore.getAssets(id)
-  currentAssets.value = assetsStore.assets
+  console.log(id)
+  await assetsStore.getUserAssets(id)
+  currentAssets.value = assetsStore.userAssets
 })
 
 // watch filter condition
 watch(
   [assetName, assetWarningLevel, assetRegion],
   async () => {
-    currentAssets.value = assetsStore.assets.filter((item) => {
+    currentAssets.value = assetsStore.userAssets.filter((item) => {
       const matchName = assetName.value
         ? item.asset.name?.toLowerCase().includes(assetName.value.toLowerCase())
         : true
@@ -146,12 +146,12 @@ watch(
       flex-wrap: wrap;
     "
   >
-    <el-input v-model="assetName" style="width: 240px"></el-input>
+    <el-input v-model="assetName" class="select-style"></el-input>
     <el-select
       v-model="assetWarningLevel"
       placeholder="Select warning level"
       size="large"
-      style="width: 240px"
+      class="select-style"
     >
       <el-option
         v-for="item in warningLevelOptions"
@@ -165,7 +165,7 @@ watch(
       v-model="assetRegion"
       placeholder="Select Region"
       size="large"
-      style="width: 240px"
+      class="select-style"
     >
       <el-option
         v-for="item in warningRegion"
@@ -174,6 +174,8 @@ watch(
         :value="item.value"
       ></el-option>
     </el-select>
+
+    <el-button @click="addAssetVisible = true"> Add asset </el-button>
   </div>
 
   <!-- cards for assets -->
@@ -224,8 +226,13 @@ watch(
         justify-content: center;
         text-align: center;
         margin-top: 20px;
+        position: relative;
+        z-index: 2000;
       "
     />
+    <el-dialog v-model="addAssetVisible" title="Add new asset" width="500">
+      <AddAsset v-model:add-asset-visible="addAssetVisible"></AddAsset>
+    </el-dialog>
   </div>
 </template>
 
@@ -286,15 +293,6 @@ watch(
   height: 1.2em;
 }
 
-.asset-id {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background-color: #4caf50;
-  box-shadow: 0 0 4px rgba(76, 175, 80, 0.4);
-  border: 1px solid #c8e6c9;
-}
-
 .map-container {
   padding: 16px 0;
   display: flex;
@@ -328,6 +326,10 @@ watch(
   box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
 }
 
+.select-style {
+  width: 240px;
+}
+
 @media (max-width: 768px) {
   .assets-container {
     padding: 12px;
@@ -341,6 +343,9 @@ watch(
 @media (max-width: 480px) {
   .card-grid {
     justify-content: flex-start;
+  }
+  .select-style {
+    width: 100px;
   }
 }
 

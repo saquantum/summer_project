@@ -1,21 +1,28 @@
 import { assetsGetInfoService } from '@/api/assets'
+import { adminGetAssetsService } from '@/api/admin'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useAssetsStore = defineStore(
   'rain-assets',
   () => {
-    const assets = ref([])
+    const userAssets = ref([])
+    const allAssets = ref([])
 
-    const getAssets = async (id) => {
+    const getUserAssets = async (id) => {
       const res = await assetsGetInfoService(id)
-      assets.value = res.data.data
+      userAssets.value = res.data.data
+    }
+
+    const getAllAssets = async () => {
+      const res = await adminGetAssetsService()
+      allAssets.value = res.data.data
     }
 
     const reset = () => {
-      assets.value = []
+      userAssets.value = []
     }
-    return { assets, getAssets, reset }
+    return { userAssets, getUserAssets, reset, allAssets, getAllAssets }
   },
   {
     persist: true

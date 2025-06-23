@@ -8,14 +8,13 @@ const adminStore = useAdminStore()
 
 const mapId = 'allWarningsMap'
 const handleShowDetail = (row) => {
-  router.push(`/asset/${row.id}`)
+  router.push(`/warning/${row.id}`)
 }
 let warningPolygon = []
 
 onMounted(async () => {
   await adminStore.getAllWarnings()
   warnings.value = adminStore.allWarnings.map((item) => {
-    console.log(item)
     return {
       id: item.id,
       weatherType: item.weatherType,

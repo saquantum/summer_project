@@ -1,14 +1,10 @@
 <script setup>
-import { useAssetsStore, useAdminStore } from '@/stores'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
+import { useAssetsStore } from '@/stores'
 import { useRoute } from 'vue-router'
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 
 const route = useRoute()
 const assetsStore = useAssetsStore()
-const adminStore = useAdminStore()
-
 const isEdit = false
 const contactOptions = [
   { value: 'Email', label: 'Email' },
@@ -18,24 +14,26 @@ const contactOptions = [
   { value: 'Telegram', label: 'Telegram' }
 ]
 const contact = ref('Email')
+const drainArea = ref([])
 const asset = ref({})
-onMounted(() => {
-  // get the asset
-  const id = Number(route.params.id)
+// get the asset
+const id = Number(route.params.id)
 
-  // stupid code refactor later
-  const obj =
-    assetsStore.assets.find((item) => item.asset.id === id) ||
-    adminStore.allAssets.find((item) => item.asset.id === id)
-  asset.value = obj.asset
-  console.log(asset.value)
-  const map = L.map('map').setView([0, 0], 13)
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map)
-  const geoLayer = L.geoJSON(obj.asset.drainArea).addTo(map)
-  map.fitBounds(geoLayer.getBounds())
-})
+const item =
+  assetsStore.userAssets.find((item) => item.asset.id === id) ||
+  assetsStore.allAssets.find((item) => item.asset.id === id)
+
+drainArea.value = [item.asset.drainArea]
+asset.value = item.asset
+const mapCardRef = ref()
+
+const beginDrawing = () => {
+  mapCardRef.value.beginDrawing()
+}
+
+const endDrawing = () => {
+  mapCardRef.value.endDrawing()
+}
 </script>
 
 <template>
@@ -47,9 +45,18 @@ onMounted(() => {
             <span>{{ asset.name }}</span>
           </div>
         </template>
-        <div id="map" style="height: 400px"></div>
+        <div style="height: 300px">
+          <MapCard
+            ref="mapCardRef"
+            :map-id="'mapdetail'"
+            :drain-area="drainArea"
+            :id="id"
+          ></MapCard>
+        </div>
         <template #footer>Footer content</template>
       </el-card>
+      <el-button @click="beginDrawing">Draw new asset</el-button>
+      <el-button @click="endDrawing">End drawing</el-button>
     </el-col>
 
     <el-col :span="12">

@@ -1,17 +1,16 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAdminStore } from '@/stores'
+import { useAssetsStore } from '@/stores'
 const assets = ref([])
 const router = useRouter()
-const adminStore = useAdminStore()
+const assetStore = useAssetsStore()
 
 const handleShowDetail = (row) => {
   router.push(`/asset/${row.id}`)
 }
 
 const tableRowClassName = (scope) => {
-  console.log(scope.row.warningLevel)
   if (scope.row.warningLevel.toLowerCase().includes('red')) {
     return 'warning-red'
   } else if (scope.row.warningLevel.toLowerCase().includes('yellow')) {
@@ -19,8 +18,8 @@ const tableRowClassName = (scope) => {
   }
 }
 onMounted(async () => {
-  await adminStore.getAllAssets()
-  assets.value = adminStore.allAssets.map((item) => {
+  await assetStore.getAllAssets()
+  assets.value = assetStore.allAssets.map((item) => {
     return {
       id: item.asset.id,
       assetName: item.asset.name,

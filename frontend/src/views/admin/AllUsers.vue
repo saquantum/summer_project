@@ -2,13 +2,13 @@
 import { ref, onMounted } from 'vue'
 import { adminGetUsersService } from '@/api/admin'
 import { useRouter } from 'vue-router'
-import { useAdminStore } from '@/stores/modules/admin'
+import { useUserStore } from '@/stores'
 
 const router = useRouter()
 const users = ref([])
-const adminStore = useAdminStore()
+const userStore = useUserStore()
 const handleShowDetail = async (row) => {
-  adminStore.setProxyId(row.assetHolderId)
+  userStore.setProxyId(row.assetHolderId)
 
   // goto user interface
   router.push('/myassets/manage')
