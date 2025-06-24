@@ -31,11 +31,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <el-table
-    @row-click="handleRowClick"
-    :data="assets"
-    :row-class-name="tableRowClassName"
-  >
+  <el-table :data="assets" :row-class-name="tableRowClassName">
     <el-table-column prop="id" label="Asset id" width="180" />
     <el-table-column prop="assetName" label="Asset Name" width="180" />
     <el-table-column prop="assetHolderId" label="Asset Holder ID" width="180" />

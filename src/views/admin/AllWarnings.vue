@@ -60,12 +60,7 @@ const setWarningLevelStyle = (level) => {
     ></MapCard>
   </div>
 
-  <el-table
-    @row-click="handleRowClick"
-    :data="warnings"
-    stripe
-    style="width: 100%"
-  >
+  <el-table :data="warnings" stripe style="width: 100%">
     <el-table-column prop="id" label="Warning ID" width="180" />
     <el-table-column prop="weatherType" label="Weather Type" width="180" />
     <el-table-column prop="warningLevel" label="Warning Level" width="180" />

@@ -17,25 +17,21 @@ onMounted(async () => {
   const res = await adminGetUsersService()
   console.log(res)
   users.value = res.data.map((item) => ({
-    uid: item.id,
-    username: item.id,
-    assetHolderId: item.assetHolderId || 'none',
-    assets: item.id
+    uid: item.user.id,
+    username: item.user.id,
+    assetHolderId: item.user.assetHolderId || 'none',
+    assets: item.user.id,
+    count: item.count
   }))
 })
 </script>
 
 <template>
-  <el-table
-    @row-click="handleRowClick"
-    :data="users"
-    stripe
-    style="width: 100%"
-  >
+  <el-table :data="users" stripe style="width: 100%">
     <el-table-column prop="uid" label="UID" width="180" />
     <el-table-column prop="assetHolderId" label="Asset Holder ID" width="180" />
     <el-table-column prop="username" label="Username" width="180" />
-    <el-table-column prop="assets" label="Assets" width="180" />
+    <el-table-column prop="count" label="Assets" width="180" />
     <el-table-column label="Actions">
       <template #default="scope">
         <el-button

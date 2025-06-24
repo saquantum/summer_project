@@ -20,8 +20,8 @@ const form = ref({
   }
 })
 
-//Avatar upload
-const avatarUrl = ref(assetHolder.avatar || '') // 默认
+// Avatar upload
+const avatarUrl = ref(assetHolder.avatar || '')
 const avatarFile = ref(null)
 
 const handleAvatarChange = (e) => {
