@@ -46,6 +46,9 @@ public class SpExceptionHandler {
     @ExceptionHandler(Throwable.class)
     public ResponseBody handleException(Throwable e) {
         e.printStackTrace();
-        return new ResponseBody(Code.SYSTEM_ERR, null, "Untracked error threw as system exception, please contact for admin support.");
+        return new ResponseBody(Code.SYSTEM_ERR, null,
+                "Untracked error threw as system exception, please contact for admin support."
+                + System.lineSeparator()
+                + e.getMessage());
     }
 }

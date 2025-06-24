@@ -14,30 +14,13 @@ public class AssetHolderTest {
     @Test
     public void testAddressSetterWithNullInput() {
         AssetHolder holder = new AssetHolder();
-        holder.setAddress(null);
-        assertNull(holder.getAddress().get("assetHolderId"));
-        assertNull(holder.getAddress().get("street"));
-        assertNull(holder.getAddress().get("city"));
-        assertNull(holder.getAddress().get("postcode"));
-        assertNull(holder.getAddress().get("country"));
-        assertEquals(5, holder.getAddress().size());
+        assertThrows(IllegalArgumentException.class, () -> holder.setAddress(null));
     }
 
     @Test
     public void testContactPreferencesSetterWithNullInput() {
         AssetHolder holder = new AssetHolder();
-        holder.setContactPreferences(null);
-
-        Map<String, Object> result = holder.getContactPreferences();
-
-        assertNull(result.get("assetHolderId"));
-        assertNull(result.get("email"));
-        assertNull(result.get("phone"));
-        assertNull(result.get("post"));
-        assertNull(result.get("whatsapp"));
-        assertNull(result.get("discord"));
-        assertNull(result.get("telegram"));
-        assertEquals(7, result.size());
+        assertThrows(IllegalArgumentException.class, () -> holder.setContactPreferences(null));
     }
 
     @Test
@@ -75,9 +58,9 @@ public class AssetHolderTest {
         Map<String, String> result = holder.getAddress();
 
         assertEquals("45 Short Ln", result.get("street"));
-        assertNull(result.get("city"));
-        assertNull(result.get("postcode"));
-        assertNull(result.get("country"));
+        assertEquals("", result.get("city"));
+        assertEquals("", result.get("postcode"));
+        assertEquals("", result.get("country"));
         assertEquals(5, result.size());
     }
 
@@ -124,10 +107,10 @@ public class AssetHolderTest {
 
         assertEquals(true, result.get("email"));
         assertEquals(false, result.get("phone"));
-        assertNull(result.get("post"));
-        assertNull(result.get("whatsapp"));
-        assertNull(result.get("discord"));
-        assertNull(result.get("telegram"));
+        assertEquals(false, result.get("post"));
+        assertEquals(false, result.get("whatsapp"));
+        assertEquals(false, result.get("discord"));
+        assertEquals(false, result.get("telegram"));
         assertEquals(7, result.size());
     }
 }

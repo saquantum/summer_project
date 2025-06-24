@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 
 public class Warning {
@@ -23,6 +24,8 @@ public class Warning {
     private String warningFurtherDetails;
     private String warningUpdateDescription;
     private Map<String, Object> area;
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public Warning() {
     }
@@ -161,10 +164,11 @@ public class Warning {
 
     // for back-end persistence
     public void setAreaAsJson(String geoJson) throws JsonProcessingException {
-        if (geoJson != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            this.area = mapper.readValue(geoJson, new TypeReference<>() {
-            });
+        if (geoJson == null || geoJson.isBlank()) {
+            this.area = Map.ofEntries(Map.entry("type", "MultiPolygon"), Map.entry("coordinates", List.of(List.of(List.of()))));
+            return;
         }
+        this.area = objectMapper.readValue(geoJson, new TypeReference<>() {
+        });
     }
 }

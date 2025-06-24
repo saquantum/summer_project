@@ -73,9 +73,12 @@ public class AssetHolder {
     }
 
     public void setAddress(Map<String, String> address) {
+        if (address == null) {
+            throw new IllegalArgumentException("trying to set address to be null");
+        }
         Map<String, String> map = new HashMap<>();
         for (String detail : addressDetails) {
-            map.put(detail, address != null ? address.get(detail) : null);
+            map.put(detail, address.getOrDefault(detail, ""));
         }
         this.address = map;
     }
@@ -86,15 +89,17 @@ public class AssetHolder {
 
     @JsonSetter("contact_preferences")
     public void setContactPreferences(Map<String, Object> contactPreferences) {
+        if (contactPreferences == null) {
+            throw new IllegalArgumentException("trying to set contactPreferences to be null");
+        }
         Map<String, Object> map = new HashMap<>();
         for (String option : contactOptions) {
-            if(!option.equals("assetHolderId")
-                    && contactPreferences != null
+            if (!option.equals("assetHolderId")
                     && contactPreferences.containsKey(option)
                     && contactPreferences.get(option).getClass() != Boolean.class) {
                 throw new RuntimeException("options of contact preferences should only contain boolean values");
             }
-            map.put(option, contactPreferences != null ? contactPreferences.get(option) : null);
+            map.put(option, contactPreferences.getOrDefault(option, false));
         }
         this.contactPreferences = map;
     }

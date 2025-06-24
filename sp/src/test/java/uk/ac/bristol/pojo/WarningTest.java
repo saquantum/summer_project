@@ -1,8 +1,6 @@
 package uk.ac.bristol.pojo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -10,12 +8,15 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
-public class AssetTest {
+public class WarningTest {
 
     @Test
-    public void testLocationSetterFromGeoJson() throws JsonProcessingException {
+    public void testAreaSetterFromGeoJson() throws JsonProcessingException {
         String geoJson = """
                 {
                     "type": "MultiPolygon",
@@ -33,23 +34,23 @@ public class AssetTest {
                 }
                 """;
 
-        Asset asset = new Asset();
-        asset.setLocationAsJson(geoJson);
+        Warning warning = new Warning();
+        warning.setAreaAsJson(geoJson);
 
-        Map<String, Object> drainArea = asset.getLocation();
+        Map<String, Object> area = warning.getArea();
 
-        assertNotNull(drainArea);
-        assertEquals("MultiPolygon", drainArea.get("type"));
-        assertTrue(drainArea.containsKey("coordinates"));
-        assertEquals(30.0, ((Number) (((List<?>) ((List<?>) ((List<?>) ((List<?>) asset.getLocation().get("coordinates")).get(0)).get(0)).get(0)).get(0))).doubleValue());
+        assertNotNull(area);
+        assertEquals("MultiPolygon", area.get("type"));
+        assertTrue(area.containsKey("coordinates"));
+        assertEquals(30.0, ((Number) (((List<?>) ((List<?>) ((List<?>) ((List<?>) warning.getArea().get("coordinates")).get(0)).get(0)).get(0)).get(0))).doubleValue());
     }
 
     @Test
-    public void testLocationSetterWithNullInput() throws JsonProcessingException {
-        Asset asset = new Asset();
-        asset.setLocationAsJson((String) null);
+    public void testAreaSetterWithNullInput() throws JsonProcessingException {
+        Warning warning = new Warning();
+        warning.setAreaAsJson((String) null);
 
-        Map<String, Object> result = asset.getLocation();
+        Map<String, Object> result = warning.getArea();
 
         assertNotNull(result);
         assertEquals("MultiPolygon", result.get("type"));
@@ -86,10 +87,10 @@ public class AssetTest {
                 }
                 """;
 
-        Asset asset = new Asset();
-        asset.setLocationAsJson(geoJson);
+        Warning warning = new Warning();
+        warning.setAreaAsJson(geoJson);
 
-        String str = asset.getLocationAsJson();
+        String str = warning.getAreaAsJson();
         assertEquals("{\"type\":\"MultiPolygon\",\"coordinates\":[[[[30.0,10.0],[40.0,40.0],[20.0,40.0],[10.0,20.0],[30.0,10.0]]]]}", str);
     }
 }

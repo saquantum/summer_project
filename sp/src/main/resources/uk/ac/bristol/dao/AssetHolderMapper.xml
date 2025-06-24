@@ -29,7 +29,7 @@
     </update>
 
     <delete id="deleteAddressByAssetHolderIds">
-        delete from address where asset_holder_id in
+        delete from address where address_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 
@@ -62,7 +62,7 @@
     </update>
 
     <delete id="deleteContactPreferencesByAssetHolderIds">
-        delete from contact_preferences where asset_holder_id in
+        delete from contact_preferences where contact_preferences_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 

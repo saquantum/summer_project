@@ -1,7 +1,6 @@
 package uk.ac.bristol.controller;
 
 import io.jsonwebtoken.Claims;
-import org.apache.ibatis.jdbc.SQL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
