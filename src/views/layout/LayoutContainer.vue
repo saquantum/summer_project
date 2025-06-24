@@ -10,19 +10,17 @@ import {
 } from '@element-plus/icons-vue'
 import avatar from '@/assets/default.png'
 import { ref } from 'vue'
-import { useAssetsStore, useUserStore, useAdminStore } from '@/stores'
+import { useAssetStore, useUserStore } from '@/stores'
 import { useRouter, useRoute } from 'vue-router'
 
 const userStore = useUserStore()
-const assetsStore = useAssetsStore()
-const adminStore = useAdminStore()
+const assetStore = useAssetStore()
 const router = useRouter()
 const route = useRoute()
 const handleCommand = (command) => {
   if (command === 'logout') {
     userStore.reset()
-    assetsStore.reset()
-    adminStore.reset()
+    assetStore.reset()
     router.push('/login')
   }
 }

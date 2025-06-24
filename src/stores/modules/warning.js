@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { adminGetWarningsService } from '@/api/admin'
-export const useAdminStore = defineStore(
+
+export const useWarningStore = defineStore(
   'rain-warnings',
   () => {
     const reset = () => {

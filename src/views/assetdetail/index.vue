@@ -1,10 +1,10 @@
 <script setup>
-import { useAssetsStore } from '@/stores'
+import { useAssetStore } from '@/stores'
 import { useRoute } from 'vue-router'
 import { ref } from 'vue'
 
 const route = useRoute()
-const assetsStore = useAssetsStore()
+const assetStore = useAssetStore()
 const isEdit = false
 const contactOptions = [
   { value: 'Email', label: 'Email' },
@@ -20,8 +20,8 @@ const asset = ref({})
 const id = route.params.id
 
 const item =
-  assetsStore.userAssets.find((item) => item.asset.id === id) ||
-  assetsStore.allAssets.find((item) => item.asset.id === id)
+  assetStore.userAssets.find((item) => item.asset.id === id) ||
+  assetStore.allAssets.find((item) => item.asset.id === id)
 
 drainArea.value = [item.asset.location]
 asset.value = item.asset
@@ -34,6 +34,8 @@ const beginDrawing = () => {
 const endDrawing = () => {
   mapCardRef.value.endDrawing()
 }
+
+const mode = ref('convex')
 </script>
 
 <template>
@@ -51,10 +53,15 @@ const endDrawing = () => {
             :map-id="'mapdetail'"
             :drain-area="drainArea"
             :id="id"
+            v-model:mode="mode"
           ></MapCard>
         </div>
         <template #footer>Footer content</template>
       </el-card>
+      <el-select v-model="mode">
+        <el-option label="convex" value="convex">convex</el-option>
+        <el-option label="sequence" value="sequence">sequence</el-option>
+      </el-select>
       <el-button @click="beginDrawing">Draw new asset</el-button>
       <el-button @click="endDrawing">End drawing</el-button>
     </el-col>

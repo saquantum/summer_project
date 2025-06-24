@@ -47,7 +47,9 @@ export default defineConfig([
         }
       ],
       'vue/no-setup-props-destructure': 'off',
-      'no-undef': 'error'
+      'no-undef': 'error',
+
+      'spaced-comment': ['warn', 'always']
     }
   },
 

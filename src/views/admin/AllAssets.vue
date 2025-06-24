@@ -1,10 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAssetsStore } from '@/stores'
+import { useAssetStore } from '@/stores'
 const assets = ref([])
 const router = useRouter()
-const assetStore = useAssetsStore()
+const assetStore = useAssetStore()
 
 const handleShowDetail = (row) => {
   router.push(`/asset/${row.id}`)

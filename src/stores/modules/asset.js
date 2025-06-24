@@ -3,7 +3,7 @@ import { adminGetAssetsService } from '@/api/admin'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-export const useAssetsStore = defineStore(
+export const useAssetStore = defineStore(
   'rain-assets',
   () => {
     const userAssets = ref([])

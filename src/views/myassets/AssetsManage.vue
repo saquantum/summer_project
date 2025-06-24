@@ -2,8 +2,8 @@
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ref, watch, computed } from 'vue'
-import { useUserStore, useAssetsStore } from '@/stores'
-const assetsStore = useAssetsStore()
+import { useUserStore, useAssetStore } from '@/stores'
+const assetStore = useAssetStore()
 const userStore = useUserStore()
 const router = useRouter()
 
@@ -15,7 +15,7 @@ const assetRegion = ref('')
 // filtered assets
 const currentAssets = ref([])
 
-//select value
+// select value
 const warningLevelOptions = [
   {
     value: 'No Warning',
@@ -97,15 +97,15 @@ onMounted(async () => {
     id = userStore.proxyId
   }
   console.log(id)
-  await assetsStore.getUserAssets(id)
-  currentAssets.value = assetsStore.userAssets
+  await assetStore.getUserAssets(id)
+  currentAssets.value = assetStore.userAssets
 })
 
 // watch filter condition
 watch(
   [assetName, assetWarningLevel, assetRegion],
   async () => {
-    currentAssets.value = assetsStore.userAssets.filter((item) => {
+    currentAssets.value = assetStore.userAssets.filter((item) => {
       const matchName = assetName.value
         ? item.asset.name?.toLowerCase().includes(assetName.value.toLowerCase())
         : true
@@ -176,7 +176,7 @@ watch(
 
   <!-- cards for assets -->
   <div class="assets-container">
-    <h3 v-if="assetsStore.userAssets.length === 0">You don't have any asset</h3>
+    <h3 v-if="assetStore.userAssets.length === 0">You don't have any asset</h3>
     <div class="card-grid">
       <el-card
         v-for="(item, index) in currentPageAssets"

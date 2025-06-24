@@ -1,24 +1,30 @@
 <script setup>
-import { onMounted, onBeforeUnmount } from 'vue'
+import { onMounted, onBeforeUnmount, computed } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { useAssetsStore } from '@/stores'
+import { useAssetStore } from '@/stores'
 import { assetUpdateInfoService } from '@/api/assets'
-const assetsStore = useAssetsStore()
+import * as turf from '@turf/turf'
+const assetStore = useAssetStore()
 
 const props = defineProps({
   mapId: String,
   drainArea: Array,
-  id: Number
+  id: Number,
+  mode: String
 })
 
+const emit = defineEmits(['update:mode'])
+const mode = computed({
+  get: () => props.mode,
+  set: (val) => emit('update:mode', val)
+})
 const item =
-  assetsStore.userAssets.find((item) => item.asset.id === props.id) ||
-  assetsStore.allAssets.find((item) => item.asset.id === props.id)
+  assetStore.userAssets.find((item) => item.asset.id === props.id) ||
+  assetStore.allAssets.find((item) => item.asset.id === props.id)
 
 let points = []
 let map = null
-let mode = 'sequence'
 
 const handleClick = (e) => {
   const { lat, lng } = e.latlng
@@ -47,9 +53,30 @@ const endDrawing = async () => {
     }
   })
   // then generate the new polygon area according to the mode
-  if (mode === 'convex') {
-    console.log(111)
-  } else if (mode === 'sequence') {
+  if (mode.value === 'convex') {
+    // turning points to geoJSON
+    const pointsGeo = turf.featureCollection(
+      points.map((p) => turf.point([p[1], p[0]]))
+    )
+
+    const convexHull = turf.convex(pointsGeo)
+
+    if (!convexHull) {
+      alert('can not create polygon')
+      return
+    }
+
+    // add layer
+    L.geoJSON(convexHull).addTo(map)
+
+    if (item) {
+      item.asset.drainArea = convexHull
+      await assetUpdateInfoService(
+        props.id,
+        JSON.stringify(convexHull.geometry)
+      )
+    }
+  } else if (mode.value === 'sequence') {
     let polygonLayer = L.polygon(points).addTo(map)
     let geoJSON = polygonLayer.toGeoJSON()
     // updateDrainArea(a)
@@ -59,6 +86,9 @@ const endDrawing = async () => {
       await assetUpdateInfoService(props.id, JSON.stringify(geoJSON.geometry))
     }
   }
+
+  // clear points, turn off click
+  points = []
   map.off('click', handleClick)
 }
 

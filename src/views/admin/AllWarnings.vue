@@ -1,11 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAdminStore } from '@/stores'
+import { useWarningStore } from '@/stores'
 const warnings = ref([])
 const router = useRouter()
-const adminStore = useAdminStore()
 
+const warningStore = useWarningStore()
 const mapId = 'allWarningsMap'
 const handleShowDetail = (row) => {
   router.push(`/warning/${row.id}`)
@@ -13,8 +13,8 @@ const handleShowDetail = (row) => {
 let warningPolygon = []
 
 onMounted(async () => {
-  await adminStore.getAllWarnings()
-  warnings.value = adminStore.allWarnings.map((item) => {
+  await warningStore.getAllWarnings()
+  warnings.value = warningStore.allWarnings.map((item) => {
     return {
       id: item.id,
       weatherType: item.weatherType,
@@ -25,7 +25,7 @@ onMounted(async () => {
       validTo: new Date(item.validTo * 1000).toLocaleString()
     }
   })
-  adminStore.allWarnings.forEach((item) => {
+  warningStore.allWarnings.forEach((item) => {
     item.area.style = setWarningLevelStyle(item.warningLevel)
     warningPolygon.push(item.area)
   })
