@@ -28,7 +28,6 @@ public class AssetController {
 
     @GetMapping("/asset/{id}")
     public ResponseBody getAssetsById(@PathVariable String id) {
-        System.out.println(assetService.getAssetWithWarningsById(id));
         return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(id));
     }
 

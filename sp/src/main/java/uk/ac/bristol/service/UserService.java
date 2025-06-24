@@ -4,6 +4,7 @@ import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
 
 import java.util.List;
+import java.util.Map;
 
 public interface UserService {
 
@@ -16,6 +17,10 @@ public interface UserService {
     List<User> getAllUnauthorisedUsersWithAssetHolder();
 
     List<AssetHolder> getAllAssetHolders();
+
+    List<Map<String, Object>> getAllAssetHoldersWithAssetIds();
+
+    List<Map<String, Object>> getAllUsersWithAccumulator(String function, String column);
 
     List<User> getAllAdmins();
 

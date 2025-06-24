@@ -49,6 +49,13 @@ public class MockDataInitializer implements CommandLineRunner {
         mapper.writeValue(stateFile, state);
     }
 
+    public void forceReload(){
+        importMockData.resetSchema();
+        importMockData.importUsers(USERS_FILE_PATH);
+        importMockData.importAssets(ASSET_TYPES_FILE_PATH, ASSETS_FILE_PATH);
+        importMockData.importWarnings(WARNINGS_FILE_PATH);
+    }
+
     @Override
     public void run(String... args) throws Exception {
         boolean flag = false;

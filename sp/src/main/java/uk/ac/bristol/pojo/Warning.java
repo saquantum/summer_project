@@ -139,10 +139,17 @@ public class Warning {
         this.warningUpdateDescription = warningUpdateDescription;
     }
 
+    // for front-end
     public Map<String, Object> getArea() {
         return area;
     }
 
+    // for front-end
+    public void setArea(Map<String, Object> area) {
+        this.area = area;
+    }
+
+    // for back-end persistence
     @JsonIgnore
     public String getAreaAsJson() {
         try {
@@ -152,10 +159,7 @@ public class Warning {
         }
     }
 
-    public void setArea(Map<String, Object> area) {
-        this.area = area;
-    }
-
+    // for back-end persistence
     public void setAreaAsJson(String geoJson) throws JsonProcessingException {
         if (geoJson != null) {
             ObjectMapper mapper = new ObjectMapper();

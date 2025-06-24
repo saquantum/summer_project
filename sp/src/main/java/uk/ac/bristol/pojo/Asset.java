@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -91,12 +89,17 @@ public class Asset {
         this.ownerId = ownerId;
     }
 
-    // to be handled by Jackson to respond to front-end
+    // for front-end
     public Map<String, Object> getLocation() {
         return location;
     }
 
-    // convert to String for SQL, ignored when responding to front-end
+    // for front-end
+    public void setLocation(Map<String, Object> location) {
+        this.location = location;
+    }
+
+    // for back-end persistence
     @JsonIgnore
     public String getLocationAsJson() {
         try {
@@ -106,13 +109,10 @@ public class Asset {
         }
     }
 
-    public void setLocation(Map<String, Object> location) {
-        this.location = location;
-    }
-
+    // for back-end persistence
     public void setLocationAsJson(String geoJson) throws JsonProcessingException {
         if (geoJson == null || geoJson.isBlank()) {
-            this.location = Map.ofEntries(Map.entry("type", "MultiPolygon"),  Map.entry("coordinates", List.of(List.of(List.of()))));
+            this.location = Map.ofEntries(Map.entry("type", "MultiPolygon"), Map.entry("coordinates", List.of(List.of(List.of()))));
             return;
         }
         this.location = objectMapper.readValue(geoJson, new TypeReference<>() {

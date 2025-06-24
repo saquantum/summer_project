@@ -2,9 +2,11 @@ package uk.ac.bristol.dao;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.validation.ObjectError;
 import uk.ac.bristol.pojo.User;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface UserMapper {
@@ -18,6 +20,8 @@ public interface UserMapper {
     List<User> selectUserByAssetHolderId(@Param("assetHolderId") String assetHolderId);
 
     List<User> selectUserByAdmin(@Param("isAdmin") Boolean isAdmin);
+
+    List<Map<String, Object>> selectAllAssetHoldersWithAccumulator(@Param("function") String function, @Param("column") String column);
 
     int insertUser(User user);
 

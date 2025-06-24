@@ -1,6 +1,7 @@
 package uk.ac.bristol.controller;
 
 import io.jsonwebtoken.Claims;
+import org.apache.ibatis.jdbc.SQL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -49,7 +50,7 @@ public class AdminController {
         return new ResponseBody(Code.SUCCESS, null, "You are in proxy mode as user id " + id);
     }
 
-    @GetMapping("/as/{id}/inAsset/{assetId}")
+    @GetMapping("/as/{id}/in-asset/{assetId}")
     public ResponseBody asUserInAsset(HttpServletResponse response, HttpServletRequest request, @PathVariable String id, @PathVariable String assetId) throws IOException {
         Claims claims = JwtUtil.parseJWT(JwtUtil.getJWTFromCookie(request, response));
         claims.put("asUserId", id);
@@ -68,7 +69,7 @@ public class AdminController {
     }
 
     @GetMapping("/user/all")
-    public ResponseBody getAllUsers(){
+    public ResponseBody getAllUsers() {
         return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAssetHolder());
     }
 
@@ -77,8 +78,23 @@ public class AdminController {
         return new ResponseBody(Code.SELECT_OK, userService.getAllUnauthorisedUsersWithAssetHolder());
     }
 
+    @GetMapping("/user/with-asset-ids")
+    public ResponseBody getAllAssetHoldersWithAssetIds() {
+        return new ResponseBody(Code.SELECT_OK, userService.getAllAssetHoldersWithAssetIds());
+    }
+
+    /**
+     * e.g. "/user/accumulate/count/{column}"
+     * <br><br>
+     * BE AWARE: This SQL Statement is weak to SQL injection, do pass verified parameter in!
+     */
+    @GetMapping("/user/accumulate/{function}/{column}")
+    public ResponseBody getAllUsersWithAccumulator(@PathVariable String function, @PathVariable String column) {
+        return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAccumulator(function, column));
+    }
+
     @PostMapping("/user")
-    public ResponseBody insertUsers(@RequestBody List<User> list){
+    public ResponseBody insertUsers(@RequestBody List<User> list) {
         for (User u : list) {
             userService.insertUser(u);
         }
@@ -86,7 +102,7 @@ public class AdminController {
     }
 
     @PutMapping("/user")
-    public ResponseBody updateUsers(@RequestBody List<User> list){
+    public ResponseBody updateUsers(@RequestBody List<User> list) {
         for (User u : list) {
             userService.updateUser(u);
         }

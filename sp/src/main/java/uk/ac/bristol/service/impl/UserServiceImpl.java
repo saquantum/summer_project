@@ -1,20 +1,23 @@
 package uk.ac.bristol.service.impl;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.AssetHolderMapper;
+import uk.ac.bristol.dao.AssetMapper;
 import uk.ac.bristol.dao.UserMapper;
+import uk.ac.bristol.exception.SpExceptions;
+import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
 
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
@@ -25,9 +28,12 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
 
-    public UserServiceImpl(AssetHolderMapper assetHolderMapper, UserMapper userMapper) {
+    private final AssetMapper assetMapper;
+
+    public UserServiceImpl(AssetHolderMapper assetHolderMapper, UserMapper userMapper, AssetMapper assetMapper) {
         this.assetHolderMapper = assetHolderMapper;
         this.userMapper = userMapper;
+        this.assetMapper = assetMapper;
     }
 
     // checks uid and password, returns a jwt token
@@ -103,6 +109,49 @@ public class UserServiceImpl implements UserService {
         List<AssetHolder> assetHolders = assetHolderMapper.selectAllAssetHolders();
         assetHolders.forEach(this::prepareAssetHolder);
         return assetHolders;
+    }
+
+    @Override
+    public List<Map<String, Object>> getAllAssetHoldersWithAssetIds() {
+        List<AssetHolder> assetHolders = assetHolderMapper.selectAllAssetHolders();
+        List<Asset> assets = assetMapper.selectAllAssets();
+        Map<String, List<String>> mapping = new HashMap<>();
+        assets.forEach(asset -> {
+            if (!mapping.containsKey(asset.getOwnerId())) {
+                mapping.put(asset.getOwnerId(), new ArrayList<>());
+            } else {
+                mapping.get(asset.getOwnerId()).add(asset.getId());
+            }
+        });
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (AssetHolder holder : assetHolders) {
+            List<String> ids = mapping.getOrDefault(holder.getId(), new ArrayList<>());
+            result.add(Map.of("assetHolder", holder, "assetIds", ids));
+        }
+        return result;
+    }
+
+    @Override
+    public List<Map<String, Object>> getAllUsersWithAccumulator(String function, String column) {
+        if("count".equalsIgnoreCase(function)) {
+            ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            List<Map<String, Object>> rawList = userMapper.selectAllAssetHoldersWithAccumulator(function, column);
+            Map<String, Map<String, Object>> mapping = rawList.stream()
+                    .collect(Collectors.toMap(m -> (String) m.get("id"),
+                            m -> Map.of("assetHolder", prepareAssetHolder(mapper.convertValue(m, AssetHolder.class)), function, m.get("accumulation"))));
+
+            List<User> users = userMapper.selectAllUsers();
+            List<Map<String, Object>> result = new ArrayList<>();
+            for (User user : users) {
+                if (user.getAssetHolderId() == null) continue;
+                Map<String, Object> tmp = mapping.get(user.getAssetHolderId());
+                if (tmp == null) throw new RuntimeException("No asset holder for user " + user.getId());
+                user.setAssetHolder((AssetHolder) tmp.get("assetHolder"));
+                result.add(Map.of("user", user, function, tmp.get(function)));
+            }
+            return result;
+        }
+        throw new SpExceptions.GetMethodException("function " + function + " is not supported at current stage");
     }
 
     @Override

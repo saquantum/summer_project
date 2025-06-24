@@ -13,7 +13,7 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
 
 mybatis:
-  mapper-locations: classpath:uk/ac/bristol/dao/*.xml
+  mapper-locations: classpath*:uk/ac/bristol/dao/*.xml
   type-aliases-package: uk.ac.bristol.pojo
 
 mock-data:
