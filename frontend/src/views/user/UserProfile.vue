@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useUserStore } from '@/stores'
+import { userUpdateService } from '@/api/user'
 const userStore = useUserStore()
 
 const { assetHolder } = userStore.user
@@ -35,19 +36,42 @@ const handleAvatarChange = (e) => {
   avatarFile.value = file
 }
 
-
 const rules = {
   firstName: [
     { required: true, message: 'First name is required', trigger: 'blur' },
-    { min: 2, max: 30, message: 'First name must be 2–30 characters', trigger: 'blur' }
+    {
+      min: 2,
+      max: 30,
+      message: 'First name must be 2–30 characters',
+      trigger: 'blur'
+    }
   ],
   lastName: [
     { required: true, message: 'Last name is required', trigger: 'blur' },
-    { min: 2, max: 30, message: 'Last name must be 2–30 characters', trigger: 'blur' }
+    {
+      min: 2,
+      max: 30,
+      message: 'Last name must be 2–30 characters',
+      trigger: 'blur'
+    }
   ],
   email: [
     { required: true, message: 'Email is required', trigger: 'blur' },
     { type: 'email', message: 'Invalid email format', trigger: 'blur' }
+  ],
+  phone: [
+    { required: true, message: 'Phone is required', trigger: 'blur' },
+    {
+      validator: (rule, value, callback) => {
+        const phoneRegex = /^[0-9+\-()\s]{7,20}$/
+        if (!phoneRegex.test(value)) {
+          callback(new Error('Invalid phone number'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
   ],
   'address.street': [
     { required: true, message: 'Street is required', trigger: 'blur' }
@@ -76,15 +100,15 @@ const rules = {
 
 const submit = async () => {
   try {
-    await formRef.value.validate()
+    await form.value.validate()
 
     await userUpdateService({
       ...form.value,
-      avatar: avatarUrl.value // 要求后端支接收base64
+      avatar: avatarUrl.value
     })
 
     ElMessage.success('Profile updated!')
-  } catch (e) {
+  } catch {
     ElMessage.error('Please fix form errors')
   }
 }
@@ -99,32 +123,42 @@ const submit = async () => {
     </template>
 
     <el-form
+      ref="formRef"
       :model="form"
       label-position="top"
       label-width="auto"
       style="max-width: 600px"
+      :rules="rules"
     >
+      <!-- Avatar upload -->
+      <el-form-item label="Avatar">
+        <div style="display: flex; align-items: center; gap: 16px">
+          <el-avatar :src="avatarUrl" size="large" />
+          <input type="file" accept="image/*" @change="handleAvatarChange" />
+        </div>
+      </el-form-item>
+
       <!-- name -->
       <el-row :gutter="20">
         <el-col :span="12">
-          <el-form-item label="FIRST NAME">
+          <el-form-item label="FIRST NAME" prop="lastName">
             <el-input v-model="form.firstName" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="LAST NAME">
+          <el-form-item label="LAST NAME" prop="email">
             <el-input v-model="form.lastName" />
           </el-form-item>
         </el-col>
       </el-row>
 
       <!-- email -->
-      <el-form-item label="EMAIL ADDRESS">
+      <el-form-item label="EMAIL ADDRESS" prop="email">
         <el-input v-model="form.email" />
       </el-form-item>
 
       <!-- phone -->
-      <el-form-item label="PHONE">
+      <el-form-item label="PHONE" prop="phone">
         <el-input v-model="form.phone" />
       </el-form-item>
 
@@ -132,12 +166,20 @@ const submit = async () => {
       <el-form-item label="ADDRESS">
         <el-row :gutter="20" style="width: 100%">
           <el-col :span="12">
-            <el-form-item label="Street" label-width="100px">
+            <el-form-item
+              label="Street"
+              label-width="100px"
+              prop="address.street"
+            >
               <el-input v-model="form.address.street" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="Post Code" label-width="100px">
+            <el-form-item
+              label="Post Code"
+              label-width="100px"
+              prop="address.postCode"
+            >
               <el-input v-model="form.address.postCode" />
             </el-form-item>
           </el-col>
@@ -145,12 +187,16 @@ const submit = async () => {
 
         <el-row :gutter="20" style="width: 100%">
           <el-col :span="12">
-            <el-form-item label="City" label-width="100px">
+            <el-form-item label="City" label-width="100px" prop="address.city">
               <el-input v-model="form.address.city" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="Country" label-width="100px">
+            <el-form-item
+              label="Country"
+              label-width="100px"
+              prop="address.country"
+            >
               <el-input v-model="form.address.country" />
             </el-form-item>
           </el-col>

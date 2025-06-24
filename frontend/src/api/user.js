@@ -11,3 +11,7 @@ export const userLoginService = ({ username, password }) => {
 export const userGetInfoService = (id) => {
   return request.get(`/user/uid/${id}`)
 }
+
+export const userUpdateService = (id) => {
+  return request.get(`/user/uid/${id}`)
+}
