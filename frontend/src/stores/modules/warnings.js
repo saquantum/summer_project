@@ -11,7 +11,7 @@ export const useAdminStore = defineStore(
     const allWarnings = ref([])
     const getAllWarnings = async () => {
       const res = await adminGetWarningsService()
-      allWarnings.value = res.data.data
+      allWarnings.value = res.data
     }
     return {
       getAllWarnings,

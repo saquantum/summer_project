@@ -1,7 +1,7 @@
 <script setup>
 import { User, Lock } from '@element-plus/icons-vue'
 import { ref, watch } from 'vue'
-import { userRegisterService, userLoginService } from '@/api/user'
+import { userRegisterService } from '@/api/user'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
 const form = ref()
@@ -65,9 +65,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const login = async () => {
   await form.value.validate()
-  await userLoginService(formModel.value)
-  await userStore.getUser()
-  console.log(userStore.user)
+  await userStore.getUser(formModel.value)
   ElMessage.success('success')
   router.push('/')
 }

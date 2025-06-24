@@ -23,7 +23,7 @@ onMounted(async () => {
     return {
       id: item.asset.id,
       assetName: item.asset.name,
-      assetHolderId: item.asset.assetHolderId,
+      assetHolderId: item.asset.ownerId,
       warningLevel: item.warnings[0]?.warningLevel.toLowerCase() || 'None'
     }
   })

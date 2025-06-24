@@ -1,4 +1,4 @@
-import { userGetIdService, userGetInfoService } from '@/api/user'
+import { userGetInfoService, userLoginService } from '@/api/user'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
@@ -7,13 +7,12 @@ export const useUserStore = defineStore(
   () => {
     const user = ref({})
     const proxyId = ref('')
-    const getUser = async () => {
-      const { data } = await userGetIdService()
-      if (!data.data.isAdmin) {
-        const res = await userGetInfoService(data.data.id)
-        user.value = res.data.data[0]
-      }
-      user.value.isAdmin = data.data.isAdmin
+    const getUser = async (form) => {
+      const { data } = await userLoginService(form)
+
+      const res = await userGetInfoService(data.id)
+
+      user.value = res.data
     }
 
     const setProxyId = (id) => {
@@ -22,6 +21,7 @@ export const useUserStore = defineStore(
 
     const reset = () => {
       user.value = {}
+      proxyId.value = ''
     }
     return { user, getUser, reset, proxyId, setProxyId }
   },

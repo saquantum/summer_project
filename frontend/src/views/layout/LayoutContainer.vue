@@ -36,7 +36,7 @@ const dialogVisible = ref(false)
 <template>
   <el-container class="layout-container">
     <!-- user interface -->
-    <el-aside v-if="userStore.user.isAdmin === false" width="200px">
+    <el-aside v-if="userStore.user.admin === false" width="200px">
       <div class="el-aside__logo"></div>
       <el-menu
         active-text-color="#ffd04b"
@@ -59,7 +59,7 @@ const dialogVisible = ref(false)
 
     <!-- admin interface -->
     <el-aside
-      v-else-if="userStore.user.isAdmin && route.path.includes('admin')"
+      v-else-if="userStore.user.admin && route.path.includes('admin')"
       width="200px"
     >
       <div class="el-aside__logo"></div>
@@ -90,7 +90,7 @@ const dialogVisible = ref(false)
     <el-container>
       <el-header>
         <el-page-header
-          v-if="userStore.user.isAdmin && !route.path.includes('admin')"
+          v-if="userStore.user.admin && !route.path.includes('admin')"
           @back="router.go(-1)"
         >
         </el-page-header>

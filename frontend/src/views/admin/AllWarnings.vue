@@ -26,8 +26,8 @@ onMounted(async () => {
     }
   })
   adminStore.allWarnings.forEach((item) => {
-    item.polygon.style = setWarningLevelStyle(item.warningLevel)
-    warningPolygon.push(item.polygon)
+    item.area.style = setWarningLevelStyle(item.warningLevel)
+    warningPolygon.push(item.area)
   })
 })
 

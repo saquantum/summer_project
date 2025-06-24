@@ -25,7 +25,7 @@ const setWarningLevelStyle = (level) => {
   }
   return style
 }
-warning.polygon.style = setWarningLevelStyle(warning.warningLevel)
+warning.area.style = setWarningLevelStyle(warning.warningLevel)
 
 const displayData = [
   { label: 'Warning ID', value: warning.id },
@@ -58,7 +58,7 @@ const displayData = [
 
 <template>
   <div class="map-container">
-    <MapCard :map-id="mapId" :drain-area="[warning.polygon]" />
+    <MapCard :map-id="mapId" :drain-area="[warning.area]" />
   </div>
 
   <el-descriptions title="Warning Detail" :column="1" direction="vertical">

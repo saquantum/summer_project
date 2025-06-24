@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue'
 import { useUserStore } from '@/stores'
+import { ElMessage } from 'element-plus'
+import { userUpdateService } from '@/api/user'
+
 const userStore = useUserStore()
 
 const { assetHolder } = userStore.user
@@ -18,7 +21,6 @@ const form = ref({
     country: assetHolder.address.country
   }
 })
-
 //Avatar upload
 const avatarUrl = ref(assetHolder.avatar || '') // 默认
 const avatarFile = ref(null)
@@ -74,6 +76,7 @@ const rules = {
   ]
 }
 
+
 const submit = async () => {
   try {
     await formRef.value.validate()
@@ -99,45 +102,50 @@ const submit = async () => {
     </template>
 
     <el-form
+      ref="formRef"
       :model="form"
+      :rules="rules"
       label-position="top"
       label-width="auto"
       style="max-width: 600px"
     >
+      <!-- Avatar upload -->
+      <el-form-item label="Avatar">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <el-avatar :src="avatarUrl" size="large" />
+          <input type="file" accept="image/*" @change="handleAvatarChange" />
+        </div>
+      </el-form-item>
+
       <!-- name -->
       <el-row :gutter="20">
         <el-col :span="12">
-          <el-form-item label="FIRST NAME">
+          <el-form-item label="FIRST NAME" prop="firstName">
             <el-input v-model="form.firstName" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="LAST NAME">
+          <el-form-item label="LAST NAME" prop="lastName">
             <el-input v-model="form.lastName" />
           </el-form-item>
         </el-col>
       </el-row>
 
       <!-- email -->
-      <el-form-item label="EMAIL ADDRESS">
+      <el-form-item label="EMAIL ADDRESS" prop="email">
         <el-input v-model="form.email" />
       </el-form-item>
 
-      <!-- phone -->
-      <el-form-item label="PHONE">
-        <el-input v-model="form.phone" />
-      </el-form-item>
-
       <!-- address -->
-      <el-form-item label="ADDRESS">
+      <el-form-item label="ADDRESS" prop="address">
         <el-row :gutter="20" style="width: 100%">
           <el-col :span="12">
-            <el-form-item label="Street" label-width="100px">
+            <el-form-item label="Street" label-width="100px" prop="address.street">
               <el-input v-model="form.address.street" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="Post Code" label-width="100px">
+            <el-form-item label="Post Code" label-width="100px" prop="address.postCode">
               <el-input v-model="form.address.postCode" />
             </el-form-item>
           </el-col>
@@ -145,17 +153,18 @@ const submit = async () => {
 
         <el-row :gutter="20" style="width: 100%">
           <el-col :span="12">
-            <el-form-item label="City" label-width="100px">
+            <el-form-item label="City" label-width="100px" prop="address.city">
               <el-input v-model="form.address.city" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="Country" label-width="100px">
+            <el-form-item label="Country" label-width="100px" prop="address.country">
               <el-input v-model="form.address.country" />
             </el-form-item>
           </el-col>
         </el-row>
       </el-form-item>
+
 
       <!--submit botton -->
       <el-form-item>

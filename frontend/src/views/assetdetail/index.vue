@@ -17,13 +17,13 @@ const contact = ref('Email')
 const drainArea = ref([])
 const asset = ref({})
 // get the asset
-const id = Number(route.params.id)
+const id = route.params.id
 
 const item =
   assetsStore.userAssets.find((item) => item.asset.id === id) ||
   assetsStore.allAssets.find((item) => item.asset.id === id)
 
-drainArea.value = [item.asset.drainArea]
+drainArea.value = [item.asset.location]
 asset.value = item.asset
 const mapCardRef = ref()
 

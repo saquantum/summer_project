@@ -28,7 +28,7 @@ instance.interceptors.response.use(
 
     // TODO: login successful logic
     if (response.data) {
-      return response
+      return response.data
     }
     // failure
     ElMessage.error(response)

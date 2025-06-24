@@ -3,11 +3,11 @@ import request from '@/utils/request'
 export const userRegisterService = ({ username, password, repassword }) =>
   request.post('/reg', { username, password, repassword })
 
-export const userLoginService = ({ username, password }) =>
-  request.post('/login', { username, password })
-
-export const userGetInfoService = (id) => {
-  return request.get(`/user/${id}`)
+export const userLoginService = ({ username, password }) => {
+  const id = username
+  return request.post('/login', { id, password })
 }
 
-export const userGetIdService = () => request.get('/user/me')
+export const userGetInfoService = (id) => {
+  return request.get(`/user/uid/${id}`)
+}

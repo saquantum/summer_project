@@ -51,7 +51,7 @@ Navigation Guards, enable when deploying
 router.beforeEach((to) => {
   const userStore = useUserStore()
   const isLoggedIn = Object.keys(userStore.user).length > 0
-  const isAdmin = isLoggedIn && userStore.user.isAdmin === true
+  const isAdmin = isLoggedIn && userStore.user.admin === true
 
   if (!isLoggedIn && to.path !== '/login') {
     return '/login'
