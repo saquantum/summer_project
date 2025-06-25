@@ -18,19 +18,19 @@ const currentAssets = ref([])
 // select value
 const warningLevelOptions = [
   {
-    value: 'No Warning',
+    value: 'No',
     label: 'No Warning'
   },
   {
-    value: 'Yellow Warning',
+    value: 'Yellow',
     label: 'Yellow Warning'
   },
   {
-    value: 'Amber Warning',
+    value: 'Amber',
     label: 'Amber Warning'
   },
   {
-    value: 'Red Warning',
+    value: 'Red',
     label: 'Red Warning'
   }
 ]
@@ -75,11 +75,13 @@ const currentPageAssets = computed(() => {
   // set indicator color
   arr.forEach((item) => {
     if (item.warnings[0]?.warningLevel.toLowerCase().includes('red')) {
-      item.status = 'error'
+      item.status = 'red'
+    } else if (item.warnings[0]?.warningLevel.toLowerCase().includes('amber')) {
+      item.status = 'amber'
     } else if (
       item.warnings[0]?.warningLevel.toLowerCase().includes('yellow')
     ) {
-      item.status = 'warning'
+      item.status = 'yellow'
     } else {
       item.status = 'success'
     }
@@ -106,15 +108,27 @@ watch(
   [assetName, assetWarningLevel, assetRegion],
   async () => {
     currentAssets.value = assetStore.userAssets.filter((item) => {
+      let matchLevel = false
+      if (
+        assetWarningLevel.value &&
+        item.warnings[0] &&
+        item.warnings[0].warningLevel &&
+        item.warnings[0].warningLevel
+          .toLowerCase()
+          .includes(assetWarningLevel.value.toLowerCase())
+      ) {
+        matchLevel = true
+      } else if (
+        assetWarningLevel.value &&
+        assetWarningLevel.value.includes('No') &&
+        !item.warnings[0]
+      ) {
+        matchLevel = true
+      } else if (!assetWarningLevel.value) {
+        matchLevel = true
+      }
       const matchName = assetName.value
         ? item.asset.name?.toLowerCase().includes(assetName.value.toLowerCase())
-        : true
-      const matchLevel = assetWarningLevel.value
-        ? item.warnings.length > 0 &&
-          item.warnings[0].warningLevel &&
-          assetWarningLevel.value
-            .toLowerCase()
-            .includes(item.warnings[0].warningLevel.toLowerCase())
         : true
       const matchRegion = assetRegion.value
         ? item.asset.region === assetRegion.value
@@ -186,7 +200,17 @@ watch(
       >
         <template #header>
           <div class="card-header">
-            <h3 class="asset-title">{{ item.asset.name || 'Asset Name' }}</h3>
+            <h3
+              class="asset-title"
+              :class="{
+                'warning-low': !item.warnings[0],
+                'warning-medium': item.warnings[0]?.warningLevel === 'yellow',
+                'warning-high': item.warnings[0]?.warningLevel === 'amber',
+                'warning-severe': item.warnings[0]?.warningLevel === 'red'
+              }"
+            >
+              {{ item.asset.name || 'Asset Name' }}
+            </h3>
             <StatusIndicator :status="item.status" />
           </div>
         </template>
@@ -323,6 +347,19 @@ watch(
 
 .select-style {
   width: 240px;
+}
+
+.warning-low {
+  color: green;
+}
+.warning-medium {
+  color: yellow;
+}
+.warning-high {
+  color: orange;
+}
+.warning-severe {
+  color: red;
 }
 
 @media (max-width: 768px) {

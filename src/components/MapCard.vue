@@ -2,9 +2,21 @@
 import { onMounted, onBeforeUnmount, computed } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import markerIcon from 'leaflet/dist/images/marker-icon.png'
+import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 import { useAssetStore } from '@/stores'
 import { assetUpdateInfoService } from '@/api/assets'
 import * as turf from '@turf/turf'
+
+const customIcon = new L.Icon({
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+})
+
 const assetStore = useAssetStore()
 
 const props = defineProps({
@@ -30,7 +42,7 @@ const handleClick = (e) => {
   const { lat, lng } = e.latlng
   const index = points.length
   points.push([lat, lng])
-  const marker = L.marker([lat, lng]).addTo(map)
+  const marker = L.marker([lat, lng], { icon: customIcon }).addTo(map)
   marker.on('dragend', () => {
     points[index] = [marker.getLatLng().lat, marker.getLatLng().lng]
   })

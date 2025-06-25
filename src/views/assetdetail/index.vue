@@ -59,8 +59,8 @@ const mode = ref('convex')
         <template #footer>Footer content</template>
       </el-card>
       <el-select v-model="mode">
-        <el-option label="convex" value="convex">convex</el-option>
-        <el-option label="sequence" value="sequence">sequence</el-option>
+        <el-option label="convex" value="convex"></el-option>
+        <el-option label="sequence" value="sequence"></el-option>
       </el-select>
       <el-button @click="beginDrawing">Draw new asset</el-button>
       <el-button @click="endDrawing">End drawing</el-button>

@@ -64,10 +64,20 @@ const register = async () => {
 const router = useRouter()
 const userStore = useUserStore()
 const login = async () => {
-  await form.value.validate()
-  await userStore.getUser(formModel.value)
-  ElMessage.success('success')
-  router.push('/')
+  try {
+    await form.value.validate()
+  } catch {
+    return
+  }
+
+  try {
+    await userStore.getUser(formModel.value)
+    ElMessage.success('success')
+    router.push('/')
+  } catch {
+    formModel.value.password = ''
+    ElMessage.error('Username or password is incorrect')
+  }
 }
 
 watch(isRegister, () => {
