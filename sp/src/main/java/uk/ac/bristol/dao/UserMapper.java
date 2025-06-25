@@ -25,7 +25,7 @@ public interface UserMapper {
 
     int insertUser(User user);
 
-    int updateUser(User user);
+    int updateUserByUserId(User user);
 
     int deleteUserByAssetHolderIDs(@Param("ids") String[] assetHolderIds);
 

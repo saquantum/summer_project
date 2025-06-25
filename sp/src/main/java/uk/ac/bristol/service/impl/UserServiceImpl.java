@@ -211,7 +211,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public int updateUser(User user) {
-        int n1 = userMapper.updateUser(user);
+        int n1 = userMapper.updateUserByUserId(user);
         Integer n2 = null;
         if (user.getAssetHolder() != null) {
             n2 = this.updateAssetHolder(user.getAssetHolder());

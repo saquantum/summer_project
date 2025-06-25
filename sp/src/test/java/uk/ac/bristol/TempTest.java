@@ -23,18 +23,4 @@ public class TempTest {
     @Autowired
     public WarningService warningService;
 
-    @Test
-    public void test() {
-        importMockData.resetSchema();
-        importMockData.importUsers("src/main/resources/data/users.json");
-        importMockData.importAssets("src/main/resources/data/asset_types.json", "src/main/resources/data/assets.json");
-        importMockData.importWarnings("src/main/resources/data/arcgis-sample.json");
-    }
-
-    @Test
-    public void test1() {
-        System.out.println(userService.getUserByUserId("user_001"));
-        System.out.println(assetService.getAssetWithWarningsById("asset_050"));
-    }
-
 }

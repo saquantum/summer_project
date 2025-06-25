@@ -99,10 +99,10 @@ public class ImportMockDataImpl implements ImportMockData {
     }
 
     @Override
-    public void importWarnings(String filepath) {
+    public void importWarnings(String filepath, String JSConverterPath) {
         try {
             String geoJson = Arcgis2GeoJsonConverter.arcgisToGeoJSON(
-                    "src/main/resources/js/arcgis-converter.js",
+                    JSConverterPath,
                     filepath
             );
 

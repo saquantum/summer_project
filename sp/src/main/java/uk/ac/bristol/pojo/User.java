@@ -5,7 +5,7 @@ public class User {
     private String password;
     private String assetHolderId;
     private AssetHolder assetHolder;
-    private boolean admin;
+    private boolean admin = false;
     private String token;
 
     @Override

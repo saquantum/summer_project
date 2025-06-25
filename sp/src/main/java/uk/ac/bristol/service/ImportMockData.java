@@ -8,5 +8,5 @@ public interface ImportMockData {
 
     void importUsers(String filepath);
 
-    void importWarnings(String filepath);
+    void importWarnings(String filepath, String JSConverterPath);
 }

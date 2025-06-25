@@ -56,11 +56,6 @@ public class AssetHolderMapperTest {
     @Test
     @Order(2)
     public void insertAddress() {
-        insertAddressMainPart();
-        assetHolderMapper.deleteAddressByAssetHolderIds(List.of("test_001", "test_002"));
-    }
-
-    public void insertAddressMainPart() {
         Map<String, String> testAddress = Map.of("assetHolderId", "test_001", "street", "Park Row", "city", "Bristol", "postcode", "ABC 123", "country", "UK");
         int n = assetHolderMapper.insertAddress(testAddress);
         assertEquals(1, n);
@@ -90,13 +85,19 @@ public class AssetHolderMapperTest {
         testAddress = Map.of("assetHolderId", "test_001");
         Map<String, String> finalTestAddress2 = testAddress;
         assertThrows(DuplicateKeyException.class, () -> assetHolderMapper.insertAddress(finalTestAddress2));
+
+        assetHolderMapper.deleteAddressByAssetHolderIds(List.of("test_001", "test_002"));
     }
 
     @Test
     @Order(3)
     public void updateAddressByAssetHolderId() {
-        insertAddressMainPart();
-        Map<String, String> testAddress = Map.of("assetHolderId", "test_002", "street", "College Green", "city", "Bristol", "postcode", "ABC 456", "country", "UK");
+        Map<String, String> testAddress = Map.of("assetHolderId", "test_001", "street", "Park Row", "city", "Bristol", "postcode", "ABC 123", "country", "UK");
+        assetHolderMapper.insertAddress(testAddress);
+        testAddress = Map.of("assetHolderId", "test_002", "city", "Bristol", "country", "UK");
+        assetHolderMapper.insertAddress(testAddress);
+
+        testAddress = Map.of("assetHolderId", "test_002", "street", "College Green", "city", "Bristol", "postcode", "ABC 456", "country", "UK");
         int n = assetHolderMapper.updateAddressByAssetHolderId(testAddress);
         assertEquals(1, n);
         List<Map<String, String>> list = assetHolderMapper.selectAddressByAssetHolderId("test_002");
@@ -132,7 +133,10 @@ public class AssetHolderMapperTest {
     @Test
     @Order(4)
     public void deleteAddressByAssetHolderIds() {
-        insertAddressMainPart();
+        Map<String, String> testAddress = Map.of("assetHolderId", "test_001", "street", "Park Row", "city", "Bristol", "postcode", "ABC 123", "country", "UK");
+        assetHolderMapper.insertAddress(testAddress);
+        testAddress = Map.of("assetHolderId", "test_002", "city", "Bristol", "country", "UK");
+        assetHolderMapper.insertAddress(testAddress);
 
         int n = assetHolderMapper.deleteContactPreferencesByAssetHolderIds(List.of("", ""));
         assertEquals(0, n);
@@ -190,11 +194,6 @@ public class AssetHolderMapperTest {
     @Test
     @Order(6)
     public void insertContactPreferences() {
-        insertContactPreferencesMainPart();
-        assetHolderMapper.deleteContactPreferencesByAssetHolderIds(List.of("test_001"));
-    }
-
-    public void insertContactPreferencesMainPart() {
         Map<String, Object> testPreference = Map.of("assetHolderId", "test_001", "email", true, "phone", false, "whatsapp", true);
         int n = assetHolderMapper.insertContactPreferences(testPreference);
         assertEquals(1, n);
@@ -215,13 +214,17 @@ public class AssetHolderMapperTest {
         testPreference = Map.of("email", true);
         Map<String, Object> finalTestPreference2 = testPreference;
         assertThrows(DataIntegrityViolationException.class, () -> assetHolderMapper.insertContactPreferences(finalTestPreference2));
+
+        assetHolderMapper.deleteContactPreferencesByAssetHolderIds(List.of("test_001"));
     }
 
     @Test
     @Order(7)
     public void updateContactPreferencesByAssetHolderId() {
-        insertContactPreferencesMainPart();
-        Map<String, Object> testPreference = new HashMap<>();
+        Map<String, Object> testPreference = Map.of("assetHolderId", "test_001", "email", true, "phone", false, "whatsapp", true);
+        assetHolderMapper.insertContactPreferences(testPreference);
+
+        testPreference = new HashMap<>();
         testPreference.put("assetHolderId", "test_001");
         testPreference.put("email", false);
         testPreference.put("post", true);
@@ -248,7 +251,8 @@ public class AssetHolderMapperTest {
     @Test
     @Order(8)
     public void deleteContactPreferencesByAssetHolderIds() {
-        insertContactPreferencesMainPart();
+        Map<String, Object> testPreference = Map.of("assetHolderId", "test_001", "email", true, "phone", false, "whatsapp", true);
+        assetHolderMapper.insertContactPreferences(testPreference);
 
         int n = assetHolderMapper.deleteContactPreferencesByAssetHolderIds(List.of("", ""));
         assertEquals(0, n);
@@ -323,11 +327,6 @@ public class AssetHolderMapperTest {
     @Test
     @Order(12)
     public void insertAssetHolder() {
-        insertAssetHolderMainPart();
-        assetHolderMapper.deleteAssetHolderByAssetHolderIDs(List.of("test_001"));
-    }
-
-    public void insertAssetHolderMainPart() {
         AssetHolder assetHolder = new AssetHolder();
         assetHolder.setId("test_001");
         assetHolder.setName("testName");
@@ -344,19 +343,28 @@ public class AssetHolderMapperTest {
         assertEquals("testEmail", list.get(0).getEmail());
         assertEquals("testPhone", list.get(0).getPhone());
         assertTrue(Duration.between(now, list.get(0).getLastModified()).abs().toMillis() < 1);
+
+        assetHolderMapper.deleteAssetHolderByAssetHolderIDs(List.of("test_001"));
     }
 
     @Test
     @Order(13)
     public void updateAssetHolder() {
-        insertAssetHolderMainPart();
-
         AssetHolder assetHolder = new AssetHolder();
+        assetHolder.setId("test_001");
+        assetHolder.setName("testName");
+        assetHolder.setEmail("testEmail");
+        assetHolder.setPhone("testPhone");
+        Instant now = Instant.now();
+        assetHolder.setLastModified(now);
+        assetHolderMapper.insertAssetHolder(assetHolder);
+
+        assetHolder = new AssetHolder();
         assetHolder.setId("test_001");
         assetHolder.setName("testName1");
         assetHolder.setEmail(null);
         assetHolder.setPhone("");
-        Instant now = Instant.now();
+        now = Instant.now();
         assetHolder.setLastModified(now);
         int n = assetHolderMapper.updateAssetHolder(assetHolder);
         assertEquals(1, n);

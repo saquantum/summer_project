@@ -1,7 +1,6 @@
 package uk.ac.bristol;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -15,6 +14,7 @@ import java.util.Map;
 @Component
 public class MockDataInitializer implements CommandLineRunner {
 
+    private final ImportMockData importMockData;
     private static final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
     @Value("${mock-data.state}")
@@ -27,9 +27,13 @@ public class MockDataInitializer implements CommandLineRunner {
     private String USERS_FILE_PATH;
     @Value("${mock-data.warnings}")
     private String WARNINGS_FILE_PATH;
+    @Value("${mock-data.js}")
+    private String JS_CONVERTER_FILE_PATH;
 
-    @Autowired
-    private ImportMockData importMockData;
+
+    public MockDataInitializer(ImportMockData importMockData) throws IOException {
+        this.importMockData = importMockData;
+    }
 
     private boolean shouldImport(File mockDataFile) throws IOException {
         File stateFile = new File(STATE_FILE_PATH);
@@ -49,11 +53,11 @@ public class MockDataInitializer implements CommandLineRunner {
         mapper.writeValue(stateFile, state);
     }
 
-    public void forceReload(){
+    public void forceReload() {
         importMockData.resetSchema();
         importMockData.importUsers(USERS_FILE_PATH);
         importMockData.importAssets(ASSET_TYPES_FILE_PATH, ASSETS_FILE_PATH);
-        importMockData.importWarnings(WARNINGS_FILE_PATH);
+        importMockData.importWarnings(WARNINGS_FILE_PATH, JS_CONVERTER_FILE_PATH);
     }
 
     @Override
@@ -79,7 +83,7 @@ public class MockDataInitializer implements CommandLineRunner {
             System.out.println("Assets file skipped");
         }
         if (shouldImport(new File(WARNINGS_FILE_PATH))) {
-            importMockData.importWarnings(WARNINGS_FILE_PATH);
+            importMockData.importWarnings(WARNINGS_FILE_PATH, JS_CONVERTER_FILE_PATH);
         } else {
             System.out.println("Warnings file skipped");
         }

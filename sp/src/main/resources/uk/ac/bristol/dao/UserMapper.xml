@@ -60,14 +60,14 @@
         values (#{id}, #{password}, #{assetHolderId}, #{admin});
     </insert>
 
-    <update id="updateUser">
+    <update id="updateUserByUserId">
         update users
         <set>
-            <if test="id != null and id != ''">user_id = #{id},</if>
+            <if test="assetHolderId != null and assetHolderId != ''">user_asset_holder_id = #{assetHolderId},</if>
             <if test="password != null and password != ''">user_password = #{password},</if>
             <if test="admin != null">user_is_admin = #{admin},</if>
         </set>
-        where user_asset_holder_id = #{assetHolderId};
+        where user_id = #{id};
     </update>
 
     <delete id="deleteUserByAssetHolderIDs">
