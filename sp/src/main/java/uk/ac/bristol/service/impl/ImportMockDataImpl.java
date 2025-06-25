@@ -11,7 +11,6 @@ import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.ImportMockData;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.service.WarningService;
-import uk.ac.bristol.util.Arcgis2GeoJsonConverter;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -35,4 +35,4 @@ build/
 ### custom log file
 logs/
 
-data/mock_data_state.json
+mock-data-state/mock_data_state.json

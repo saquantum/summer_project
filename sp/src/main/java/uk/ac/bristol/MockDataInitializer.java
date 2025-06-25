@@ -10,7 +10,6 @@ import uk.ac.bristol.service.ImportMockData;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,7 +31,6 @@ public class MockDataInitializer implements CommandLineRunner {
     private String WARNINGS_FILE_PATH;
     @Value("${mock-data.js}")
     private String JS_CONVERTER_FILE_PATH;
-
 
     public MockDataInitializer(ImportMockData importMockData) throws IOException {
         this.importMockData = importMockData;
