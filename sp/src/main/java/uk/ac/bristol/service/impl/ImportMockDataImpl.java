@@ -101,9 +101,7 @@ public class ImportMockDataImpl implements ImportMockData {
     @Override
     public void importWarnings(InputStream warningsInputStream, InputStream JSConverterInputStream) {
         try {
-            String geoJson = Arcgis2GeoJsonConverter.arcgisToGeoJSON(warningsInputStream, JSConverterInputStream);
-
-            Map<String, Object> map = mapper.readValue(geoJson, new TypeReference<>() {
+            Map<String, Object> map = mapper.readValue(warningsInputStream, new TypeReference<>() {
             });
             List<Map<String, Object>> features = (List<Map<String, Object>>) map.get("features");
 

@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 
 @Component
@@ -41,23 +42,25 @@ public class MockDataInitializer implements CommandLineRunner {
         return new ClassPathResource(path).getInputStream();
     }
 
-    private boolean shouldImport(File mockDataFile) throws IOException {
+    private boolean shouldImport(String key) throws IOException {
         File stateFile = new File(STATE_FILE_PATH);
         if (!stateFile.exists()) {
             stateFile.getParentFile().mkdirs();
-            Map<String, String> defaultState = Map.of("mock_data_last_updated", "2000-01-01T00:00:00Z");
-            mapper.writeValue(stateFile, defaultState);
+            mapper.writeValue(stateFile, Map.of("users", false, "assets", false, "warnings", false));
         }
-        Map<String, String> state = mapper.readValue(stateFile, Map.class);
-        Instant lastUpdated = Instant.parse(state.getOrDefault("mock_data_last_updated", "2000-01-01T00:00:00Z"));
-        Instant fileModified = Instant.ofEpochMilli(mockDataFile.lastModified());
-        return fileModified.isAfter(lastUpdated);
+        Map<String, Boolean> state = mapper.readValue(stateFile, Map.class);
+        return !Boolean.TRUE.equals(state.get(key));
     }
 
-    private void updateImportTime() throws IOException {
+    private void markAsImported(String key) throws IOException {
         File stateFile = new File(STATE_FILE_PATH);
-        stateFile.getParentFile().mkdirs();
-        Map<String, String> state = Map.of("mock_data_last_updated", Instant.now().toString());
+        Map<String, Boolean> state = stateFile.exists()
+                ? mapper.readValue(stateFile, Map.class)
+                : new HashMap<>();
+        if (state == null) {
+            state = new HashMap<>();
+        }
+        state.put(key, true);
         mapper.writeValue(stateFile, state);
     }
 
@@ -70,33 +73,30 @@ public class MockDataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        boolean flag = false;
-        if (shouldImport(new File(USERS_FILE_PATH))
-                | shouldImport(new File(ASSET_TYPES_FILE_PATH))
-                || shouldImport(new File(ASSETS_FILE_PATH))
-                || shouldImport(new File(WARNINGS_FILE_PATH))) {
+        if (shouldImport("users")
+                || shouldImport("assets")
+                || shouldImport("warnings")) {
             importMockData.resetSchema();
-            flag = true;
         }
 
-        if (shouldImport(new File(USERS_FILE_PATH))) {
+        if (shouldImport("users")) {
             importMockData.importUsers(getClasspathStream(USERS_FILE_PATH));
+            markAsImported("users");
 
         } else {
             System.out.println("Users file skipped");
         }
-        if (shouldImport(new File(ASSET_TYPES_FILE_PATH)) || shouldImport(new File(ASSETS_FILE_PATH))) {
+        if (shouldImport("assets")) {
             importMockData.importAssets(getClasspathStream(ASSET_TYPES_FILE_PATH), getClasspathStream(ASSETS_FILE_PATH));
+            markAsImported("assets");
         } else {
             System.out.println("Assets file skipped");
         }
-        if (shouldImport(new File(WARNINGS_FILE_PATH))) {
+        if (shouldImport("warnings")) {
             importMockData.importWarnings(getClasspathStream(WARNINGS_FILE_PATH), getClasspathStream(JS_CONVERTER_FILE_PATH));
+            markAsImported("warnings");
         } else {
             System.out.println("Warnings file skipped");
-        }
-        if (flag) {
-            updateImportTime();
         }
     }
 }

@@ -20,9 +20,9 @@ mock-data:
   assets: data/assets.json
   asset-types: data/asset_types.json
   users: data/users.json
-  warnings: data/arcgis-sample.json
+  warnings: data/geojson-sample.json
   js: js/arcgis-converter.js
-  state: data/mock_data_state.json
+  state: mock-data-state/mock_data_state.json
 
 logging:
   level:

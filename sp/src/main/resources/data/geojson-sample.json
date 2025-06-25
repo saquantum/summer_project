@@ -1,0 +1,67 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [1.4337, 52.6697],
+            [0.4504, 52.6531],
+            [-0.3516, 52.4594],
+            [-0.7635, 52.4493],
+            [-1.1646, 52.5229],
+            [-2.0435, 52.6964],
+            [-2.8235, 52.4727],
+            [-3.2629, 52.3488],
+            [-3.6145, 52.1335],
+            [-4.3726, 51.7338],
+            [-4.7296, 51.2034],
+            [-4.6252, 50.7086],
+            [-4.3451, 50.3104],
+            [-3.7408, 50.1065],
+            [-2.5873, 50.1276],
+            [-1.1865, 50.2683],
+            [-0.9119, 50.2964],
+            [-0.5164, 50.3595],
+            [-0.1538, 50.4365],
+            [0.3296, 50.5832],
+            [1.1426, 50.903],
+            [1.3293, 50.9999],
+            [1.4832, 51.1104],
+            [1.8567, 51.4814],
+            [2.0105, 51.761],
+            [2.0544, 51.9036],
+            [2.0764, 52.12],
+            [2.0435, 52.3957],
+            [1.7963, 52.5797],
+            [1.4337, 52.6697]
+          ]
+        ]
+      },
+      "properties": {
+        "OBJECTID": 1609,
+        "weathertype": "THUNDERSTORM",
+        "warninglevel": "YELLOW",
+        "warningheadline": "Heavy showers and thunderstorms may lead to some disruption to transport and infrastructure.",
+        "validfromdate": 1749283200000,
+        "validtodate": 1749315600000,
+        "GlobalID": "b7aac979-7579-41f8-95b9-853995a67e39",
+        "warningImpact": "2/Low",
+        "warningLikelihood": "3/Likely",
+        "warningVersion": "2.0",
+        "affectedAreas": "East Midlands (Leicestershire, Northamptonshire);\n\nEast of England (Bedford, Cambridgeshire, Central Bedfordshire, Essex, Hertfordshire, Luton, Norfolk, Southend-on-Sea, Suffolk, Thurrock);\n\nLondon & South East England (Bracknell Forest, Brighton and Hove, Buckinghamshire, East Sussex, Greater London, Hampshire, Isle of Wight, Kent, Medway, Milton Keynes, Oxfordshire, Portsmouth, Reading, Slough, Southampton, Surrey, West Berkshire, West Sussex, Windsor and Maidenhead, Wokingham);\n\nSouth West England (Bath and North East Somerset, Bournemouth Christchurch and Poole, Bristol, Cornwall, Devon, Dorset, Gloucestershire, North Somerset, Plymouth, Somerset, South Gloucestershire, Swindon, Torbay, Wiltshire);\n\nWales (Blaenau Gwent, Bridgend, Caerphilly, Cardiff, Carmarthenshire, Merthyr Tydfil, Monmouthshire, Neath Port Talbot, Newport, Powys, Rhondda Cynon Taf, Swansea, Torfaen, Vale of Glamorgan);\n\nWest Midlands (Herefordshire, Shropshire, Staffordshire, Warwickshire, West Midlands Conurbation, Worcestershire)",
+        "whatToExpect": "Probably some damage to a few buildings and structures from lightning strikes.\n\nThere is a good chance driving conditions will be affected by spray, standing water and/or hail, leading to longer journey times by car and bus.\n\nDelays to train services are possible.\n\nSome short term loss of power and other services is likely",
+        "warningFurtherDetails": "Frequent heavy showers and thunderstorms are expected for much of Saturday before fading from the west during the mid to late afternoon. \n\n10-15 mm of rain could fall in less than an hour, whilst some places could see 30-40 mm of rain over several hours from successive showers and thunderstorms. Frequent lightning, hail and strong, gusty winds will be additional hazards.\n\nWhat Should I Do?\n\nConsider if your location is at risk of flash flooding. If so, consider preparing a flood plan and an emergency flood kit. \n\nGive yourself the best chance of avoiding delays by checking road conditions if driving, or bus and train timetables, amending your travel plans if necessary.\n\nPeople cope better with power cuts when they have prepared for them in advance. It’s easy to do; consider gathering torches and batteries, a mobile phone power pack and other essential items.\n\nIf you find yourself outside and hear thunder, protect yourself by finding a safe enclosed shelter (such as a car). Do not shelter under or near trees, or other structures which may be struck by lightning. If you are on an elevated area move to lower ground.\n\nBe prepared for weather warnings to change quickly: when a weather warning is issued, the Met Office recommends staying up to date with the weather forecast in your area.",
+        "warningUpdateDescription": "Warning re-issued due to a technical error.",
+        "issuedDate": 1749200616000,
+        "issuedDateString": "06-06-2025 10:03:36 AM BST",
+        "validFromDateString": "07-06-2025 09:00:00 AM BST",
+        "validToDateString": "07-06-2025 06:00:00 PM BST",
+        "modifiedDateString": "06-06-2025 10:08:29 AM BST"
+      },
+      "id": 1609
+    }
+  ]
+}
