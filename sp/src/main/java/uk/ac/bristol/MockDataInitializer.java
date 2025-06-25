@@ -3,11 +3,13 @@ package uk.ac.bristol;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import uk.ac.bristol.service.ImportMockData;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.Instant;
 import java.util.Map;
 
@@ -35,10 +37,16 @@ public class MockDataInitializer implements CommandLineRunner {
         this.importMockData = importMockData;
     }
 
+    private InputStream getClasspathStream(String path) throws IOException {
+        return new ClassPathResource(path).getInputStream();
+    }
+
     private boolean shouldImport(File mockDataFile) throws IOException {
         File stateFile = new File(STATE_FILE_PATH);
         if (!stateFile.exists()) {
-            return true;
+            stateFile.getParentFile().mkdirs();
+            Map<String, String> defaultState = Map.of("mock_data_last_updated", "2000-01-01T00:00:00Z");
+            mapper.writeValue(stateFile, defaultState);
         }
         Map<String, String> state = mapper.readValue(stateFile, Map.class);
         Instant lastUpdated = Instant.parse(state.getOrDefault("mock_data_last_updated", "2000-01-01T00:00:00Z"));
@@ -53,11 +61,11 @@ public class MockDataInitializer implements CommandLineRunner {
         mapper.writeValue(stateFile, state);
     }
 
-    public void forceReload() {
+    public void forceReload() throws IOException {
         importMockData.resetSchema();
-        importMockData.importUsers(USERS_FILE_PATH);
-        importMockData.importAssets(ASSET_TYPES_FILE_PATH, ASSETS_FILE_PATH);
-        importMockData.importWarnings(WARNINGS_FILE_PATH, JS_CONVERTER_FILE_PATH);
+        importMockData.importUsers(getClasspathStream(USERS_FILE_PATH));
+        importMockData.importAssets(getClasspathStream(ASSET_TYPES_FILE_PATH), getClasspathStream(ASSETS_FILE_PATH));
+        importMockData.importWarnings(getClasspathStream(WARNINGS_FILE_PATH), getClasspathStream(JS_CONVERTER_FILE_PATH));
     }
 
     @Override
@@ -72,18 +80,18 @@ public class MockDataInitializer implements CommandLineRunner {
         }
 
         if (shouldImport(new File(USERS_FILE_PATH))) {
-            importMockData.importUsers(USERS_FILE_PATH);
+            importMockData.importUsers(getClasspathStream(USERS_FILE_PATH));
 
         } else {
             System.out.println("Users file skipped");
         }
         if (shouldImport(new File(ASSET_TYPES_FILE_PATH)) || shouldImport(new File(ASSETS_FILE_PATH))) {
-            importMockData.importAssets(ASSET_TYPES_FILE_PATH, ASSETS_FILE_PATH);
+            importMockData.importAssets(getClasspathStream(ASSET_TYPES_FILE_PATH), getClasspathStream(ASSETS_FILE_PATH));
         } else {
             System.out.println("Assets file skipped");
         }
         if (shouldImport(new File(WARNINGS_FILE_PATH))) {
-            importMockData.importWarnings(WARNINGS_FILE_PATH, JS_CONVERTER_FILE_PATH);
+            importMockData.importWarnings(getClasspathStream(WARNINGS_FILE_PATH), getClasspathStream(JS_CONVERTER_FILE_PATH));
         } else {
             System.out.println("Warnings file skipped");
         }

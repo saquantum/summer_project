@@ -8,6 +8,7 @@ import org.springframework.dao.DuplicateKeyException;
 import uk.ac.bristol.MockDataInitializer;
 import uk.ac.bristol.pojo.AssetHolder;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -28,7 +29,7 @@ public class AssetHolderMapperTest {
     private AssetHolderMapper assetHolderMapper;
 
     @BeforeAll
-    public void init() {
+    public void init() throws IOException {
         mockDataInitializer.forceReload();
     }
 

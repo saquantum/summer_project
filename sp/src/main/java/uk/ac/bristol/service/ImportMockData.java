@@ -1,12 +1,14 @@
 package uk.ac.bristol.service;
 
+import java.io.InputStream;
+
 public interface ImportMockData {
 
     void resetSchema();
 
-    void importAssets(String types, String assets);
+    void importUsers(InputStream usersInputStream);
 
-    void importUsers(String filepath);
+    void importAssets(InputStream typesInputStream, InputStream assetsInputStream);
 
-    void importWarnings(String filepath, String JSConverterPath);
+    void importWarnings(InputStream warningsInputStream, InputStream JSConverterInputStream);
 }

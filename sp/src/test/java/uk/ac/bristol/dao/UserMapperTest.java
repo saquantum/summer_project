@@ -8,6 +8,7 @@ import uk.ac.bristol.MockDataInitializer;
 import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
 
+import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,7 +28,7 @@ public class UserMapperTest {
     private UserMapper userMapper;
 
     @BeforeAll
-    public void init() {
+    public void init() throws IOException {
         mockDataInitializer.forceReload();
     }
 

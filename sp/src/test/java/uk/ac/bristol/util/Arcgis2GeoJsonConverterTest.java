@@ -2,18 +2,29 @@ package uk.ac.bristol.util;
 
 import org.junit.jupiter.api.Test;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 public class Arcgis2GeoJsonConverterTest {
+    @Value("${mock-data.warnings}")
+    private String WARNINGS_FILE_PATH;
+    @Value("${mock-data.js}")
+    private String JS_CONVERTER_FILE_PATH;
+
+    private InputStream getClasspathStream(String path) throws IOException {
+        return new ClassPathResource(path).getInputStream();
+    }
 
     @Test
     public void arcgisToGeoJsonConverterTest() throws IOException {
-        String output = Arcgis2GeoJsonConverter.arcgisToGeoJSON("src/main/resources/js/arcgis-converter.js", "src/main/resources/data/arcgis-sample.json");
+        String output = Arcgis2GeoJsonConverter.arcgisToGeoJSON(getClasspathStream(WARNINGS_FILE_PATH), getClasspathStream(JS_CONVERTER_FILE_PATH));
         assertEquals("{\n" +
                 "  \"type\": \"FeatureCollection\",\n" +
                 "  \"features\": [\n" +

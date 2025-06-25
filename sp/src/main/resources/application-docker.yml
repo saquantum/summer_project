@@ -17,12 +17,12 @@ mybatis:
   type-aliases-package: uk.ac.bristol.pojo
 
 mock-data:
-  assets: src/main/resources/data/assets.json
-  asset-types: src/main/resources/data/asset_types.json
-  users: src/main/resources/data/users.json
-  warnings: src/main/resources/data/arcgis-sample.json
-  js: src/main/resources/js/arcgis-converter.js
-  state: src/main/resources/data/mock_data_state.json
+  assets: data/assets.json
+  asset-types: data/asset_types.json
+  users: data/users.json
+  warnings: data/arcgis-sample.json
+  js: js/arcgis-converter.js
+  state: data/mock_data_state.json
 
 logging:
   level:

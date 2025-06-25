@@ -13,8 +13,8 @@ import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.service.WarningService;
 import uk.ac.bristol.util.Arcgis2GeoJsonConverter;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -49,10 +49,10 @@ public class ImportMockDataImpl implements ImportMockData {
     }
 
     @Override
-    public void importUsers(String filepath) {
+    public void importUsers(InputStream usersInputStream) {
         List<AssetHolder> assetHolders = null;
         try {
-            assetHolders = mapper.readValue(new File(filepath), new TypeReference<List<AssetHolder>>() {
+            assetHolders = mapper.readValue(usersInputStream, new TypeReference<List<AssetHolder>>() {
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -79,13 +79,13 @@ public class ImportMockDataImpl implements ImportMockData {
     }
 
     @Override
-    public void importAssets(String typesFile, String assetsFile) {
+    public void importAssets(InputStream typesInputStream, InputStream assetsInputStream) {
         List<AssetType> types = null;
         List<Asset> assets = null;
         try {
-            types = mapper.readValue(new File(typesFile), new TypeReference<List<AssetType>>() {
+            types = mapper.readValue(typesInputStream, new TypeReference<List<AssetType>>() {
             });
-            assets = mapper.readValue(new File(assetsFile), new TypeReference<List<Asset>>() {
+            assets = mapper.readValue(assetsInputStream, new TypeReference<List<Asset>>() {
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -99,12 +99,9 @@ public class ImportMockDataImpl implements ImportMockData {
     }
 
     @Override
-    public void importWarnings(String filepath, String JSConverterPath) {
+    public void importWarnings(InputStream warningsInputStream, InputStream JSConverterInputStream) {
         try {
-            String geoJson = Arcgis2GeoJsonConverter.arcgisToGeoJSON(
-                    JSConverterPath,
-                    filepath
-            );
+            String geoJson = Arcgis2GeoJsonConverter.arcgisToGeoJSON(warningsInputStream, JSConverterInputStream);
 
             Map<String, Object> map = mapper.readValue(geoJson, new TypeReference<>() {
             });
