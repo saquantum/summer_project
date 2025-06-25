@@ -58,7 +58,7 @@ const displayData = [
 
 <template>
   <div class="map-container">
-    <MapCard :map-id="mapId" :drain-area="[warning.area]" />
+    <MapCard :map-id="mapId" :location="[warning.area]" />
   </div>
 
   <el-descriptions title="Warning Detail" :column="1" direction="vertical">

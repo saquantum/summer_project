@@ -1,7 +1,7 @@
 <script setup>
 import { useAssetStore } from '@/stores'
 import { useRoute } from 'vue-router'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const route = useRoute()
 const assetStore = useAssetStore()
@@ -14,7 +14,7 @@ const contactOptions = [
   { value: 'Telegram', label: 'Telegram' }
 ]
 const contact = ref('Email')
-const drainArea = ref([])
+
 const asset = ref({})
 // get the asset
 const id = route.params.id
@@ -23,7 +23,6 @@ const item =
   assetStore.userAssets.find((item) => item.asset.id === id) ||
   assetStore.allAssets.find((item) => item.asset.id === id)
 
-drainArea.value = [item.asset.location]
 asset.value = item.asset
 const mapCardRef = ref()
 
@@ -36,6 +35,10 @@ const endDrawing = () => {
 }
 
 const mode = ref('convex')
+
+const location = computed({
+  get: () => [item.asset.location]
+})
 </script>
 
 <template>
@@ -51,7 +54,7 @@ const mode = ref('convex')
           <MapCard
             ref="mapCardRef"
             :map-id="'mapdetail'"
-            :drain-area="drainArea"
+            :location="location"
             :id="id"
             v-model:mode="mode"
           ></MapCard>

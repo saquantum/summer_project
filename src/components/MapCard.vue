@@ -21,7 +21,7 @@ const assetStore = useAssetStore()
 
 const props = defineProps({
   mapId: String,
-  drainArea: Array,
+  location: Array,
   id: Number,
   mode: String
 })
@@ -82,20 +82,24 @@ const endDrawing = async () => {
     L.geoJSON(convexHull).addTo(map)
 
     if (item) {
-      item.asset.drainArea = convexHull
+      item.asset.location = convexHull
       await assetUpdateInfoService(
         props.id,
-        JSON.stringify(convexHull.geometry)
+        item.asset.ownerId,
+        convexHull.geometry
       )
     }
   } else if (mode.value === 'sequence') {
     let polygonLayer = L.polygon(points).addTo(map)
     let geoJSON = polygonLayer.toGeoJSON()
-    // updateDrainArea(a)
 
     if (item) {
-      item.asset.drainArea = geoJSON
-      await assetUpdateInfoService(props.id, JSON.stringify(geoJSON.geometry))
+      item.asset.location = geoJSON
+      await assetUpdateInfoService(
+        props.id,
+        item.asset.ownerId,
+        geoJSON.geometry
+      )
     }
   }
 
@@ -110,7 +114,7 @@ onMounted(() => {
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map)
-  const geoLayer = L.geoJSON(props.drainArea, {
+  const geoLayer = L.geoJSON(props.location, {
     style: (feature) => feature.geometry.style
   }).addTo(map)
   map.fitBounds(geoLayer.getBounds())

@@ -1,6 +1,10 @@
 <script setup>
 import { ref, reactive, watch, computed } from 'vue'
 import request from '@/utils/request'
+import { useUserStore } from '@/stores'
+import { assetInsertService } from '@/api/assets'
+
+const userStore = useUserStore()
 
 function convertToGeoJSON(data, type = 'point') {
   if (!data || !data.lat || !data.lon) {
@@ -63,7 +67,7 @@ const form = reactive({
   assetName: '',
   assetType: '',
   address: '',
-  drainArea: ''
+  location: ''
 })
 const mapCardRef = ref()
 
@@ -72,8 +76,7 @@ const searchLocation = async (address) => {
   const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
   const data = await request(url)
   if (data.length > 0) {
-    form.drainArea = convertToGeoJSON(data[0], 'polygon')
-    console.log(form.drainArea)
+    form.location = convertToGeoJSON(data[0], 'polygon')
   }
 }
 
@@ -115,9 +118,10 @@ function prevStep() {
   activeStep.value--
 }
 
-function submit() {
+async function submit() {
   emit('update:addAssetVisible', false)
   console.log('value:', form)
+  await assetInsertService(userStore.user.id, location)
   ElMessage.success('Successfully add an asset')
 }
 </script>
@@ -178,10 +182,10 @@ function submit() {
       ></div> -->
         <div style="height: 300px">
           <MapCard
-            v-if="form.drainArea"
+            v-if="form.location"
             ref="mapCardRef"
             :map-id="'testid'"
-            :drain-area="[form.drainArea]"
+            :location="[form.location]"
           ></MapCard>
         </div>
         <el-button @click="beginDrawing">Draw new asset</el-button>

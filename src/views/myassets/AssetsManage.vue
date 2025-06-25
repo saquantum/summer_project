@@ -216,10 +216,7 @@ watch(
         </template>
 
         <div class="map-container">
-          <MapCard
-            :map-id="'map-' + index"
-            :drain-area="[item.asset.location]"
-          />
+          <MapCard :map-id="'map-' + index" :location="[item.asset.location]" />
         </div>
 
         <template #footer>

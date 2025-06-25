@@ -56,7 +56,7 @@ const setWarningLevelStyle = (level) => {
     <MapCard
       v-if="warningPolygon.length > 0"
       :map-id="mapId"
-      :drain-area="warningPolygon"
+      :location="warningPolygon"
     ></MapCard>
   </div>
 
