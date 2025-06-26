@@ -100,30 +100,33 @@ public class ImportMockDataImpl implements ImportMockData {
     @Override
     public void importWarnings(InputStream warningsInputStream, InputStream JSConverterInputStream) {
         try {
-            Map<String, Object> map = mapper.readValue(warningsInputStream, new TypeReference<>() {
+            List<Map<String, Object>> list = mapper.readValue(warningsInputStream, new TypeReference<List<Map<String, Object>>>() {
             });
-            List<Map<String, Object>> features = (List<Map<String, Object>>) map.get("features");
 
-            for (Map<String, Object> feature : features) {
-                Map<String, Object> properties = (Map<String, Object>) feature.get("properties");
-                Map<String, Object> geometry = (Map<String, Object>) feature.get("geometry");
+            for (Map<String, Object> map : list) {
+                List<Map<String, Object>> features = (List<Map<String, Object>>) map.get("features");
 
-                Warning warning = new Warning();
-                warning.setId(((Number) properties.get("OBJECTID")).longValue());
-                warning.setWeatherType((String) properties.get("weathertype"));
-                warning.setWarningLevel((String) properties.get("warninglevel"));
-                warning.setWarningHeadLine((String) properties.get("warningheadline"));
-                warning.setValidFrom(Instant.ofEpochMilli(((Number) properties.get("validfromdate")).longValue()));
-                warning.setValidTo(Instant.ofEpochMilli(((Number) properties.get("validtodate")).longValue()));
-                warning.setWarningImpact((String) properties.get("warningImpact"));
-                warning.setWarningLikelihood((String) properties.get("warningLikelihood"));
-                warning.setAffectedAreas((String) properties.get("affectedAreas"));
-                warning.setWhatToExpect((String) properties.get("whatToExpect"));
-                warning.setWarningFurtherDetails((String) properties.get("warningFurtherDetails"));
-                warning.setWarningUpdateDescription((String) properties.get("warningUpdateDescription"));
-                warning.setArea(geometry);
+                for (Map<String, Object> feature : features) {
+                    Map<String, Object> properties = (Map<String, Object>) feature.get("properties");
+                    Map<String, Object> geometry = (Map<String, Object>) feature.get("geometry");
 
-                warningService.insertWarning(warning);
+                    Warning warning = new Warning();
+                    warning.setId(((Number) properties.get("OBJECTID")).longValue());
+                    warning.setWeatherType((String) properties.get("weathertype"));
+                    warning.setWarningLevel((String) properties.get("warninglevel"));
+                    warning.setWarningHeadLine((String) properties.get("warningheadline"));
+                    warning.setValidFrom(Instant.ofEpochMilli(((Number) properties.get("validfromdate")).longValue()));
+                    warning.setValidTo(Instant.ofEpochMilli(((Number) properties.get("validtodate")).longValue()));
+                    warning.setWarningImpact((String) properties.get("warningImpact"));
+                    warning.setWarningLikelihood((String) properties.get("warningLikelihood"));
+                    warning.setAffectedAreas((String) properties.get("affectedAreas"));
+                    warning.setWhatToExpect((String) properties.get("whatToExpect"));
+                    warning.setWarningFurtherDetails((String) properties.get("warningFurtherDetails"));
+                    warning.setWarningUpdateDescription((String) properties.get("warningUpdateDescription"));
+                    warning.setArea(geometry);
+
+                    warningService.insertWarning(warning);
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
