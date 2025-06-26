@@ -31,3 +31,28 @@ https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn?frameUrl=%2
 You can switch your new twilio setting(in file application.properties)
 
 The phone numbers you send message to should be added into your/my Twilio Sandbox
+
+# For Discord Part
+
+You don't need any pre-set.
+
+*Follow these steps to create a webhook:*
+
+🧩 步骤 1：打开 Discord，并进入你的服务器
+在左侧选择你拥有或管理的某个服务器，点击进入。
+
+🧩 步骤 2：选择你想使用的频道（通常是文本频道）
+例如：#notifications 或 #general
+
+🧩 步骤 3：点击频道名右侧的齿轮图标（⚙️）打开“编辑频道”
+🧩 步骤 4：点击左侧菜单中的 “整合” / Integrations
+🧩 步骤 5：点击 “Webhooks”
+你会看到已有的 Webhook 列表（如果有），你可以：
+
+查看已有的 Webhook（点击可见 webhook URL）
+
+或点击 “新建 Webhook” / "Create Webhook"
+
+🧩 步骤 6：查看或复制 Webhook URL
+
+Run MailApplication.java and visit localhost:8080
