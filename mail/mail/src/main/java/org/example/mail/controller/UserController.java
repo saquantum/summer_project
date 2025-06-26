@@ -1,7 +1,9 @@
 package org.example.mail.controller;
 
+import org.example.mail.dao.UserDiscordMapper;
 import org.example.mail.dao.UserEmailMapper;
 import org.example.mail.dao.UserWhatsAppMapper;
+import org.example.mail.pojo.UserDiscord;
 import org.example.mail.pojo.UserEmail;
 import org.example.mail.pojo.UserWhatsApp;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,9 @@ public class UserController {
 
     @Autowired
     private UserWhatsAppMapper whatsAppMapper;
+
+    @Autowired
+    private UserDiscordMapper discordMapper;
 
     //email相关
     @PostMapping("/add")
@@ -67,6 +72,21 @@ public class UserController {
         userWhatsApp.setPhoneNumber(phoneNumber);
         whatsAppMapper.insert(userWhatsApp);
         return "WhatsApp added successfully!";
+    }
+
+    //Discord相关
+    @PostMapping("/add-discord")
+    public String addDiscord(@RequestParam String discord) {
+        if (discord== null || discord.isBlank()) {
+            return "Invalid discord url!";
+        }
+        if (discordMapper.existsByDiscord(discord)) {
+            return "Discord url already exists!";
+        }
+        UserDiscord userDiscord = new UserDiscord();
+        userDiscord.setDiscord(discord);
+        discordMapper.insertDiscord(userDiscord);
+        return "Discord url added successfully!";
     }
 
     @GetMapping("/list")

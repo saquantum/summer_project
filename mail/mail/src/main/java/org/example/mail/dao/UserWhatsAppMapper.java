@@ -8,7 +8,10 @@ import java.util.List;
 @Mapper
 public interface UserWhatsAppMapper {
     int insert(UserWhatsApp userWhatsApp);
+
     List<UserWhatsApp> selectAll();
+
     boolean existsByWhatsApp(@Param("phoneNumber") String phoneNumber);
+
     int deleteByWhatsApp(String phoneNumber);
 }

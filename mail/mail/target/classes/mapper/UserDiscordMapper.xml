@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.example.mail.dao.UserDiscordMapper">
+
+    <insert id="insertDiscord" parameterType="org.example.mail.pojo.UserDiscord">
+        INSERT INTO user_discord(discord) VALUES (#{discord})
+    </insert>
+
+    <select id="selectAllDiscords" resultType="org.example.mail.pojo.UserDiscord">
+        SELECT * FROM user_discord
+    </select>
+
+    <select id="existsByDiscord" resultType="boolean" parameterType="string">
+        SELECT COUNT(*) > 0 FROM user_discord WHERE discord = #{discord}
+    </select>
+
+    <delete id="deleteByDiscord" parameterType="java.lang.String">
+        DELETE FROM user_discord WHERE discord = #{discord}
+    </delete>
+
+    <delete id="deleteAll">
+        DELETE FROM user_discord
+    </delete>
+</mapper>

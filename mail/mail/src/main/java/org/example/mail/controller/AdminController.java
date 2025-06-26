@@ -1,7 +1,9 @@
 package org.example.mail.controller;
 
+import org.example.mail.dao.UserDiscordMapper;
 import org.example.mail.dao.UserEmailMapper;
 import org.example.mail.dao.UserWhatsAppMapper;
+import org.example.mail.pojo.UserDiscord;
 import org.example.mail.pojo.UserEmail;
 import org.example.mail.pojo.UserWhatsApp;
 import org.example.mail.util.JwtUtil;
@@ -10,6 +12,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +31,12 @@ public class AdminController {
 
     @Autowired
     private WhatsAppController whatsAppController;
+
+    @Autowired
+    private UserDiscordMapper discordMapper;
+
+    @Autowired
+    private DiscordController discordController;
 
     @PostMapping("/send")
     public String sendToAllUsers(@RequestBody Map<String, String> mailData) {
@@ -83,5 +92,31 @@ public class AdminController {
         }
 
         return "WhatsApp is sent to " + all.size() + " account.";
+    }
+
+    //discord
+    @PostMapping("/send-discord")
+    public String sendDiscordToAll(@RequestBody Map<String, String> mailData) throws IOException {
+        List<UserDiscord> all = discordMapper.selectAllDiscords();
+
+        String contentTemplate = mailData.get("content");
+
+        if (contentTemplate == null || contentTemplate.isEmpty()) {
+            return "Content is empty!";
+        }
+
+        for (UserDiscord user : all) {
+            String url = user.getDiscord();
+
+            // 模拟发送（实际中可替换为调用 WhatsApp API）
+
+            String token = JwtUtil.createTokenDiscord(user.getDiscord());
+            String unsubscribeUrl = "http://localhost:8080/unsubscribe-discord?token=" + token;
+
+            System.out.println("Sending Discord message to ：" + url);
+            discordController.sendMessage(url,contentTemplate + unsubscribeUrl);
+        }
+
+        return "Discord is sent to " + all.size() + " account.";
     }
 }

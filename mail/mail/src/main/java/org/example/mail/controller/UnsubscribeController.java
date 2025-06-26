@@ -1,6 +1,7 @@
 package org.example.mail.controller;
 
 import org.example.mail.Result.ParsedTokenResult;
+import org.example.mail.dao.UserDiscordMapper;
 import org.example.mail.dao.UserEmailMapper;
 import org.example.mail.dao.UserWhatsAppMapper;
 import org.example.mail.util.JwtUtil;
@@ -16,6 +17,9 @@ public class UnsubscribeController {
 
     @Autowired
     private UserWhatsAppMapper whatsAppMapper;
+
+    @Autowired
+    private UserDiscordMapper discordMapper;
 
     @GetMapping("/unsubscribe-email")
     @ResponseBody
@@ -52,6 +56,23 @@ public class UnsubscribeController {
                 return "Successfully Unsubscribed: " + phoneNumber;
             } else {
                 return "Email not found or already unsubscribed: " + phoneNumber;
+            }
+        } catch (Exception e) {
+            return "Unsubscribe link invalid or expired.";
+        }
+    }
+
+    @GetMapping("/unsubscribe-discord")
+    @ResponseBody
+    public String unsubscribe3(@RequestParam String token) {
+        try {
+            String url = JwtUtil.parseTokenDiscord(token);
+
+            int deleted = discordMapper.deleteByDiscord(url);
+            if (deleted > 0) {
+                return "Successfully Unsubscribed: " + url;
+            } else {
+                return "Url not found or already unsubscribed: " + url;
             }
         } catch (Exception e) {
             return "Unsubscribe link invalid or expired.";

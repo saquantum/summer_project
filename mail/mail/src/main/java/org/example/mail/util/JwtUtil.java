@@ -36,6 +36,16 @@ public class JwtUtil {
                 .compact();
     }
 
+    //for discord
+    public static String createTokenDiscord(String url) {
+        return Jwts.builder()
+                .setSubject(url)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis()+ 1000L * 60 * 60 * 24)) // 1 天有效
+                .signWith(key)
+                .compact();
+    }
+
     //for email
     public static ParsedTokenResult parseToken(String token) {
 
@@ -54,6 +64,14 @@ public class JwtUtil {
 
     //for whatsapp
     public static String parseTokenWhatsApp(String token) {
+        return Jwts.parserBuilder().setSigningKey(key).build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    //for discord
+    public static String parseTokenDiscord(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build()
                 .parseClaimsJws(token)
                 .getBody()
