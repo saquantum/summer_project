@@ -11,7 +11,9 @@ import java.util.Map;
 @Mapper
 public interface UserMapper {
 
-    List<User> selectAllUsers();
+    List<User> selectAllUsers(@Param("orderList") List<Map<String, String>> orderList,
+                              @Param("limit") Integer limit,
+                              @Param("offset") Integer offset);
 
     List<User> selectUserById(@Param("id") String id);
 
@@ -19,9 +21,16 @@ public interface UserMapper {
 
     List<User> selectUserByAssetHolderId(@Param("assetHolderId") String assetHolderId);
 
-    List<User> selectUserByAdmin(@Param("isAdmin") Boolean isAdmin);
+    List<User> selectUserByAdmin(@Param("isAdmin") Boolean isAdmin,
+                                 @Param("orderList") List<Map<String, String>> orderList,
+                                 @Param("limit") Integer limit,
+                                 @Param("offset") Integer offset);
 
-    List<Map<String, Object>> selectAllAssetHoldersWithAccumulator(@Param("function") String function, @Param("column") String column);
+    List<Map<String, Object>> selectAllAssetHoldersWithAccumulator(@Param("function") String function,
+                                                                   @Param("column") String column,
+                                                                   @Param("orderList") List<Map<String, String>> orderList,
+                                                                   @Param("limit") Integer limit,
+                                                                   @Param("offset") Integer offset);
 
     int insertUser(User user);
 

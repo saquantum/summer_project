@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
+import uk.ac.bristol.util.QueryTool;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -68,18 +69,24 @@ public class AdminController {
     }
 
     @GetMapping("/user/all")
-    public ResponseBody getAllUsers() {
-        return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAssetHolder());
+    public ResponseBody getAllUsers(@RequestParam(required = false) List<String> orderList,
+                                    @RequestParam(required = false) Integer limit,
+                                    @RequestParam(required = false) Integer offset) {
+        return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAssetHolder(QueryTool.getOrderList(orderList), limit, offset));
     }
 
     @GetMapping("/user/unauthorised")
-    public ResponseBody getAllUnauthorisedUsersWithAssetHolder() {
-        return new ResponseBody(Code.SELECT_OK, userService.getAllUnauthorisedUsersWithAssetHolder());
+    public ResponseBody getAllUnauthorisedUsersWithAssetHolder(@RequestParam(required = false) List<String> orderList,
+                                                               @RequestParam(required = false) Integer limit,
+                                                               @RequestParam(required = false) Integer offset) {
+        return new ResponseBody(Code.SELECT_OK, userService.getAllUnauthorisedUsersWithAssetHolder(QueryTool.getOrderList(orderList), limit, offset));
     }
 
     @GetMapping("/user/with-asset-ids")
-    public ResponseBody getAllAssetHoldersWithAssetIds() {
-        return new ResponseBody(Code.SELECT_OK, userService.getAllAssetHoldersWithAssetIds());
+    public ResponseBody getAllAssetHoldersWithAssetIds(@RequestParam(required = false) List<String> orderList,
+                                                       @RequestParam(required = false) Integer limit,
+                                                       @RequestParam(required = false) Integer offset) {
+        return new ResponseBody(Code.SELECT_OK, userService.getAllAssetHoldersWithAssetIds(QueryTool.getOrderList(orderList), limit, offset));
     }
 
     /**
@@ -87,9 +94,13 @@ public class AdminController {
      * <br><br>
      * BE AWARE: This SQL Statement is weak to SQL injection, do pass verified parameter in!
      */
-    @GetMapping("/user/accumulate/{function}/{column}")
-    public ResponseBody getAllUsersWithAccumulator(@PathVariable String function, @PathVariable String column) {
-        return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAccumulator(function, column));
+    @GetMapping("/user/accumulate")
+    public ResponseBody getAllUsersWithAccumulator(@RequestParam String function,
+                                                   @RequestParam String column,
+                                                   @RequestParam(required = false) List<String> orderList,
+                                                   @RequestParam(required = false) Integer limit,
+                                                   @RequestParam(required = false) Integer offset) {
+        return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAccumulator(function, column, QueryTool.getOrderList(orderList), limit, offset));
     }
 
     @PostMapping("/user")

@@ -8,6 +8,7 @@ import uk.ac.bristol.pojo.Warning;
 import uk.ac.bristol.service.WarningService;
 
 import java.util.List;
+import java.util.Map;
 
 @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
 @Service
@@ -20,13 +21,17 @@ public class WarningServiceImpl implements WarningService {
     }
 
     @Override
-    public List<Warning> getAllWarnings() {
-        return warningMapper.selectAllWarnings();
+    public List<Warning> getAllWarnings(List<Map<String, String>> orderList,
+                                        Integer limit,
+                                        Integer offset) {
+        return warningMapper.selectAllWarnings(orderList, limit, offset);
     }
 
     @Override
-    public List<Warning> getAllWarningsIncludingOutdated() {
-        return warningMapper.selectAllWarningsIncludingOutdated();
+    public List<Warning> getAllWarningsIncludingOutdated(List<Map<String, String>> orderList,
+                                                         Integer limit,
+                                                         Integer offset) {
+        return warningMapper.selectAllWarningsIncludingOutdated(orderList, limit, offset);
     }
 
     @Override

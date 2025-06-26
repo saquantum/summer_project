@@ -6,26 +6,45 @@ import uk.ac.bristol.pojo.AssetType;
 import uk.ac.bristol.pojo.AssetWithWeatherWarnings;
 
 import java.util.List;
+import java.util.Map;
 
 public interface AssetService {
 
-    List<Asset> getAllAssets();
+    List<Asset> getAllAssets(List<Map<String, String>> orderList,
+                             Integer limit,
+                             Integer offset);
 
-    List<AssetWithWeatherWarnings> getAllAssetsWithWarnings();
+    List<AssetWithWeatherWarnings> getAllAssetsWithWarnings(List<Map<String, String>> orderList,
+                                                            Integer limit,
+                                                            Integer offset);
 
     List<Asset> getAssetById(String id);
 
     List<AssetWithWeatherWarnings> getAssetWithWarningsById(String id);
 
-    List<Asset> getAssetByAsset(Asset asset);
+    List<Asset> getAssetByAsset(Asset asset,
+                                List<Map<String, String>> orderList,
+                                Integer limit,
+                                Integer offset);
 
-    List<AssetWithWeatherWarnings> getAssetWithWarningsByAsset(Asset asset);
+    List<AssetWithWeatherWarnings> getAssetWithWarningsByAsset(Asset asset,
+                                                               List<Map<String, String>> orderList,
+                                                               Integer limit,
+                                                               Integer offset);
 
-    List<Asset> getAllAssetsByAssetHolderId(String ownerId);
+    List<Asset> getAllAssetsByAssetHolderId(String ownerId,
+                                            List<Map<String, String>> orderList,
+                                            Integer limit,
+                                            Integer offset);
 
-    List<AssetWithWeatherWarnings> getAllAssetsWithWarningsByAssetHolderId(String ownerId);
+    List<AssetWithWeatherWarnings> getAllAssetsWithWarningsByAssetHolderId(String ownerId,
+                                                                           List<Map<String, String>> orderList,
+                                                                           Integer limit,
+                                                                           Integer offset);
 
-    List<AssetType> getAllAssetTypes();
+    List<AssetType> getAllAssetTypes(List<Map<String, String>> orderList,
+                                     Integer limit,
+                                     Integer offset);
 
     int insertAssetType(AssetType assetType);
 

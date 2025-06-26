@@ -3,12 +3,17 @@ package uk.ac.bristol.service;
 import uk.ac.bristol.pojo.Warning;
 
 import java.util.List;
+import java.util.Map;
 
 public interface WarningService {
 
-    List<Warning> getAllWarnings();
+    List<Warning> getAllWarnings(List<Map<String, String>> orderList,
+                                 Integer limit,
+                                 Integer offset);
 
-    List<Warning> getAllWarningsIncludingOutdated();
+    List<Warning> getAllWarningsIncludingOutdated(List<Map<String, String>> orderList,
+                                                  Integer limit,
+                                                  Integer offset);
 
     List<Warning> getWarningById(Long id);
 

@@ -5,10 +5,12 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
+import uk.ac.bristol.util.QueryTool;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -54,15 +56,21 @@ public class UserController {
 
     // for safety considerations, the user should not see password.
     @GetMapping("/uid/{id}")
-    public ResponseBody getUserByUserId(@PathVariable String id) {
-        User user = userService.getUserByUserId(id);
+    public ResponseBody getUserByUserId(@PathVariable String id,
+                                        @RequestParam(required = false) List<String> orderList,
+                                        @RequestParam(required = false) Integer limit,
+                                        @RequestParam(required = false) Integer offset) {
+        User user = userService.getUserByUserId(id, QueryTool.getOrderList(orderList), limit, offset);
         user.setPassword(null);
         return new ResponseBody(Code.SELECT_OK, user);
     }
 
     @GetMapping("/aid/{id}")
-    public ResponseBody getUserByAssetHolderId(@PathVariable String id) {
-        User user = userService.getUserByAssetHolderId(id);
+    public ResponseBody getUserByAssetHolderId(@PathVariable String id,
+                                               @RequestParam(required = false) List<String> orderList,
+                                               @RequestParam(required = false) Integer limit,
+                                               @RequestParam(required = false) Integer offset) {
+        User user = userService.getUserByAssetHolderId(id, QueryTool.getOrderList(orderList), limit, offset);
         user.setPassword(null);
         return new ResponseBody(Code.SELECT_OK, user);
     }

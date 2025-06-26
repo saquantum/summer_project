@@ -35,7 +35,7 @@ public class UserMapperTest {
     @Test
     @Order(1)
     public void selectAllUsers() {
-        List<User> list = userMapper.selectAllUsers();
+        List<User> list = userMapper.selectAllUsers(null, null, null);
         assertTrue(list.size() >= 50);
         assertNotNull(list.get(30));
     }
@@ -105,8 +105,8 @@ public class UserMapperTest {
     @Test
     @Order(5)
     public void selectUserByAdmin() {
-        assertEquals(1, userMapper.selectUserByAdmin(true).size());
-        assertEquals(50, userMapper.selectUserByAdmin(false).size());
+        assertEquals(1, userMapper.selectUserByAdmin(true, null, null, null).size());
+        assertEquals(50, userMapper.selectUserByAdmin(false, null, null, null).size());
     }
 
     @Test

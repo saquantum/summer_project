@@ -5,13 +5,18 @@ import org.apache.ibatis.annotations.Param;
 import uk.ac.bristol.pojo.Warning;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface WarningMapper {
 
-    List<Warning> selectAllWarnings();
+    List<Warning> selectAllWarnings(@Param("orderList") List<Map<String, String>> orderList,
+                                    @Param("limit") Integer limit,
+                                    @Param("offset") Integer offset);
 
-    List<Warning> selectAllWarningsIncludingOutdated();
+    List<Warning> selectAllWarningsIncludingOutdated(@Param("orderList") List<Map<String, String>> orderList,
+                                                     @Param("limit") Integer limit,
+                                                     @Param("offset") Integer offset);
 
     List<Warning> selectWarningById(@Param("id") Long id);
 

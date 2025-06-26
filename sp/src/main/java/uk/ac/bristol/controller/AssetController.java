@@ -5,6 +5,7 @@ import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.AssetType;
 import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.WarningService;
+import uk.ac.bristol.util.QueryTool;
 
 import java.util.List;
 import java.util.Map;
@@ -22,8 +23,10 @@ public class AssetController {
     }
 
     @GetMapping("/asset")
-    public ResponseBody getAllAssetsWithWarnings() {
-        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetsWithWarnings());
+    public ResponseBody getAllAssetsWithWarnings(@RequestParam(required = false) List<String> orderList,
+                                                 @RequestParam(required = false) Integer limit,
+                                                 @RequestParam(required = false) Integer offset) {
+        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetsWithWarnings(QueryTool.getOrderList(orderList), limit, offset));
     }
 
     @GetMapping("/asset/{id}")
@@ -32,8 +35,11 @@ public class AssetController {
     }
 
     @GetMapping("/asset/holder/{id}")
-    public ResponseBody getAllAssetsOfHolder(@PathVariable String id) {
-        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetsWithWarningsByAssetHolderId(id));
+    public ResponseBody getAllAssetsOfHolder(@PathVariable String id,
+                                             @RequestParam(required = false) List<String> orderList,
+                                             @RequestParam(required = false) Integer limit,
+                                             @RequestParam(required = false) Integer offset) {
+        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetsWithWarningsByAssetHolderId(id, QueryTool.getOrderList(orderList), limit, offset));
     }
 
     @PostMapping("/asset")
@@ -55,8 +61,10 @@ public class AssetController {
     /* ---------------- Asset Types ---------------- */
 
     @GetMapping("/asset/type")
-    public ResponseBody getAllAssetsTypes() {
-        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetTypes());
+    public ResponseBody getAllAssetsTypes(@RequestParam(required = false) List<String> orderList,
+                                          @RequestParam(required = false) Integer limit,
+                                          @RequestParam(required = false) Integer offset) {
+        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetTypes(QueryTool.getOrderList(orderList), limit, offset));
     }
 
     @PostMapping("/asset/type")
@@ -78,13 +86,17 @@ public class AssetController {
     /* ---------------- Warnings ---------------- */
 
     @GetMapping("/warning")
-    public ResponseBody getAllLiveWarnings() {
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarnings());
+    public ResponseBody getAllLiveWarnings(@RequestParam(required = false) List<String> orderList,
+                                           @RequestParam(required = false) Integer limit,
+                                           @RequestParam(required = false) Integer offset) {
+        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarnings(QueryTool.getOrderList(orderList), limit, offset));
     }
 
     @GetMapping("/warning/all")
-    public ResponseBody getAllWarningsIncludingOutdated() {
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarningsIncludingOutdated());
+    public ResponseBody getAllWarningsIncludingOutdated(@RequestParam(required = false) List<String> orderList,
+                                                        @RequestParam(required = false) Integer limit,
+                                                        @RequestParam(required = false) Integer offset) {
+        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarningsIncludingOutdated(QueryTool.getOrderList(orderList), limit, offset));
     }
 
     @GetMapping("/warning/{id}")
@@ -97,6 +109,6 @@ public class AssetController {
     @DeleteMapping("/warning")
     public ResponseBody deleteWarningsByIds(@RequestBody Map<String, Object> body) {
         List<Long> ids = (List<Long>) body.get("ids");
-        return  new ResponseBody(Code.DELETE_OK, warningService.deleteWarningByIDs(ids));
+        return new ResponseBody(Code.DELETE_OK, warningService.deleteWarningByIDs(ids));
     }
 }

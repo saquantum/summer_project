@@ -29,7 +29,7 @@ public class AssetServiceImpl implements AssetService {
     }
 
     private Map<String, AssetType> getTypeMap() {
-        return assetMapper.selectAllAssetTypes().stream()
+        return assetMapper.selectAllAssetTypes(null, null, null).stream()
                 .collect(Collectors.toMap(AssetType::getId, type -> type));
     }
 
@@ -49,13 +49,17 @@ public class AssetServiceImpl implements AssetService {
     }
 
     @Override
-    public List<Asset> getAllAssets() {
-        return this.prepareAssetList(assetMapper.selectAllAssets(), this.getTypeMap());
+    public List<Asset> getAllAssets(List<Map<String, String>> orderList,
+                                    Integer limit,
+                                    Integer offset) {
+        return this.prepareAssetList(assetMapper.selectAllAssets(orderList, limit, offset), this.getTypeMap());
     }
 
     @Override
-    public List<AssetWithWeatherWarnings> getAllAssetsWithWarnings() {
-        return this.prepareAWList(assetMapper.selectAllAssetsWithWarnings(), this.getTypeMap());
+    public List<AssetWithWeatherWarnings> getAllAssetsWithWarnings(List<Map<String, String>> orderList,
+                                                                   Integer limit,
+                                                                   Integer offset) {
+        return this.prepareAWList(assetMapper.selectAllAssetsWithWarnings(orderList, limit, offset), this.getTypeMap());
     }
 
     @Override
@@ -69,28 +73,42 @@ public class AssetServiceImpl implements AssetService {
     }
 
     @Override
-    public List<Asset> getAssetByAsset(Asset asset) {
-        return this.prepareAssetList(assetMapper.selectByAsset(asset), this.getTypeMap());
+    public List<Asset> getAssetByAsset(Asset asset,
+                                       List<Map<String, String>> orderList,
+                                       Integer limit,
+                                       Integer offset) {
+        return this.prepareAssetList(assetMapper.selectByAsset(asset, orderList, limit, offset), this.getTypeMap());
     }
 
     @Override
-    public List<AssetWithWeatherWarnings> getAssetWithWarningsByAsset(Asset asset) {
-        return this.prepareAWList(assetMapper.selectByAssetWithWarnings(asset), this.getTypeMap());
+    public List<AssetWithWeatherWarnings> getAssetWithWarningsByAsset(Asset asset,
+                                                                      List<Map<String, String>> orderList,
+                                                                      Integer limit,
+                                                                      Integer offset) {
+        return this.prepareAWList(assetMapper.selectByAssetWithWarnings(asset, orderList, limit, offset), this.getTypeMap());
     }
 
     @Override
-    public List<Asset> getAllAssetsByAssetHolderId(String ownerId) {
-        return this.prepareAssetList(assetMapper.selectAllAssetsOfHolder(ownerId), this.getTypeMap());
+    public List<Asset> getAllAssetsByAssetHolderId(String ownerId,
+                                                   List<Map<String, String>> orderList,
+                                                   Integer limit,
+                                                   Integer offset) {
+        return this.prepareAssetList(assetMapper.selectAllAssetsOfHolder(ownerId, orderList, limit, offset), this.getTypeMap());
     }
 
     @Override
-    public List<AssetWithWeatherWarnings> getAllAssetsWithWarningsByAssetHolderId(String ownerId) {
-        return this.prepareAWList(assetMapper.selectAllAssetsWithWarningsOfHolder(ownerId), this.getTypeMap());
+    public List<AssetWithWeatherWarnings> getAllAssetsWithWarningsByAssetHolderId(String ownerId,
+                                                                                  List<Map<String, String>> orderList,
+                                                                                  Integer limit,
+                                                                                  Integer offset) {
+        return this.prepareAWList(assetMapper.selectAllAssetsWithWarningsOfHolder(ownerId, orderList, limit, offset), this.getTypeMap());
     }
 
     @Override
-    public List<AssetType> getAllAssetTypes() {
-        return assetMapper.selectAllAssetTypes();
+    public List<AssetType> getAllAssetTypes(List<Map<String, String>> orderList,
+                                            Integer limit,
+                                            Integer offset) {
+        return assetMapper.selectAllAssetTypes(orderList, limit, offset);
     }
 
     @Override
@@ -111,7 +129,7 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public int updateAsset(Asset asset) {
-        List<AssetHolder> list = assetHolderMapper.selectAssetHolderByID(asset.getOwnerId());
+        List<AssetHolder> list = assetHolderMapper.selectAssetHolderByIDs(List.of(asset.getOwnerId()), null, null, null);
         if (list.size() != 1)
             throw new RuntimeException(list.size() + " asset holders found for asset id " + asset.getId() + " when updating asset");
         Instant now = Instant.now();

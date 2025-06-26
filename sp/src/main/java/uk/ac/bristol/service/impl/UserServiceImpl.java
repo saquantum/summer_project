@@ -52,8 +52,10 @@ public class UserServiceImpl implements UserService {
 
     // get all users without asset holder part
     @Override
-    public List<User> getAllUsers() {
-        return userMapper.selectAllUsers();
+    public List<User> getAllUsers(List<Map<String, String>> orderList,
+                                  Integer limit,
+                                  Integer offset) {
+        return userMapper.selectAllUsers(orderList, limit, offset);
     }
 
     // get address and contact preferences for the asset holder
@@ -73,9 +75,11 @@ public class UserServiceImpl implements UserService {
 
     // This method returns all users, with asset holder info if possible
     @Override
-    public List<User> getAllUsersWithAssetHolder() {
-        List<User> users = userMapper.selectAllUsers();
-        List<AssetHolder> assetHolders = assetHolderMapper.selectAllAssetHolders();
+    public List<User> getAllUsersWithAssetHolder(List<Map<String, String>> orderList,
+                                                 Integer limit,
+                                                 Integer offset) {
+        List<User> users = userMapper.selectAllUsers(orderList, limit, offset);
+        List<AssetHolder> assetHolders = assetHolderMapper.selectAllAssetHolders(orderList, limit, offset);
         Map<String, AssetHolder> mapping = assetHolders.stream()
                 .collect(Collectors.toMap(AssetHolder::getId, ah -> ah));
         for (User user : users) {
@@ -89,9 +93,11 @@ public class UserServiceImpl implements UserService {
 
     // This method only returns users with asset holder info (i.e. excluding admins)
     @Override
-    public List<User> getAllUnauthorisedUsersWithAssetHolder() {
-        List<User> users = userMapper.selectAllUsers();
-        List<AssetHolder> assetHolders = assetHolderMapper.selectAllAssetHolders();
+    public List<User> getAllUnauthorisedUsersWithAssetHolder(List<Map<String, String>> orderList,
+                                                             Integer limit,
+                                                             Integer offset) {
+        List<User> users = userMapper.selectAllUsers(orderList, limit, offset);
+        List<AssetHolder> assetHolders = assetHolderMapper.selectAllAssetHolders(orderList, limit, offset);
         Map<String, AssetHolder> mapping = assetHolders.stream()
                 .collect(Collectors.toMap(AssetHolder::getId, ah -> ah));
         return users.stream()
@@ -105,16 +111,20 @@ public class UserServiceImpl implements UserService {
 
     // get all asset holders along with address and contact preferences
     @Override
-    public List<AssetHolder> getAllAssetHolders() {
-        List<AssetHolder> assetHolders = assetHolderMapper.selectAllAssetHolders();
+    public List<AssetHolder> getAllAssetHolders(List<Map<String, String>> orderList,
+                                                Integer limit,
+                                                Integer offset) {
+        List<AssetHolder> assetHolders = assetHolderMapper.selectAllAssetHolders(orderList, limit, offset);
         assetHolders.forEach(this::prepareAssetHolder);
         return assetHolders;
     }
 
     @Override
-    public List<Map<String, Object>> getAllAssetHoldersWithAssetIds() {
-        List<AssetHolder> assetHolders = assetHolderMapper.selectAllAssetHolders();
-        List<Asset> assets = assetMapper.selectAllAssets();
+    public List<Map<String, Object>> getAllAssetHoldersWithAssetIds(List<Map<String, String>> orderList,
+                                                                    Integer limit,
+                                                                    Integer offset) {
+        List<AssetHolder> assetHolders = assetHolderMapper.selectAllAssetHolders(orderList, limit, offset);
+        List<Asset> assets = assetMapper.selectAllAssets(orderList, limit, offset);
         Map<String, List<String>> mapping = new HashMap<>();
         assets.forEach(asset -> {
             if (!mapping.containsKey(asset.getOwnerId())) {
@@ -132,15 +142,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<Map<String, Object>> getAllUsersWithAccumulator(String function, String column) {
+    public List<Map<String, Object>> getAllUsersWithAccumulator(String function,
+                                                                String column,
+                                                                List<Map<String, String>> orderList,
+                                                                Integer limit,
+                                                                Integer offset) {
         if("count".equalsIgnoreCase(function)) {
             ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            List<Map<String, Object>> rawList = userMapper.selectAllAssetHoldersWithAccumulator(function, column);
+            List<Map<String, Object>> rawList = userMapper.selectAllAssetHoldersWithAccumulator(function, column, orderList, limit, offset);
             Map<String, Map<String, Object>> mapping = rawList.stream()
                     .collect(Collectors.toMap(m -> (String) m.get("id"),
                             m -> Map.of("assetHolder", prepareAssetHolder(mapper.convertValue(m, AssetHolder.class)), function, m.get("accumulation"))));
 
-            List<User> users = userMapper.selectAllUsers();
+            List<User> users = userMapper.selectAllUsers(orderList, limit, offset);
             List<Map<String, Object>> result = new ArrayList<>();
             for (User user : users) {
                 if (user.getAssetHolderId() == null) continue;
@@ -155,17 +169,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> getAllAdmins() {
-        return userMapper.selectUserByAdmin(true);
+    public List<User> getAllAdmins(List<Map<String, String>> orderList,
+                                   Integer limit,
+                                   Integer offset) {
+        return userMapper.selectUserByAdmin(true, orderList, limit, offset);
     }
 
     @Override
-    public User getUserByAssetHolderId(String assetHolderId) {
+    public User getUserByAssetHolderId(String assetHolderId,
+                                       List<Map<String, String>> orderList,
+                                       Integer limit,
+                                       Integer offset) {
         List<User> user = userMapper.selectUserByAssetHolderId(assetHolderId);
         if (user.size() != 1) {
             throw new RuntimeException("Get " + user.size() + " users using asset holder id " + assetHolderId);
         }
-        List<AssetHolder> assetHolder = assetHolderMapper.selectAssetHolderByID(assetHolderId);
+        List<AssetHolder> assetHolder = assetHolderMapper.selectAssetHolderByIDs(List.of(assetHolderId), orderList, limit, offset);
         if (assetHolder.size() != 1) {
             throw new RuntimeException("Get " + assetHolder.size() + " asset holders using asset holder id " + assetHolderId);
         }
@@ -174,13 +193,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserByUserId(String uid) {
+    public User getUserByUserId(String uid,
+                                List<Map<String, String>> orderList,
+                                Integer limit,
+                                Integer offset) {
         List<User> user = userMapper.selectUserById(uid);
         if (user.size() != 1) {
             throw new RuntimeException("Get " + user.size() + " users using user id " + uid);
         }
         if (user.get(0).getAssetHolderId() != null) {
-            List<AssetHolder> assetHolder = assetHolderMapper.selectAssetHolderByID(user.get(0).getAssetHolderId());
+            List<AssetHolder> assetHolder = assetHolderMapper.selectAssetHolderByIDs(List.of(user.get(0).getAssetHolderId()), orderList, limit, offset);
             if (assetHolder.size() != 1) {
                 throw new RuntimeException("Get " + assetHolder.size() + " asset holders using asset holder id " + user.get(0).getAssetHolderId());
             }
@@ -243,7 +265,7 @@ public class UserServiceImpl implements UserService {
     public int deleteUserByUserIds(List<String> ids) {
         int sum = 0;
         for (String id : ids) {
-            User user = this.getUserByUserId(id);
+            User user = this.getUserByUserId(id, null, null, null);
             Integer n1 = null;
             if (user.getAssetHolderId() != null) {
                 n1 = this.deleteAssetHolderByAssetHolderIds(new String[]{user.getAssetHolderId()});

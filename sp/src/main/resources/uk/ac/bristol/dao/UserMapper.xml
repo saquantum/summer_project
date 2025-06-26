@@ -7,6 +7,7 @@
     <select id="selectAllUsers" resultMap="ResultMaps.UserMap">
         select *
         from users;
+        <include refid="ResultMaps.orderAndPage"/>
     </select>
 
     <select id="selectUserById" resultMap="ResultMaps.UserMap">
@@ -32,27 +33,28 @@
         select *
         from users
         where user_is_admin = #{isAdmin}
+        <include refid="ResultMaps.orderAndPage"/>
     </select>
 
     <select id="selectAllAssetHoldersWithAccumulator" resultType="java.util.Map">
-        SELECT h.asset_holder_id as id,
+        select h.asset_holder_id as id,
                h.asset_holder_name as name,
                h.asset_holder_email as email,
                h.asset_holder_phone as phone,
                h.asset_holder_address_id as addressId,
                h.asset_holder_contact_preferences_id as contactPreferencesId,
                h.asset_holder_last_modified as lastModified,
-               ${function}(a.asset_id) AS accumulation
-        FROM asset_holders h
-                 LEFT JOIN assets a ON h.asset_holder_id = a.asset_owner_id
-        GROUP BY h.asset_holder_id,
+               ${function}(a.asset_id) as accumulation
+        from asset_holders h
+                 left join assets a on h.asset_holder_id = a.asset_owner_id
+        group by h.asset_holder_id,
                  h.asset_holder_name,
                  h.asset_holder_email,
                  h.asset_holder_phone,
                  h.asset_holder_address_id,
                  h.asset_holder_contact_preferences_id,
                  h.asset_holder_last_modified
-        ORDER BY h.asset_holder_id;
+        <include refid="ResultMaps.orderAndPage"/>
     </select>
 
     <insert id="insertUser">

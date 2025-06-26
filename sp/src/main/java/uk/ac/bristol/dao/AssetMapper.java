@@ -7,27 +7,46 @@ import uk.ac.bristol.pojo.AssetType;
 import uk.ac.bristol.pojo.AssetWithWeatherWarnings;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface AssetMapper {
 
-    List<Asset> selectAllAssets();
+    List<Asset> selectAllAssets(@Param("orderList") List<Map<String, String>> orderList,
+                                @Param("limit") Integer limit,
+                                @Param("offset") Integer offset);
 
-    List<AssetWithWeatherWarnings> selectAllAssetsWithWarnings();
+    List<AssetWithWeatherWarnings> selectAllAssetsWithWarnings(@Param("orderList") List<Map<String, String>> orderList,
+                                                               @Param("limit") Integer limit,
+                                                               @Param("offset") Integer offset);
 
     List<Asset> selectAssetByID(@Param("id") String id);
 
     List<AssetWithWeatherWarnings> selectAssetWithWarningsByID(@Param("id") String id);
 
-    List<Asset> selectByAsset(Asset asset);
+    List<Asset> selectByAsset(Asset asset,
+                              @Param("orderList") List<Map<String, String>> orderList,
+                              @Param("limit") Integer limit,
+                              @Param("offset") Integer offset);
 
-    List<AssetWithWeatherWarnings> selectByAssetWithWarnings(Asset asset);
+    List<AssetWithWeatherWarnings> selectByAssetWithWarnings(Asset asset,
+                                                             @Param("orderList") List<Map<String, String>> orderList,
+                                                             @Param("limit") Integer limit,
+                                                             @Param("offset") Integer offset);
 
-    List<Asset> selectAllAssetsOfHolder(@Param("ownerId") String ownerId);
+    List<Asset> selectAllAssetsOfHolder(@Param("ownerId") String ownerId,
+                                        @Param("orderList") List<Map<String, String>> orderList,
+                                        @Param("limit") Integer limit,
+                                        @Param("offset") Integer offset);
 
-    List<AssetWithWeatherWarnings> selectAllAssetsWithWarningsOfHolder(@Param("ownerId") String ownerId);
+    List<AssetWithWeatherWarnings> selectAllAssetsWithWarningsOfHolder(@Param("ownerId") String ownerId,
+                                                                       @Param("orderList") List<Map<String, String>> orderList,
+                                                                       @Param("limit") Integer limit,
+                                                                       @Param("offset") Integer offset);
 
-    List<AssetType> selectAllAssetTypes();
+    List<AssetType> selectAllAssetTypes(@Param("orderList") List<Map<String, String>> orderList,
+                                        @Param("limit") Integer limit,
+                                        @Param("offset") Integer offset);
 
     int insertAssetType(AssetType assetType);
 

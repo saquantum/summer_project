@@ -10,23 +10,45 @@ public interface UserService {
 
     User login(User user);
 
-    List<User> getAllUsers();
+    List<User> getAllUsers(List<Map<String, String>> orderList,
+                           Integer limit,
+                           Integer offset);
 
-    List<User> getAllUsersWithAssetHolder();
+    List<User> getAllUsersWithAssetHolder(List<Map<String, String>> orderList,
+                                          Integer limit,
+                                          Integer offset);
 
-    List<User> getAllUnauthorisedUsersWithAssetHolder();
+    List<User> getAllUnauthorisedUsersWithAssetHolder(List<Map<String, String>> orderList,
+                                                      Integer limit,
+                                                      Integer offset);
 
-    List<AssetHolder> getAllAssetHolders();
+    List<AssetHolder> getAllAssetHolders(List<Map<String, String>> orderList,
+                                         Integer limit,
+                                         Integer offset);
 
-    List<Map<String, Object>> getAllAssetHoldersWithAssetIds();
+    List<Map<String, Object>> getAllAssetHoldersWithAssetIds(List<Map<String, String>> orderList,
+                                                             Integer limit,
+                                                             Integer offset);
 
-    List<Map<String, Object>> getAllUsersWithAccumulator(String function, String column);
+    List<Map<String, Object>> getAllUsersWithAccumulator(String function,
+                                                         String column,
+                                                         List<Map<String, String>> orderList,
+                                                         Integer limit,
+                                                         Integer offset);
 
-    List<User> getAllAdmins();
+    List<User> getAllAdmins(List<Map<String, String>> orderList,
+                            Integer limit,
+                            Integer offset);
 
-    User getUserByAssetHolderId(String assetHolderId);
+    User getUserByAssetHolderId(String assetHolderId,
+                                List<Map<String, String>> orderList,
+                                Integer limit,
+                                Integer offset);
 
-    User getUserByUserId(String id);
+    User getUserByUserId(String id,
+                         List<Map<String, String>> orderList,
+                         Integer limit,
+                         Integer offset);
 
     int insertUser(User user);
 

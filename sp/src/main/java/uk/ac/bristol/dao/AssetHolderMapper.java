@@ -30,9 +30,14 @@ public interface AssetHolderMapper {
 
     int deleteContactPreferencesByAssetHolderIds(@Param("ids") List<String> ids);
 
-    List<AssetHolder> selectAllAssetHolders();
+    List<AssetHolder> selectAllAssetHolders(@Param("orderList") List<Map<String, String>> orderList,
+                                            @Param("limit") Integer limit,
+                                            @Param("offset") Integer offset);
 
-    List<AssetHolder> selectAssetHolderByID(@Param("id") String id);
+    List<AssetHolder> selectAssetHolderByIDs(@Param("ids") List<String> ids,
+                                             @Param("orderList") List<Map<String, String>> orderList,
+                                             @Param("limit") Integer limit,
+                                             @Param("offset") Integer offset);
 
     List<AssetHolder> selectByAssetHolder(AssetHolder assetHolder);
 

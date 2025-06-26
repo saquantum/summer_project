@@ -35,17 +35,17 @@ public class WarningMapperTest {
     @Test
     @Order(1)
     public void selectAllWarnings() {
-        List<Warning> list = warningMapper.selectAllWarnings();
+        List<Warning> list = warningMapper.selectAllWarnings(null, null, null);
         assertNotNull(list);
     }
 
     @Test
     @Order(2)
     public void selectAllWarningsIncludingOutdated() {
-        List<Warning> list1 = warningMapper.selectAllWarnings();
+        List<Warning> list1 = warningMapper.selectAllWarnings(null, null, null);
         assertNotNull(list1);
 
-        List<Warning> list2 = warningMapper.selectAllWarningsIncludingOutdated();
+        List<Warning> list2 = warningMapper.selectAllWarningsIncludingOutdated(null, null, null);
         assertFalse(list2.isEmpty());
 
         assertTrue(list2.containsAll(list1));
@@ -74,7 +74,7 @@ public class WarningMapperTest {
         int n = warningMapper.insertWarning(warning);
         assertEquals(1, n);
 
-        assertFalse(warningMapper.selectAllWarnings().isEmpty());
+        assertFalse(warningMapper.selectAllWarnings(null, null, null).isEmpty());
         List<Warning> list = warningMapper.selectWarningById(1L);
         assertEquals(1, list.size());
         assertEquals(1L, list.get(0).getId());

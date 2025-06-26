@@ -80,4 +80,19 @@
         <association property="asset" javaType="uk.ac.bristol.pojo.Asset" resultMap="AssetMap"/>
         <collection property="warnings" ofType="uk.ac.bristol.pojo.Warning" resultMap="WarningMap"/>
     </resultMap>
+
+    <sql id="orderAndPage">
+        <if test="orderList != null and orderList.size() > 0">
+            order by
+            <foreach collection="orderList" item="item" separator=",">
+                ${item.column} ${item.direction}
+            </foreach>
+        </if>
+        <if test="limit != null">
+            limit #{limit}
+            <if test="offset != null">
+                offset #{offset}
+            </if>
+        </if>
+    </sql>
 </mapper>
