@@ -5,10 +5,6 @@ const router = createRouter({
   routes: [
     { path: '/login', component: () => import('@/views/login/LoginPage.vue') },
     {
-      path: '/recover',
-      component: () => import('@/components/RecoverPage.vue')
-    },
-    {
       path: '/',
       component: () => import('@/views/layout/LayoutContainer.vue'),
       children: [
