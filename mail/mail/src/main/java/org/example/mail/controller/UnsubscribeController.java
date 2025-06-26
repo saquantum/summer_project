@@ -1,5 +1,6 @@
 package org.example.mail.controller;
 
+import org.example.mail.Result.ParsedTokenResult;
 import org.example.mail.dao.UserEmailMapper;
 import org.example.mail.dao.UserWhatsAppMapper;
 import org.example.mail.util.JwtUtil;
@@ -20,7 +21,14 @@ public class UnsubscribeController {
     @ResponseBody
     public String unsubscribe1(@RequestParam String token) {
         try {
-            String email = JwtUtil.parseToken(token);
+            ParsedTokenResult result = JwtUtil.parseToken(token);
+
+            String email = result.getEmail();
+            String uid = result.getTokenId();
+
+            if (!emailMapper.existsByUid(uid)) {
+                return "Wrong uid!";
+            }
 
             int deleted = emailMapper.deleteByEmail(email);
             if (deleted > 0) {
@@ -37,7 +45,7 @@ public class UnsubscribeController {
     @ResponseBody
     public String unsubscribe2(@RequestParam String token) {
         try {
-            String phoneNumber = JwtUtil.parseToken(token);
+            String phoneNumber = JwtUtil.parseTokenWhatsApp(token);
 
             int deleted = whatsAppMapper.deleteByWhatsApp(phoneNumber);
             if (deleted > 0) {

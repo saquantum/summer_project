@@ -46,7 +46,7 @@ public class AdminController {
             message.setTo(user.getEmail());
             message.setSubject(subject);
 
-            String token = JwtUtil.generateToken(user.getEmail());
+            String token = JwtUtil.generateToken(user.getEmail(),user.getUid());
             String unsubscribeUrl = "http://localhost:8080/unsubscribe-email?token=" + token;
 
             String content = contentTemplate.replace("{unsubscribeUrl}", unsubscribeUrl);

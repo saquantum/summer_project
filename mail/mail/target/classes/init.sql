@@ -3,7 +3,8 @@ DROP TABLE IF EXISTS user_whatsapp CASCADE;
 
 CREATE TABLE user_email (
                             id SERIAL PRIMARY KEY,
-                            email VARCHAR(255) UNIQUE NOT NULL
+                            email VARCHAR(255) UNIQUE NOT NULL,
+                            uid VARCHAR(255) UNIQUE
 );
 
 CREATE TABLE user_whatsapp (

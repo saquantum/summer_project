@@ -5,9 +5,14 @@ import org.example.mail.dao.UserWhatsAppMapper;
 import org.example.mail.pojo.UserEmail;
 import org.example.mail.pojo.UserWhatsApp;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.InetAddress;
 import java.util.List;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api/user")
@@ -21,17 +26,32 @@ public class UserController {
 
     //email相关
     @PostMapping("/add")
-    public String addEmail(@RequestParam String email) {
+    public ResponseEntity<String> addEmail(@RequestParam String email) {
+        String tokenId = UUID.randomUUID().toString();
         if (email == null || email.isBlank()) {
-            return "Invalid email!";
+            return ResponseEntity.badRequest().body("Invalid email!");
         }
         if (emailMapper.existsByEmail(email)) {
-            return "Email already exists!";
+            return ResponseEntity.badRequest().body("Email already exists!");
         }
+
+        String emailRegex = "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$";
+        Pattern pattern = Pattern.compile(emailRegex);
+        Matcher matcher = pattern.matcher(email);
+        if(!matcher.matches()) {
+            return ResponseEntity.badRequest().body("Invalid email!");
+        }
+
+        //邮箱域名检查
+        if(!isDomainResolvable(email)) {
+            return ResponseEntity.badRequest().body("Invalid email!");
+        }
+
         UserEmail ue = new UserEmail();
         ue.setEmail(email);
+        ue.setUid(tokenId);
         emailMapper.insertEmail(ue);
-        return "Email added successfully!";
+        return ResponseEntity.ok("Email added successfully!");
     }
 
     //whatsapp相关
@@ -52,5 +72,15 @@ public class UserController {
     @GetMapping("/list")
     public List<UserEmail> list() {
         return emailMapper.selectAllEmails();
+    }
+
+    public static boolean isDomainResolvable(String email) {
+        try {
+            String domain = email.substring(email.indexOf("@") + 1);
+            InetAddress.getByName(domain); // 尝试解析域名
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

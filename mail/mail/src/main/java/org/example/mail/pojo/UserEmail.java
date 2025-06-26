@@ -3,6 +3,7 @@ package org.example.mail.pojo;
 public class UserEmail {
     private Long id;
     private String email;
+    private String uid;
 
     // Getter / Setter
     public Long getId() {
@@ -17,5 +18,13 @@ public class UserEmail {
     }
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 }

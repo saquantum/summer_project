@@ -4,6 +4,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.example.mail.pojo.UserEmail;
 
+import java.rmi.server.UID;
 import java.util.List;
 
 @Mapper
@@ -16,4 +17,8 @@ public interface UserEmailMapper {
     boolean existsByEmail(@Param("email") String email);
 
     int deleteByEmail(String email);
+
+    boolean existsByUid(@Param("uid") String uid);
+
+    int deleteAll();
 }

@@ -110,6 +110,17 @@
             document.getElementById("msg2").innerText = "Error: " + error;
         }
     });
+
+    //强化邮箱输入验证
+    document.getElementById("emailForm").addEventListener("submit", function(event) {
+        const emailInput = document.getElementById("email").value;
+        const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+
+        if (!emailRegex.test(emailInput)) {
+            alert("Invalid email format!");
+            event.preventDefault();
+        }
+    });
 </script>
 
 </body>
