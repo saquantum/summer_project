@@ -6,10 +6,11 @@ import {
   EditPen,
   SwitchButton,
   CaretBottom,
-  Bell
+  Message,
+  MessageBox
 } from '@element-plus/icons-vue'
 import avatar from '@/assets/default.png'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useAssetStore, useUserStore } from '@/stores'
 import { useRouter, useRoute } from 'vue-router'
 
@@ -17,42 +18,86 @@ const userStore = useUserStore()
 const assetStore = useAssetStore()
 const router = useRouter()
 const route = useRoute()
+
+const logout = () => {
+  userStore.reset()
+  assetStore.reset()
+  router.push('/login')
+}
 const handleCommand = (command) => {
   if (command === 'logout') {
-    userStore.reset()
-    assetStore.reset()
-    router.push('/login')
+    logout()
+  } else if (command === 'profile') {
+    router.push('/user/profile')
   }
 }
+
+const activeIndex = ref(route.path)
+
 const tabs = [
   { label: 'My Assets', path: '/', icon: Management },
   { label: 'My Profile', path: '/user/profile', icon: User }
 ]
 const dialogVisible = ref(false)
+
+watch(
+  () => route.path,
+  (newPath) => {
+    activeIndex.value = newPath
+  }
+)
 </script>
 
 <template>
   <el-container class="layout-container">
     <!-- user interface -->
-    <el-aside v-if="userStore.user.admin === false" width="200px">
+    <el-aside
+      v-if="
+        (userStore.user.admin && !route.path.includes('admin')) ||
+        !userStore.user.admin
+      "
+      width="200px"
+    >
       <div class="el-aside__logo"></div>
       <el-menu
+        :default-active="activeIndex"
         active-text-color="#ffd04b"
         background-color="#528add"
-        :default-active="$route.path"
         text-color="#fff"
         router
+        v-model="activeIndex"
       >
-        <el-menu-item index="/myassets/manage">
-          <el-icon><Management /></el-icon>
-          <span>My assets</span>
-        </el-menu-item>
-
         <el-menu-item index="/user/profile">
           <el-icon><User /></el-icon>
           <span>My Profile</span>
         </el-menu-item>
+
+        <el-sub-menu index="1">
+          <template #title>
+            <el-icon><Management /></el-icon>
+            <span>Asset</span>
+          </template>
+          <el-menu-item index="/myassets/manage">
+            <span>My assets</span>
+          </el-menu-item>
+          <el-menu-item
+            v-if="activeIndex.startsWith('/asset')"
+            :index="activeIndex"
+          >
+            <span>Asset detail</span>
+          </el-menu-item>
+        </el-sub-menu>
+
+        <el-menu-item index="/message">
+          <el-icon><MessageBox /></el-icon>
+          <span>Message</span>
+        </el-menu-item>
       </el-menu>
+      <div class="signout-container">
+        <el-button text type="danger" size="small" @click="logout"
+          >Sign out</el-button
+        >
+      </div>
     </el-aside>
 
     <!-- admin interface -->
@@ -94,9 +139,11 @@ const dialogVisible = ref(false)
         </el-page-header>
         <div>information</div>
         <div class="header-right">
-          <el-icon @click="dialogVisible = true" class="bell">
-            <Bell />
-          </el-icon>
+          <el-badge is-dot class="icon-badge">
+            <el-icon @click="router.push('/message')" class="bell">
+              <Message />
+            </el-icon>
+          </el-badge>
 
           <el-dropdown placement="bottom-end" @command="handleCommand">
             <span class="el-dropdown__box">
@@ -138,6 +185,7 @@ const dialogVisible = ref(false)
       <el-main>
         <router-view></router-view>
         <TabBar :tabs="tabs" class="tabbar-disply"></TabBar>
+        <CustomerService></CustomerService>
       </el-main>
     </el-container>
   </el-container>
@@ -148,6 +196,9 @@ const dialogVisible = ref(false)
   height: 100vh;
 
   .el-aside {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     background-color: #528add;
 
     &__logo {
@@ -156,6 +207,13 @@ const dialogVisible = ref(false)
     }
     .el-menu {
       border-right: none;
+    }
+
+    .signout-container {
+      margin-top: auto;
+      padding: 10px;
+      display: flex;
+      justify-content: center;
     }
   }
 

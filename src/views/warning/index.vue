@@ -1,12 +1,11 @@
 <script setup>
 import { useRoute } from 'vue-router'
-import { useAdminStore } from '@/stores'
+import { useWarningStore } from '@/stores'
 
 const route = useRoute()
-const adminStore = useAdminStore()
-
+const warningStore = useWarningStore()
 const mapId = 'map-' + route.params.id
-const warning = adminStore.allWarnings.find(
+const warning = warningStore.allWarnings.find(
   (item) => item.id === Number(route.params.id)
 )
 

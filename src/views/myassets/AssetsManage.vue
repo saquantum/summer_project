@@ -10,7 +10,7 @@ const router = useRouter()
 // filter value
 const assetName = ref('')
 const assetWarningLevel = ref('')
-const assetRegion = ref('')
+const assetType = ref('')
 
 // filtered assets
 const currentAssets = ref([])
@@ -34,31 +34,16 @@ const warningLevelOptions = [
     label: 'Red Warning'
   }
 ]
-const warningRegion = [
-  { value: 'North East England', label: 'North East England' },
-  { value: 'North West England', label: 'North West England' },
-  { value: 'Yorkshire & Humber', label: 'Yorkshire & Humber' },
-  { value: 'East Midlands', label: 'East Midlands' },
-  { value: 'West Midlands', label: 'West Midlands' },
-  { value: 'East of England', label: 'East of England' },
-  {
-    value: 'London & South East England',
-    label: 'London & South East England'
-  },
-  { value: 'South West England', label: 'South West England' },
-  { value: 'Orkney & Shetland', label: 'Orkney & Shetland' },
-  { value: 'Highlands & Eilean Siar', label: 'Highlands & Eilean Siar' },
-  { value: 'Grampian', label: 'Grampian' },
-  { value: 'Central, Tayside & Fife', label: 'Central, Tayside & Fife' },
-  { value: 'Strathclyde', label: 'Strathclyde' },
-  {
-    value: 'Dumfries, Galloway, Lothian & Borders',
-    label: 'Dumfries, Galloway, Lothian & Borders'
-  },
-  { value: 'Northern Ireland', label: 'Northern Ireland' },
-  { value: 'Wales', label: 'Wales' }
-]
 
+const assetTypeOptions = [
+  { value: 'type_001', label: 'Water Tank' },
+  { value: 'type_002', label: 'Soakaway' },
+  { value: 'type_003', label: 'Green Roof' },
+  { value: 'type_004', label: 'Permeable Pavement' },
+  { value: 'type_005', label: 'Swale' },
+  { value: 'type_006', label: 'Retention Pond' },
+  { value: 'type_007', label: 'Rain Garden' }
+]
 // page change
 const currentPage = ref(1)
 const pageSize = 8
@@ -105,7 +90,7 @@ onMounted(async () => {
 
 // watch filter condition
 watch(
-  [assetName, assetWarningLevel, assetRegion],
+  [assetName, assetWarningLevel, assetType],
   async () => {
     currentAssets.value = assetStore.userAssets.filter((item) => {
       let matchLevel = false
@@ -130,10 +115,10 @@ watch(
       const matchName = assetName.value
         ? item.asset.name?.toLowerCase().includes(assetName.value.toLowerCase())
         : true
-      const matchRegion = assetRegion.value
-        ? item.asset.region === assetRegion.value
+      const matchType = assetType.value
+        ? item.asset.typeId === assetType.value
         : true
-      return matchName && matchLevel && matchRegion
+      return matchName && matchLevel && matchType
     })
     currentPage.value = 1
   },
@@ -145,15 +130,7 @@ watch(
 
 <template>
   <!-- assets filter -->
-  <div
-    style="
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    "
-  >
+  <div class="search-bar">
     <el-input v-model="assetName" class="select-style"></el-input>
     <el-select
       v-model="assetWarningLevel"
@@ -171,21 +148,19 @@ watch(
     </el-select>
 
     <el-select
-      v-model="assetRegion"
-      placeholder="Select Region"
+      v-model="assetType"
+      placeholder="Select Asset Type"
       size="large"
       clearable
       class="select-style"
     >
       <el-option
-        v-for="item in warningRegion"
+        v-for="item in assetTypeOptions"
         :key="item.value"
         :label="item.label"
         :value="item.value"
       ></el-option>
     </el-select>
-
-    <el-button @click="addAssetVisible = true"> Add asset </el-button>
   </div>
 
   <!-- cards for assets -->
@@ -253,9 +228,19 @@ watch(
 </template>
 
 <style scoped>
+.search-bar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  padding: 10px 0;
+  z-index: 1100;
+}
 .assets-container {
   padding: 16px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   min-height: 100vh;
 }
 

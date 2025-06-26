@@ -11,7 +11,8 @@ const formModel = ref({
   username: '',
   password: '',
   repassword: '',
-  captcha: ''
+  captcha: '',
+  email: ''
 })
 const rules = {
   // customize rules here
@@ -52,6 +53,32 @@ const rules = {
         }
       },
       trigger: 'blur'
+    }
+  ],
+  captcha: [
+    {
+      required: true,
+      message: 'Please input captcha',
+      trigger: 'blur'
+    },
+    {
+      min: 6,
+      max: 6,
+      message: 'Captcha must be exactly 6 characters',
+      trigger: 'blur'
+    },
+    {
+      pattern: /^[A-Za-z0-9]{6}$/,
+      message: 'Captcha must contain only letters and numbers',
+      trigger: 'blur'
+    }
+  ],
+  email: [
+    { required: true, message: 'Please input email', trigger: 'blur' },
+    {
+      type: 'email',
+      message: 'Please input a valid email address',
+      trigger: ['blur', 'change']
     }
   ]
 }
@@ -205,6 +232,7 @@ watch(isRegister, () => {
           </el-form-item>
         </el-form>
 
+        <!-- recover form -->
         <el-form
           v-if="isRecover"
           :model="formModel"
@@ -212,7 +240,7 @@ watch(isRegister, () => {
           ref="form"
           size="large"
           autocomplete="off"
-          class="recovery-form"
+          class="form-style"
         >
           <el-form-item>
             <h1>Recover</h1>
@@ -228,61 +256,35 @@ watch(isRegister, () => {
           </el-form-item>
 
           <el-form-item prop="captcha">
-            <div class="captcha-container">
-              <el-input
-                v-model="formModel.captcha"
-                :prefix-icon="Lock"
-                placeholder="Enter captcha code"
-                maxlength="6"
-                style="flex: 1; margin-right: 12px"
-              />
-              <div class="captcha-display">
-                <span class="captcha-code">{{ captchaCode }}</span>
-                <el-button
-                  type="text"
-                  @click="refreshCaptcha"
-                  class="refresh-btn"
-                  title="Refresh captcha"
-                >
-                  <RefreshCw class="refresh-icon" />
-                </el-button>
-              </div>
-            </div>
+            <el-input
+              v-model="formModel.captcha"
+              :prefix-icon="Lock"
+              placeholder="Enter captcha code"
+              maxlength="6"
+            />
           </el-form-item>
 
           <el-form-item>
-            <el-button
-              type="primary"
-              @click="handleSubmit"
-              :loading="loading"
-              class="submit-btn"
-              native-type="submit"
-            >
-              {{ loading ? 'Sending...' : 'Send Recovery Email' }}
-            </el-button>
+            <el-button>Send email</el-button>
           </el-form-item>
+
+          <el-link
+            type="info"
+            :underline="false"
+            @click="((isRegister = false), (isRecover = false))"
+          >
+            ← Back to login
+          </el-link>
         </el-form>
       </el-card>
     </div>
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .login-page {
   height: 100vh;
   background: url('@/assets/login_bg.png') no-repeat center / cover;
-  .form {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    user-select: none;
-    .title {
-      margin: 0 auto;
-    }
-    .button {
-      width: 100%;
-    }
-  }
 }
 
 .card-wrapper {

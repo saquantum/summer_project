@@ -43,6 +43,10 @@ const router = createRouter({
         {
           path: 'admin/dashboard',
           component: () => import('@/views/admin/DashBoard.vue')
+        },
+        {
+          path: 'message',
+          component: () => import('@/views/message/index.vue')
         }
       ]
     }
