@@ -4,7 +4,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
-import { useAssetStore } from '@/stores'
+import { useAssetStore, useUserStore } from '@/stores'
 import { assetUpdateInfoService } from '@/api/assets'
 import * as turf from '@turf/turf'
 
@@ -18,6 +18,7 @@ const customIcon = new L.Icon({
 })
 
 const assetStore = useAssetStore()
+const userStore = useUserStore()
 
 const props = defineProps({
   mapId: String,
@@ -118,13 +119,13 @@ const endDrawing = async () => {
       multiPolygon.geometry
     )
   }
-
+  await assetStore.getUserAssets(userStore.user.id)
   // clear points, turn off click
   points = []
   map.off('click', handleClick)
 }
 
-onMounted(() => {
+onMounted(async () => {
   map = L.map(props.mapId).setView([0, 0], 13)
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
