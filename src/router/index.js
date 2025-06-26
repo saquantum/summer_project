@@ -5,6 +5,10 @@ const router = createRouter({
   routes: [
     { path: '/login', component: () => import('@/views/login/LoginPage.vue') },
     {
+      path: '/recover',
+      component: () => import('@/components/RecoverPage.vue')
+    },
+    {
       path: '/',
       component: () => import('@/views/layout/LayoutContainer.vue'),
       children: [
@@ -56,6 +60,8 @@ router.beforeEach((to) => {
   const userStore = useUserStore()
   const isLoggedIn = Object.keys(userStore.user).length > 0
   const isAdmin = isLoggedIn && userStore.user.admin === true
+
+  if (to.path === '/recover') return true
 
   if (!isLoggedIn && to.path !== '/login') {
     return '/login'

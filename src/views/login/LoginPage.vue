@@ -5,11 +5,13 @@ import { userRegisterService } from '@/api/user'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
 const form = ref()
-const isRegister = ref(true)
+const isRegister = ref(false)
+const isRecover = ref(false)
 const formModel = ref({
   username: '',
   password: '',
-  repassword: ''
+  repassword: '',
+  captcha: ''
 })
 const rules = {
   // customize rules here
@@ -101,7 +103,7 @@ watch(isRegister, () => {
           size="large"
           autocomplete="off"
           class="form-style"
-          v-if="isRegister"
+          v-if="!isRegister && !isRecover"
         >
           <el-form-item>
             <h1>Sign in</h1>
@@ -125,7 +127,10 @@ watch(isRegister, () => {
           <el-form-item>
             <div class="flex">
               <el-checkbox>Remember me</el-checkbox>
-              <el-link type="primary" :underline="false"
+              <el-link
+                type="primary"
+                :underline="false"
+                @click="isRecover = true"
                 >Forget password?</el-link
               >
             </div>
@@ -154,7 +159,7 @@ watch(isRegister, () => {
           ref="form"
           size="large"
           autocomplete="off"
-          v-else
+          v-else-if="isRegister && !isRecover"
         >
           <el-form-item>
             <h1>Register</h1>
@@ -197,6 +202,64 @@ watch(isRegister, () => {
             <el-link type="info" :underline="false" @click="isRegister = false">
               ← Back
             </el-link>
+          </el-form-item>
+        </el-form>
+
+        <el-form
+          v-if="isRecover"
+          :model="formModel"
+          :rules="rules"
+          ref="form"
+          size="large"
+          autocomplete="off"
+          class="recovery-form"
+        >
+          <el-form-item>
+            <h1>Recover</h1>
+          </el-form-item>
+          <el-form-item prop="email">
+            <el-input
+              v-model="formModel.email"
+              :prefix-icon="User"
+              placeholder="Enter your email address"
+              type="email"
+              autocomplete="email"
+            />
+          </el-form-item>
+
+          <el-form-item prop="captcha">
+            <div class="captcha-container">
+              <el-input
+                v-model="formModel.captcha"
+                :prefix-icon="Lock"
+                placeholder="Enter captcha code"
+                maxlength="6"
+                style="flex: 1; margin-right: 12px"
+              />
+              <div class="captcha-display">
+                <span class="captcha-code">{{ captchaCode }}</span>
+                <el-button
+                  type="text"
+                  @click="refreshCaptcha"
+                  class="refresh-btn"
+                  title="Refresh captcha"
+                >
+                  <RefreshCw class="refresh-icon" />
+                </el-button>
+              </div>
+            </div>
+          </el-form-item>
+
+          <el-form-item>
+            <el-button
+              type="primary"
+              @click="handleSubmit"
+              :loading="loading"
+              class="submit-btn"
+              native-type="submit"
+            >
+              {{ loading ? 'Sending...' : 'Send Recovery Email' }}
+            </el-button>
           </el-form-item>
         </el-form>
       </el-card>

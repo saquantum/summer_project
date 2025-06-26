@@ -5,15 +5,6 @@ import { ref, computed } from 'vue'
 
 const route = useRoute()
 const assetStore = useAssetStore()
-const isEdit = false
-const contactOptions = [
-  { value: 'Email', label: 'Email' },
-  { value: 'SMS', label: 'SMS' },
-  { value: 'Discord', label: 'Discord' },
-  { value: 'WhatsApp', label: 'WhatsApp' },
-  { value: 'Telegram', label: 'Telegram' }
-]
-const contact = ref('Email')
 
 const asset = ref({})
 // get the asset
@@ -59,7 +50,6 @@ const location = computed({
             v-model:mode="mode"
           ></MapCard>
         </div>
-        <template #footer>Footer content</template>
       </el-card>
       <el-select v-model="mode">
         <el-option label="convex" value="convex"></el-option>
@@ -69,50 +59,7 @@ const location = computed({
       <el-button @click="endDrawing">End drawing</el-button>
     </el-col>
 
-    <el-col :span="12">
-      <!-- info form -->
-      <el-form>
-        <el-form-item>
-          <el-select
-            v-model="contact"
-            placeholder="Select warning level"
-            size="large"
-            style="width: 240px"
-            @click="isEdit = true"
-          >
-            <el-option
-              v-for="item in contactOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-              @click="isEdit = true"
-            ></el-option>
-          </el-select>
-        </el-form-item>
-
-        <el-form-item>
-          <el-input
-            v-model="input"
-            style="width: 240px"
-            placeholder="Please input"
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-input
-            v-model="input"
-            style="width: 240px"
-            placeholder="Please input"
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-button v-if="isEdit">Save</el-button>
-        </el-form-item>
-        <el-form-item>
-          <el-button>Subscribe</el-button>
-        </el-form-item>
-      </el-form>
-      <el-button type="danger">Rest All</el-button>
-    </el-col>
+    <el-col :span="12"> </el-col>
   </el-row>
 
   <div>
