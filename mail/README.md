@@ -45,7 +45,9 @@ You don't need any pre-set.
 例如：#notifications 或 #general
 
 🧩 步骤 3：点击频道名右侧的齿轮图标（⚙️）打开“编辑频道”
+
 🧩 步骤 4：点击左侧菜单中的 “整合” / Integrations
+
 🧩 步骤 5：点击 “Webhooks”
 你会看到已有的 Webhook 列表（如果有），你可以：
 
