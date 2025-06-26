@@ -14,6 +14,7 @@ const item =
   assetStore.userAssets.find((item) => item.asset.id === id) ||
   assetStore.allAssets.find((item) => item.asset.id === id)
 
+console.log(item)
 asset.value = item.asset
 const mapCardRef = ref()
 
@@ -25,15 +26,21 @@ const endDrawing = () => {
   mapCardRef.value.endDrawing()
 }
 
+const finishOneShape = () => {
+  mapCardRef.value.finishOneShape()
+}
+
 const mode = ref('convex')
 
 const location = computed({
   get: () => [item.asset.location]
 })
+
+const tableData = ref(item.warnings)
 </script>
 
 <template>
-  <el-row>
+  <el-row :gutter="50">
     <el-col :span="12">
       <el-card style="max-width: 480px">
         <template #header>
@@ -51,15 +58,17 @@ const location = computed({
           ></MapCard>
         </div>
       </el-card>
+    </el-col>
+
+    <el-col :span="12">
       <el-select v-model="mode">
         <el-option label="convex" value="convex"></el-option>
         <el-option label="sequence" value="sequence"></el-option>
       </el-select>
       <el-button @click="beginDrawing">Draw new asset</el-button>
+      <el-button @click="finishOneShape">Finish one shape</el-button>
       <el-button @click="endDrawing">End drawing</el-button>
     </el-col>
-
-    <el-col :span="12"> </el-col>
   </el-row>
 
   <div>

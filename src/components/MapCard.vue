@@ -36,8 +36,9 @@ const item =
   assetStore.allAssets.find((item) => item.asset.id === props.id)
 
 let points = []
+const polygonCoordinates = []
 let map = null
-
+let saveLayer = null
 const handleClick = (e) => {
   const { lat, lng } = e.latlng
   const index = points.length
@@ -52,11 +53,19 @@ const beginDrawing = () => {
   map.on('click', handleClick)
 }
 
-const endDrawing = async () => {
+const finishOneShape = async () => {
   // if there are less than 3 points, reset map
   if (points.length < 3) {
     points = []
     window.alert('You should specify more than 3 points to shape a polygon.')
+    // destroy all layers on the map
+    map.eachLayer((layer) => {
+      if (!(layer instanceof L.TileLayer)) {
+        map.removeLayer(layer)
+      }
+    })
+    saveLayer.addTo(map)
+    return
   }
   // destroy all layers on the map
   map.eachLayer((layer) => {
@@ -77,30 +86,37 @@ const endDrawing = async () => {
       alert('can not create polygon')
       return
     }
-
+    polygonCoordinates.push(convexHull.geometry.coordinates)
+    const multiPolygon = turf.multiPolygon(polygonCoordinates)
     // add layer
-    L.geoJSON(convexHull).addTo(map)
-
-    if (item) {
-      item.asset.location = convexHull
-      await assetUpdateInfoService(
-        props.id,
-        item.asset.ownerId,
-        convexHull.geometry
-      )
-    }
+    L.geoJSON(multiPolygon).addTo(map)
   } else if (mode.value === 'sequence') {
-    let polygonLayer = L.polygon(points).addTo(map)
+    let polygonLayer = L.polygon(points)
     let geoJSON = polygonLayer.toGeoJSON()
 
-    if (item) {
-      item.asset.location = geoJSON
-      await assetUpdateInfoService(
-        props.id,
-        item.asset.ownerId,
-        geoJSON.geometry
-      )
-    }
+    polygonCoordinates.push(geoJSON.geometry.coordinates)
+    const multiPolygon = turf.multiPolygon(polygonCoordinates)
+    L.geoJSON(multiPolygon).addTo(map)
+  }
+
+  // reset point
+  points = []
+}
+
+const endDrawing = async () => {
+  if (points.length > 0) {
+    finishOneShape()
+  }
+  if (item) {
+    if (polygonCoordinates.length === 0) return
+    const multiPolygon = turf.multiPolygon(polygonCoordinates)
+    item.asset.location = multiPolygon.geometry
+    console.log(item.asset)
+    await assetUpdateInfoService(
+      props.id,
+      item.asset.ownerId,
+      multiPolygon.geometry
+    )
   }
 
   // clear points, turn off click
@@ -114,10 +130,12 @@ onMounted(() => {
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map)
-  const geoLayer = L.geoJSON(props.location, {
+  saveLayer = L.geoJSON(props.location, {
     style: (feature) => feature.geometry.style
   }).addTo(map)
-  map.fitBounds(geoLayer.getBounds())
+  if (saveLayer) {
+    map.fitBounds(saveLayer.getBounds())
+  }
 })
 
 onBeforeUnmount(() => {
@@ -129,6 +147,7 @@ onBeforeUnmount(() => {
 
 defineExpose({
   beginDrawing,
+  finishOneShape,
   endDrawing,
   map
 })

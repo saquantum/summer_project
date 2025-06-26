@@ -9,6 +9,7 @@ export const assetUpdateInfoService = (id, ownerId, location) => {
     ownerId: ownerId,
     location: location
   }
+  console.log(obj)
   return request.put('/asset', obj)
 }
 
