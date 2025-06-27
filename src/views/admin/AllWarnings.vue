@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWarningStore } from '@/stores'
 const warnings = ref([])
@@ -10,11 +10,15 @@ const mapId = 'allWarningsMap'
 const handleShowDetail = (row) => {
   router.push(`/warning/${row.id}`)
 }
-let warningPolygon = []
+const warningPolygon = ref([])
 
-onMounted(async () => {
-  await warningStore.getAllWarnings()
+// create new warning data for display
+const processWarnings = () => {
+  warningPolygon.value = []
   warnings.value = warningStore.allWarnings.map((item) => {
+    const style = setWarningLevelStyle(item.warningLevel)
+    const area = { ...item.area, style }
+    warningPolygon.value.push(area)
     return {
       id: item.id,
       weatherType: item.weatherType,
@@ -22,14 +26,11 @@ onMounted(async () => {
       warningLevel: item.warningLevel,
       warningLikelihood: item.warningLikelihood,
       validFrom: new Date(item.validFrom * 1000).toLocaleString(),
-      validTo: new Date(item.validTo * 1000).toLocaleString()
+      validTo: new Date(item.validTo * 1000).toLocaleString(),
+      area
     }
   })
-  warningStore.allWarnings.forEach((item) => {
-    item.area.style = setWarningLevelStyle(item.warningLevel)
-    warningPolygon.push(item.area)
-  })
-})
+}
 
 const setWarningLevelStyle = (level) => {
   let style = { weight: 2, fillOpacity: 0.4 }
@@ -49,6 +50,18 @@ const setWarningLevelStyle = (level) => {
   }
   return style
 }
+onMounted(async () => {
+  await warningStore.getAllWarnings()
+  processWarnings()
+})
+
+watch(
+  () => warningStore.allWarnings,
+  () => {
+    processWarnings()
+  },
+  { deep: true }
+)
 </script>
 
 <template>

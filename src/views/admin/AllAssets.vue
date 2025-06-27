@@ -17,6 +17,17 @@ const tableRowClassName = (scope) => {
     return 'warning-yellow'
   }
 }
+
+const currentSort = ref({ prop: '', order: '' })
+const handleSortChange = ({ prop, order }) => {
+  currentSort.value = { prop, order }
+  fetchTableData()
+}
+
+const fetchTableData = () => {
+  const { prop, order } = currentSort.value
+  console.log(prop, order)
+}
 onMounted(async () => {
   await assetStore.getAllAssets()
   assets.value = assetStore.allAssets.map((item) => {
@@ -34,12 +45,27 @@ onMounted(async () => {
   <el-table
     :data="assets"
     :row-class-name="tableRowClassName"
-    :default-sort="{ prop: 'date', order: 'descending' }"
+    @sort-change="handleSortChange"
   >
-    <el-table-column prop="id" label="Asset id" width="180" />
-    <el-table-column prop="assetName" label="Asset Name" width="180" />
-    <el-table-column prop="assetHolderId" label="Asset Holder ID" width="180" />
-    <el-table-column prop="warningLevel" label="Warning Level" width="180" />
+    <el-table-column prop="id" label="Asset id" sortable="custom" width="180" />
+    <el-table-column
+      prop="assetName"
+      label="Asset Name"
+      sortable="custom"
+      width="180"
+    />
+    <el-table-column
+      prop="assetHolderId"
+      label="Asset Holder ID"
+      sortable="custom"
+      width="180"
+    />
+    <el-table-column
+      prop="warningLevel"
+      label="Warning Level"
+      sortable="custom"
+      width="180"
+    />
     <el-table-column label="Actions">
       <template #default="scope">
         <el-button

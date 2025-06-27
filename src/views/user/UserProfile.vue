@@ -1,27 +1,25 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores'
-import { userUpdateService } from '@/api/user'
+import { userUpdateService, userGetInfoService } from '@/api/user'
 const userStore = useUserStore()
 
-const { assetHolder } = userStore.user
-console.log(assetHolder)
-const arr = userStore.user.assetHolder.name.split(' ')
+const assetHolder = ref({})
 const form = ref({
-  firstName: arr[0],
-  lastName: arr[1],
-  email: assetHolder.email,
-  phone: assetHolder.phone,
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
   address: {
-    street: assetHolder.address.street,
-    postCode: assetHolder.address.postcode,
-    city: assetHolder.address.city,
-    country: assetHolder.address.country
+    street: '',
+    postCode: '',
+    city: '',
+    country: ''
   }
 })
-
+const formRef = ref()
 // Avatar upload
-const avatarUrl = ref(assetHolder.avatar || '')
+const avatarUrl = ref(assetHolder.value.avatar || '')
 const avatarFile = ref(null)
 
 const handleAvatarChange = (e) => {
@@ -112,6 +110,30 @@ const submit = async () => {
     ElMessage.error('Please fix form errors')
   }
 }
+
+onMounted(async () => {
+  if (!userStore.user.admin) {
+    assetHolder.value = userStore.user.assetHolder
+  } else {
+    const id = userStore.proxyId
+    const res = await userGetInfoService(id)
+    assetHolder.value = res.data.assetHolder
+  }
+
+  const arr = assetHolder.value.name.split(' ')
+  form.value = {
+    firstName: arr[0],
+    lastName: arr[1],
+    email: assetHolder.value.email,
+    phone: assetHolder.value.phone,
+    address: {
+      street: assetHolder.value.address.street,
+      postCode: assetHolder.value.address.postcode,
+      city: assetHolder.value.address.city,
+      country: assetHolder.value.address.country
+    }
+  }
+})
 </script>
 
 <template>

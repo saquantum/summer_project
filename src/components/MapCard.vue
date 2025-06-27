@@ -32,9 +32,13 @@ const mode = computed({
   get: () => props.mode,
   set: (val) => emit('update:mode', val)
 })
-const item =
-  assetStore.userAssets.find((item) => item.asset.id === props.id) ||
-  assetStore.allAssets.find((item) => item.asset.id === props.id)
+
+let item = null
+if (props.id) {
+  item =
+    assetStore.userAssets.find((item) => item.asset.id === props.id) ||
+    assetStore.allAssets.find((item) => item.asset.id === props.id)
+}
 
 let points = []
 const polygonCoordinates = []
