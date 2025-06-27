@@ -14,7 +14,7 @@ const popoverVisible = ref(false)
   >
     <template #reference>
       <div class="chat-float">
-        <el-button type="primary" circle>
+        <el-button type="primary" size="large" circle>
           <el-icon><ChatDotSquare /></el-icon>
         </el-button>
       </div>
@@ -30,8 +30,8 @@ const popoverVisible = ref(false)
 <style scoped>
 .chat-float {
   position: fixed;
-  right: 20px;
-  bottom: 20px;
+  right: 50px;
+  bottom: 40px;
   z-index: 9999;
 }
 

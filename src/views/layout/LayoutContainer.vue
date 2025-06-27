@@ -53,7 +53,9 @@ watch(
     <!-- user interface -->
     <el-aside
       v-if="
-        (userStore.user.admin && !route.path.includes('admin')) ||
+        (userStore.user.admin &&
+          !route.path.includes('admin') &&
+          !route.path.includes('message')) ||
         !userStore.user.admin
       "
       width="200px"
@@ -96,7 +98,12 @@ watch(
         </el-menu-item>
       </el-menu>
       <div class="signout-container">
-        <el-button text type="danger" size="small" @click="logout"
+        <el-button
+          text
+          type="danger"
+          size="large"
+          @click="logout"
+          class="signout-button"
           >Sign out</el-button
         >
       </div>
@@ -104,10 +111,15 @@ watch(
 
     <!-- admin interface -->
     <el-aside
-      v-else-if="userStore.user.admin && route.path.includes('admin')"
+      v-else-if="
+        userStore.user.admin &&
+        (route.path.includes('admin') || route.path.includes('message'))
+      "
       width="200px"
     >
-      <div class="el-aside__logo"></div>
+      <router-link to="/">
+        <img src="@/assets/uob-logo.svg" class="el-aside__logo" alt="logo" />
+      </router-link>
       <el-menu
         active-text-color="#ffd04b"
         background-color="#528add"
@@ -129,7 +141,23 @@ watch(
           <el-icon><User /></el-icon>
           <span>All Warnings</span>
         </el-menu-item>
+
+        <el-menu-item index="/message">
+          <el-icon><MessageBox /></el-icon>
+          <span>Message</span>
+        </el-menu-item>
       </el-menu>
+
+      <div class="signout-container">
+        <el-button
+          text
+          type="danger"
+          size="large"
+          @click="logout"
+          class="signout-button"
+          >Sign out</el-button
+        >
+      </div>
     </el-aside>
 
     <el-container>
@@ -187,7 +215,7 @@ watch(
       <el-main>
         <router-view></router-view>
         <TabBar :tabs="tabs" class="tabbar-disply"></TabBar>
-        <CustomerService></CustomerService>
+        <CustomerService v-if="!userStore.user.admin"></CustomerService>
       </el-main>
     </el-container>
   </el-container>
@@ -214,9 +242,13 @@ watch(
 
     .signout-container {
       margin-top: auto;
-      padding: 10px;
+      padding: 20px;
       display: flex;
       justify-content: center;
+
+      .signout-button {
+        background-color: transparent;
+      }
     }
   }
 
