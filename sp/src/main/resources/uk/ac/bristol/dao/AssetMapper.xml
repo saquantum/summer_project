@@ -241,7 +241,7 @@
          asset_installed_at,
          asset_last_inspection,
          asset_last_modified)
-        values (#{id}, #{name}, #{typeId}, #{ownerId}, ST_Multi(ST_GeomFromGeoJSON(#{locationAsJson})),
+        values (#{id}, #{name}, #{typeId}, #{ownerId}, ST_Multi(ST_MakeValid(ST_GeomFromGeoJSON(#{locationAsJson}))),
                 #{capacityLitres}, #{material}, #{status},
                 #{installedAt}, #{lastInspection}, #{lastModified});
     </insert>

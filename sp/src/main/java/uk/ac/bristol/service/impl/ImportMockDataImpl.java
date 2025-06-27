@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.Settings;
+import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
 import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.ImportMockData;
@@ -54,7 +55,7 @@ public class ImportMockDataImpl implements ImportMockData {
             assetHolders = mapper.readValue(usersInputStream, new TypeReference<List<AssetHolder>>() {
             });
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SpExceptions.SystemException("Loading Users failed." + e.getMessage());
         }
         for (AssetHolder assetHolder : assetHolders) {
             assetHolder.setAddressId(assetHolder.getId());
@@ -87,7 +88,7 @@ public class ImportMockDataImpl implements ImportMockData {
             assets = mapper.readValue(assetsInputStream, new TypeReference<List<Asset>>() {
             });
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SpExceptions.SystemException("Loading Assets failed." + e.getMessage());
         }
         for (AssetType type : types) {
             assetService.insertAssetType(type);
@@ -130,7 +131,7 @@ public class ImportMockDataImpl implements ImportMockData {
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new SpExceptions.SystemException("Loading Warnings failed." + e.getMessage());
         }
     }
 }
