@@ -22,15 +22,15 @@ const warningLevelOptions = [
     label: 'No Warning'
   },
   {
-    value: 'Yellow',
+    value: 'YELLOW',
     label: 'Yellow Warning'
   },
   {
-    value: 'Amber',
+    value: 'AMBER',
     label: 'Amber Warning'
   },
   {
-    value: 'Red',
+    value: 'RED',
     label: 'Red Warning'
   }
 ]
@@ -98,9 +98,7 @@ watch(
         assetWarningLevel.value &&
         item.warnings[0] &&
         item.warnings[0].warningLevel &&
-        item.warnings[0].warningLevel
-          .toLowerCase()
-          .includes(assetWarningLevel.value.toLowerCase())
+        item.warnings[0].warningLevel === assetWarningLevel.value
       ) {
         matchLevel = true
       } else if (
@@ -131,7 +129,11 @@ watch(
 <template>
   <!-- assets filter -->
   <div class="search-bar">
-    <el-input v-model="assetName" class="select-style"></el-input>
+    <el-input
+      v-model="assetName"
+      class="select-style"
+      placeholder="Search your assets"
+    ></el-input>
     <el-select
       v-model="assetWarningLevel"
       placeholder="Select warning level"
@@ -179,9 +181,9 @@ watch(
               class="asset-title"
               :class="{
                 'warning-low': !item.warnings[0],
-                'warning-medium': item.warnings[0]?.warningLevel === 'yellow',
-                'warning-high': item.warnings[0]?.warningLevel === 'amber',
-                'warning-severe': item.warnings[0]?.warningLevel === 'red'
+                'warning-medium': item.warnings[0]?.warningLevel === 'YELLOW',
+                'warning-high': item.warnings[0]?.warningLevel === 'AMBER',
+                'warning-severe': item.warnings[0]?.warningLevel === 'RED'
               }"
             >
               {{ item.asset.name || 'Asset Name' }}

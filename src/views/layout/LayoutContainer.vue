@@ -58,7 +58,9 @@ watch(
       "
       width="200px"
     >
-      <div class="el-aside__logo"></div>
+      <router-link to="/">
+        <img src="@/assets/uob-logo.svg" class="el-aside__logo" alt="logo" />
+      </router-link>
       <el-menu
         :default-active="activeIndex"
         active-text-color="#ffd04b"
@@ -202,8 +204,9 @@ watch(
     background-color: #528add;
 
     &__logo {
-      height: 120px;
-      background: url('@/assets/logo.webp') no-repeat center / 120px auto;
+      box-sizing: border-box;
+      width: 100%;
+      padding: 20px;
     }
     .el-menu {
       border-right: none;

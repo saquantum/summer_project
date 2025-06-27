@@ -1,11 +1,11 @@
 <script setup>
+import { Filter, Sort, Search } from '@element-plus/icons-vue'
 import { ref, computed } from 'vue'
 const searchKeyword = ref('')
 const dialogVisible = ref(false)
 const selectedMail = ref(null)
 const currentPage = ref(1)
 const pageSize = 10
-const popoverVisible = ref(false)
 
 const mails = ref([
   {
@@ -55,70 +55,141 @@ const handlePageChange = (page) => {
 </script>
 
 <template>
-  <div
-    class="search-dropdown"
-    style="display: flex; align-items: center; width: 260px"
-  >
-    <el-input
-      placeholder="Search something..."
-      style="flex: 1"
-      v-model="searchText"
-    />
-    <el-popover
-      v-model:visible="popoverVisible"
-      placement="bottom"
-      width="260"
-      trigger="manual"
-    >
-      <div>detail</div>
-      <template #reference>
-        <el-button icon="Filter" @click="popoverVisible = !popoverVisible" />
+  <div class="card-container">
+    <el-card shadow="hover">
+      <template #header>
+        <div class="header-container">
+          <span class="header">Inbox</span>
+          <div class="search-dropdown">
+            <el-input
+              placeholder="Search something..."
+              v-model="searchText"
+              style="max-width: 300px"
+            >
+              <template #append>
+                <el-button :icon="Search"></el-button>
+              </template>
+            </el-input>
+          </div>
+          <div>
+            <el-dropdown placement="bottom-start" trigger="click">
+              <el-button class="button">
+                <Filter class="icon" />
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item @click="() => console.log(123)"
+                    >All</el-dropdown-item
+                  >
+                  <el-dropdown-item>Unread</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+
+            <el-dropdown placement="bottom-start" trigger="click">
+              <el-button class="button"><Sort class="icon" /> </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <div style="padding: 8px 16px; font-weight: bold">
+                    Sort by
+                  </div>
+                  <el-dropdown-item @click="() => console.log(123)"
+                    >Date</el-dropdown-item
+                  >
+                  <el-dropdown-item>From</el-dropdown-item>
+                  <el-dropdown-item>Importance</el-dropdown-item>
+                  <el-dropdown-item>Subject</el-dropdown-item>
+                  <div style="padding: 8px 16px; font-weight: bold">
+                    Sort order
+                  </div>
+                  <el-dropdown-item>Oldest on top</el-dropdown-item>
+                  <el-dropdown-item>Newest on top</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+        </div>
       </template>
-    </el-popover>
+
+      <el-table
+        :data="filteredMails"
+        @selection-change="handleSelectionChange"
+        style="width: 100%"
+        height="400"
+      >
+        <el-table-column type="selection" width="50" />
+        <el-table-column label="Subject" prop="subject">
+          <template #default="{ row }">
+            <span
+              :style="{ fontWeight: row.read ? 'normal' : 'bold' }"
+              @click="openMail(row)"
+            >
+              {{ row.subject }}
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column label="Sender" prop="sender" width="120" />
+        <el-table-column label="Time" prop="time" width="180" />
+      </el-table>
+
+      <el-pagination
+        layout="prev, pager, next"
+        :page-size="pageSize"
+        :total="filteredMails.length"
+        @current-change="handlePageChange"
+        style="
+          margin-top: 20px;
+          text-align: right;
+          display: flex;
+          justify-content: center;
+        "
+      />
+
+      <!-- mail detail -->
+      <el-dialog v-model="dialogVisible" width="50%">
+        <h3>{{ selectedMail?.subject }}</h3>
+        <p><strong>Sender:</strong>{{ selectedMail?.sender }}</p>
+        <p><strong>Time:</strong>{{ selectedMail?.time }}</p>
+        <div style="margin-top: 10px">
+          {{ selectedMail?.content }}
+        </div>
+      </el-dialog>
+    </el-card>
   </div>
-
-  <el-card shadow="hover">
-    <template #header>
-      <div class="header">Inbox</div>
-    </template>
-
-    <el-table
-      :data="filteredMails"
-      @selection-change="handleSelectionChange"
-      style="width: 100%"
-      height="400"
-    >
-      <el-table-column type="selection" width="50" />
-      <el-table-column label="Subject" prop="subject">
-        <template #default="{ row }">
-          <span
-            :style="{ fontWeight: row.read ? 'normal' : 'bold' }"
-            @click="openMail(row)"
-          >
-            {{ row.subject }}
-          </span>
-        </template>
-      </el-table-column>
-      <el-table-column label="Sender" prop="sender" width="120" />
-      <el-table-column label="Time" prop="time" width="180" />
-    </el-table>
-
-    <el-pagination
-      layout="prev, pager, next"
-      :page-size="pageSize"
-      :total="filteredMails.length"
-      @current-change="handlePageChange"
-      style="margin-top: 20px; text-align: right"
-    />
-
-    <!-- mail detail -->
-    <el-dialog v-model="dialogVisible" width="50%">
-      <h3>{{ selectedMail?.subject }}</h3>
-      <p><strong>Sender:</strong>{{ selectedMail?.sender }}</p>
-      <p><strong>Time:</strong>{{ selectedMail?.time }}</p>
-      <div style="margin-top: 10px">
-        {{ selectedMail?.content }}
-      </div>
-    </el-dialog>
-  </el-card>
 </template>
+
+<style scoped>
+.mailbox {
+}
+.search-dropdown {
+}
+.card-container {
+  display: flex;
+  justify-content: center;
+  width: 80vw;
+}
+.button {
+  border: none;
+  padding: 4px 8px;
+}
+
+/* .button:hover {
+  background-color: transparent;
+} */
+
+.button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header {
+  font-weight: bold;
+  font-size: 18px;
+}
+</style>

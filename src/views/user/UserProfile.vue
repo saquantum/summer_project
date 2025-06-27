@@ -112,6 +112,7 @@ const submit = async () => {
 }
 
 onMounted(async () => {
+  // load data according to data type
   if (!userStore.user.admin) {
     assetHolder.value = userStore.user.assetHolder
   } else {

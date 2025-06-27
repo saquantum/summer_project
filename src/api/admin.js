@@ -11,3 +11,8 @@ export const adminGetUsersService = () =>
 export const adminGetAssetsService = () => request.get('/asset/')
 
 export const adminGetWarningsService = () => request.get('/warning/all')
+
+export const adminGetUKMapService = () =>
+  request.get(
+    'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/united-kingdom.geojson'
+  )
