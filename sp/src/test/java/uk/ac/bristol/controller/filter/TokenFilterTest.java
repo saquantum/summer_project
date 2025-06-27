@@ -28,7 +28,7 @@ public class TokenFilterTest {
     @Autowired
     private MockMvc mockMvc;
 
-    static Stream<Arguments> protectedPaths() {
+    static Stream<Arguments> paths() {
         return Stream.of(
                 arguments("/api/user/hello"),
                 arguments("/api/admin/hello"),
@@ -61,7 +61,7 @@ public class TokenFilterTest {
     }
 
     @ParameterizedTest
-    @MethodSource("protectedPaths")
+    @MethodSource("paths")
     public void testProtectedPath_MissingToken(String path) throws Exception {
         mockMvc.perform(get(path))
                 .andExpect(status().isUnauthorized())
@@ -69,7 +69,7 @@ public class TokenFilterTest {
     }
 
     @ParameterizedTest
-    @MethodSource("protectedPaths")
+    @MethodSource("paths")
     public void testProtectedPath_InvalidToken(String path) throws Exception {
         mockMvc.perform(get(path).cookie(new Cookie("token", "invalid.token")))
                 .andExpect(status().isUnauthorized())
@@ -77,7 +77,7 @@ public class TokenFilterTest {
     }
 
     @ParameterizedTest
-    @MethodSource("protectedPaths")
+    @MethodSource("paths")
     public void testProtectedPath_ValidToken(String path) throws Exception {
         String token = JwtUtil.generateJWT(Map.of("id", "test_user"));
 

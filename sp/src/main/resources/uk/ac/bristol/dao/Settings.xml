@@ -30,26 +30,43 @@
         create table if not exists contact_preferences
         (
             contact_preferences_id       varchar(50) primary key,
-            contact_preferences_email    boolean,
-            contact_preferences_phone    boolean,
-            contact_preferences_post     boolean,
-            contact_preferences_whatsapp boolean,
-            contact_preferences_discord  boolean,
-            contact_preferences_telegram boolean
+            contact_preferences_email    boolean default false,
+            contact_preferences_phone    boolean default false,
+            contact_preferences_post     boolean default false,
+            contact_preferences_whatsapp boolean default false,
+            contact_preferences_discord  boolean default false,
+            contact_preferences_telegram boolean default false
         );
     </update>
 
     <update id="createAssetHolders">
         create table if not exists asset_holders
         (
-            asset_holder_id                     varchar(50) primary key,
-            asset_holder_name                   varchar(200) not null,
-            asset_holder_email                  varchar(50)  not null,
-            asset_holder_phone                  varchar(50)  not null,
+            row_id                              bigserial primary key,
+            asset_holder_id                     varchar(50) unique not null,
+            asset_holder_name                   varchar(200)       not null,
+            asset_holder_email                  varchar(50)        not null,
+            asset_holder_phone                  varchar(50)        not null,
             asset_holder_address_id             varchar(50) references address (address_id) on update cascade,
             asset_holder_contact_preferences_id varchar(50) references contact_preferences (contact_preferences_id) on update cascade,
             asset_holder_last_modified          timestamptz default current_timestamp
         );
+
+        create or replace function set_asset_holder_id()
+            returns trigger as $$
+        begin
+            if NEW.asset_holder_id is null or NEW.asset_holder_id = '' then
+                NEW.asset_holder_id := '$user_' || NEW.row_id;
+            end if;
+            return NEW;
+        end;
+        $$ language plpgsql;
+
+        drop trigger if exists asset_holder_id_trigger on asset_holders;
+        create trigger asset_holder_id_trigger
+            before insert on asset_holders
+            for each row
+        execute function set_asset_holder_id();
     </update>
 
     <update id="createUsers">

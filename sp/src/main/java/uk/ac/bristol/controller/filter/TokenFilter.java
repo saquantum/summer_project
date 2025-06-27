@@ -26,7 +26,7 @@ public class TokenFilter implements Filter {
 
         String token = JwtUtil.getJWTFromCookie(request, response);
         if (token == null) {
-            response.setStatus(401);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write("{\"code\":" + Code.LOGIN_TOKEN_MISSING + ", \"message\":\"Token is missing, please return to sign-in page\"}");
             return;
@@ -34,7 +34,7 @@ public class TokenFilter implements Filter {
         try {
             JwtUtil.parseJWT(token);
         } catch (Exception e) {
-            response.setStatus(401);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write("{\"code\":" + Code.LOGIN_TOKEN_ERR + ", \"message\":\"Invalid or expired token\"}");
             return;

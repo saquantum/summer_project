@@ -52,6 +52,8 @@ public interface UserService {
 
     int insertUser(User user);
 
+    int registerNewUser(User user);
+
     int updateUser(User user);
 
     int updateAssetHolder(AssetHolder assetHolder);

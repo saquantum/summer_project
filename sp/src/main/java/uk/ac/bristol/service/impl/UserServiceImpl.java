@@ -147,7 +147,7 @@ public class UserServiceImpl implements UserService {
                                                                 List<Map<String, String>> orderList,
                                                                 Integer limit,
                                                                 Integer offset) {
-        if("count".equalsIgnoreCase(function)) {
+        if ("count".equalsIgnoreCase(function)) {
             ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             List<Map<String, Object>> rawList = userMapper.selectAllAssetHoldersWithAccumulator(function, column, orderList, limit, offset);
             Map<String, Map<String, Object>> mapping = rawList.stream()
@@ -213,22 +213,100 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public int insertUser(User user) {
-        Integer n2 = null;
         if (user.getAssetHolder() != null) {
             AssetHolder ah = user.getAssetHolder();
             ah.setLastModified(Instant.now());
-            n2 = assetHolderMapper.insertAddress(ah.getAddress());
-            int n3 = assetHolderMapper.insertContactPreferences(ah.getContactPreferences());
-            int n4 = assetHolderMapper.insertAssetHolder(ah);
-            if (n2 != n3 || n3 != n4) {
-                throw new RuntimeException("Error inserting user " + user.getId() + ": affected rows not compatible");
+
+            int n1 = assetHolderMapper.insertAddress(ah.getAddress());
+            if (n1 != 1) {
+                throw new RuntimeException("Failed to insert address for user " + user.getId());
+            }
+
+            int n2 = assetHolderMapper.insertContactPreferences(ah.getContactPreferences());
+            if (n2 != 1) {
+                throw new RuntimeException("Failed to insert contact preferences for user " + user.getId());
+            }
+
+            if (ah.getId() == null || ah.getId().isBlank()) {
+                int n0 = assetHolderMapper.insertAssetHolderAutoId(ah);
+                if (n0 != 1) {
+                    throw new RuntimeException("Failed to insert asset holder using auto ID for user " + user.getId());
+                }
+            } else {
+                int n3 = assetHolderMapper.insertAssetHolder(ah);
+                if (n3 != 1) {
+                    throw new RuntimeException("Failed to insert asset holder for user " + user.getId());
+                }
             }
         }
-        int n1 = userMapper.insertUser(user);
-        if (n2 != null && n1 != n2) {
-            throw new RuntimeException("Error inserting user " + user.getId() + ": affected rows not compatible");
+        int n4 = userMapper.insertUser(user);
+        if (n4 != 1) {
+            throw new RuntimeException("Failed to insert user " + user.getId());
         }
-        return n1;
+        return n4;
+    }
+
+    @Override
+    public int registerNewUser(User user) {
+        if (user.getId() == null) {
+            throw new SpExceptions.PostMethodException("No valid user id is provided.");
+        }
+        List<User> duplicateUsers = userMapper.selectUserById(user.getId());
+        if (!duplicateUsers.isEmpty()) {
+            throw new SpExceptions.PostMethodException("Duplicate user id, failed to register.");
+        }
+
+        if (user.getPassword() == null) {
+            throw new SpExceptions.PostMethodException("No valid password is provided.");
+        }
+        if (user.getPassword().length() < 6) {
+            throw new SpExceptions.PostMethodException("Password is too short.");
+        }
+
+        if (user.getAssetHolder() == null) {
+            throw new SpExceptions.PostMethodException("No valid user personal profile is provided.");
+        }
+
+        AssetHolder ah = user.getAssetHolder();
+
+        if (ah.getName() == null || ah.getName().isBlank()) {
+            throw new SpExceptions.PostMethodException("No valid user's name is provided.");
+        }
+
+        if (ah.getEmail() == null || ah.getEmail().isBlank()) {
+            throw new SpExceptions.PostMethodException("No valid user's email is provided.");
+        }
+
+        if (ah.getPhone() == null || ah.getPhone().isBlank()) {
+            throw new SpExceptions.PostMethodException("No valid user's phone is provided.");
+        }
+
+        String assetHolderId = "$" + user.getId();
+        user.setAssetHolderId(assetHolderId);
+        ah.setId(assetHolderId);
+        ah.setAddressId(assetHolderId);
+        ah.getAddress().put("assetHolderId", ah.getAddressId());
+        ah.setContactPreferencesId(assetHolderId);
+        ah.getContactPreferences().put("assetHolderId", ah.getContactPreferencesId());
+        ah.setLastModified(Instant.now());
+
+        int n1 = assetHolderMapper.insertAddress(ah.getAddress());
+        if (n1 != 1) {
+            throw new RuntimeException("Failed to insert address for user " + user.getId());
+        }
+        int n2 = assetHolderMapper.insertContactPreferences(ah.getContactPreferences());
+        if (n2 != 1) {
+            throw new RuntimeException("Failed to insert contact preferences for user " + user.getId());
+        }
+        int n3 = assetHolderMapper.insertAssetHolder(ah);
+        if (n3 != 1) {
+            throw new RuntimeException("Failed to insert asset holder for user " + user.getId());
+        }
+        int n4 = userMapper.insertUser(user);
+        if (n4 != 1) {
+            throw new RuntimeException("Failed to insert user " + user.getId());
+        }
+        return n4;
     }
 
     @Override

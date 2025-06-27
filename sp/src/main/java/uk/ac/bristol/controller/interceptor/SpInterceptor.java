@@ -19,13 +19,14 @@ public class SpInterceptor implements HandlerInterceptor {
         if (uri.contains("admin")) {
             String token = JwtUtil.getJWTFromCookie(request, response);
             if (token == null) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token is missing, sign in.");
                 return false;
             }
             Claims claims;
             try {
                 claims = JwtUtil.parseJWT(token);
             } catch (Exception e) {
-                e.printStackTrace();
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("Token invalid or expired.");
                 return false;

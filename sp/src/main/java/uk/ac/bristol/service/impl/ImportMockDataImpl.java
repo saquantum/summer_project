@@ -58,14 +58,18 @@ public class ImportMockDataImpl implements ImportMockData {
             throw new SpExceptions.SystemException("Loading Users failed." + e.getMessage());
         }
         for (AssetHolder assetHolder : assetHolders) {
+            User user = new User();
+            user.setId(assetHolder.getId());
+
+            assetHolder.setId("$" + assetHolder.getId());
+
             assetHolder.setAddressId(assetHolder.getId());
             assetHolder.getAddress().put("assetHolderId", assetHolder.getAddressId());
             assetHolder.setContactPreferencesId(assetHolder.getId());
             assetHolder.getContactPreferences().put("assetHolderId", assetHolder.getContactPreferencesId());
-            User user = new User();
+
             user.setAssetHolderId(assetHolder.getId());
             user.setAssetHolder(assetHolder);
-            user.setId(assetHolder.getId());
             user.setPassword("123456");
             user.setAdmin(false);
             userService.insertUser(user);
@@ -94,6 +98,7 @@ public class ImportMockDataImpl implements ImportMockData {
             assetService.insertAssetType(type);
         }
         for (Asset asset : assets) {
+            asset.setOwnerId("$" + asset.getOwnerId());
             assetService.insertAsset(asset);
         }
     }

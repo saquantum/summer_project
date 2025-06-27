@@ -43,6 +43,8 @@ public interface AssetHolderMapper {
 
     int insertAssetHolder(AssetHolder assetHolder);
 
+    int insertAssetHolderAutoId(AssetHolder assetHolder);
+
     int updateAssetHolder(AssetHolder assetHolder);
 
     int deleteAssetHolderByAssetHolderIDs(@Param("ids") String[] ids);
