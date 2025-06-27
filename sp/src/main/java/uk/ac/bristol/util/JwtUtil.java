@@ -7,7 +7,6 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
-import uk.ac.bristol.controller.Code;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -15,16 +14,17 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
 
-public class JwtUtil {
+public final class JwtUtil {
 
     private static String secretKey = System.getenv("JWT_SECRET_KEY");
     private static Long expirePeriod = 86400000L; // 1 day
 
-    private JwtUtil(){}
+    private JwtUtil() {
+        throw new IllegalStateException("Utility class");
+    }
 
     static {
         if (secretKey == null || secretKey.isBlank()) {
@@ -58,7 +58,7 @@ public class JwtUtil {
             }
         }
 
-        response.setStatus(Code.LOGIN_TOKEN_ERR);
+        response.setStatus(401);
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().write("{\"code\":401, \"message\":\"Missing or empty token\"}");
         return null;
@@ -70,8 +70,14 @@ public class JwtUtil {
                 .secure(false)
                 .sameSite("Lax")
                 .path("/")
-                .maxAge(Duration.ofHours(24))
+                .maxAge(expirePeriod)
                 .build();
         response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    public static String refreshJWT(String jwt) {
+        Claims claims = parseJWT(jwt);
+        claims.setExpiration(new Date(System.currentTimeMillis() + expirePeriod));
+        return generateJWT(claims);
     }
 }

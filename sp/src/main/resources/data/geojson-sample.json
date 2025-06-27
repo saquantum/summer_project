@@ -232,5 +232,185 @@
         "id": 1608
       }
     ]
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            0.5,
+            53.5
+          ],
+          [
+            1.5,
+            53.0
+          ],
+          [
+            1.8,
+            52.5
+          ],
+          [
+            1.9,
+            52.0
+          ],
+          [
+            1.6,
+            51.5
+          ],
+          [
+            1.4,
+            51.0
+          ],
+          [
+            1.1,
+            50.8
+          ],
+          [
+            0.7,
+            50.6
+          ],
+          [
+            0.2,
+            50.6
+          ],
+          [
+            -0.5,
+            50.7
+          ],
+          [
+            -0.8,
+            51.0
+          ],
+          [
+            -0.6,
+            51.5
+          ],
+          [
+            -0.3,
+            52.0
+          ],
+          [
+            0.0,
+            52.5
+          ],
+          [
+            0.3,
+            53.0
+          ],
+          [
+            0.5,
+            53.5
+          ]
+        ]
+      ]
+    },
+    "properties": {
+      "OBJECTID": 1607,
+      "weathertype": "WIND",
+      "warninglevel": "AMBER",
+      "warningheadline": "Strong winds may cause travel disruption and minor damage across Eastern and South East England.",
+      "validfromdate": 1750905600000,
+      "validtodate": 1750938000000,
+      "GlobalID": null,
+      "warningImpact": "3/Likely",
+      "warningLikelihood": "3/Likely",
+      "warningVersion": "1.0",
+      "affectedAreas": "East of England, London & South East England",
+      "whatToExpect": "Possible delays to road, rail, air and ferry transport.\nLoose objects may be displaced by gusts.",
+      "warningFurtherDetails": "A deepening low pressure system will bring strong gusts to much of East and South East England. Gusts up to 60mph inland, higher along coasts.",
+      "warningUpdateDescription": "First issue of wind warning.",
+      "issuedDate": 1750819200000,
+      "issuedDateString": "2025-06-25 00:00:00 UTC",
+      "validFromDateString": "2025-06-26 00:00:00 UTC",
+      "validToDateString": "2025-06-26 09:00:00 UTC",
+      "modifiedDateString": null
+    },
+    "id": 1607
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -5.5,
+            53.5
+          ],
+          [
+            -4.0,
+            53.2
+          ],
+          [
+            -3.0,
+            52.5
+          ],
+          [
+            -2.0,
+            52.0
+          ],
+          [
+            -2.5,
+            51.5
+          ],
+          [
+            -3.5,
+            51.0
+          ],
+          [
+            -4.5,
+            50.5
+          ],
+          [
+            -5.0,
+            50.2
+          ],
+          [
+            -5.6,
+            50.0
+          ],
+          [
+            -6.0,
+            50.3
+          ],
+          [
+            -6.0,
+            51.0
+          ],
+          [
+            -6.0,
+            51.8
+          ],
+          [
+            -5.5,
+            53.5
+          ]
+        ]
+      ]
+    },
+    "properties": {
+      "OBJECTID": 1606,
+      "weathertype": "RAIN",
+      "warninglevel": "AMBER",
+      "warningheadline": "Heavy rain may cause localised flooding and travel disruption across South West England and Wales.",
+      "validfromdate": 1750905600000,
+      "validtodate": 1750941600000,
+      "GlobalID": null,
+      "warningImpact": "3/Medium",
+      "warningLikelihood": "4/Very Likely",
+      "warningVersion": "1.0",
+      "affectedAreas": "South West England, Wales",
+      "whatToExpect": "Spray and flooding could lead to difficult driving conditions and some road closures.\nThere is a chance of power cuts and delays to public transport.",
+      "warningFurtherDetails": "Slow-moving heavy rainbands will affect much of Wales and the South West through the morning. Rainfall of 20-40 mm widely, up to 70 mm on hills.",
+      "warningUpdateDescription": "Initial issue for rain event.",
+      "issuedDate": 1750819200000,
+      "issuedDateString": "2025-06-25 00:00:00 UTC",
+      "validFromDateString": "2025-06-26 00:00:00 UTC",
+      "validToDateString": "2025-06-26 10:00:00 UTC",
+      "modifiedDateString": null
+    },
+    "id": 1606
   }
 ]

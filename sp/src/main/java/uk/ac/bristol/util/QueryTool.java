@@ -2,7 +2,11 @@ package uk.ac.bristol.util;
 
 import java.util.*;
 
-public class QueryTool {
+public final class QueryTool {
+
+    private QueryTool(){
+        throw new IllegalStateException("Utility class");
+    }
 
     public static List<Map<String, String>> getOrderList(List<String> items) {
         if (items == null || items.isEmpty()) return null;
