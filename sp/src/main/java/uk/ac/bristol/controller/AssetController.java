@@ -1,13 +1,19 @@
 package uk.ac.bristol.controller;
 
+import io.jsonwebtoken.Claims;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.AssetType;
+import uk.ac.bristol.pojo.AssetWithWeatherWarnings;
 import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.WarningService;
+import uk.ac.bristol.util.JwtUtil;
 import uk.ac.bristol.util.QueryTool;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +27,26 @@ public class AssetController {
     public AssetController(AssetService assetService, WarningService warningService) {
         this.assetService = assetService;
         this.warningService = warningService;
+    }
+
+    @GetMapping("/user/asset")
+    public ResponseBody getMyAssets(HttpServletResponse response, HttpServletRequest request,
+                                    @RequestParam(required = false) List<String> orderList,
+                                    @RequestParam(required = false) Integer limit,
+                                    @RequestParam(required = false) Integer offset) throws IOException {
+        Claims claims = JwtUtil.parseJWT(JwtUtil.getJWTFromCookie(request, response));
+        Boolean isAdmin = (Boolean) claims.get("isAdmin");
+        if (isAdmin == null) {
+            throw new RuntimeException("Failed to parse token, no valid identity found");
+        }
+
+        String assetHolderId = (String) claims.get("assetHolderId");
+        if (assetHolderId == null) {
+            throw new RuntimeException("No valid id is found");
+        }
+
+        List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(assetHolderId, QueryTool.getOrderList(orderList), limit, offset);
+        return new ResponseBody(Code.SELECT_OK, assets);
     }
 
     @GetMapping("/asset")

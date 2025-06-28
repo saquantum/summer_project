@@ -2,6 +2,7 @@ package uk.ac.bristol.controller;
 
 import io.jsonwebtoken.Claims;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
@@ -9,6 +10,7 @@ import uk.ac.bristol.util.QueryTool;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,70 +26,83 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/me")
-    public ResponseBody getUserInfo(HttpServletResponse response, HttpServletRequest request) throws Exception {
-        String token = JwtUtil.getJWTFromCookie(request, response);
-        Claims claims = JwtUtil.parseJWT(token);
-        Map<String, Object> data = new HashMap<>();
-        boolean isAdmin = claims.get("isAdmin", Boolean.class);
-        data.put("isAdmin", isAdmin);
-        // for user, must get asset holder id, or something has gone wrong
-        if (!isAdmin) {
-            data.put("id", claims.get("assetHolderId", String.class));
-            return new ResponseBody(Code.SUCCESS, data);
-        }
-        // for admin, two possibilities:
-        else {
-            // 1. with proxy id
-            if (claims.containsKey("asUserId")) {
-                data.put("id", claims.get("asUserId", String.class));
-                if (claims.containsKey("asUserInAssetId")) {
-                    data.put("asUserInAssetId", claims.get("asUserInAssetId", String.class));
-                }
-                return new ResponseBody(Code.SUCCESS, data);
-            }
-            // 2. without proxy id
-            else {
-                data.put("id", -1);
-                return new ResponseBody(Code.SUCCESS, data);
-            }
-        }
-    }
+    // get all assets
+    // get, update asset
 
-    // for safety considerations, the user should not see password.
-    @GetMapping("/uid/{id}")
-    public ResponseBody getUserByUserId(@PathVariable String id,
-                                        @RequestParam(required = false) List<String> orderList,
-                                        @RequestParam(required = false) Integer limit,
-                                        @RequestParam(required = false) Integer offset) {
-        User user = userService.getUserByUserId(id, QueryTool.getOrderList(orderList), limit, offset);
-        user.setPassword(null);
-        return new ResponseBody(Code.SELECT_OK, user);
-    }
+    /* --------- for users and admin proxy --------- */
 
-    @GetMapping("/aid/{id}")
-    public ResponseBody getUserByAssetHolderId(@PathVariable String id,
-                                               @RequestParam(required = false) List<String> orderList,
-                                               @RequestParam(required = false) Integer limit,
-                                               @RequestParam(required = false) Integer offset) {
-        User user = userService.getUserByAssetHolderId(id, QueryTool.getOrderList(orderList), limit, offset);
+    @GetMapping()
+    public ResponseBody getMyProfile(HttpServletResponse response, HttpServletRequest request) throws IOException {
+        Claims claims = JwtUtil.parseJWT(JwtUtil.getJWTFromCookie(request, response));
+        Boolean isAdmin = (Boolean) claims.get("isAdmin");
+        if (isAdmin == null) {
+            throw new RuntimeException("Failed to parse token, no valid identity found");
+        }
+
+        String assetHolderId = (String) claims.get("assetHolderId");
+        if (assetHolderId == null) {
+            throw new RuntimeException("Failed to parse token, no assetHolderId found");
+        }
+
+        User user = userService.getUserByAssetHolderId(assetHolderId, null, null, null);
+        if (user == null) {
+            throw new RuntimeException("No user is found using asset holder id " + assetHolderId);
+        }
         user.setPassword(null);
         return new ResponseBody(Code.SELECT_OK, user);
     }
 
     // NOTICE: No Post Mapping. A common user cannot insert new users, unless they access login controller to register
 
-    // TODO: A common user can only update itself, involving identity check with jwt.
     @PutMapping()
-    public ResponseBody updateUser(@RequestBody User user) {
-        return new ResponseBody(Code.UPDATE_OK, userService.updateUser(user));
+    public ResponseBody updateMyProfile(HttpServletResponse response, HttpServletRequest request, @RequestBody User user) throws IOException {
+        Claims claims = JwtUtil.parseJWT(JwtUtil.getJWTFromCookie(request, response));
+        Boolean isAdmin = (Boolean) claims.get("isAdmin");
+        if (isAdmin == null) {
+            throw new RuntimeException("Failed to parse token, no valid identity found");
+        }
+
+        if (isAdmin) {
+            userService.updateUser(user);
+            return new ResponseBody(Code.UPDATE_OK, null);
+        }
+
+        String id = (String) claims.get("id");
+        String assetHolderId = (String) claims.get("assetHolderId");
+        if (assetHolderId == null && id == null) {
+            throw new RuntimeException("No valid id is found");
+        }
+        if (id != null) {
+            if (!user.getId().equals(id)) {
+                throw new RuntimeException("Token id does not match with provided user id.");
+            }
+            if (user.getAssetHolder() != null && (!user.getAssetHolder().getId().equals(assetHolderId) || !user.getAssetHolderId().equals(assetHolderId))) {
+                throw new RuntimeException("Token assetHolder id does not match with provided asset holder id.");
+            }
+            int n = userService.updateUser(user);
+            if (n != 1) {
+                throw new RuntimeException("Failed to update user.");
+            }
+            return new ResponseBody(Code.UPDATE_OK, null);
+        }
+        return new ResponseBody(Code.SELECT_OK, user);
     }
 
-    // TODO: A common user can only delete itself, involving identity check with jwt.
-    // TODO: Consider soft delete: mark the user as deleted and keep all configs.
-    @DeleteMapping("/aid/{id}")
-    public ResponseBody deleteUserByAssetHolderId(@PathVariable String id) {
-        return new ResponseBody(Code.DELETE_OK, userService.deleteUserByAssetHolderIds(new String[]{id}));
+    @DeleteMapping()
+    public ResponseBody deleteMyProfile(HttpServletResponse response, HttpServletRequest request) throws IOException {
+        Claims claims = JwtUtil.parseJWT(JwtUtil.getJWTFromCookie(request, response));
+        Boolean isAdmin = (Boolean) claims.get("isAdmin");
+        if (isAdmin == null) {
+            throw new RuntimeException("Failed to parse token, no valid identity found");
+        }
+
+        String assetHolderId = (String) claims.get("assetHolderId");
+        if (assetHolderId == null) {
+            throw new RuntimeException("No valid id is found");
+        }
+
+        userService.deleteUserByAssetHolderIds(new String[]{assetHolderId});
+        return new ResponseBody(Code.DELETE_OK, null);
     }
 
 }

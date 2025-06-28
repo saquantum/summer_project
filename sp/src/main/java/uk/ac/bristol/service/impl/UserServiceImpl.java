@@ -44,7 +44,9 @@ public class UserServiceImpl implements UserService {
         User u = list.get(0);
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", u.getId());
-        claims.put("assetHolderId", u.getAssetHolderId());
+        if(u.getAssetHolderId() != null){
+            claims.put("assetHolderId", u.getAssetHolderId());
+        }
         claims.put("isAdmin", u.isAdmin());
         u.setToken(JwtUtil.generateJWT(claims));
         return u;

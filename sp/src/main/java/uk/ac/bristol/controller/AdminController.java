@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
@@ -45,25 +46,19 @@ public class AdminController {
     @GetMapping("/as/{id}")
     public ResponseBody asUser(HttpServletResponse response, HttpServletRequest request, @PathVariable String id) throws IOException {
         Claims claims = JwtUtil.parseJWT(JwtUtil.getJWTFromCookie(request, response));
-        claims.put("asUserId", id);
+        User user = userService.getUserByAssetHolderId(id, null, null, null);
+        if(user == null){
+            throw new RuntimeException("User with asset holder id is not found");
+        }
+        claims.put("assetHolderId", id);
         JwtUtil.bindJWTAsCookie(response, JwtUtil.generateJWT(claims));
         return new ResponseBody(Code.SUCCESS, null, "You are in proxy mode as user id " + id);
-    }
-
-    @GetMapping("/as/{id}/in-asset/{assetId}")
-    public ResponseBody asUserInAsset(HttpServletResponse response, HttpServletRequest request, @PathVariable String id, @PathVariable String assetId) throws IOException {
-        Claims claims = JwtUtil.parseJWT(JwtUtil.getJWTFromCookie(request, response));
-        claims.put("asUserId", id);
-        claims.put("asUserInAssetId", assetId);
-        JwtUtil.bindJWTAsCookie(response, JwtUtil.generateJWT(claims));
-        return new ResponseBody(Code.SUCCESS, null, "You are in proxy mode as user id " + id + " in asset " + assetId);
     }
 
     @GetMapping("/as/clear")
     public ResponseBody clearProxy(HttpServletResponse response, HttpServletRequest request) throws IOException {
         Claims claims = JwtUtil.parseJWT(JwtUtil.getJWTFromCookie(request, response));
-        claims.remove("asUserId");
-        claims.remove("asUserInAssetId");
+        claims.remove("assetHolderId");
         JwtUtil.bindJWTAsCookie(response, JwtUtil.generateJWT(claims));
         return new ResponseBody(Code.SUCCESS, null, "Proxy mode cleared.");
     }
@@ -101,6 +96,27 @@ public class AdminController {
                                                    @RequestParam(required = false) Integer limit,
                                                    @RequestParam(required = false) Integer offset) {
         return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAccumulator(function, column, QueryTool.getOrderList(orderList), limit, offset));
+    }
+
+    @GetMapping("/user/uid/{id}")
+    public ResponseBody getUserByUserId(@PathVariable String id,
+                                        @RequestParam(required = false) List<String> orderList,
+                                        @RequestParam(required = false) Integer limit,
+                                        @RequestParam(required = false) Integer offset) {
+
+        User user = userService.getUserByUserId(id, QueryTool.getOrderList(orderList), limit, offset);
+        user.setPassword(null);
+        return new ResponseBody(Code.SELECT_OK, user);
+    }
+
+    @GetMapping("/user/aid/{id}")
+    public ResponseBody getUserByAssetHolderId(@PathVariable String id,
+                                               @RequestParam(required = false) List<String> orderList,
+                                               @RequestParam(required = false) Integer limit,
+                                               @RequestParam(required = false) Integer offset) {
+        User user = userService.getUserByAssetHolderId(id, QueryTool.getOrderList(orderList), limit, offset);
+        user.setPassword(null);
+        return new ResponseBody(Code.SELECT_OK, user);
     }
 
     @PostMapping("/user")

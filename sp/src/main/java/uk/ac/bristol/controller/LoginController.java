@@ -28,7 +28,6 @@ public class LoginController {
         return new ResponseBody(Code.SUCCESS, u);
     }
 
-    // TODO: register new user.
     @PostMapping("/register")
     public ResponseBody register(@RequestBody User user) {
         try {
