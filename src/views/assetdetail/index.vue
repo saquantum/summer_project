@@ -1,11 +1,12 @@
 <script setup>
-import { useAssetStore } from '@/stores'
-import { useRoute } from 'vue-router'
+import { useAssetStore, useUserStore } from '@/stores'
+import { useRoute, useRouter } from 'vue-router'
 import { ref, computed } from 'vue'
 
 const route = useRoute()
+const router = useRouter()
 const assetStore = useAssetStore()
-
+const userStore = useUserStore()
 // get the asset
 const id = route.params.id
 
@@ -15,8 +16,7 @@ const item = computed(() => {
     assetStore.allAssets.find((item) => item.asset.id === id)
   )
 })
-
-// 响应式绑定 asset 和 warnings
+console.log(item)
 const asset = computed(() => item.value?.asset || {})
 const tableData = computed(() => {
   if (item.value && item.value.warnings) return item.value.warnings
@@ -24,6 +24,29 @@ const tableData = computed(() => {
 })
 
 const mapCardRef = ref()
+
+const mode = ref('convex')
+
+const location = computed({
+  get: () => [asset.value.location]
+})
+
+const displayData = [
+  { label: 'ID', value: asset.value.id },
+  { label: 'Name', value: asset.value.name },
+  { label: 'Type', value: asset.value.type.name },
+  { label: 'Capacity litres', value: asset.value.capacityLitres },
+  {
+    label: 'Material',
+    value: asset.value.material
+  },
+  {
+    label: 'status',
+    value: asset.value.status
+  },
+  { label: 'Installed_at', value: asset.value.installedAt },
+  { label: 'Last inspection', value: asset.value.lastInspection }
+]
 
 const beginDrawing = () => {
   mapCardRef.value.beginDrawing()
@@ -37,23 +60,21 @@ const finishOneShape = () => {
   mapCardRef.value.finishOneShape()
 }
 
-const mode = ref('convex')
-
-const location = computed({
-  get: () => [asset.value.location]
-})
+const handleShowDetail = (row) => {
+  router.push(`/warning/${row.id}`)
+}
 </script>
 
 <template>
-  <el-row :gutter="50">
+  <el-row :gutter="50" style="margin-bottom: 20px">
     <el-col :span="12">
-      <el-card style="max-width: 480px">
+      <el-card style="max-width: 600px">
         <template #header>
           <div class="card-header">
             <span>{{ asset.name }}</span>
           </div>
         </template>
-        <div style="height: 300px">
+        <div style="height: 600px">
           <MapCard
             ref="mapCardRef"
             :map-id="'mapdetail'"
@@ -66,13 +87,24 @@ const location = computed({
     </el-col>
 
     <el-col :span="12">
-      <el-select v-model="mode">
-        <el-option label="convex" value="convex"></el-option>
-        <el-option label="sequence" value="sequence"></el-option>
-      </el-select>
-      <el-button @click="beginDrawing">Draw new asset</el-button>
-      <el-button @click="finishOneShape">Finish one shape</el-button>
-      <el-button @click="endDrawing">End drawing</el-button>
+      <el-descriptions
+        title="Asset Detail"
+        :column="1"
+        direction="vertical"
+        border
+      >
+        <el-descriptions-item
+          v-for="(item, index) in displayData"
+          :key="index"
+          :label="item.label"
+          class-name="custom-item"
+          label-class-name="custom-label"
+        >
+          <span :class="{ 'multiline-text': item.isMultiline }">{{
+            item.value
+          }}</span>
+        </el-descriptions-item>
+      </el-descriptions>
     </el-col>
   </el-row>
 
@@ -113,4 +145,28 @@ const location = computed({
       </el-table-column>
     </el-table>
   </div>
+
+  <div v-if="userStore.user.admin">
+    <h3>action</h3>
+    <el-select v-model="mode">
+      <el-option label="convex" value="convex"></el-option>
+      <el-option label="sequence" value="sequence"></el-option>
+    </el-select>
+    <el-button @click="beginDrawing">Draw new asset</el-button>
+    <el-button @click="finishOneShape">Finish one shape</el-button>
+    <el-button @click="endDrawing">End drawing</el-button>
+  </div>
 </template>
+
+<style scoped>
+:deep(.custom-item) {
+}
+
+:deep(.custom-label) {
+}
+/* Your existing multiline text style */
+.multiline-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+</style>

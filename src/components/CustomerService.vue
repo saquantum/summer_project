@@ -14,7 +14,7 @@ const popoverVisible = ref(false)
   >
     <template #reference>
       <div class="chat-float">
-        <el-button type="primary" size="large" circle>
+        <el-button type="primary" circle class="button">
           <el-icon><ChatDotSquare /></el-icon>
         </el-button>
       </div>
@@ -37,5 +37,14 @@ const popoverVisible = ref(false)
 
 .support-content {
   padding: 5px;
+}
+
+.button {
+  width: 6vh;
+  height: 6vh;
+}
+
+.el-icon {
+  font-size: 1.4rem;
 }
 </style>

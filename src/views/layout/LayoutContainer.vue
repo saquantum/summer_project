@@ -7,7 +7,9 @@ import {
   SwitchButton,
   CaretBottom,
   Message,
-  MessageBox
+  MessageBox,
+  Back,
+  House
 } from '@element-plus/icons-vue'
 import avatar from '@/assets/default.png'
 import { ref, watch } from 'vue'
@@ -96,7 +98,13 @@ watch(
           <el-icon><MessageBox /></el-icon>
           <span>Message</span>
         </el-menu-item>
+
+        <el-menu-item v-if="userStore.user.admin" index="/">
+          <el-icon><Back /></el-icon>
+          <span>Back to admin</span>
+        </el-menu-item>
       </el-menu>
+
       <div class="signout-container">
         <el-button
           text
@@ -127,6 +135,11 @@ watch(
         text-color="#fff"
         router
       >
+        <el-menu-item index="/admin/dashboard">
+          <el-icon><House /></el-icon>
+          <span>Dashboard</span>
+        </el-menu-item>
+
         <el-menu-item index="/admin/users">
           <el-icon><Management /></el-icon>
           <span>All Users</span>

@@ -1,9 +1,11 @@
 <script setup>
 import { useRoute } from 'vue-router'
 import { useWarningStore } from '@/stores'
+import { onMounted } from 'vue'
 
 const route = useRoute()
 const warningStore = useWarningStore()
+
 const mapId = 'map-' + route.params.id
 const warning = warningStore.allWarnings.find(
   (item) => item.id === Number(route.params.id)
@@ -53,6 +55,13 @@ const displayData = [
   },
   { label: 'Update Description', value: warning.warningUpdateDescription }
 ]
+
+onMounted(() => {
+  // get warnings if not exist
+  if (warningStore.allWarnings.length === 0) {
+    warningStore.getAllWarnings()
+  }
+})
 </script>
 
 <template>

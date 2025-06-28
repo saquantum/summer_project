@@ -83,7 +83,6 @@ onMounted(async () => {
   } else {
     id = userStore.proxyId
   }
-  console.log(id)
   await assetStore.getUserAssets(id)
   currentAssets.value = assetStore.userAssets
 })
@@ -92,6 +91,7 @@ onMounted(async () => {
 watch(
   [assetName, assetWarningLevel, assetType],
   async () => {
+    if (!assetStore.userAssets || assetStore.userAssets.length === 0) return
     currentAssets.value = assetStore.userAssets.filter((item) => {
       let matchLevel = false
       if (
@@ -167,7 +167,7 @@ watch(
 
   <!-- cards for assets -->
   <div class="assets-container">
-    <h3 v-if="assetStore.userAssets.length === 0">You don't have any asset</h3>
+    <h3 v-if="assetStore.userAssets?.length === 0">You don't have any asset</h3>
     <div class="card-grid">
       <el-card
         v-for="(item, index) in currentPageAssets"

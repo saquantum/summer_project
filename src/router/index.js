@@ -69,11 +69,11 @@ router.beforeEach((to) => {
 
   if (to.path === '/') {
     if (!isLoggedIn) return '/login'
-    return isAdmin ? '/admin/users' : '/myassets/manage'
+    return isAdmin ? '/admin/dashboard' : '/myassets/manage'
   }
 
   if (isLoggedIn && to.path === '/login') {
-    return isAdmin ? '/admin/users' : '/myassets/manage'
+    return isAdmin ? '/admin/dashboard' : '/myassets/manage'
   }
 
   if (!isAdmin && to.path.startsWith('/admin')) {

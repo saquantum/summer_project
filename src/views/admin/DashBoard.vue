@@ -1,14 +1,22 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, onBeforeUnmount } from 'vue'
 import { adminGetUKMapService } from '@/api/admin'
 import * as echarts from 'echarts'
+
+let mapChart, barChart, lineChart, nightingaleChart
+const handleResize = () => {
+  mapChart.resize()
+  barChart.resize()
+  lineChart.resize()
+  nightingaleChart.resize()
+}
 
 onMounted(async () => {
   const res = await adminGetUKMapService()
   console.log(res)
 
-  const myChart = echarts.init(document.getElementById('main'))
-  myChart.showLoading()
+  mapChart = echarts.init(document.getElementById('main'))
+  mapChart.showLoading()
   echarts.registerMap('UK', res)
 
   // 创建一个随机饼图 series
@@ -66,10 +74,10 @@ onMounted(async () => {
   }
 
   // 渲染图表
-  myChart.hideLoading()
-  myChart.setOption(option)
+  mapChart.hideLoading()
+  mapChart.setOption(option)
 
-  const barChart = echarts.init(document.getElementById('barChart'))
+  barChart = echarts.init(document.getElementById('barChart'))
 
   const barOption = {
     title: {
@@ -82,7 +90,6 @@ onMounted(async () => {
         type: 'shadow' // 'shadow' as default; can also be 'line' or 'shadow'
       }
     },
-    legend: {},
     grid: {
       left: '3%',
       right: '4%',
@@ -95,32 +102,141 @@ onMounted(async () => {
     },
     yAxis: {
       type: 'category',
-      data: ['Brazil', 'Indonesia', 'USA', 'India', 'China', 'World']
+      data: [
+        'User_001',
+        'User_002',
+        'User_003',
+        'User_004',
+        'User_005',
+        'User_006'
+      ]
     },
     series: [
       {
-        name: '2011',
+        name: 'Total',
         type: 'bar',
-        data: [18203, 23489, 29034, 104970, 131744, 630230]
+        data: [10, 50, 40, 80, 100, 200]
       }
     ]
   }
 
   barChart.setOption(barOption)
+
+  // line chart
+  lineChart = echarts.init(document.getElementById('lineChart'))
+  const lineOption = {
+    title: {
+      text: 'User Change'
+    },
+    xAxis: {
+      type: 'category',
+      data: [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec'
+      ]
+    },
+    yAxis: {
+      type: 'value'
+    },
+    series: [
+      {
+        data: [820, 932, 901, 934, 1290, 1330, 1320, 1440, 1550, 1666, 1777],
+        type: 'line',
+        smooth: true
+      }
+    ]
+  }
+  lineChart.setOption(lineOption)
+
+  // nightingale chart
+  nightingaleChart = echarts.init(document.getElementById('nightingaleChart'))
+  const nightingaleOption = {
+    title: {
+      text: 'User Distribution in the UK'
+    },
+    legend: {
+      show: false
+    },
+    series: [
+      {
+        name: 'Nightingale Chart',
+        type: 'pie',
+        radius: [10, 60],
+        center: ['50%', '50%'],
+        roseType: 'area',
+        itemStyle: {
+          borderRadius: 0
+        },
+        data: [
+          { value: 40, name: 'England' },
+          { value: 38, name: 'Scotland' },
+          { value: 32, name: 'Wales' },
+          { value: 30, name: 'Northern Ireland' }
+        ]
+      }
+    ]
+  }
+  nightingaleChart.setOption(nightingaleOption)
+
+  window.addEventListener('resize', handleResize)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize)
 })
 </script>
 
 <template>
-  <div id="main" class="map-container"></div>
-  <div id="barChart" class="map-container"></div>
+  <el-row style="height: 100%">
+    <el-col :span="6">
+      <div class="middle-container">
+        <div id="barChart" class="map-container"></div>
+        <div id="lineChart" class="map-container"></div>
+        <div id="nightingaleChart" class="map-container"></div>
+      </div>
+    </el-col>
+    <el-col :span="12">
+      <div class="middle-container">
+        <div style="display: flex; justify-content: center">
+          <WarningCard></WarningCard>
+        </div>
+        <div id="main" class="map-container"></div>
+      </div>
+    </el-col>
+    <el-col :span="6">
+      <div class="middle-container">
+        <div id="barChart" class="map-container"></div>
+        <div id="barChart" class="map-container"></div>
+        <div id="barChart" class="map-container"></div>
+      </div>
+    </el-col>
+  </el-row>
 </template>
 
 <style>
+.middle-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 .map-container {
-  border: 1px solid black;
-  height: 500px;
+  /* border: 1px solid black; */
   padding: 16px 0;
   display: flex;
   justify-content: center;
+
+  flex: 1; /* 占满剩余高度 */
+  min-height: 0; /* 防止内容溢出不生效 */
 }
 </style>

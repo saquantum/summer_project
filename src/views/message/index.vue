@@ -159,10 +159,10 @@ const handlePageChange = (page) => {
 </template>
 
 <style scoped>
-.mailbox {
+/* .mailbox {
 }
 .search-dropdown {
-}
+} */
 .card-container {
   display: flex;
   justify-content: center;

@@ -1,3 +1,7 @@
+/**
+ * only admin can use the api below
+ */
+
 import request from '@/utils/request'
 
 export const adminGetUsersService = () =>
