@@ -1,9 +1,13 @@
 package uk.ac.bristol.controller;
 
 import io.jsonwebtoken.Claims;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.bristol.dao.UserEmailMapper;
 import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
+import uk.ac.bristol.pojo.UserEmail;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
 import uk.ac.bristol.util.QueryTool;
@@ -11,9 +15,13 @@ import uk.ac.bristol.util.QueryTool;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api/user")
@@ -21,6 +29,9 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+
+    @Autowired
+    private UserEmailMapper emailMapper;
 
     public UserController(UserService userService) {
         this.userService = userService;
@@ -105,4 +116,44 @@ public class UserController {
         return new ResponseBody(Code.DELETE_OK, null);
     }
 
+    //email相关
+    @PostMapping("/add")
+    public ResponseEntity<String> addEmail(@RequestParam String email) {
+        String tokenId = UUID.randomUUID().toString();
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body("Invalid email!");
+        }
+        if (emailMapper.existsByEmail(email)) {
+            return ResponseEntity.badRequest().body("Email already exists!");
+        }
+
+        String emailRegex = "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$";
+        Pattern pattern = Pattern.compile(emailRegex);
+        Matcher matcher = pattern.matcher(email);
+        if(!matcher.matches()) {
+            return ResponseEntity.badRequest().body("Invalid email!");
+        }
+
+        //邮箱域名检查
+        if(!isDomainResolvable(email)) {
+            return ResponseEntity.badRequest().body("Invalid email!");
+        }
+
+        UserEmail ue = new UserEmail();
+        ue.setEmail(email);
+        ue.setUid(tokenId);
+        emailMapper.insertEmail(ue);
+        return ResponseEntity.ok("Email added successfully!");
+    }
+
+    //辅助函数
+    public static boolean isDomainResolvable(String email) {
+        try {
+            String domain = email.substring(email.indexOf("@") + 1);
+            InetAddress.getByName(domain); // 尝试解析域名
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

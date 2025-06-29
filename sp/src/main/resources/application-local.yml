@@ -12,6 +12,21 @@ spring:
     password: 123456
     type: com.zaxxer.hikari.HikariDataSource
 
+  mail:
+    username: alchemistbackydian@gmail.com
+    password: ijllbowymtlavkvx
+    host: smtp.gmail.com
+    port: 465
+    protocol: smtps
+    properties:
+      mail:
+        smtp:
+          auth: true
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+            port: 465
+            fallback: false
+
 mybatis:
   mapper-locations: classpath*:uk/ac/bristol/dao/*.xml
   type-aliases-package: uk.ac.bristol.pojo
@@ -33,3 +48,10 @@ logging:
   level:
     uk.ac.bristol.dao: DEBUG
     org.apache.ibatis: DEBUG
+    org:
+      springframework:
+        mail: DEBUG
+        boot:
+          autoconfigure:
+            mail: DEBUG
+

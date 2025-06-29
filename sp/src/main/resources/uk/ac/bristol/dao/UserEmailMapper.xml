@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="uk.ac.bristol.dao.UserEmailMapper">
+
+    <insert id="insertEmail" parameterType="uk.ac.bristol.pojo.UserEmail">
+        INSERT INTO user_email(email,uid) VALUES (#{email},#{uid})
+    </insert>
+
+    <select id="selectAllEmails" resultType="uk.ac.bristol.pojo.UserEmail">
+        SELECT * FROM user_email
+    </select>
+
+    <select id="existsByEmail" resultType="boolean" parameterType="string">
+        SELECT COUNT(*) > 0 FROM user_email WHERE email = #{email}
+    </select>
+
+    <delete id="deleteByEmail" parameterType="java.lang.String">
+        DELETE FROM user_email WHERE email = #{email}
+    </delete>
+
+    <select id="existsByUid" resultType="boolean" parameterType="string">
+        SELECT COUNT(*) > 0 FROM user_email WHERE uid = #{uid}
+    </select>
+
+    <delete id="deleteAll">
+        DELETE FROM user_email
+    </delete>
+
+</mapper>

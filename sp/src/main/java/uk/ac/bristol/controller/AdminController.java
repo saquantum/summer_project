@@ -2,10 +2,14 @@ package uk.ac.bristol.controller;
 
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.bristol.dao.UserEmailMapper;
 import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
+import uk.ac.bristol.pojo.UserEmail;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
 import uk.ac.bristol.util.QueryTool;
@@ -25,6 +29,12 @@ public class AdminController {
     private SimpMessagingTemplate messagingTemplate;
 
     private final UserService userService;
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Autowired
+    private UserEmailMapper emailMapper;
 
     public AdminController(UserService userService) {
         this.userService = userService;
@@ -133,6 +143,36 @@ public class AdminController {
             userService.updateUser(u);
         }
         return new ResponseBody(Code.UPDATE_OK, null);
+    }
+
+    @PostMapping("/send")
+    public String sendToAllUsers(@RequestBody Map<String, String> mailData) {
+        String subject = mailData.get("subject");
+        String contentTemplate = mailData.get("content");
+
+        if (subject == null || subject.isEmpty() || contentTemplate == null || contentTemplate.isEmpty()) {
+            return "Subject or content is empty!";
+        }
+
+        List<UserEmail> allEmails = emailMapper.selectAllEmails();
+
+        for (UserEmail user : allEmails) {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("alchemistbackydian@gmail.com");
+            message.setTo(user.getEmail());
+            message.setSubject(subject);
+
+            String token = JwtUtil.generateToken(user.getEmail(),user.getUid());
+            String unsubscribeUrl = "http://localhost:8080/unsubscribe-email?token=" + token;
+
+            String content = contentTemplate.replace("{unsubscribeUrl}", unsubscribeUrl);
+
+            message.setText(content);
+
+            mailSender.send(message);
+        }
+
+        return "Success, number of emails: " + allEmails.size();
     }
 
     // TODO: Consider soft delete.

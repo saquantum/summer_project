@@ -7,6 +7,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
+import uk.ac.bristol.result.ParsedTokenResult;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -21,6 +22,9 @@ public final class JwtUtil {
 
     private static String secretKey = System.getenv("JWT_SECRET_KEY");
     private static Long expirePeriod = 86400000L; // 1 day
+
+    //For generateToken
+    private static final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
     private JwtUtil() {
         throw new IllegalStateException("Utility class");
@@ -79,5 +83,32 @@ public final class JwtUtil {
         Claims claims = parseJWT(jwt);
         claims.setExpiration(new Date(System.currentTimeMillis() + expirePeriod));
         return generateJWT(claims);
+    }
+
+    //for email
+    public static String generateToken(String email, String tokenId) {
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("action", "unsubscribe")
+                .claim("tokenId", tokenId)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24)) // 1 天有效
+                .signWith(key)
+                .compact();
+    }
+
+    public static ParsedTokenResult parseToken(String token) {
+
+        Claims claims = Jwts.parserBuilder().setSigningKey(key).build()
+                .parseClaimsJws(token).getBody();
+
+        if (!"unsubscribe".equals(claims.get("action"))) {
+            throw new SecurityException("fake token");
+        }
+
+        String email = claims.getSubject();
+        String tokenId = claims.get("tokenId", String.class);
+
+        return new ParsedTokenResult(email, tokenId);
     }
 }
