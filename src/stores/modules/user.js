@@ -12,7 +12,7 @@ export const useUserStore = defineStore(
       if (data.admin) {
         user.value = data
       } else {
-        const res = await userGetInfoService()
+        const res = await userGetInfoService(data.id)
 
         user.value = res.data
       }
