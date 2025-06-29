@@ -69,7 +69,7 @@ watch(
     <MapCard
       v-if="warningPolygon.length > 0"
       :map-id="mapId"
-      :location="warningPolygon"
+      :locations="warningPolygon"
     ></MapCard>
   </div>
 
