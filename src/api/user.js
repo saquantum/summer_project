@@ -8,8 +8,8 @@ export const userLoginService = ({ username, password }) => {
   return request.post('/login', { id, password })
 }
 
-export const userGetInfoService = (id) => {
-  return request.get(`/user/uid/${id}`)
+export const userGetInfoService = () => {
+  return request.get(`/user`)
 }
 
 export const userUpdateService = (id) => {

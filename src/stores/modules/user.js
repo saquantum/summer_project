@@ -9,10 +9,13 @@ export const useUserStore = defineStore(
     const proxyId = ref('')
     const getUser = async (form) => {
       const { data } = await userLoginService(form)
+      if (data.admin) {
+        user.value = data
+      } else {
+        const res = await userGetInfoService()
 
-      const res = await userGetInfoService(data.id)
-
-      user.value = res.data
+        user.value = res.data
+      }
     }
 
     const setProxyId = (id) => {
