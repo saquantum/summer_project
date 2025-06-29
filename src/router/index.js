@@ -43,6 +43,10 @@ const router = createRouter({
         {
           path: 'message',
           component: () => import('@/views/message/index.vue')
+        },
+        {
+          path: 'asset/add',
+          component: () => import('@/views/myassets/AddAsset.vue')
         }
       ]
     }

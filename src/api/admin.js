@@ -4,15 +4,23 @@
 
 import request from '@/utils/request'
 
-export const adminGetUsersService = () =>
+export const adminGetUsersService = (functionName, offset, limit, orderList) =>
   request.get('/admin/user/accumulate', {
     params: {
-      function: 'count',
-      column: '1'
+      function: functionName,
+      column: '1',
+      offset: offset,
+      limit: limit,
+      orderList: orderList
     }
   })
 
-export const adminGetAssetsService = () => request.get('/asset/')
+export const adminGetAssetsService = (offset, limit, orderList) => {
+  console.log(offset, limit, orderList)
+  return request.get('/asset/', {
+    params: { offset: offset, limit: limit, orderList: orderList }
+  })
+}
 
 export const adminGetWarningsService = () => request.get('/warning/all')
 

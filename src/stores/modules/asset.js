@@ -14,8 +14,8 @@ export const useAssetStore = defineStore(
       userAssets.value = res.data
     }
 
-    const getAllAssets = async () => {
-      const res = await adminGetAssetsService()
+    const getAllAssets = async (offset, limit, orderList) => {
+      const res = await adminGetAssetsService(offset, limit, orderList)
       allAssets.value = res.data
     }
 

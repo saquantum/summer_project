@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onBeforeUnmount, computed } from 'vue'
+import { onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
@@ -22,12 +22,13 @@ const userStore = useUserStore()
 
 const props = defineProps({
   mapId: String,
-  location: Array,
+  locations: Array,
   id: Number,
   mode: String
 })
 
-const emit = defineEmits(['update:mode'])
+const emit = defineEmits(['update:mode', 'update:locations'])
+
 const mode = computed({
   get: () => props.mode,
   set: (val) => emit('update:mode', val)
@@ -113,21 +114,48 @@ const endDrawing = async () => {
     finishOneShape()
   }
   if (item) {
+    // update asset
     if (polygonCoordinates.length === 0) return
     const multiPolygon = turf.multiPolygon(polygonCoordinates)
     item.asset.location = multiPolygon.geometry
-    console.log(item.asset)
     await assetUpdateInfoService(
       props.id,
       item.asset.ownerId,
       multiPolygon.geometry
     )
+    await assetStore.getUserAssets(userStore.user.id)
+  } else {
+    // add asset
+    if (polygonCoordinates.length === 0) return
+    const multiPolygon = turf.multiPolygon(polygonCoordinates)
+    emit('update:locations', [multiPolygon.geometry])
   }
-  await assetStore.getUserAssets(userStore.user.id)
+
   // clear points, turn off click
   points = []
   map.off('click', handleClick)
 }
+
+watch(
+  () => props.locations,
+  (newVal) => {
+    // destroy all layers on the map
+    map.eachLayer((layer) => {
+      if (!(layer instanceof L.TileLayer)) {
+        map.removeLayer(layer)
+      }
+    })
+    const geoLayer = L.geoJSON(newVal, {
+      style: (feature) => feature.geometry.style
+    }).addTo(map)
+    if (geoLayer) {
+      map.fitBounds(geoLayer.getBounds())
+    }
+  },
+  {
+    deep: true
+  }
+)
 
 onMounted(async () => {
   map = L.map(props.mapId).setView([0, 0], 13)
@@ -135,7 +163,7 @@ onMounted(async () => {
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map)
-  saveLayer = L.geoJSON(props.location, {
+  saveLayer = L.geoJSON(props.locations, {
     style: (feature) => feature.geometry.style
   }).addTo(map)
   if (saveLayer) {

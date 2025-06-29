@@ -13,8 +13,17 @@ const handleShowDetail = async (row) => {
   // goto user interface
   router.push('/myassets/manage')
 }
+
+const handleSortChange = ({ prop, order }) => {
+  console.log(prop, order)
+}
+
+// const sortParams = ref({
+//   prop: '',
+//   order: ''
+// })
 onMounted(async () => {
-  const res = await adminGetUsersService()
+  const res = await adminGetUsersService('count')
   console.log(res)
   users.value = res.data.map((item) => ({
     uid: item.user.id,
@@ -27,11 +36,31 @@ onMounted(async () => {
 </script>
 
 <template>
-  <el-table :data="users" stripe style="width: 100%">
-    <el-table-column prop="uid" label="UID" width="180" />
-    <el-table-column prop="assetHolderId" label="Asset Holder ID" width="180" />
-    <el-table-column prop="username" label="Username" width="180" />
-    <el-table-column prop="count" label="Assets" width="180" />
+  <el-table
+    :data="users"
+    stripe
+    style="width: 100%"
+    @sort-change="handleSortChange"
+  >
+    <el-table-column prop="uid" label="UID" width="180" sortable="custom" />
+    <el-table-column
+      prop="assetHolderId"
+      label="Asset Holder ID"
+      width="180"
+      sortable="custom"
+    />
+    <el-table-column
+      prop="username"
+      label="Username"
+      width="180"
+      sortable="custom"
+    />
+    <el-table-column
+      prop="count"
+      label="Assets"
+      width="180"
+      sortable="custom"
+    />
     <el-table-column label="Actions">
       <template #default="scope">
         <el-button

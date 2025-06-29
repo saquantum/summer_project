@@ -27,7 +27,7 @@ const mapCardRef = ref()
 
 const mode = ref('convex')
 
-const location = computed({
+const locations = computed({
   get: () => [asset.value.location]
 })
 
@@ -78,7 +78,7 @@ const handleShowDetail = (row) => {
           <MapCard
             ref="mapCardRef"
             :map-id="'mapdetail'"
-            :location="location"
+            :locations="locations"
             :id="id"
             v-model:mode="mode"
           ></MapCard>

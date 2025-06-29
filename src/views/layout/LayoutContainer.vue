@@ -87,10 +87,15 @@ watch(
             <span>My assets</span>
           </el-menu-item>
           <el-menu-item
-            v-if="activeIndex.startsWith('/asset')"
+            v-if="
+              activeIndex.startsWith('/asset') && activeIndex !== '/asset/add'
+            "
             :index="activeIndex"
           >
             <span>Asset detail</span>
+          </el-menu-item>
+          <el-menu-item index="/asset/add">
+            <span>Add asset</span>
           </el-menu-item>
         </el-sub-menu>
 
@@ -212,6 +217,7 @@ watch(
           </el-dropdown>
         </div>
 
+        <!-- consider delete -->
         <el-dialog v-model="dialogVisible" title="Tips" width="500">
           <span>This is a message</span>
           <template #footer>
@@ -251,6 +257,9 @@ watch(
     }
     .el-menu {
       border-right: none;
+    }
+    .el-menu-item.is-active {
+      font-weight: bold;
     }
 
     .signout-container {

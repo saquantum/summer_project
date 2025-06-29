@@ -6,7 +6,7 @@ const baseURL = '/api'
 
 const instance = axios.create({
   baseURL,
-  timeout: 1000
+  timeout: 10000
 })
 
 // Add a request interceptor
