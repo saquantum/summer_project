@@ -44,7 +44,7 @@ const displayData = [
     label: 'status',
     value: asset.value.status
   },
-  { label: 'Installed_at', value: asset.value.installedAt },
+  { label: 'Installed at', value: asset.value.installedAt },
   { label: 'Last inspection', value: asset.value.lastInspection }
 ]
 

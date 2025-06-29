@@ -17,12 +17,12 @@ export const adminGetUsersService = (functionName, offset, limit, orderList) =>
 
 export const adminGetAssetsService = (offset, limit, orderList) => {
   console.log(offset, limit, orderList)
-  return request.get('/asset/', {
+  return request.get('/admin/asset/', {
     params: { offset: offset, limit: limit, orderList: orderList }
   })
 }
 
-export const adminGetWarningsService = () => request.get('/warning/all')
+export const adminGetWarningsService = () => request.get('/admin/warning/all')
 
 export const adminGetUKMapService = () =>
   request.get(

@@ -67,7 +67,9 @@ const handlePageChange = (page) => {
               style="max-width: 300px"
             >
               <template #append>
-                <el-button :icon="Search"></el-button>
+                <el-popover>
+                  <el-button :icon="Search"></el-button>
+                </el-popover>
               </template>
             </el-input>
           </div>
