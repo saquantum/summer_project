@@ -80,7 +80,6 @@ public class AdminController {
                                         @RequestParam(required = false) List<String> orderList,
                                         @RequestParam(required = false) Integer limit,
                                         @RequestParam(required = false) Integer offset) {
-
         User user = userService.getUserByUserId(id, QueryTool.getOrderList(orderList), limit, offset);
         user.setPassword(null);
         return new ResponseBody(Code.SELECT_OK, user);

@@ -12,8 +12,10 @@ import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
+import uk.ac.bristol.pojo.UserWithAssetHolder;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
+import uk.ac.bristol.util.QueryTool;
 
 import java.time.Instant;
 import java.util.*;
@@ -57,11 +59,12 @@ public class UserServiceImpl implements UserService {
     public List<User> getAllUsers(List<Map<String, String>> orderList,
                                   Integer limit,
                                   Integer offset) {
-        return userMapper.selectAllUsers(orderList, limit, offset);
+        return userMapper.selectAllUsers(QueryTool.filterOrderList(orderList, "user"), limit, offset);
     }
 
     // get address and contact preferences for the asset holder
     private AssetHolder prepareAssetHolder(AssetHolder assetHolder) {
+        if(assetHolder == null) return null;
         List<Map<String, String>> address = assetHolderMapper.selectAddressByAssetHolderId(assetHolder.getId());
         if (address.size() != 1) {
             throw new RuntimeException("Get " + address.size() + " addresses for asset holder " + assetHolder.getId());
@@ -80,17 +83,14 @@ public class UserServiceImpl implements UserService {
     public List<User> getAllUsersWithAssetHolder(List<Map<String, String>> orderList,
                                                  Integer limit,
                                                  Integer offset) {
-        List<User> users = userMapper.selectAllUsers(orderList, limit, offset);
-        List<AssetHolder> assetHolders = assetHolderMapper.selectAllAssetHolders(orderList, limit, offset);
-        Map<String, AssetHolder> mapping = assetHolders.stream()
-                .collect(Collectors.toMap(AssetHolder::getId, ah -> ah));
-        for (User user : users) {
-            if (user.getAssetHolderId() == null) continue;
-            AssetHolder ah = mapping.get(user.getAssetHolderId());
-            if (ah == null) throw new RuntimeException("No asset holder for user " + user.getId());
-            user.setAssetHolder(this.prepareAssetHolder(ah));
+        List<UserWithAssetHolder> list = userMapper.selectAllUsersWithAssetHolder(QueryTool.filterOrderList(orderList, "user", "asset_holder"), limit, offset);
+        List<User> result = new ArrayList<>();
+        for (UserWithAssetHolder uwa : list) {
+            User user = uwa.getUser();
+            user.setAssetHolder(this.prepareAssetHolder(uwa.getAssetHolder()));
+            result.add(user);
         }
-        return users;
+        return result;
     }
 
     // This method only returns users with asset holder info (i.e. excluding admins)
@@ -98,17 +98,14 @@ public class UserServiceImpl implements UserService {
     public List<User> getAllUnauthorisedUsersWithAssetHolder(List<Map<String, String>> orderList,
                                                              Integer limit,
                                                              Integer offset) {
-        List<User> users = userMapper.selectAllUsers(orderList, limit, offset);
-        List<AssetHolder> assetHolders = assetHolderMapper.selectAllAssetHolders(orderList, limit, offset);
-        Map<String, AssetHolder> mapping = assetHolders.stream()
-                .collect(Collectors.toMap(AssetHolder::getId, ah -> ah));
-        return users.stream()
-                .filter(user -> mapping.containsKey(user.getAssetHolderId()))
-                .map(user -> {
-                    user.setAssetHolder(this.prepareAssetHolder(mapping.get(user.getAssetHolderId())));
-                    return user;
-                })
-                .collect(Collectors.toList());
+        List<UserWithAssetHolder> list = userMapper.selectAllUnauthorisedUsersWithAssetHolder(QueryTool.filterOrderList(orderList, "user", "asset_holder"), limit, offset);
+        List<User> result = new ArrayList<>();
+        for (UserWithAssetHolder uwa : list) {
+            User user = uwa.getUser();
+            user.setAssetHolder(this.prepareAssetHolder(uwa.getAssetHolder()));
+            result.add(user);
+        }
+        return result;
     }
 
     // get all asset holders along with address and contact preferences
@@ -116,7 +113,7 @@ public class UserServiceImpl implements UserService {
     public List<AssetHolder> getAllAssetHolders(List<Map<String, String>> orderList,
                                                 Integer limit,
                                                 Integer offset) {
-        List<AssetHolder> assetHolders = assetHolderMapper.selectAllAssetHolders(orderList, limit, offset);
+        List<AssetHolder> assetHolders = assetHolderMapper.selectAllAssetHolders(QueryTool.filterOrderList(orderList, "asset_holder"), limit, offset);
         assetHolders.forEach(this::prepareAssetHolder);
         return assetHolders;
     }
@@ -125,8 +122,8 @@ public class UserServiceImpl implements UserService {
     public List<Map<String, Object>> getAllAssetHoldersWithAssetIds(List<Map<String, String>> orderList,
                                                                     Integer limit,
                                                                     Integer offset) {
-        List<AssetHolder> assetHolders = assetHolderMapper.selectAllAssetHolders(orderList, limit, offset);
-        List<Asset> assets = assetMapper.selectAllAssets(orderList, limit, offset);
+        List<AssetHolder> assetHolders = assetHolderMapper.selectAllAssetHolders(QueryTool.filterOrderList(orderList, "asset_holder"), limit, offset);
+        List<Asset> assets = assetMapper.selectAllAssets(null, limit, offset);
         Map<String, List<String>> mapping = new HashMap<>();
         assets.forEach(asset -> {
             if (!mapping.containsKey(asset.getOwnerId())) {
@@ -150,20 +147,12 @@ public class UserServiceImpl implements UserService {
                                                                 Integer limit,
                                                                 Integer offset) {
         if ("count".equalsIgnoreCase(function)) {
-            ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            List<Map<String, Object>> rawList = userMapper.selectAllAssetHoldersWithAccumulator(function, column, orderList, limit, offset);
-            Map<String, Map<String, Object>> mapping = rawList.stream()
-                    .collect(Collectors.toMap(m -> (String) m.get("id"),
-                            m -> Map.of("assetHolder", prepareAssetHolder(mapper.convertValue(m, AssetHolder.class)), function, m.get("accumulation"))));
-
-            List<User> users = userMapper.selectAllUsers(orderList, limit, offset);
+            List<UserWithAssetHolder> list = userMapper.selectAllUsersWithAccumulator(function, column, QueryTool.filterOrderList(orderList, "user", "asset_holder"), limit, offset);
             List<Map<String, Object>> result = new ArrayList<>();
-            for (User user : users) {
-                if (user.getAssetHolderId() == null) continue;
-                Map<String, Object> tmp = mapping.get(user.getAssetHolderId());
-                if (tmp == null) throw new RuntimeException("No asset holder for user " + user.getId());
-                user.setAssetHolder((AssetHolder) tmp.get("assetHolder"));
-                result.add(Map.of("user", user, function, tmp.get(function)));
+            for (UserWithAssetHolder uwa : list) {
+                User user = uwa.getUser();
+                user.setAssetHolder(this.prepareAssetHolder(uwa.getAssetHolder()));
+                result.add(Map.of("user", user, function, uwa.getAccumulation()));
             }
             return result;
         }
@@ -174,7 +163,8 @@ public class UserServiceImpl implements UserService {
     public List<User> getAllAdmins(List<Map<String, String>> orderList,
                                    Integer limit,
                                    Integer offset) {
-        return userMapper.selectUserByAdmin(true, orderList, limit, offset);
+
+        return userMapper.selectUserByAdmin(true, QueryTool.filterOrderList(orderList, "user"), limit, offset);
     }
 
     @Override
@@ -186,7 +176,8 @@ public class UserServiceImpl implements UserService {
         if (user.size() != 1) {
             throw new RuntimeException("Get " + user.size() + " users using asset holder id " + assetHolderId);
         }
-        List<AssetHolder> assetHolder = assetHolderMapper.selectAssetHolderByIDs(List.of(assetHolderId), orderList, limit, offset);
+
+        List<AssetHolder> assetHolder = assetHolderMapper.selectAssetHolderByIDs(List.of(assetHolderId), QueryTool.filterOrderList(orderList, "asset_holder"), limit, offset);
         if (assetHolder.size() != 1) {
             throw new RuntimeException("Get " + assetHolder.size() + " asset holders using asset holder id " + assetHolderId);
         }
@@ -204,7 +195,10 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Get " + user.size() + " users using user id " + uid);
         }
         if (user.get(0).getAssetHolderId() != null) {
-            List<AssetHolder> assetHolder = assetHolderMapper.selectAssetHolderByIDs(List.of(user.get(0).getAssetHolderId()), orderList, limit, offset);
+            List<AssetHolder> assetHolder = assetHolderMapper.selectAssetHolderByIDs(
+                    List.of(user.get(0).getAssetHolderId()),
+                    QueryTool.filterOrderList(orderList, "asset_holder"),
+                    limit, offset);
             if (assetHolder.size() != 1) {
                 throw new RuntimeException("Get " + assetHolder.size() + " asset holders using asset holder id " + user.get(0).getAssetHolderId());
             }

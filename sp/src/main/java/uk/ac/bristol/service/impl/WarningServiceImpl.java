@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.WarningMapper;
 import uk.ac.bristol.pojo.Warning;
 import uk.ac.bristol.service.WarningService;
+import uk.ac.bristol.util.QueryTool;
 
 import java.util.List;
 import java.util.Map;
@@ -24,14 +25,14 @@ public class WarningServiceImpl implements WarningService {
     public List<Warning> getAllWarnings(List<Map<String, String>> orderList,
                                         Integer limit,
                                         Integer offset) {
-        return warningMapper.selectAllWarnings(orderList, limit, offset);
+        return warningMapper.selectAllWarnings(QueryTool.filterOrderList(orderList, "warning"), limit, offset);
     }
 
     @Override
     public List<Warning> getAllWarningsIncludingOutdated(List<Map<String, String>> orderList,
                                                          Integer limit,
                                                          Integer offset) {
-        return warningMapper.selectAllWarningsIncludingOutdated(orderList, limit, offset);
+        return warningMapper.selectAllWarningsIncludingOutdated(QueryTool.filterOrderList(orderList, "warning"), limit, offset);
     }
 
     @Override

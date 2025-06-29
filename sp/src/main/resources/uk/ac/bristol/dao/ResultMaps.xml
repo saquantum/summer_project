@@ -39,6 +39,13 @@
         <result property="admin" column="user_is_admin"/>
     </resultMap>
 
+    <resultMap id="UserWithAssetHolderMap" type="uk.ac.bristol.pojo.UserWithAssetHolder">
+        <id property="user.id" column="user_id"/>
+        <result property="accumulation" column="accumulation"/>
+        <association property="user" javaType="uk.ac.bristol.pojo.User" resultMap="UserMap"/>
+        <association property="assetHolder" javaType="uk.ac.bristol.pojo.AssetHolder" resultMap="AssetHolderMap"/>
+    </resultMap>
+
     <resultMap id="AssetMap" type="uk.ac.bristol.pojo.Asset">
         <id property="id" column="asset_id"/>
         <result property="name" column="asset_name"/>

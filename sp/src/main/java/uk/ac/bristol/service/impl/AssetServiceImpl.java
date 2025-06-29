@@ -10,8 +10,10 @@ import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.AssetType;
 import uk.ac.bristol.pojo.AssetWithWeatherWarnings;
 import uk.ac.bristol.service.AssetService;
+import uk.ac.bristol.util.QueryTool;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -52,14 +54,16 @@ public class AssetServiceImpl implements AssetService {
     public List<Asset> getAllAssets(List<Map<String, String>> orderList,
                                     Integer limit,
                                     Integer offset) {
-        return this.prepareAssetList(assetMapper.selectAllAssets(orderList, limit, offset), this.getTypeMap());
+        return this.prepareAssetList(assetMapper.selectAllAssets(QueryTool.filterOrderList(orderList, "asset"), limit, offset), this.getTypeMap());
     }
 
     @Override
     public List<AssetWithWeatherWarnings> getAllAssetsWithWarnings(List<Map<String, String>> orderList,
                                                                    Integer limit,
                                                                    Integer offset) {
-        return this.prepareAWList(assetMapper.selectAllAssetsWithWarnings(orderList, limit, offset), this.getTypeMap());
+        return this.prepareAWList(assetMapper.selectAllAssetsWithWarnings(
+                QueryTool.filterOrderList(orderList,"asset", "warning"),
+                limit, offset), this.getTypeMap());
     }
 
     @Override
@@ -77,7 +81,7 @@ public class AssetServiceImpl implements AssetService {
                                        List<Map<String, String>> orderList,
                                        Integer limit,
                                        Integer offset) {
-        return this.prepareAssetList(assetMapper.selectByAsset(asset, orderList, limit, offset), this.getTypeMap());
+        return this.prepareAssetList(assetMapper.selectByAsset(asset, QueryTool.filterOrderList(orderList, "asset"), limit, offset), this.getTypeMap());
     }
 
     @Override
@@ -85,7 +89,10 @@ public class AssetServiceImpl implements AssetService {
                                                                       List<Map<String, String>> orderList,
                                                                       Integer limit,
                                                                       Integer offset) {
-        return this.prepareAWList(assetMapper.selectByAssetWithWarnings(asset, orderList, limit, offset), this.getTypeMap());
+
+        return this.prepareAWList(assetMapper.selectByAssetWithWarnings(asset,
+                QueryTool.filterOrderList(orderList, "asset", "warning"),
+                limit, offset), this.getTypeMap());
     }
 
     @Override
@@ -93,7 +100,7 @@ public class AssetServiceImpl implements AssetService {
                                                    List<Map<String, String>> orderList,
                                                    Integer limit,
                                                    Integer offset) {
-        return this.prepareAssetList(assetMapper.selectAllAssetsOfHolder(ownerId, orderList, limit, offset), this.getTypeMap());
+        return this.prepareAssetList(assetMapper.selectAllAssetsOfHolder(ownerId, QueryTool.filterOrderList(orderList, "asset"), limit, offset), this.getTypeMap());
     }
 
     @Override
@@ -101,14 +108,16 @@ public class AssetServiceImpl implements AssetService {
                                                                                   List<Map<String, String>> orderList,
                                                                                   Integer limit,
                                                                                   Integer offset) {
-        return this.prepareAWList(assetMapper.selectAllAssetsWithWarningsOfHolder(ownerId, orderList, limit, offset), this.getTypeMap());
+        return this.prepareAWList(assetMapper.selectAllAssetsWithWarningsOfHolder(ownerId,
+                QueryTool.filterOrderList(orderList, "asset", "warning"),
+                limit, offset), this.getTypeMap());
     }
 
     @Override
     public List<AssetType> getAllAssetTypes(List<Map<String, String>> orderList,
                                             Integer limit,
                                             Integer offset) {
-        return assetMapper.selectAllAssetTypes(orderList, limit, offset);
+        return assetMapper.selectAllAssetTypes(QueryTool.filterOrderList(orderList, "asset_type"), limit, offset);
     }
 
     @Override
