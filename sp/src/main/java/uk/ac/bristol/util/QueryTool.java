@@ -1,5 +1,10 @@
 package uk.ac.bristol.util;
 
+import io.jsonwebtoken.Claims;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.*;
 
 public final class QueryTool {
@@ -24,5 +29,33 @@ public final class QueryTool {
             list.add(map);
         }
         return list;
+    }
+
+    public static boolean userIdentityVerification(HttpServletResponse response, HttpServletRequest request, String uid, String aid) {
+        if ((uid == null || uid.isEmpty()) && (aid == null || aid.isEmpty())) {
+            return false;
+        }
+        Claims claims = null;
+        try {
+            claims = JwtUtil.parseJWT(JwtUtil.getJWTFromCookie(request, response));
+        } catch (IOException e) {
+            return false;
+        }
+        Boolean isAdmin = (Boolean) claims.get("isAdmin");
+        if (isAdmin == null) {
+            return false;
+        }
+        String id = (String) claims.get("id");
+        String assetHolderId = (String) claims.get("assetHolderId");
+
+        if (id != null && uid != null && id.equals(uid)) {
+            return true;
+        }
+
+        if (assetHolderId != null && aid != null && assetHolderId.equals(aid)) {
+            return true;
+        }
+
+        return false;
     }
 }

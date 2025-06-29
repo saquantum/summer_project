@@ -1,22 +1,13 @@
 package uk.ac.bristol.controller;
 
-import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
-import uk.ac.bristol.dao.UserEmailMapper;
-import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
-import uk.ac.bristol.pojo.UserEmail;
+import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.UserService;
-import uk.ac.bristol.util.JwtUtil;
 import uk.ac.bristol.util.QueryTool;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -29,15 +20,11 @@ public class AdminController {
     private SimpMessagingTemplate messagingTemplate;
 
     private final UserService userService;
+    private final AssetService assetService;
 
-    @Autowired
-    private JavaMailSender mailSender;
-
-    @Autowired
-    private UserEmailMapper emailMapper;
-
-    public AdminController(UserService userService) {
+    public AdminController(UserService userService, AssetService assetService) {
         this.userService = userService;
+        this.assetService = assetService;
     }
 
     /**
@@ -51,26 +38,6 @@ public class AdminController {
         String m = body.get("message");
         messagingTemplate.convertAndSend("/topic/notify", m);
         return new ResponseBody(Code.SUCCESS, null, "Notification sent");
-    }
-
-    @GetMapping("/as/{id}")
-    public ResponseBody asUser(HttpServletResponse response, HttpServletRequest request, @PathVariable String id) throws IOException {
-        Claims claims = JwtUtil.parseJWT(JwtUtil.getJWTFromCookie(request, response));
-        User user = userService.getUserByAssetHolderId(id, null, null, null);
-        if(user == null){
-            throw new RuntimeException("User with asset holder id is not found");
-        }
-        claims.put("assetHolderId", id);
-        JwtUtil.bindJWTAsCookie(response, JwtUtil.generateJWT(claims));
-        return new ResponseBody(Code.SUCCESS, null, "You are in proxy mode as user id " + id);
-    }
-
-    @GetMapping("/as/clear")
-    public ResponseBody clearProxy(HttpServletResponse response, HttpServletRequest request) throws IOException {
-        Claims claims = JwtUtil.parseJWT(JwtUtil.getJWTFromCookie(request, response));
-        claims.remove("assetHolderId");
-        JwtUtil.bindJWTAsCookie(response, JwtUtil.generateJWT(claims));
-        return new ResponseBody(Code.SUCCESS, null, "Proxy mode cleared.");
     }
 
     @GetMapping("/user/all")
@@ -95,7 +62,7 @@ public class AdminController {
     }
 
     /**
-     * e.g. "/user/accumulate/count/{column}"
+     * e.g. "/user/accumulate?function=count"
      * <br><br>
      * BE AWARE: This SQL Statement is weak to SQL injection, do pass verified parameter in!
      */
@@ -145,40 +112,23 @@ public class AdminController {
         return new ResponseBody(Code.UPDATE_OK, null);
     }
 
-    @PostMapping("/send")
-    public String sendToAllUsers(@RequestBody Map<String, String> mailData) {
-        String subject = mailData.get("subject");
-        String contentTemplate = mailData.get("content");
-
-        if (subject == null || subject.isEmpty() || contentTemplate == null || contentTemplate.isEmpty()) {
-            return "Subject or content is empty!";
-        }
-
-        List<UserEmail> allEmails = emailMapper.selectAllEmails();
-
-        for (UserEmail user : allEmails) {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("alchemistbackydian@gmail.com");
-            message.setTo(user.getEmail());
-            message.setSubject(subject);
-
-            String token = JwtUtil.generateToken(user.getEmail(),user.getUid());
-            String unsubscribeUrl = "http://localhost:8080/unsubscribe-email?token=" + token;
-
-            String content = contentTemplate.replace("{unsubscribeUrl}", unsubscribeUrl);
-
-            message.setText(content);
-
-            mailSender.send(message);
-        }
-
-        return "Success, number of emails: " + allEmails.size();
-    }
-
     // TODO: Consider soft delete.
     @DeleteMapping("/user")
     public ResponseBody deleteUserByUserIds(@RequestBody Map<String, Object> body) {
         List<String> ids = (List<String>) body.get("ids");
         return new ResponseBody(Code.DELETE_OK, userService.deleteUserByUserIds(ids));
     }
+
+    @GetMapping("/asset")
+    public ResponseBody getAllAssetsWithWarnings(@RequestParam(required = false) List<String> orderList,
+                                                 @RequestParam(required = false) Integer limit,
+                                                 @RequestParam(required = false) Integer offset) {
+        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetsWithWarnings(QueryTool.getOrderList(orderList), limit, offset));
+    }
+
+    @GetMapping("/asset/{assetId}")
+    public ResponseBody getAssetById(@PathVariable String assetId) {
+        return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
+    }
+
 }

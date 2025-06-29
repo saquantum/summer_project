@@ -6,7 +6,7 @@
 <mapper namespace="uk.ac.bristol.dao.UserMapper">
     <select id="selectAllUsers" resultMap="ResultMaps.UserMap">
         select *
-        from users;
+        from users
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
