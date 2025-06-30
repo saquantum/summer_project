@@ -12,8 +12,8 @@ const id = route.params.id
 
 const item = computed(() => {
   return (
-    assetStore.userAssets.find((item) => item.asset.id === id) ||
-    assetStore.allAssets.find((item) => item.asset.id === id)
+    assetStore.userAssets?.find((item) => item.asset.id === id) ||
+    assetStore.allAssets?.find((item) => item.asset.id === id)
   )
 })
 console.log(item)

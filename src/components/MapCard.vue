@@ -37,8 +37,8 @@ const mode = computed({
 let item = null
 if (props.id) {
   item =
-    assetStore.userAssets.find((item) => item.asset.id === props.id) ||
-    assetStore.allAssets.find((item) => item.asset.id === props.id)
+    assetStore.userAssets?.find((item) => item.asset.id === props.id) ||
+    assetStore.allAssets?.find((item) => item.asset.id === props.id)
 }
 
 let points = []

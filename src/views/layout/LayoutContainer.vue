@@ -57,9 +57,7 @@ watch(
     <!-- user interface -->
     <el-aside
       v-if="
-        (userStore.user.admin &&
-          !route.path.includes('admin') &&
-          !route.path.includes('message')) ||
+        (userStore.user.admin && !route.path.includes('admin')) ||
         !userStore.user.admin
       "
       width="200px"
@@ -178,7 +176,7 @@ watch(
           <span>All Warnings</span>
         </el-menu-item>
 
-        <el-menu-item index="/message">
+        <el-menu-item index="/admin/message">
           <el-icon><MessageBox /></el-icon>
           <span>Message</span>
         </el-menu-item>

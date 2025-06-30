@@ -1,7 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores'
-import { userUpdateService, userGetInfoService } from '@/api/user'
+import { userUpdateService } from '@/api/user'
+import { adminGetUserInfoService } from '@/api/admin'
 const userStore = useUserStore()
 
 const assetHolder = ref({})
@@ -117,7 +118,7 @@ onMounted(async () => {
     assetHolder.value = userStore.user.assetHolder
   } else {
     const id = userStore.proxyId
-    const res = await userGetInfoService(id)
+    const res = await adminGetUserInfoService(id)
     assetHolder.value = res.data.assetHolder
   }
 
