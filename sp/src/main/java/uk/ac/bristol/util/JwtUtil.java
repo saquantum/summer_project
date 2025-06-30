@@ -61,7 +61,7 @@ public final class JwtUtil {
             }
         }
 
-        response.setStatus(401);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().write("{\"code\":401, \"message\":\"Missing or empty token\"}");
         return null;

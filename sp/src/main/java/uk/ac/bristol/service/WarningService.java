@@ -1,6 +1,5 @@
 package uk.ac.bristol.service;
 
-import uk.ac.bristol.pojo.AssetType;
 import uk.ac.bristol.pojo.Warning;
 
 import java.util.List;

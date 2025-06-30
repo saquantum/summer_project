@@ -48,7 +48,7 @@ public class UserMapperTest {
         User user = list.get(0);
         assertEquals("user_026", user.getId());
         assertEquals("123456", user.getPassword());
-        assertEquals("user_026", user.getAssetHolderId());
+        assertEquals("$user_026", user.getAssetHolderId());
         assertFalse(user.isAdmin());
 
         list = userMapper.selectUserById("admin");
@@ -69,7 +69,7 @@ public class UserMapperTest {
         List<User> queried1 = userMapper.loginQuery(user1);
         assertEquals("user_026", queried1.get(0).getId());
         assertEquals("123456", queried1.get(0).getPassword());
-        assertEquals("user_026", queried1.get(0).getAssetHolderId());
+        assertEquals("$user_026", queried1.get(0).getAssetHolderId());
         assertFalse(queried1.get(0).isAdmin());
 
         User user2 = new User();
@@ -90,16 +90,16 @@ public class UserMapperTest {
     @Test
     @Order(4)
     public void selectUserByAssetHolderId() {
-        List<User> list = userMapper.selectUserByAssetHolderId("user_005");
+        List<User> list = userMapper.selectUserByAssetHolderId("$user_005");
         assertEquals(1, list.size());
         User user = list.get(0);
         assertEquals("user_005", user.getId());
         assertEquals("123456", user.getPassword());
-        assertEquals("user_005", user.getAssetHolderId());
+        assertEquals("$user_005", user.getAssetHolderId());
         assertFalse(user.isAdmin());
 
         assertEquals(0, userMapper.selectUserByAssetHolderId("admin").size());
-        assertEquals(0, userMapper.selectUserByAssetHolderId("user_055").size());
+        assertEquals(0, userMapper.selectUserByAssetHolderId("$user_055").size());
     }
 
     @Test

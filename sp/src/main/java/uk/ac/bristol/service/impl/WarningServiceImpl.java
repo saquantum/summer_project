@@ -6,15 +6,12 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.AssetHolderMapper;
 import uk.ac.bristol.dao.UserMapper;
 import uk.ac.bristol.dao.WarningMapper;
-import uk.ac.bristol.pojo.AssetType;
-import uk.ac.bristol.pojo.UserWithAssetHolder;
 import uk.ac.bristol.pojo.Warning;
 import uk.ac.bristol.service.WarningService;
 import uk.ac.bristol.util.QueryTool;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
 @Service

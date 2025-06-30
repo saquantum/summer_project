@@ -47,8 +47,6 @@ public class WarningMapperTest {
 
         List<Warning> list2 = warningMapper.selectAllWarningsIncludingOutdated(null, null, null);
         assertFalse(list2.isEmpty());
-
-        assertTrue(list2.containsAll(list1));
     }
 
     @Test

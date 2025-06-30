@@ -59,7 +59,7 @@ public final class QueryTool {
         return false;
     }
 
-    private static List<String> registeredColumnPrefixes = List.of(
+    private final static List<String> registeredColumnPrefixes = List.of(
             "asset_holder",
             "asset_type",
             "asset",
@@ -70,12 +70,34 @@ public final class QueryTool {
 
     public static List<Map<String, String>> filterOrderList(List<Map<String, String>> originalList, String... prefixes) {
         if (originalList == null || originalList.isEmpty() || prefixes == null || prefixes.length == 0) return null;
+        Set<String> prefixesSet = new HashSet<>(Arrays.asList(prefixes));
+
         List<Map<String, String>> list = new ArrayList<>();
         for (Map<String, String> item : originalList) {
             String column = item.get("column");
+            boolean matched = false;
+            String matchedPrefix = null;
+            // 1. match registered prefixes by sequence, get first matched prefix
             for (String prefix : registeredColumnPrefixes) {
                 if (column.startsWith(prefix)) {
+                    matched = true;
+                    matchedPrefix = prefix;
+                    break;
+                }
+            }
+            // 2. add to result if the first matched prefix is in parameter @prefixes
+            if (matched) {
+                if (prefixesSet.contains(matchedPrefix)) {
                     list.add(item);
+                }
+            }
+            // 3. if the column does not match registered prefixes but is in parameter @prefixes, keep it
+            else {
+                for (String prefix : prefixes) {
+                    if (column.startsWith(prefix)) {
+                        list.add(item);
+                        break;
+                    }
                 }
             }
         }

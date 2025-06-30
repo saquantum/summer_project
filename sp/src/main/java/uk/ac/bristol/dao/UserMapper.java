@@ -2,7 +2,6 @@ package uk.ac.bristol.dao;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.springframework.validation.ObjectError;
 import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.pojo.UserWithAssetHolder;
 

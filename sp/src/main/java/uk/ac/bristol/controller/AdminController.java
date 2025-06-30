@@ -3,9 +3,7 @@ package uk.ac.bristol.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
-import uk.ac.bristol.pojo.AssetType;
 import uk.ac.bristol.pojo.User;
-import uk.ac.bristol.pojo.Warning;
 import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.service.WarningService;
@@ -13,8 +11,6 @@ import uk.ac.bristol.util.QueryTool;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.function.Supplier;
 
 @RestController
 @RequestMapping("/api/admin")

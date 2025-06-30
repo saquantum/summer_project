@@ -33,7 +33,7 @@ public class LoginController {
         try {
             userService.registerNewUser(user);
             return new ResponseBody(Code.SUCCESS, null, "Success.");
-        }catch(Exception e){
+        } catch (Exception e) {
             return new ResponseBody(Code.REGISTER_ERR, null, "Failed to register the user." + e.getMessage());
         }
     }

@@ -143,7 +143,7 @@ public class UserServiceImpl implements UserService {
                                                                 Integer limit,
                                                                 Integer offset) {
         if ("count".equalsIgnoreCase(function)) {
-            List<UserWithAssetHolder> list = userMapper.selectAllUsersWithAccumulator(function, column, QueryTool.filterOrderList(orderList, "user", "asset_holder"), limit, offset);
+            List<UserWithAssetHolder> list = userMapper.selectAllUsersWithAccumulator(function, column, QueryTool.filterOrderList(orderList, "user", "asset_holder", "accumulation"), limit, offset);
             List<Map<String, Object>> result = new ArrayList<>();
             for (UserWithAssetHolder uwa : list) {
                 User user = uwa.getUser();

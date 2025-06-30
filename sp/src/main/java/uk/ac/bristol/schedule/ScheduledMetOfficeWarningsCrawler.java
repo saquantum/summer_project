@@ -24,7 +24,7 @@ public class ScheduledMetOfficeWarningsCrawler {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     @Scheduled(fixedRateString = "${metoffice.crawler.rate:600000}") // default polling rate -- 10 mins per polling
-    public void scheduledCrawler(){
+    public void scheduledCrawler() {
         crawler();
     }
 
@@ -32,7 +32,7 @@ public class ScheduledMetOfficeWarningsCrawler {
     private String DEFAULT_URL;
 
     private String getBaseUrl(String url) {
-        if(url != null && !url.isBlank()){
+        if (url != null && !url.isBlank()) {
             return url;
         }
         return DEFAULT_URL;
@@ -49,7 +49,7 @@ public class ScheduledMetOfficeWarningsCrawler {
         return features.isArray();  // 如果features 不是陣列，就視為錯誤
     }
 
-    private void crawler(){
+    private void crawler() {
         // 1. 建立 HttpClient（可視需要調 proxy / time-out）
         HttpClient client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
@@ -126,7 +126,7 @@ public class ScheduledMetOfficeWarningsCrawler {
 
             for (JsonNode feature : features) {
                 JsonNode attrs = feature.path("attributes");
-                long objectId   = attrs.path("OBJECTID").asLong();
+                long objectId = attrs.path("OBJECTID").asLong();
 
                 // 調整欄位名稱為跟 API 回傳一致的大小寫
                 String severity = attrs.path("Severity").asText();

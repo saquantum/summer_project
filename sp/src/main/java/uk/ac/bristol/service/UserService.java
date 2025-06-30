@@ -59,11 +59,14 @@ public interface UserService {
     int updateAssetHolder(AssetHolder assetHolder);
 
     int deleteUserByUserIds(String[] ids);
+
     int deleteUserByUserIds(List<String> ids);
 
     int deleteUserByAssetHolderIds(String[] ids);
+
     int deleteUserByAssetHolderIds(List<String> ids);
 
     int deleteAssetHolderByAssetHolderIds(String[] ids);
+
     int deleteAssetHolderByAssetHolderIds(List<String> ids);
 }

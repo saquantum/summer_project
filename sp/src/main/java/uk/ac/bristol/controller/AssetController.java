@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api")
@@ -80,22 +81,28 @@ public class AssetController {
 
     @GetMapping("/user/uid/{uid}/asset/{assetId}")
     public ResponseBody getAssetWithUserIdById(HttpServletResponse response,
-                                                   HttpServletRequest request,
-                                                   @PathVariable String uid,
-                                                   @PathVariable String assetId) {
+                                               HttpServletRequest request,
+                                               @PathVariable String uid,
+                                               @PathVariable String assetId) {
         if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
             throw new SpExceptions.GetMethodException("User identification failed");
+        }
+        if(!verifyAssetOwnership(assetId, uid, null)){
+            throw new SpExceptions.GetMethodException("Asset owner identification failed");
         }
         return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
     }
 
     @GetMapping("/user/aid/{aid}/asset/{assetId}")
     public ResponseBody getAssetWithAssetHolderIdById(HttpServletResponse response,
-                                                          HttpServletRequest request,
-                                                          @PathVariable String aid,
-                                                          @PathVariable String assetId) {
+                                                      HttpServletRequest request,
+                                                      @PathVariable String aid,
+                                                      @PathVariable String assetId) {
         if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
             throw new SpExceptions.GetMethodException("User identification failed");
+        }
+        if(!verifyAssetOwnership(assetId, null, aid)){
+            throw new SpExceptions.GetMethodException("Asset owner identification failed");
         }
         return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
     }
@@ -236,5 +243,27 @@ public class AssetController {
     public ResponseBody deleteWarningsByIds(@RequestBody Map<String, Object> body) {
         List<Long> ids = (List<Long>) body.get("ids");
         return new ResponseBody(Code.DELETE_OK, warningService.deleteWarningByIDs(ids));
+    }
+
+    private boolean verifyAssetOwnership(String assetId, String uid, String aid){
+        if(assetId == null){
+            return false;
+        }
+        if(uid == null && aid == null){
+            return false;
+        }
+        List<Asset> asset = assetService.getAssetById(assetId);
+        if(asset.size() != 1) return false;
+        if(uid != null){
+            User user = userService.getUserByUserId(uid, null, null, null);
+            if(user.getAssetHolder() == null) return false;
+            if(!Objects.equals(user.getAssetHolder().getId(), asset.get(0).getOwnerId())) return false;
+        }
+        if(aid != null){
+            User user = userService.getUserByAssetHolderId(aid, null, null, null);
+            if(user.getAssetHolder() == null) return false;
+            if(!Objects.equals(user.getAssetHolder().getId(), asset.get(0).getOwnerId())) return false;
+        }
+        return true;
     }
 }

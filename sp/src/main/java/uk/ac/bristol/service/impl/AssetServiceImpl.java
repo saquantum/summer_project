@@ -13,7 +13,6 @@ import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.util.QueryTool;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -62,7 +61,7 @@ public class AssetServiceImpl implements AssetService {
                                                                    Integer limit,
                                                                    Integer offset) {
         return this.prepareAWList(assetMapper.selectAllAssetsWithWarnings(
-                QueryTool.filterOrderList(orderList,"asset", "warning"),
+                QueryTool.filterOrderList(orderList, "asset", "warning"),
                 limit, offset), this.getTypeMap());
     }
 
@@ -109,7 +108,7 @@ public class AssetServiceImpl implements AssetService {
                                                                                   Integer limit,
                                                                                   Integer offset) {
         return this.prepareAWList(assetMapper.selectAllAssetsWithWarningsOfHolder(ownerId,
-                QueryTool.filterOrderList(orderList, "asset", "warning"),
+                QueryTool.filterOrderList(orderList, "asset", "asset_type", "warning"),
                 limit, offset), this.getTypeMap());
     }
 
