@@ -7,6 +7,7 @@ const selectedMail = ref(null)
 const currentPage = ref(1)
 const pageSize = 10
 
+const mailDetailVisible = ref(false)
 const mails = ref([
   {
     id: 1,
@@ -32,12 +33,6 @@ const handleSelectionChange = (val) => {
   selectedMails.value = val
 }
 
-const openMail = (mail) => {
-  selectedMail.value = mail
-  dialogVisible.value = true
-  mail.read = true
-}
-
 const filteredMails = computed(() => {
   let result = mails.value
   if (searchKeyword.value) {
@@ -49,6 +44,10 @@ const filteredMails = computed(() => {
   return result.slice(start, start + pageSize)
 })
 
+const handleRowClick = (row) => {
+  selectedMail.value = row
+  mailDetailVisible.value = true
+}
 const handlePageChange = (page) => {
   currentPage.value = page
 }
@@ -115,6 +114,7 @@ const handlePageChange = (page) => {
 
       <el-table
         :data="filteredMails"
+        @row-click="handleRowClick"
         @selection-change="handleSelectionChange"
         style="width: 100%"
         height="400"
@@ -122,10 +122,7 @@ const handlePageChange = (page) => {
         <el-table-column type="selection" width="50" />
         <el-table-column label="Subject" prop="subject">
           <template #default="{ row }">
-            <span
-              :style="{ fontWeight: row.read ? 'normal' : 'bold' }"
-              @click="openMail(row)"
-            >
+            <span :style="{ fontWeight: row.read ? 'normal' : 'bold' }">
               {{ row.subject }}
             </span>
           </template>
@@ -156,6 +153,18 @@ const handlePageChange = (page) => {
           {{ selectedMail?.content }}
         </div>
       </el-dialog>
+    </el-card>
+    <el-card shadow="hover" v-show="mailDetailVisible">
+      <template #header>
+        <div>
+          <h3>{{ selectedMail?.subject }}</h3>
+        </div>
+      </template>
+      <p><strong>Sender:</strong>{{ selectedMail?.sender }}</p>
+      <p><strong>Time:</strong>{{ selectedMail?.time }}</p>
+      <div style="margin-top: 10px">
+        {{ selectedMail?.content }}
+      </div>
     </el-card>
   </div>
 </template>

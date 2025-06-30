@@ -1,7 +1,6 @@
 import request from '@/utils/request'
 
-export const userRegisterService = ({ username, password, repassword }) =>
-  request.post('/register', { username, password, repassword })
+export const userRegisterService = (obj) => request.post('/register', obj)
 
 export const userLoginService = ({ username, password }) => {
   const id = username

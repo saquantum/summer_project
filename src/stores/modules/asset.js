@@ -1,5 +1,5 @@
 import { assetsGetInfoService } from '@/api/assets'
-import { adminGetAssetsService } from '@/api/admin'
+import { adminGetAssetsService, adminGetUserAssetsService } from '@/api/admin'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
@@ -9,8 +9,13 @@ export const useAssetStore = defineStore(
     const userAssets = ref([])
     const allAssets = ref([])
 
-    const getUserAssets = async (id) => {
-      const res = await assetsGetInfoService(id)
+    const getUserAssets = async (admin, id) => {
+      let res
+      if (admin) {
+        console.log(11111111111)
+        res = await adminGetUserAssetsService(id)
+      } else res = await assetsGetInfoService(id)
+      console.log(res)
       userAssets.value = res.data
     }
 

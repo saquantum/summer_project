@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 
 export const assetsGetInfoService = (userId) =>
-  request.get(`/user/uid/${userId}/asset`)
+  request.get(`/user/aid/${userId}/asset`)
 
 export const assetUpdateInfoService = (id, ownerId, location) => {
   const obj = {

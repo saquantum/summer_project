@@ -162,7 +162,7 @@ onBeforeUnmount(() => {
           v-model="input"
           @keydown="handleKeydown"
           class="tag-input"
-          placeholder="Add tags..."
+          placeholder="Search assets..."
         />
         <el-button
           ref="referenceRef"
@@ -173,8 +173,8 @@ onBeforeUnmount(() => {
         </el-button></div
     ></template>
     <div v-if="detail === true">
-      <span>Type</span
-      ><el-select
+      <div class="label">Type</div>
+      <el-select
         :teleported="false"
         @visible-change="handleSelectVisibleChange"
         v-model="assetType"
@@ -189,7 +189,7 @@ onBeforeUnmount(() => {
           :value="item.value"
         ></el-option>
       </el-select>
-      <div>Material</div>
+      <div class="label">Material</div>
       <el-select
         :teleported="false"
         @visible-change="handleSelectVisibleChange"
@@ -205,7 +205,7 @@ onBeforeUnmount(() => {
           :value="item.value"
         ></el-option>
       </el-select>
-      <div>Status</div>
+      <div class="label">Status</div>
       <el-select
         :teleported="false"
         @visible-change="handleSelectVisibleChange"
@@ -221,7 +221,7 @@ onBeforeUnmount(() => {
           :value="item.value"
         ></el-option>
       </el-select>
-      <span>Id</span>
+      <div class="label">Id</div>
       <el-autocomplete
         v-model="assetId"
         :fetch-suggestions="querySearch"
@@ -230,11 +230,11 @@ onBeforeUnmount(() => {
         @select="handleSelect"
         :teleported="false"
       />
-      <span>test prop</span>
+      <div class="label">test prop</div>
       <ButtonInput></ButtonInput>
-      <span>Capacity litres</span>
+      <div class="label">Capacity litres</div>
       <el-slider v-model="capacityLitres" range :max="10000"></el-slider>
-      <div>Installed at</div>
+      <div class="label">Installed at</div>
       <el-date-picker
         v-model="installedAt"
         type="daterange"
@@ -244,7 +244,7 @@ onBeforeUnmount(() => {
         end-placeholder="End date"
         :shortcuts="shortcuts"
       />
-      <div>Last inspection</div>
+      <div class="label">Last inspection</div>
       <el-date-picker
         v-model="lastInspection"
         type="daterange"
@@ -254,7 +254,7 @@ onBeforeUnmount(() => {
         end-placeholder="End date"
         :shortcuts="shortcuts"
       />
-      <div>
+      <div style="margin-top: 20px">
         <el-button>Search</el-button>
         <el-button>Clear filters</el-button>
       </div>
@@ -314,5 +314,10 @@ onBeforeUnmount(() => {
   outline: none;
   min-width: 80px;
   font-size: 14px;
+}
+
+.label {
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 </style>

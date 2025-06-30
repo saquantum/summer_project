@@ -59,12 +59,43 @@ const convertToGeoJSON = (data, type = 'point') => {
 const form = ref({
   assetName: '',
   assetType: '',
+  assetMaterial: '',
+  assetStatus: '',
   address: '',
-  locations: []
+  // london by default
+  locations: [
+    {
+      type: 'MultiPolygon',
+      coordinates: [
+        [
+          [
+            [-0.5103751, 51.2867601],
+            [0.3340155, 51.2867601],
+            [0.3340155, 51.6918741],
+            [-0.5103751, 51.6918741],
+            [-0.5103751, 51.2867601]
+          ]
+        ]
+      ]
+    }
+  ]
 })
 
+const materialOption = [
+  { label: 'Steel', value: 'Steel' },
+  { label: 'Concrete', value: 'Concrete' },
+  { label: 'Plastic', value: 'Plastic' },
+  { label: 'Composite', value: 'Composite' }
+]
+
+const statusOption = [
+  { label: 'inactive', value: 'inactive' },
+  { label: 'active', value: 'active' },
+  { label: 'maintenance', value: 'maintenance' }
+]
 const mode = ref('convex')
 const mapCardRef = ref()
+const tipVisible = ref(false)
 
 const searchLocation = async (address) => {
   if (!address) return
@@ -89,6 +120,7 @@ const typeOptions = [
 ]
 
 const beginDrawing = () => {
+  tipVisible.value = true
   mapCardRef.value.beginDrawing()
 }
 
@@ -97,7 +129,13 @@ const finishOneShape = () => {
 }
 
 const endDrawing = () => {
+  tipVisible.value = false
   mapCardRef.value.endDrawing()
+}
+
+const cancelDrawing = () => {
+  tipVisible.value = false
+  mapCardRef.value.cancelDrawing()
 }
 
 watch(
@@ -121,6 +159,9 @@ async function submit() {
   <div class="step-content" style="margin-top: 20px">
     <div>
       <el-form>
+        <el-form-item label="User Id">
+          <el-input v-model="form.id" />
+        </el-form-item>
         <el-form-item label="Asset Name">
           <el-input v-model="form.assetName" />
         </el-form-item>
@@ -137,6 +178,29 @@ async function submit() {
             />
           </el-select>
         </el-form-item>
+
+        <el-form-item label="Asset Material">
+          <el-select v-model="form.assetMaterial" placeholder="Select material">
+            <el-option
+              v-for="item in materialOption"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="Asset Status">
+          <el-select v-model="form.assetStatus" placeholder="Select material">
+            <el-option
+              v-for="item in statusOption"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+
         <el-form-item label="Address">
           <el-input
             v-model="form.address"
@@ -147,9 +211,10 @@ async function submit() {
       </el-form>
     </div>
 
-    <div>
-      <div><h3>draw polygon</h3></div>
-      <div style="height: 300px; border: black 1px solid">
+    <div v-if="form.locations.length > 0">
+      <div><h3>Customise polygon</h3></div>
+      <div v-if="tipVisible">Your are now drawing new polygon</div>
+      <div style="height: 400px; max-width: 600px; border: black 1px solid">
         <MapCard
           ref="mapCardRef"
           :map-id="'testid'"
@@ -164,6 +229,7 @@ async function submit() {
       <el-button @click="beginDrawing">Draw new asset</el-button>
       <el-button @click="finishOneShape">Finish one shape</el-button>
       <el-button @click="endDrawing">End drawing</el-button>
+      <el-button @click="cancelDrawing">Cancel drawing</el-button>
     </div>
 
     <el-button @click="submit">Submit</el-button>

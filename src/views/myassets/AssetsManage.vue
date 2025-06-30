@@ -84,7 +84,7 @@ onMounted(async () => {
   } else {
     id = userStore.proxyId
   }
-  await assetStore.getUserAssets(id)
+  await assetStore.getUserAssets(userStore.user.admin, id)
   if (assetStore.userAssets) {
     currentAssets.value = assetStore.userAssets
   }
@@ -196,7 +196,10 @@ watch(
         </template>
 
         <div class="map-container">
-          <MapCard :map-id="'map-' + index" :location="[item.asset.location]" />
+          <MapCard
+            :map-id="'map-' + index"
+            :locations="[item.asset.location]"
+          />
         </div>
 
         <template #footer>

@@ -136,6 +136,18 @@ const endDrawing = async () => {
   map.off('click', handleClick)
 }
 
+const cancelDrawing = () => {
+  // destroy all layers on the map
+  map.eachLayer((layer) => {
+    if (!(layer instanceof L.TileLayer)) {
+      map.removeLayer(layer)
+    }
+  })
+  saveLayer.addTo(map)
+  // clear points, turn off click
+  points = []
+  map.off('click', handleClick)
+}
 watch(
   () => props.locations,
   (newVal) => {
@@ -182,6 +194,7 @@ defineExpose({
   beginDrawing,
   finishOneShape,
   endDrawing,
+  cancelDrawing,
   map
 })
 </script>

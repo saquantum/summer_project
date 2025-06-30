@@ -9,7 +9,9 @@ import {
   Message,
   MessageBox,
   Back,
-  House
+  House,
+  LocationInformation,
+  Warning
 } from '@element-plus/icons-vue'
 import avatar from '@/assets/default.png'
 import { ref, watch } from 'vue'
@@ -145,18 +147,34 @@ watch(
           <span>Dashboard</span>
         </el-menu-item>
 
-        <el-menu-item index="/admin/users">
-          <el-icon><Management /></el-icon>
-          <span>All Users</span>
-        </el-menu-item>
+        <el-sub-menu index="1">
+          <template #title>
+            <el-icon><User /></el-icon>
+            <span>User</span>
+          </template>
+          <el-menu-item index="/admin/users">
+            <span>All Users</span>
+          </el-menu-item>
+          <el-menu-item index="/admin/user/add">
+            <span>Add User</span>
+          </el-menu-item>
+        </el-sub-menu>
 
-        <el-menu-item index="/admin/assets">
-          <el-icon><User /></el-icon>
-          <span>All Assets</span>
-        </el-menu-item>
+        <el-sub-menu index="2">
+          <template #title>
+            <el-icon><LocationInformation /></el-icon>
+            <span>Asset</span>
+          </template>
+          <el-menu-item index="/admin/assets">
+            <span>All Assets</span>
+          </el-menu-item>
+          <el-menu-item index="/admin/asset/add">
+            <span>Add Asset</span>
+          </el-menu-item>
+        </el-sub-menu>
 
         <el-menu-item index="/admin/warnings">
-          <el-icon><User /></el-icon>
+          <el-icon><Warning /></el-icon>
           <span>All Warnings</span>
         </el-menu-item>
 

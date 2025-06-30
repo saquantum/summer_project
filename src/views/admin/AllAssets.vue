@@ -20,7 +20,7 @@ const tableRowClassName = (scope) => {
   }
 }
 
-const multiSort = ref([{ prop: 'id', order: 'ascending' }])
+const multiSort = ref([])
 
 const getColumnLabel = (prop) => {
   const labels = {
@@ -80,7 +80,7 @@ const fetchTableData = async () => {
     else continue
 
     const sortDir = order === 'descending' ? 'desc' : 'asc'
-    propOrderList.unshift(`${dbField},${sortDir}`)
+    propOrderList.push(`${dbField},${sortDir}`)
   }
 
   // order by asset_id asc by default

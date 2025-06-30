@@ -22,6 +22,10 @@ export const adminGetAssetsService = (offset, limit, orderList) => {
   })
 }
 
+export const adminGetUserAssetsService = (id) => {
+  return request.get(`/admin/user/aid/${id}/asset`)
+}
+
 export const adminGetWarningsService = () => request.get('/admin/warning/all')
 
 export const adminGetUKMapService = () =>
