@@ -27,6 +27,7 @@ const form = ref({
     }
   }
 })
+
 const formRef = ref()
 
 const rules = {
@@ -107,58 +108,79 @@ const submit = async () => {
   }
 }
 
+const reset = () => {
+  form.value = {
+    id: '',
+    firstName: '',
+    lastName: '',
+    assetHolder: {
+      name: '',
+      email: '',
+      phone: '',
+      address: {
+        street: '',
+        postcode: '',
+        city: '',
+        country: ''
+      },
+      contact_preferences: {
+        email: true,
+        phone: false,
+        whatsapp: false,
+        discord: false,
+        post: false,
+        telegram: false
+      }
+    }
+  }
+}
+
 onMounted(async () => {})
 </script>
 
 <template>
-  <el-card class="page-container">
-    <template #header>
-      <div class="header">
-        <span>Add user</span>
-      </div>
-    </template>
-
+  <div class="container">
     <el-form
       ref="formRef"
       :model="form"
-      label-position="top"
       label-width="auto"
+      label-position="left"
       style="max-width: 600px"
       :rules="rules"
     >
-      <el-form-item label="USERNAME" prop="id">
+      <el-form-item label="Username" prop="id">
         <el-input v-model="form.id" />
       </el-form-item>
 
-      <el-form-item label="PASSWORD" prop="password">
+      <el-form-item label="Password" prop="password">
         <el-input type="password" v-model="form.password" />
       </el-form-item>
       <!-- name -->
       <el-row :gutter="20">
         <el-col :span="12">
-          <el-form-item label="FIRST NAME" prop="firstName">
+          <el-form-item label="First name" prop="firstName">
             <el-input v-model="form.firstName" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="LAST NAME" prop="lastName">
+          <el-form-item label="Last name" prop="lastName">
             <el-input v-model="form.lastName" />
           </el-form-item>
         </el-col>
       </el-row>
 
       <!-- email -->
-      <el-form-item label="EMAIL ADDRESS" prop="assetHolder.email">
+      <el-form-item label="Email" prop="assetHolder.email">
         <el-input v-model="form.assetHolder.email" />
       </el-form-item>
 
       <!-- phone -->
-      <el-form-item label="PHONE" prop="assetHolder.phone">
+      <el-form-item label="Phone" prop="assetHolder.phone">
         <el-input v-model="form.assetHolder.phone" />
       </el-form-item>
 
       <!-- address -->
-      <el-form-item label="ADDRESS">
+      <el-form-item label="Address">
         <el-row :gutter="20" style="width: 100%">
           <el-col :span="12">
             <el-form-item
@@ -227,20 +249,19 @@ onMounted(async () => {})
 
       <!--submit botton -->
       <el-form-item>
-        <el-button type="primary" @click="submit">Add user</el-button>
+        <div style="display: flex; justify-content: center; width: 100%">
+          <el-button type="primary" @click="submit">Submit</el-button>
+          <el-button @click="reset">Reset</el-button>
+        </div>
       </el-form-item>
     </el-form>
-  </el-card>
+  </div>
 </template>
 
-<style lang="scss" scoped>
-.page-container {
-  min-height: 100%;
-  box-sizing: border-box;
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
+<style scoped>
+.container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
 }
 </style>

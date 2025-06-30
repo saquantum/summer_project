@@ -144,6 +144,45 @@ const cancelDrawing = () => {
   mapCardRef.value.cancelDrawing()
 }
 
+const submit = async () => {
+  console.log('value:', form)
+  await assetInsertService(userStore.user.id, location)
+  ElMessage.success('Successfully add an asset')
+}
+
+const reset = () => {
+  form.value = {
+    id: '',
+    name: '',
+    typeId: '',
+    ownerId: '',
+    address: '',
+    // london by default
+    locations: [
+      {
+        type: 'MultiPolygon',
+        coordinates: [
+          [
+            [
+              [-0.5103751, 51.2867601],
+              [0.3340155, 51.2867601],
+              [0.3340155, 51.6918741],
+              [-0.5103751, 51.6918741],
+              [-0.5103751, 51.2867601]
+            ]
+          ]
+        ]
+      }
+    ],
+    capacityLitres: '',
+    material: '',
+    status: '',
+    installedAt: '',
+    lastInspection: '',
+    location: ''
+  }
+}
+
 watch(
   () => form.value.locations,
   (newVal) => {
@@ -153,18 +192,16 @@ watch(
     deep: true
   }
 )
-
-async function submit() {
-  console.log('value:', form)
-  await assetInsertService(userStore.user.id, location)
-  ElMessage.success('Successfully add an asset')
-}
 </script>
 
 <template>
-  <div class="step-content" style="margin-top: 20px">
+  <div class="container">
     <div>
-      <el-form>
+      <el-form
+        label-width="auto"
+        label-position="left"
+        style="max-width: 600px"
+      >
         <el-form-item label="User id">
           <el-input v-model="form.id" />
         </el-form-item>
@@ -231,29 +268,56 @@ async function submit() {
           /><el-button @click="searchLocation(form.address)">Search</el-button>
         </el-form-item>
       </el-form>
-    </div>
 
-    <div v-if="form.locations.length > 0">
-      <div><h3>Customise polygon</h3></div>
-      <div v-if="tipVisible">Your are now drawing new polygon</div>
-      <div style="height: 400px; max-width: 600px; border: black 1px solid">
-        <MapCard
-          ref="mapCardRef"
-          :map-id="'testid'"
-          v-model:locations="form.locations"
-          v-model:mode="mode"
-        ></MapCard>
+      <div v-if="form.locations.length > 0">
+        <div><h3>Customise polygon</h3></div>
+        <div v-if="tipVisible">Your are now drawing new polygon</div>
+        <div style="height: 400px; max-width: 600px; border: black 1px solid">
+          <MapCard
+            ref="mapCardRef"
+            :map-id="'testid'"
+            v-model:locations="form.locations"
+            v-model:mode="mode"
+          ></MapCard>
+        </div>
+        <el-select
+          :disabled="tipVisible"
+          v-model="mode"
+          style="margin-top: 10px"
+        >
+          <el-option label="convex" value="convex"></el-option>
+          <el-option label="sequence" value="sequence"></el-option>
+        </el-select>
+        <div class="map-button">
+          <el-button @click="beginDrawing">Draw new asset</el-button>
+          <el-button @click="finishOneShape">Finish one shape</el-button>
+          <el-button @click="endDrawing">End drawing</el-button>
+          <el-button @click="cancelDrawing">Cancel drawing</el-button>
+        </div>
+
+        <div class="form-button">
+          <el-button type="primary" @click="submit">Submit</el-button>
+          <el-button @click="reset">Reset</el-button>
+        </div>
       </div>
-      <el-select :disabled="tipVisible" v-model="mode">
-        <el-option label="convex" value="convex"></el-option>
-        <el-option label="sequence" value="sequence"></el-option>
-      </el-select>
-      <el-button @click="beginDrawing">Draw new asset</el-button>
-      <el-button @click="finishOneShape">Finish one shape</el-button>
-      <el-button @click="endDrawing">End drawing</el-button>
-      <el-button @click="cancelDrawing">Cancel drawing</el-button>
     </div>
-
-    <el-button @click="submit">Submit</el-button>
   </div>
 </template>
+
+<style scoped>
+.container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.map-button {
+  margin-top: 10px;
+}
+
+.form-button {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+</style>

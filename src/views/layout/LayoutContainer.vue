@@ -14,7 +14,7 @@ import {
   Warning
 } from '@element-plus/icons-vue'
 import avatar from '@/assets/default.png'
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useAssetStore, useUserStore } from '@/stores'
 import { useRouter, useRoute } from 'vue-router'
 
@@ -49,6 +49,20 @@ const tabs = [
 ]
 const dialogVisible = ref(false)
 
+// 使用 computed 确保响应式
+const showUserSideBar = computed(() => {
+  if (!userStore.user.admin) {
+    return true
+  } else if (
+    userStore.user.admin &&
+    (route.path === '/admin/warnings' || route.path.startsWith('/warning'))
+  ) {
+    return false
+  } else if (userStore.user.admin && !route.path.includes('admin')) {
+    return true
+  }
+  return false
+})
 watch(
   () => route.path,
   (newPath) => {
@@ -60,13 +74,7 @@ watch(
 <template>
   <el-container class="layout-container">
     <!-- user interface -->
-    <el-aside
-      v-if="
-        (userStore.user.admin && !route.path.includes('admin')) ||
-        !userStore.user.admin
-      "
-      width="200px"
-    >
+    <el-aside v-if="showUserSideBar" width="200px">
       <router-link to="/">
         <img src="@/assets/uob-logo.svg" class="el-aside__logo" alt="logo" />
       </router-link>
@@ -85,7 +93,7 @@ watch(
 
         <el-sub-menu index="1">
           <template #title>
-            <el-icon><Management /></el-icon>
+            <el-icon><LocationInformation /></el-icon>
             <span>Asset</span>
           </template>
           <el-menu-item index="/myassets/manage">
@@ -128,13 +136,7 @@ watch(
     </el-aside>
 
     <!-- admin interface -->
-    <el-aside
-      v-else-if="
-        userStore.user.admin &&
-        (route.path.includes('admin') || route.path.includes('message'))
-      "
-      width="200px"
-    >
+    <el-aside v-else width="200px">
       <router-link to="/">
         <img src="@/assets/uob-logo.svg" class="el-aside__logo" alt="logo" />
       </router-link>
@@ -176,10 +178,21 @@ watch(
           </el-menu-item>
         </el-sub-menu>
 
-        <el-menu-item index="/admin/warnings">
-          <el-icon><Warning /></el-icon>
-          <span>All Warnings</span>
-        </el-menu-item>
+        <el-sub-menu index="3">
+          <template #title>
+            <el-icon><Warning /></el-icon>
+            <span>Warning</span>
+          </template>
+          <el-menu-item index="/admin/warnings">
+            <span>All Warning</span>
+          </el-menu-item>
+          <el-menu-item
+            v-if="activeIndex.startsWith('/warning')"
+            :index="activeIndex"
+          >
+            <span>Current Warning</span>
+          </el-menu-item>
+        </el-sub-menu>
 
         <el-menu-item index="/admin/message">
           <el-icon><MessageBox /></el-icon>
