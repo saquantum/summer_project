@@ -37,4 +37,8 @@ public interface WarningMapper {
     int deleteNotificationTemplateByIds(@Param("ids") Integer[] ids);
 
     int deleteNotificationTemplateByIds(@Param("ids") List<Integer> ids);
+
+    List<String> selectOwnerIdOfAllAssetsIntersectingWithGivenWarning(@Param("warningId") Long warningId);
+
+    Boolean testIfGivenAssetIntersectsWithWarning(@Param("assetId") String assetId, @Param("warningId") Long warningId);
 }

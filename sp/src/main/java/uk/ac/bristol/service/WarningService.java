@@ -35,6 +35,4 @@ public interface WarningService {
     int deleteNotificationTemplateByIds(Integer[] ids);
 
     int deleteNotificationTemplateByIds(List<Integer> ids);
-
-    List<Map<String, Object>> sendNotifications(Warning warning, AssetType type, String message);
 }

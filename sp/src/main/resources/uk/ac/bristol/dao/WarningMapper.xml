@@ -59,6 +59,21 @@
         where warning_id = #{id}
     </select>
 
+    <select id="selectOwnerIdOfAllAssetsIntersectingWithGivenWarning" resultType="java.lang.String">
+        select distinct asset_owner_id
+        from assets
+                 left join weather_warnings on ST_Intersects(asset_location, warning_area)
+        where warning_id = #{warningId}
+    </select>
+
+    <select id="testIfGivenAssetIntersectsWithWarning" resultType="java.lang.Boolean">
+        select ST_Intersects(asset_location, warning_area)
+        from assets
+                 inner join weather_warnings on ST_Intersects(asset_location, warning_area)
+        where asset_id = #{assetId}
+          and warning_id = #{warningId}
+    </select>
+
     <insert id="insertWarning">
         insert into weather_warnings (warning_id,
                                       warning_weather_type,

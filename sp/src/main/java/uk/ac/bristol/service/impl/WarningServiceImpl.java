@@ -93,46 +93,4 @@ public class WarningServiceImpl implements WarningService {
     public int deleteNotificationTemplateByIds(List<Integer> ids) {
         return warningMapper.deleteNotificationTemplateByIds(ids);
     }
-
-    @Override
-    public List<Map<String, Object>> sendNotifications(Warning warning, AssetType type, String message) {
-        List<Map<String, Object>> notifications = new ArrayList<>();
-
-        String id = UUID.randomUUID().toString();
-        String typeId = type.getId();
-        String warningType = warning.getWeatherType();
-        String warningSeverity = warning.getWarningLevel();
-        LocalDateTime now = LocalDateTime.now();
-        Map<String, Object> notification = new HashMap<>(Map.of(
-                "id", id,
-                "assetTypeId", typeId,
-                "weatherWarningType", warningType,
-                "severity", warningSeverity, "message", message,
-                "createdAt", now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                "channel", ""));
-        List<UserWithAssetHolder> list = userMapper.selectAllUnauthorisedUsersWithAssetHolder(null, null, null);
-        for (UserWithAssetHolder uwa : list) {
-            List<Map<String, Object>> contactPreferences = assetHolderMapper.selectContactPreferencesByAssetHolderId(uwa.getAssetHolder().getId());
-            if (contactPreferences.size() != 1) {
-                throw new RuntimeException("Get " + contactPreferences.size() + " contact preferences for asset holder " + uwa.getAssetHolder().getId());
-            }
-            System.out.println(contactPreferences.get(0));
-            if ((Boolean) contactPreferences.get(0).get("email")) {
-                // send email here
-                notification.put("channel", "email");
-                notifications.add(notification);
-            }
-            if ((Boolean) contactPreferences.get(0).get("phone")) {
-                // send SMS here
-                notification.put("channel", "sms");
-                notifications.add(notification);
-            }
-            if ((Boolean) contactPreferences.get(0).get("post")) {
-                // send post here
-                notification.put("channel", "post");
-                notifications.add(notification);
-            }
-        }
-        return notifications;
-    }
 }
