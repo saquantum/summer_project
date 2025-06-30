@@ -131,7 +131,6 @@ onMounted(async () => {
 <template>
   <div>
     <FilterSearch></FilterSearch>
-    <ButtonInput></ButtonInput>
     <div v-if="multiSort.length > 0" class="sort-status">
       <span>Current Sort: </span>
       <el-tag

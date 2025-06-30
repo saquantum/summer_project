@@ -97,6 +97,29 @@ const handleFilterClick = () => {
   }
 }
 
+const material = ref()
+const materialOption = [
+  { label: 'Steel', value: 'Steel' },
+  { label: 'Concrete', value: 'Concrete' },
+  { label: 'Plastic', value: 'Plastic' },
+  { label: 'Composite', value: 'Composite' }
+]
+
+const status = ref()
+const statusOption = [
+  { label: 'inactive', value: 'inactive' },
+  { label: 'active', value: 'active' },
+  { label: 'maintenance', value: 'maintenance' }
+]
+
+// slide bar
+const capacityLitres = ref([0, 10000])
+
+// installed at
+const installedAt = ref()
+
+const lastInspection = ref()
+
 watch([assetType], () => {
   if (!assetType.value) {
     tags.value.splice(tags.value.indexOf(lastType))
@@ -150,13 +173,12 @@ onBeforeUnmount(() => {
         </el-button></div
     ></template>
     <div v-if="detail === true">
-      <span>Asset Type</span
+      <span>Type</span
       ><el-select
         :teleported="false"
         @visible-change="handleSelectVisibleChange"
         v-model="assetType"
-        placeholder="Select Asset Type"
-        size="large"
+        placeholder="Select type"
         clearable
         class="select-style"
       >
@@ -167,7 +189,39 @@ onBeforeUnmount(() => {
           :value="item.value"
         ></el-option>
       </el-select>
-      <span>Asset Id</span>
+      <div>Material</div>
+      <el-select
+        :teleported="false"
+        @visible-change="handleSelectVisibleChange"
+        v-model="material"
+        placeholder="Select material"
+        clearable
+        class="select-style"
+      >
+        <el-option
+          v-for="item in materialOption"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        ></el-option>
+      </el-select>
+      <div>Status</div>
+      <el-select
+        :teleported="false"
+        @visible-change="handleSelectVisibleChange"
+        v-model="status"
+        placeholder="Select status"
+        clearable
+        class="select-style"
+      >
+        <el-option
+          v-for="item in statusOption"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        ></el-option>
+      </el-select>
+      <span>Id</span>
       <el-autocomplete
         v-model="assetId"
         :fetch-suggestions="querySearch"
@@ -178,6 +232,32 @@ onBeforeUnmount(() => {
       />
       <span>test prop</span>
       <ButtonInput></ButtonInput>
+      <span>Capacity litres</span>
+      <el-slider v-model="capacityLitres" range :max="10000"></el-slider>
+      <div>Installed at</div>
+      <el-date-picker
+        v-model="installedAt"
+        type="daterange"
+        unlink-panels
+        range-separator="To"
+        start-placeholder="Start date"
+        end-placeholder="End date"
+        :shortcuts="shortcuts"
+      />
+      <div>Last inspection</div>
+      <el-date-picker
+        v-model="lastInspection"
+        type="daterange"
+        unlink-panels
+        range-separator="To"
+        start-placeholder="Start date"
+        end-placeholder="End date"
+        :shortcuts="shortcuts"
+      />
+      <div>
+        <el-button>Search</el-button>
+        <el-button>Clear filters</el-button>
+      </div>
     </div>
     <div v-else>
       <span>Suggestion</span>

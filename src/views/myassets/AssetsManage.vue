@@ -53,6 +53,7 @@ const handlePageChange = (page) => {
 
 const addAssetVisible = ref(false)
 const currentPageAssets = computed(() => {
+  if (!currentAssets.value || currentAssets.value.length === 0) return
   const start = (currentPage.value - 1) * pageSize
   const end = start + pageSize
   const arr = currentAssets.value.slice(start, end)
@@ -84,7 +85,9 @@ onMounted(async () => {
     id = userStore.proxyId
   }
   await assetStore.getUserAssets(id)
-  currentAssets.value = assetStore.userAssets
+  if (assetStore.userAssets) {
+    currentAssets.value = assetStore.userAssets
+  }
 })
 
 // watch filter condition
