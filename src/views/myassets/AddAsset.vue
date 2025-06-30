@@ -57,10 +57,10 @@ const convertToGeoJSON = (data, type = 'point') => {
 }
 
 const form = ref({
-  assetName: '',
-  assetType: '',
-  assetMaterial: '',
-  assetStatus: '',
+  id: '',
+  name: '',
+  typeId: '',
+  ownerId: '',
   address: '',
   // london by default
   locations: [
@@ -78,7 +78,13 @@ const form = ref({
         ]
       ]
     }
-  ]
+  ],
+  capacityLitres: '',
+  material: '',
+  status: '',
+  installedAt: '',
+  lastInspection: '',
+  location: ''
 })
 
 const materialOption = [
@@ -159,15 +165,15 @@ async function submit() {
   <div class="step-content" style="margin-top: 20px">
     <div>
       <el-form>
-        <el-form-item label="User Id">
+        <el-form-item label="User id">
           <el-input v-model="form.id" />
         </el-form-item>
-        <el-form-item label="Asset Name">
+        <el-form-item label="Asset name">
           <el-input v-model="form.assetName" />
         </el-form-item>
-        <el-form-item label="Asset Type">
+        <el-form-item label="Asset type">
           <el-select
-            v-model="form.assetType"
+            v-model="form.typeId"
             placeholder="Please choose asset type"
           >
             <el-option
@@ -179,8 +185,8 @@ async function submit() {
           </el-select>
         </el-form-item>
 
-        <el-form-item label="Asset Material">
-          <el-select v-model="form.assetMaterial" placeholder="Select material">
+        <el-form-item label="Asset material">
+          <el-select v-model="form.material" placeholder="Select material">
             <el-option
               v-for="item in materialOption"
               :key="item.value"
@@ -190,8 +196,8 @@ async function submit() {
           </el-select>
         </el-form-item>
 
-        <el-form-item label="Asset Status">
-          <el-select v-model="form.assetStatus" placeholder="Select material">
+        <el-form-item label="Asset status">
+          <el-select v-model="form.status" placeholder="Select material">
             <el-option
               v-for="item in statusOption"
               :key="item.value"
@@ -199,6 +205,22 @@ async function submit() {
               :value="item.value"
             ></el-option>
           </el-select>
+        </el-form-item>
+
+        <el-form-item label="Installed at">
+          <el-date-picker
+            v-model="form.installedAt"
+            type="date"
+            placeholder="Pick a day"
+          />
+        </el-form-item>
+
+        <el-form-item label="Last inspection">
+          <el-date-picker
+            v-model="form.lastInspection"
+            type="date"
+            placeholder="Pick a day"
+          />
         </el-form-item>
 
         <el-form-item label="Address">
@@ -222,7 +244,7 @@ async function submit() {
           v-model:mode="mode"
         ></MapCard>
       </div>
-      <el-select v-model="mode">
+      <el-select :disabled="tipVisible" v-model="mode">
         <el-option label="convex" value="convex"></el-option>
         <el-option label="sequence" value="sequence"></el-option>
       </el-select>

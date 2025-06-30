@@ -36,6 +36,11 @@ const handleCommand = (command) => {
   }
 }
 
+const handleMailClick = () => {
+  if (userStore.user.admin) router.push('/admin/message')
+  else router.push('/message')
+}
+
 const activeIndex = ref(route.path)
 
 const tabs = [
@@ -204,7 +209,7 @@ watch(
         <div>information</div>
         <div class="header-right">
           <el-badge is-dot class="icon-badge">
-            <el-icon @click="router.push('/message')" class="bell">
+            <el-icon @click="handleMailClick" class="bell">
               <Message />
             </el-icon>
           </el-badge>
