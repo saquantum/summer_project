@@ -34,8 +34,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123456
       JWT_SECRET_KEY: testSecretKeyJWTWhichMustBeLongerThan32CharactersToSatisfyTheHS256Algorithm
-    volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
     networks:

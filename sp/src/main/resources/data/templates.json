@@ -1,0 +1,17 @@
+[
+  {
+    "message": "Weather alert for strong winds in your area."
+  },
+  {
+    "message": "Reminder: upcoming inspection required."
+  },
+  {
+    "message": "Heavy rain expected \u2013 please check your systems."
+  },
+  {
+    "message": "Flood warning issued for your region."
+  },
+  {
+    "message": "Maintenance activity scheduled soon."
+  }
+]

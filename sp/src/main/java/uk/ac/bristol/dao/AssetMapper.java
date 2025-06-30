@@ -2,26 +2,65 @@ package uk.ac.bristol.dao;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import uk.ac.bristol.pojo.*;
+import uk.ac.bristol.pojo.Asset;
+import uk.ac.bristol.pojo.AssetType;
+import uk.ac.bristol.pojo.AssetWithWeatherWarnings;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface AssetMapper {
 
-    List<AssetWithWeatherWarnings> selectAllAssets();
+    List<Asset> selectAllAssets(@Param("orderList") List<Map<String, String>> orderList,
+                                @Param("limit") Integer limit,
+                                @Param("offset") Integer offset);
 
-    List<AssetWithWeatherWarnings> selectAssetByID(@Param("id") Long id);
+    List<AssetWithWeatherWarnings> selectAllAssetsWithWarnings(@Param("orderList") List<Map<String, String>> orderList,
+                                                               @Param("limit") Integer limit,
+                                                               @Param("offset") Integer offset);
 
-    List<AssetWithWeatherWarnings> selectByAsset(Asset asset);
+    List<Asset> selectAssetByID(@Param("id") String id);
 
-    List<AssetWithWeatherWarnings> selectAllAssetsOfHolder(@Param("id") Long id);
+    List<AssetWithWeatherWarnings> selectAssetWithWarningsByID(@Param("id") String id);
 
-    long insertAsset(Asset asset);
+    List<Asset> selectByAsset(Asset asset,
+                              @Param("orderList") List<Map<String, String>> orderList,
+                              @Param("limit") Integer limit,
+                              @Param("offset") Integer offset);
 
-    long updateAsset(Asset asset);
+    List<AssetWithWeatherWarnings> selectByAssetWithWarnings(Asset asset,
+                                                             @Param("orderList") List<Map<String, String>> orderList,
+                                                             @Param("limit") Integer limit,
+                                                             @Param("offset") Integer offset);
 
-    long deleteByAssetIDs(@Param("ids") long[] ids);
+    List<Asset> selectAllAssetsOfHolder(@Param("ownerId") String ownerId,
+                                        @Param("orderList") List<Map<String, String>> orderList,
+                                        @Param("limit") Integer limit,
+                                        @Param("offset") Integer offset);
 
-    long deleteByAssetIDs(@Param("ids") List<Long> ids);
+    List<AssetWithWeatherWarnings> selectAllAssetsWithWarningsOfHolder(@Param("ownerId") String ownerId,
+                                                                       @Param("orderList") List<Map<String, String>> orderList,
+                                                                       @Param("limit") Integer limit,
+                                                                       @Param("offset") Integer offset);
+
+    List<AssetType> selectAllAssetTypes(@Param("orderList") List<Map<String, String>> orderList,
+                                        @Param("limit") Integer limit,
+                                        @Param("offset") Integer offset);
+
+    int insertAssetType(AssetType assetType);
+
+    int insertAsset(Asset asset);
+
+    int updateAssetType(AssetType assetType);
+
+    int updateAsset(Asset asset);
+
+    int deleteAssetTypeByIDs(@Param("ids") String[] ids);
+
+    int deleteAssetTypeByIDs(@Param("ids") List<String> ids);
+
+    int deleteAssetByIDs(@Param("ids") String[] ids);
+
+    int deleteAssetByIDs(@Param("ids") List<String> ids);
 }

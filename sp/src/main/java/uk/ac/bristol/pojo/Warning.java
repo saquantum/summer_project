@@ -5,8 +5,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 
 public class Warning {
@@ -22,7 +22,9 @@ public class Warning {
     private String whatToExpect;
     private String warningFurtherDetails;
     private String warningUpdateDescription;
-    private Map<String, Object> polygon;
+    private Map<String, Object> area;
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public Warning() {
     }
@@ -38,11 +40,8 @@ public class Warning {
                 ", validTo=" + validTo +
                 ", warningImpact='" + warningImpact + '\'' +
                 ", warningLikelihood='" + warningLikelihood + '\'' +
-                ", affectedAreas='" + affectedAreas + '\'' +
-                ", whatToExpect='" + whatToExpect + '\'' +
-                ", warningFurtherDetails='" + warningFurtherDetails + '\'' +
                 ", warningUpdateDescription='" + warningUpdateDescription + '\'' +
-                ", polygon=" + polygon +
+                ", area=" + area +
                 '}';
     }
 
@@ -142,24 +141,33 @@ public class Warning {
         this.warningUpdateDescription = warningUpdateDescription;
     }
 
-    public Map<String, Object> getPolygon() {
-        return polygon;
+    // for front-end
+    public Map<String, Object> getArea() {
+        return area;
     }
 
+    // for front-end
+    public void setArea(Map<String, Object> area) {
+        this.area = area;
+    }
+
+    // for back-end persistence
     @JsonIgnore
-    public String getPolygonAsJson() {
+    public String getAreaAsJson() {
         try {
-            return new ObjectMapper().writeValueAsString(polygon);
+            return new ObjectMapper().writeValueAsString(area);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void setPolygon(String geoJson) throws JsonProcessingException {
-        if (geoJson != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            this.polygon = mapper.readValue(geoJson, new TypeReference<>() {
-            });
+    // for back-end persistence
+    public void setAreaAsJson(String geoJson) throws JsonProcessingException {
+        if (geoJson == null || geoJson.isBlank()) {
+            this.area = Map.ofEntries(Map.entry("type", "MultiPolygon"), Map.entry("coordinates", List.of(List.of(List.of()))));
+            return;
         }
+        this.area = objectMapper.readValue(geoJson, new TypeReference<>() {
+        });
     }
 }

@@ -11,7 +11,9 @@ public class Code {
     public static final int SELECT_ERR = 20040;
     public static final int SELECT_OK = 20041;
 
+    public static final int REGISTER_ERR = 40001;
     public static final int LOGIN_TOKEN_ERR = 40101;
+    public static final int LOGIN_TOKEN_MISSING = 40111;
     public static final int SYSTEM_ERR = 50001;
     public static final int BUSINESS_ERR = 60001;
 }

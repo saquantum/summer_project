@@ -4,20 +4,58 @@ server:
 
 spring.application.name: sp
 
+app:
+  base-url: https://localhost:8080
+
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/rainwaterDB?useSSL=false&serverTimezone=UTC
     username: postgres
     password: 123456
-    type: com.alibaba.druid.pool.DruidDataSource
+    type: com.zaxxer.hikari.HikariDataSource
+
+  mail:
+    username: alchemistbackydian@gmail.com
+    password: ijllbowymtlavkvx
+    host: smtp.gmail.com
+    port: 465
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+            port: 465
+            fallback: false
 
 mybatis:
-  mapper-locations: classpath:uk/ac/bristol/dao/*.xml
+  mapper-locations: classpath*:uk/ac/bristol/dao/*.xml
   type-aliases-package: uk.ac.bristol.pojo
 
+mock-data:
+  assets: data/assets.json
+  asset-types: data/asset_types.json
+  users: data/users.json
+  warnings: data/geojson-sample.json
+  templates: data/templates.json
+  js: js/arcgis-converter.js
+  state: mock-data-state/mock_data_state.json
+
+metoffice:
+  url:  "https://services.arcgis.com/Lq3V5RFuTBC9I7kv/arcgis/rest/services/Met_Office_National_Severe_Weather_Warning_Service_Live/FeatureServer/0/query?where=1=1&outFields=*&returnGeometry=false&f=pgeojson"
+  crawler:
+    rate: 600000
 
 logging:
   level:
     uk.ac.bristol.dao: DEBUG
     org.apache.ibatis: DEBUG
+    org:
+      springframework:
+        mail: DEBUG
+        boot:
+          autoconfigure:
+            mail: DEBUG

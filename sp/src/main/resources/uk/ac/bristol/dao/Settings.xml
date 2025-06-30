@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="uk.ac.bristol.dao.Settings">
+    <update id="resetSchema">
+        create extension if not exists postgis;
+        drop table if exists address cascade;
+        drop table if exists contact_preferences cascade;
+        drop table if exists asset_holders cascade;
+        drop table if exists users cascade;
+        drop table if exists asset_types cascade;
+        drop table if exists assets cascade;
+        drop table if exists weather_warnings cascade;
+        drop table if exists templates cascade;
+    </update>
+
+    <update id="createAddress">
+        create table if not exists address
+        (
+            address_id       varchar(50) primary key,
+            address_street   varchar(100),
+            address_city     varchar(100),
+            address_postcode varchar(50),
+            address_country  varchar(100)
+        );
+    </update>
+
+    <update id="createContactPreferences">
+        create table if not exists contact_preferences
+        (
+            contact_preferences_id       varchar(50) primary key,
+            contact_preferences_email    boolean default false,
+            contact_preferences_phone    boolean default false,
+            contact_preferences_post     boolean default false,
+            contact_preferences_whatsapp boolean default false,
+            contact_preferences_discord  boolean default false,
+            contact_preferences_telegram boolean default false
+        );
+    </update>
+
+    <update id="createAssetHolders">
+        create table if not exists asset_holders
+        (
+            row_id                              bigserial primary key,
+            asset_holder_id                     varchar(50) unique not null,
+            asset_holder_name                   varchar(200)       not null,
+            asset_holder_email                  varchar(50)        not null,
+            asset_holder_phone                  varchar(50)        not null,
+            asset_holder_address_id             varchar(50) references address (address_id) on update cascade,
+            asset_holder_contact_preferences_id varchar(50) references contact_preferences (contact_preferences_id) on update cascade,
+            asset_holder_last_modified          timestamptz default current_timestamp
+        );
+
+        create or replace function set_asset_holder_id()
+            returns trigger as $$
+        begin
+            if NEW.asset_holder_id is null or NEW.asset_holder_id = '' then
+                NEW.asset_holder_id := '$user_' || NEW.row_id;
+            end if;
+            return NEW;
+        end;
+        $$ language plpgsql;
+
+        drop trigger if exists asset_holder_id_trigger on asset_holders;
+        create trigger asset_holder_id_trigger
+            before insert on asset_holders
+            for each row
+        execute function set_asset_holder_id();
+    </update>
+
+    <update id="createUsers">
+        create table if not exists users
+        (
+            user_id              varchar(100) primary key,
+            user_asset_holder_id varchar(50),
+            user_password        varchar(100) not null,
+            user_is_admin        boolean      not null
+        );
+    </update>
+
+    <update id="createAssetTypes">
+        create table if not exists asset_types
+        (
+            asset_type_id          varchar(50) primary key,
+            asset_type_name        varchar(100) not null,
+            asset_type_description varchar(1000)
+        );
+    </update>
+
+    <update id="createAssets">
+        create table if not exists assets
+        (
+            asset_id              varchar(50) primary key,
+            asset_name            varchar(100)                 not null,
+            asset_type_id         varchar(50) references asset_types (asset_type_id) on update cascade,
+            asset_owner_id        varchar(50) references asset_holders (asset_holder_id) on update cascade,
+            asset_location        geometry(multipolygon, 4326) not null,
+            asset_capacity_litres int,
+            asset_material        varchar(50),
+            asset_status          varchar(50),
+            asset_installed_at    date,
+            asset_last_inspection date,
+            asset_last_modified   timestamptz default current_timestamp
+        );
+    </update>
+
+    <update id="createWeatherWarnings">
+        create table if not exists weather_warnings
+        (
+            warning_id                 bigint primary key,
+            warning_weather_type       varchar,
+            warning_level              varchar,
+            warning_head_line          text,
+            warning_valid_from         timestamptz,
+            warning_valid_to           timestamptz,
+            warning_impact             varchar,
+            warning_likelihood         varchar,
+            warning_affected_areas     text,
+            warning_what_to_expect     text,
+            warning_further_details    text,
+            warning_update_description text,
+            warning_area               geometry(multipolygon, 4326)
+        );
+    </update>
+
+    <update id="createNotificationTemplates">
+        create table if not exists templates
+        (
+            templates_id   serial primary key,
+            templates_message text
+        );
+    </update>
+</mapper>

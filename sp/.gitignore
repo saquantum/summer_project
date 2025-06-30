@@ -34,3 +34,7 @@ build/
 
 ### custom log file
 logs/
+
+mock-data-state/mock_data_state.json
+
+data/raw_*

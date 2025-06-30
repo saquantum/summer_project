@@ -4,69 +4,129 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="uk.ac.bristol.dao.AssetHolderMapper">
-    <select id="selectAllAssetHolders" resultMap="ResultMaps.UserAsAssetHolderMap">
-        select t1.id                       user_id,
-               t1.username,
-               t1.password,
-               t1.asset_holder_id,
-               t1.is_admin,
-               t2.id                       holder_id,
-               t2.name                     holder_name,
-               t2.email,
-               t2.phone,
-               t2.contact_preference,
-               t2.last_modified,
-               coalesce(ac.asset_count, 0) asset_count
-        from users t1
-                 join asset_holders t2 on t1.asset_holder_id = t2.id
-                 left join (select asset_holder_id, COUNT(*) asset_count
-                            from assets
-                            group by asset_holder_id) ac on ac.asset_holder_id = t2.id
+    <select id="selectAddressByAssetHolderId" resultMap="ResultMaps.AddressMap">
+        select * from address where address_id = #{assetHolderId};
     </select>
 
-    <select id="selectAssetHolderByID" resultMap="ResultMaps.AssetHolderMap">
+    <insert id="insertAddress">
+        insert into address (address_id,
+                             address_street,
+                             address_city,
+                             address_postcode,
+                             address_country)
+        values (#{assetHolderId}, #{street}, #{city}, #{postcode}, #{country});
+    </insert>
+
+    <update id="updateAddressByAssetHolderId">
+        update address
+        <set>
+            <if test="street != null and street != ''">address_street = #{street},</if>
+            <if test="city != null and city != ''">address_city = #{city},</if>
+            <if test="postcode != null and postcode != ''">address_postcode = #{postcode},</if>
+            <if test="country != null and country != ''">address_country = #{country},</if>
+        </set>
+        where address_id = #{assetHolderId};
+    </update>
+
+    <delete id="deleteAddressByAssetHolderIds">
+        delete from address where address_id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
+    </delete>
+
+    <select id="selectContactPreferencesByAssetHolderId" resultMap="ResultMaps.ContactPreferencesMap">
+        select * from contact_preferences where contact_preferences_id = #{assetHolderId};
+    </select>
+
+    <insert id="insertContactPreferences">
+        insert into contact_preferences (contact_preferences_id,
+                                         contact_preferences_email,
+                                         contact_preferences_phone,
+                                         contact_preferences_post,
+                                         contact_preferences_whatsapp,
+                                         contact_preferences_discord,
+                                         contact_preferences_telegram)
+        values (#{assetHolderId}, #{email}, #{phone}, #{post}, #{whatsapp}, #{discord}, #{telegram});
+    </insert>
+
+    <update id="updateContactPreferencesByAssetHolderId">
+        update contact_preferences
+        <set>
+            <if test="email != null">contact_preferences_email = #{email},</if>
+            <if test="phone != null">contact_preferences_phone = #{phone},</if>
+            <if test="post != null">contact_preferences_post = #{post},</if>
+            <if test="whatsapp != null">contact_preferences_whatsapp = #{whatsapp},</if>
+            <if test="discord != null">contact_preferences_discord = #{discord},</if>
+            <if test="telegram != null">contact_preferences_telegram = #{telegram},</if>
+        </set>
+        where contact_preferences_id = #{assetHolderId};
+    </update>
+
+    <delete id="deleteContactPreferencesByAssetHolderIds">
+        delete from contact_preferences where contact_preferences_id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
+    </delete>
+
+    <select id="selectAllAssetHolders" resultMap="ResultMaps.AssetHolderMap">
+        select * from asset_holders
+        <include refid="ResultMaps.orderAndPage"/>
+    </select>
+
+    <select id="selectAssetHolderByIDs" resultMap="ResultMaps.AssetHolderMap">
         select *
         from asset_holders
-        where id = #{id};
+        where asset_holder_id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
+        <include refid="ResultMaps.orderAndPage"/>
     </select>
 
     <select id="selectByAssetHolder" resultMap="ResultMaps.AssetHolderMap">
         select * from asset_holders
         <where>
-            <if test="id != null">and id = #{id}</if>
-            <if test="name != null and name != ''">and name like #{name}</if>
-            <if test="email != null and email != ''">and email like #{email}</if>
-            <if test="phone != null and phone != ''">and phone like #{phone}</if>
-            <if test="contactPreference != null and contactPreference != ''">and contact_preference =
-                #{contactPreference}
-            </if>
+            <if test="id != null">and asset_holder_id = #{id}</if>
+            <if test="name != null and name != ''">and asset_holder_name like #{name}</if>
+            <if test="email != null and email != ''">and asset_holder_email like #{email}</if>
+            <if test="phone != null and phone != ''">and asset_holder_phone like #{phone}</if>
         </where>
     </select>
 
     <insert id="insertAssetHolder" >
-        <selectKey keyProperty="id" resultType="long" order="AFTER">
-            select currval(pg_get_serial_sequence('asset_holders', 'id'))
-        </selectKey>
-        insert into asset_holders (name, email, phone, contact_preference, last_modified)
-        values (#{name}, #{email}, #{phone}, #{contactPreference}::contact_preference, #{lastModified});
+        insert into asset_holders (asset_holder_id,
+                                   asset_holder_name,
+                                   asset_holder_email,
+                                   asset_holder_phone,
+                                   asset_holder_address_id,
+                                   asset_holder_contact_preferences_id,
+                                   asset_holder_last_modified)
+        values (#{id}, #{name}, #{email}, #{phone}, #{addressId}, #{contactPreferencesId}, #{lastModified});
+    </insert>
+
+    <insert id="insertAssetHolderAutoId" >
+        INSERT INTO asset_holders (
+            asset_holder_name,
+            asset_holder_email,
+            asset_holder_phone,
+            asset_holder_address_id,
+            asset_holder_contact_preferences_id,
+            asset_holder_last_modified
+        )
+        VALUES (#{name}, #{email}, #{phone}, #{addressId}, #{contactPreferencesId}, #{lastModified})
     </insert>
 
     <update id="updateAssetHolder">
         update asset_holders
         <set>
-            <if test="name != null and name != ''">name = #{name},</if>
-            <if test="email != null and email != ''">email = #{email},</if>
-            <if test="phone != null and phone != ''">phone = #{phone},</if>
-            <if test="contactPreference != null and contactPreference != ''">contact_preference =
-                cast(#{contactPreference} as contact_preference),
-            </if>
-            <if test="lastModified != null">last_modified = #{lastModified},</if>
+            <if test="name != null and name != ''">asset_holder_name = #{name},</if>
+            <if test="email != null and email != ''">asset_holder_email = #{email},</if>
+            <if test="phone != null and phone != ''">asset_holder_phone = #{phone},</if>
+            <if test="addressId != null and addressId != ''">asset_holder_address_id = #{addressId},</if>
+            <if test="contactPreferencesId != null and contactPreferencesId != ''">asset_holder_contact_preferences_id = #{contactPreferencesId},</if>
+            <if test="lastModified != null">asset_holder_last_modified = #{lastModified},</if>
         </set>
-        where id = #{id};
+        where asset_holder_id = #{id};
     </update>
 
-    <delete id="deleteByAssetHolderIDs">
-        delete from asset_holders where id in
+    <delete id="deleteAssetHolderByAssetHolderIDs">
+        delete from asset_holders where asset_holder_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 </mapper>

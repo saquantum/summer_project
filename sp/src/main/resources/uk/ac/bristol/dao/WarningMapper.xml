@@ -6,19 +6,149 @@
 <mapper namespace="uk.ac.bristol.dao.WarningMapper">
     <select id="selectAllWarnings" resultMap="ResultMaps.WarningMap">
         select warning_id,
-               weather_type,
+               warning_weather_type,
                warning_level,
                warning_head_line,
-               valid_from,
-               valid_to,
+               warning_valid_from,
+               warning_valid_to,
                warning_impact,
                warning_likelihood,
-               affected_areas,
-               what_to_expect,
+               warning_affected_areas,
+               warning_what_to_expect,
                warning_further_details,
                warning_update_description,
-               ST_AsGeoJSON(polygon) polygon
+               ST_AsGeoJSON(warning_area) as warning_area
         from weather_warnings
-        where now() between valid_from and valid_to
+        where now() between warning_valid_from and warning_valid_to
+        <include refid="ResultMaps.orderAndPage"/>
     </select>
+    
+    <select id="selectAllWarningsIncludingOutdated" resultMap="ResultMaps.WarningMap">
+        select warning_id,
+               warning_weather_type,
+               warning_level,
+               warning_head_line,
+               warning_valid_from,
+               warning_valid_to,
+               warning_impact,
+               warning_likelihood,
+               warning_affected_areas,
+               warning_what_to_expect,
+               warning_further_details,
+               warning_update_description,
+               ST_AsGeoJSON(warning_area) as warning_area
+        from weather_warnings
+        <include refid="ResultMaps.orderAndPage"/>
+    </select>
+
+    <select id="selectWarningById" resultMap="ResultMaps.WarningMap">
+        select warning_id,
+               warning_weather_type,
+               warning_level,
+               warning_head_line,
+               warning_valid_from,
+               warning_valid_to,
+               warning_impact,
+               warning_likelihood,
+               warning_affected_areas,
+               warning_what_to_expect,
+               warning_further_details,
+               warning_update_description,
+               ST_AsGeoJSON(warning_area) as warning_area
+        from weather_warnings
+        where warning_id = #{id}
+    </select>
+
+    <select id="selectOwnerIdOfAllAssetsIntersectingWithGivenWarning" resultType="java.lang.String">
+        select distinct asset_owner_id
+        from assets
+                 left join weather_warnings on ST_Intersects(asset_location, warning_area)
+        where warning_id = #{warningId}
+    </select>
+
+    <select id="testIfGivenAssetIntersectsWithWarning" resultType="java.lang.Boolean">
+        select ST_Intersects(asset_location, warning_area)
+        from assets
+                 inner join weather_warnings on ST_Intersects(asset_location, warning_area)
+        where asset_id = #{assetId}
+          and warning_id = #{warningId}
+    </select>
+
+    <insert id="insertWarning">
+        insert into weather_warnings (warning_id,
+                                      warning_weather_type,
+                                      warning_level,
+                                      warning_head_line,
+                                      warning_valid_from,
+                                      warning_valid_to,
+                                      warning_impact,
+                                      warning_likelihood,
+                                      warning_affected_areas,
+                                      warning_what_to_expect,
+                                      warning_further_details,
+                                      warning_update_description,
+                                      warning_area)
+        values (#{id},
+                #{weatherType},
+                #{warningLevel},
+                #{warningHeadLine},
+                #{validFrom},
+                #{validTo},
+                #{warningImpact},
+                #{warningLikelihood},
+                #{affectedAreas},
+                #{whatToExpect},
+                #{warningFurtherDetails},
+                #{warningUpdateDescription},
+                ST_Multi(ST_GeomFromGeoJSON(#{areaAsJson})));
+    </insert>
+
+    <update id="updateWarning">
+        update weather_warnings
+        <set>
+            <if test="weatherType != null and weatherType != ''">warning_weather_type = #{weatherType},</if>
+            <if test="warningLevel != null and warningLevel != ''">warning_level = #{warningLevel},</if>
+            <if test="warningHeadLine != null and warningHeadLine != ''">warning_head_line = #{warningHeadLine},</if>
+            <if test="validFrom != null">warning_valid_from = #{validFrom},</if>
+            <if test="validTo != null">warning_valid_to = #{validTo},</if>
+            <if test="warningImpact != null and warningImpact != ''">warning_impact = #{warningImpact},</if>
+            <if test="warningLikelihood != null and warningLikelihood != ''">warning_likelihood = #{warningLikelihood},</if>
+            <if test="affectedAreas != null and affectedAreas != ''">warning_affected_areas = #{affectedAreas},</if>
+            <if test="whatToExpect != null and whatToExpect != ''">warning_what_to_expect = #{whatToExpect},</if>
+            <if test="warningFurtherDetails != null and warningFurtherDetails != ''">warning_further_details = #{warningFurtherDetails},</if>
+            <if test="warningUpdateDescription != null and warningUpdateDescription != ''">warning_update_description = #{warningUpdateDescription},</if>
+            <if test="area != null and area != ''">warning_area = ST_Multi(ST_GeomFromGeoJSON(#{areaAsJson})),</if>
+        </set>
+        where warning_id = #{id};
+    </update>
+
+    <delete id="deleteWarningByIDs">
+        delete from weather_warnings where warning_id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="selectAllNotificationTemplates" resultMap="ResultMaps.TemplateMap">
+        select *
+        from templates;
+    </select>
+
+    <insert id="insertNotificationTemplate">
+        insert into templates (templates_message)
+        values (#{message});
+    </insert>
+
+    <update id="updateNotificationTemplate">
+        update templates
+        set templates_message = #{message}
+        where templates_id = #{id};
+    </update>
+
+    <delete id="deleteNotificationTemplateByIds">
+        delete from templates where templates_id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
 </mapper>

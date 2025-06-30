@@ -1,0 +1,452 @@
+[
+    {
+        "id": "d06f4d4b-c358-3806-9a11-041e4daddfef",
+        "asset_type_id": "type_001",
+        "channel": "email",
+        "weather_warning_type": "Snow",
+        "severity": "Yellow",
+        "message": "Weather alert for strong winds in your area.",
+        "created_at": "2025-06-16 13:57:02"
+    },
+    {
+        "id": "89a96777-df34-3e94-8b2b-b106a4bb29a9",
+        "asset_type_id": "type_003",
+        "channel": "post",
+        "weather_warning_type": "Fog",
+        "severity": "Amber",
+        "message": "Reminder: upcoming inspection required.",
+        "created_at": "2025-06-19 04:29:08"
+    },
+    {
+        "id": "83375751-e07d-33fd-9d9d-9df3b7f37265",
+        "asset_type_id": "type_001",
+        "channel": "sms",
+        "weather_warning_type": "Lightning",
+        "severity": "Red",
+        "message": "Heavy rain expected \u2013 please check your systems.",
+        "created_at": "2025-06-11 14:37:40"
+    },
+    {
+        "id": "7195d611-8fb3-3545-9f7d-eabdbcd24bb9",
+        "asset_type_id": "type_001",
+        "channel": "sms",
+        "weather_warning_type": "Wind",
+        "severity": "Red",
+        "message": "Heavy rain expected \u2013 please check your systems.",
+        "created_at": "2025-06-09 08:12:27"
+    },
+    {
+        "id": "c4ff1135-c904-31b0-96cd-840829db6649",
+        "asset_type_id": "type_005",
+        "channel": "post",
+        "weather_warning_type": "Extreme Heat",
+        "severity": "Yellow",
+        "message": "Flood warning issued for your region.",
+        "created_at": "2025-05-25 20:06:01"
+    },
+    {
+        "id": "fc0e2d00-9a92-3edb-9a45-7ef09e893800",
+        "asset_type_id": "type_004",
+        "channel": "email",
+        "weather_warning_type": "Wind",
+        "severity": "Yellow",
+        "message": "Maintenance activity scheduled soon.",
+        "created_at": "2025-06-20 10:06:05"
+    },
+    {
+        "id": "69ddc5e5-b9d5-3795-9747-090ca40289f4",
+        "asset_type_id": "type_007",
+        "channel": "email",
+        "weather_warning_type": "Thunderstorm",
+        "severity": "Yellow",
+        "message": "Reminder: upcoming inspection required.",
+        "created_at": "2025-06-01 04:01:05"
+    },
+    {
+        "id": "e6526e9d-214a-30d8-8659-463108a44a31",
+        "asset_type_id": "type_004",
+        "channel": "email",
+        "weather_warning_type": "Wind",
+        "severity": "Yellow",
+        "message": "Reminder: upcoming inspection required.",
+        "created_at": "2025-05-31 09:10:51"
+    },
+    {
+        "id": "224721c1-2ee4-314f-8142-6162e393f3ec",
+        "asset_type_id": "type_001",
+        "channel": "email",
+        "weather_warning_type": "Fog",
+        "severity": "Yellow",
+        "message": "Heavy rain expected \u2013 please check your systems.",
+        "created_at": "2025-05-27 18:04:17"
+    },
+    {
+        "id": "d0f6f292-e4d6-3838-a09f-34af0918566d",
+        "asset_type_id": "type_006",
+        "channel": "sms",
+        "weather_warning_type": "Ice",
+        "severity": "Amber",
+        "message": "Flood warning issued for your region.",
+        "created_at": "2025-05-22 14:11:41"
+    },
+    {
+        "id": "9082fc48-43f1-36e8-9d04-ea3eca783721",
+        "asset_type_id": "type_006",
+        "channel": "sms",
+        "weather_warning_type": "Rain",
+        "severity": "Yellow",
+        "message": "Heavy rain expected \u2013 please check your systems.",
+        "created_at": "2025-06-01 19:02:14"
+    },
+    {
+        "id": "0c80b56e-699c-3ecb-aed3-fe0acdbfb882",
+        "asset_type_id": "type_006",
+        "channel": "post",
+        "weather_warning_type": "Wind",
+        "severity": "Yellow",
+        "message": "Maintenance activity scheduled soon.",
+        "created_at": "2025-06-14 11:49:27"
+    },
+    {
+        "id": "b6c07f4b-1d45-396c-97b2-18d5cf1a4122",
+        "asset_type_id": "type_004",
+        "channel": "post",
+        "weather_warning_type": "Wind",
+        "severity": "Red",
+        "message": "Weather alert for strong winds in your area.",
+        "created_at": "2025-06-13 02:50:54"
+    },
+    {
+        "id": "04a6d574-b1ac-337d-8375-758cf2dce05e",
+        "asset_type_id": "type_004",
+        "channel": "sms",
+        "weather_warning_type": "Ice",
+        "severity": "Yellow",
+        "message": "Maintenance activity scheduled soon.",
+        "created_at": "2025-05-31 05:19:24"
+    },
+    {
+        "id": "07499114-f3a6-3b4f-80e3-1c80e77df15e",
+        "asset_type_id": "type_007",
+        "channel": "post",
+        "weather_warning_type": "Lightning",
+        "severity": "Amber",
+        "message": "Heavy rain expected \u2013 please check your systems.",
+        "created_at": "2025-05-25 12:59:25"
+    },
+    {
+        "id": "fe8dd9cd-773c-3c81-9568-563b0c7540d0",
+        "asset_type_id": "type_002",
+        "channel": "post",
+        "weather_warning_type": "Thunderstorm",
+        "severity": "Red",
+        "message": "Maintenance activity scheduled soon.",
+        "created_at": "2025-06-06 22:04:55"
+    },
+    {
+        "id": "470be650-0f3c-3e6a-a1e4-1682181ab967",
+        "asset_type_id": "type_003",
+        "channel": "sms",
+        "weather_warning_type": "Snow",
+        "severity": "Amber",
+        "message": "Maintenance activity scheduled soon.",
+        "created_at": "2025-05-28 03:48:02"
+    },
+    {
+        "id": "12b3b111-fa39-3029-99cb-3b6080b9e801",
+        "asset_type_id": "type_004",
+        "channel": "email",
+        "weather_warning_type": "Rain",
+        "severity": "Amber",
+        "message": "Maintenance activity scheduled soon.",
+        "created_at": "2025-06-11 11:55:43"
+    },
+    {
+        "id": "f943487a-33a7-3833-a7ad-6f1088a60662",
+        "asset_type_id": "type_001",
+        "channel": "email",
+        "weather_warning_type": "Wind",
+        "severity": "Red",
+        "message": "Maintenance activity scheduled soon.",
+        "created_at": "2025-05-26 17:21:38"
+    },
+    {
+        "id": "cc2d7b96-23c8-39ae-91ec-bdbdb1aa3135",
+        "asset_type_id": "type_003",
+        "channel": "sms",
+        "weather_warning_type": "Lightning",
+        "severity": "Red",
+        "message": "Weather alert for strong winds in your area.",
+        "created_at": "2025-06-15 00:36:50"
+    },
+    {
+        "id": "102f4dfe-6e1a-3be5-adcd-150e6f0b468c",
+        "asset_type_id": "type_002",
+        "channel": "email",
+        "weather_warning_type": "Wind",
+        "severity": "Red",
+        "message": "Maintenance activity scheduled soon.",
+        "created_at": "2025-06-05 13:32:19"
+    },
+    {
+        "id": "3a2307a6-237a-387b-b728-f7b86aac52a2",
+        "asset_type_id": "type_002",
+        "channel": "email",
+        "weather_warning_type": "Rain",
+        "severity": "Amber",
+        "message": "Maintenance activity scheduled soon.",
+        "created_at": "2025-06-08 01:07:55"
+    },
+    {
+        "id": "1e4867d6-c205-3ca4-9cbd-e4e714086359",
+        "asset_type_id": "type_007",
+        "channel": "email",
+        "weather_warning_type": "Rain",
+        "severity": "Yellow",
+        "message": "Reminder: upcoming inspection required.",
+        "created_at": "2025-05-29 00:19:30"
+    },
+    {
+        "id": "61aa5487-d2c4-3d85-b20f-1708861e2a63",
+        "asset_type_id": "type_005",
+        "channel": "sms",
+        "weather_warning_type": "Extreme Heat",
+        "severity": "Amber",
+        "message": "Reminder: upcoming inspection required.",
+        "created_at": "2025-06-19 02:39:42"
+    },
+    {
+        "id": "df7455b9-9c1c-36a3-9130-24f6c9355f6f",
+        "asset_type_id": "type_004",
+        "channel": "post",
+        "weather_warning_type": "Snow",
+        "severity": "Red",
+        "message": "Reminder: upcoming inspection required.",
+        "created_at": "2025-06-17 06:09:14"
+    },
+    {
+        "id": "7dadbae9-3ae3-38dc-8af6-40c6a0b9c759",
+        "asset_type_id": "type_005",
+        "channel": "sms",
+        "weather_warning_type": "Ice",
+        "severity": "Yellow",
+        "message": "Flood warning issued for your region.",
+        "created_at": "2025-06-08 15:31:08"
+    },
+    {
+        "id": "fdfc5e78-9ec3-3a8b-8802-705f029b42ca",
+        "asset_type_id": "type_004",
+        "channel": "sms",
+        "weather_warning_type": "Rain",
+        "severity": "Amber",
+        "message": "Flood warning issued for your region.",
+        "created_at": "2025-05-24 20:33:19"
+    },
+    {
+        "id": "f06f0b82-d972-3aa4-abda-d41870284197",
+        "asset_type_id": "type_002",
+        "channel": "sms",
+        "weather_warning_type": "Wind",
+        "severity": "Yellow",
+        "message": "Weather alert for strong winds in your area.",
+        "created_at": "2025-06-10 17:18:49"
+    },
+    {
+        "id": "26bc491f-cad8-390c-b2ee-b214803cdf36",
+        "asset_type_id": "type_001",
+        "channel": "post",
+        "weather_warning_type": "Fog",
+        "severity": "Amber",
+        "message": "Flood warning issued for your region.",
+        "created_at": "2025-06-19 07:09:20"
+    },
+    {
+        "id": "2f501ef3-ee11-3b42-81ee-5ed8d1fca64b",
+        "asset_type_id": "type_007",
+        "channel": "email",
+        "weather_warning_type": "Fog",
+        "severity": "Amber",
+        "message": "Weather alert for strong winds in your area.",
+        "created_at": "2025-06-13 06:20:21"
+    },
+    {
+        "id": "92898ca3-17d0-36bc-91ef-a597511a2d8d",
+        "asset_type_id": "type_003",
+        "channel": "email",
+        "weather_warning_type": "Rain",
+        "severity": "Yellow",
+        "message": "Heavy rain expected \u2013 please check your systems.",
+        "created_at": "2025-06-13 20:57:51"
+    },
+    {
+        "id": "53737df2-8da5-3c0c-aa45-c514ab4b3765",
+        "asset_type_id": "type_001",
+        "channel": "sms",
+        "weather_warning_type": "Rain",
+        "severity": "Red",
+        "message": "Weather alert for strong winds in your area.",
+        "created_at": "2025-06-18 19:04:24"
+    },
+    {
+        "id": "e30c21da-cc97-37f4-a8ce-367f6662c897",
+        "asset_type_id": "type_007",
+        "channel": "post",
+        "weather_warning_type": "Snow",
+        "severity": "Red",
+        "message": "Reminder: upcoming inspection required.",
+        "created_at": "2025-06-13 22:11:57"
+    },
+    {
+        "id": "2f5cecde-10ba-3404-8da8-68ef27dc9ed0",
+        "asset_type_id": "type_003",
+        "channel": "sms",
+        "weather_warning_type": "Ice",
+        "severity": "Red",
+        "message": "Maintenance activity scheduled soon.",
+        "created_at": "2025-06-01 22:03:59"
+    },
+    {
+        "id": "c40ad4a8-f80d-335d-b419-d39b9797301f",
+        "asset_type_id": "type_004",
+        "channel": "sms",
+        "weather_warning_type": "Snow",
+        "severity": "Red",
+        "message": "Maintenance activity scheduled soon.",
+        "created_at": "2025-05-24 05:04:58"
+    },
+    {
+        "id": "5dbd0dc3-5e76-3433-a432-2f6c902d832a",
+        "asset_type_id": "type_005",
+        "channel": "post",
+        "weather_warning_type": "Rain",
+        "severity": "Yellow",
+        "message": "Reminder: upcoming inspection required.",
+        "created_at": "2025-06-01 20:56:12"
+    },
+    {
+        "id": "5e0194b9-3675-3f79-aa12-4b25acdad194",
+        "asset_type_id": "type_001",
+        "channel": "sms",
+        "weather_warning_type": "Ice",
+        "severity": "Amber",
+        "message": "Flood warning issued for your region.",
+        "created_at": "2025-06-15 03:53:55"
+    },
+    {
+        "id": "f0b7521a-8339-3d95-a339-138d046aef96",
+        "asset_type_id": "type_006",
+        "channel": "sms",
+        "weather_warning_type": "Ice",
+        "severity": "Red",
+        "message": "Maintenance activity scheduled soon.",
+        "created_at": "2025-05-25 12:07:01"
+    },
+    {
+        "id": "9449c53f-9423-345d-a35f-85f739b1e72a",
+        "asset_type_id": "type_001",
+        "channel": "sms",
+        "weather_warning_type": "Fog",
+        "severity": "Red",
+        "message": "Reminder: upcoming inspection required.",
+        "created_at": "2025-06-12 02:24:42"
+    },
+    {
+        "id": "4ebc3855-06b2-3299-a18a-791cbf286e46",
+        "asset_type_id": "type_003",
+        "channel": "post",
+        "weather_warning_type": "Extreme Heat",
+        "severity": "Amber",
+        "message": "Reminder: upcoming inspection required.",
+        "created_at": "2025-05-22 15:38:16"
+    },
+    {
+        "id": "f28c5d37-8dc8-391e-b6d2-698304bd875c",
+        "asset_type_id": "type_005",
+        "channel": "email",
+        "weather_warning_type": "Thunderstorm",
+        "severity": "Yellow",
+        "message": "Maintenance activity scheduled soon.",
+        "created_at": "2025-06-19 10:25:26"
+    },
+    {
+        "id": "89221eaa-5e5d-3fab-a7b9-fb778ab1be91",
+        "asset_type_id": "type_006",
+        "channel": "post",
+        "weather_warning_type": "Fog",
+        "severity": "Amber",
+        "message": "Maintenance activity scheduled soon.",
+        "created_at": "2025-06-12 18:39:29"
+    },
+    {
+        "id": "2e166d62-623e-32d2-a864-b4372ced5519",
+        "asset_type_id": "type_007",
+        "channel": "post",
+        "weather_warning_type": "Fog",
+        "severity": "Yellow",
+        "message": "Flood warning issued for your region.",
+        "created_at": "2025-05-28 02:12:39"
+    },
+    {
+        "id": "b1f713bf-a958-379e-8a08-8e9b62098707",
+        "asset_type_id": "type_006",
+        "channel": "email",
+        "weather_warning_type": "Wind",
+        "severity": "Yellow",
+        "message": "Reminder: upcoming inspection required.",
+        "created_at": "2025-06-13 22:13:30"
+    },
+    {
+        "id": "a6846c1f-48be-37c4-9daf-1728fd4872c5",
+        "asset_type_id": "type_002",
+        "channel": "post",
+        "weather_warning_type": "Rain",
+        "severity": "Yellow",
+        "message": "Flood warning issued for your region.",
+        "created_at": "2025-05-26 04:18:43"
+    },
+    {
+        "id": "db837a95-b901-3db4-86d5-4194d6427c1d",
+        "asset_type_id": "type_001",
+        "channel": "email",
+        "weather_warning_type": "Wind",
+        "severity": "Amber",
+        "message": "Flood warning issued for your region.",
+        "created_at": "2025-06-08 08:01:16"
+    },
+    {
+        "id": "8935b934-38a2-3c4e-b629-2453161e6f1b",
+        "asset_type_id": "type_001",
+        "channel": "post",
+        "weather_warning_type": "Thunderstorm",
+        "severity": "Amber",
+        "message": "Heavy rain expected \u2013 please check your systems.",
+        "created_at": "2025-05-26 02:19:55"
+    },
+    {
+        "id": "bbc4a409-e2f4-3764-a655-f1c79f5b2834",
+        "asset_type_id": "type_001",
+        "channel": "sms",
+        "weather_warning_type": "Thunderstorm",
+        "severity": "Yellow",
+        "message": "Heavy rain expected \u2013 please check your systems.",
+        "created_at": "2025-05-30 05:08:38"
+    },
+    {
+        "id": "73713860-5be5-3ff9-a9f9-44c8c34e5a5f",
+        "asset_type_id": "type_002",
+        "channel": "email",
+        "weather_warning_type": "Snow",
+        "severity": "Amber",
+        "message": "Maintenance activity scheduled soon.",
+        "created_at": "2025-05-24 13:36:43"
+    },
+    {
+        "id": "fd6d048b-14f3-3f6b-be73-eef9eb11acbe",
+        "asset_type_id": "type_005",
+        "channel": "sms",
+        "weather_warning_type": "Thunderstorm",
+        "severity": "Amber",
+        "message": "Flood warning issued for your region.",
+        "created_at": "2025-05-26 08:12:28"
+    }
+]

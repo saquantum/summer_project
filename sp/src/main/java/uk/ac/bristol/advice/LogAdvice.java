@@ -16,7 +16,7 @@ import java.util.Arrays;
 @Component
 @Aspect
 public class LogAdvice {
-    @Pointcut("execution(* *..*Service.*(..))")
+    @Pointcut("execution(* *..service..*Service.*(..))")
     public void pt() {
     }
 

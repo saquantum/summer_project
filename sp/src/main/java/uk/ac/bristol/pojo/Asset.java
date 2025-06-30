@@ -1,44 +1,61 @@
 package uk.ac.bristol.pojo;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 public class Asset {
-    private Long id;
+    private String id;
     private String name;
-    private String region;
-    private Map<String, Object> drainArea;
-    private Long assetHolderId;
+    @JsonAlias("type_id")
+    private String typeId;
+    private AssetType type;
+    @JsonAlias("owner_id")
+    private String ownerId;
+    private Map<String, Object> location;
+    @JsonAlias("capacity_litres")
+    private Long capacityLitres;
+    private String material;
+    private String status;
+    @JsonAlias("installed_at")
+    private LocalDate installedAt;
+    @JsonAlias("last_inspection")
+    private LocalDate lastInspection;
     private Instant lastModified;
 
-    public Asset() {
-    }
-
-    public Asset(Long id) {
-        this.id = id;
-    }
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public String toString() {
         return "Asset{" +
-                "id=" + id +
+                "id='" + id + '\'' +
                 ", name='" + name + '\'' +
-                ", drainArea=" + drainArea +
-                ", assetHolderId=" + assetHolderId +
+                ", typeId='" + typeId + '\'' +
+                ", type=" + type +
+                ", ownerId='" + ownerId + '\'' +
+                ", location=" + location +
+                ", capacityLitres=" + capacityLitres +
+                ", material='" + material + '\'' +
+                ", status='" + status + '\'' +
+                ", installedAt=" + installedAt +
+                ", lastInspection=" + lastInspection +
+                ", lastModified=" + lastModified +
                 '}';
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -50,35 +67,100 @@ public class Asset {
         this.name = name;
     }
 
-    // to be handled by Jackson to respond to front-end
-    public Map<String, Object> getDrainArea() {
-        return drainArea;
+    public String getTypeId() {
+        return typeId;
     }
 
-    // convert to String for SQL, ignored when responding to front-end
+    public void setTypeId(String typeId) {
+        this.typeId = typeId;
+    }
+
+    public AssetType getType() {
+        return type;
+    }
+
+    public void setType(AssetType type) {
+        this.type = type;
+    }
+
+    public String getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(String ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    // for front-end
+    public Map<String, Object> getLocation() {
+        return location;
+    }
+
+    // for front-end
+    public void setLocation(Map<String, Object> location) {
+        this.location = location;
+    }
+
+    // for back-end persistence
     @JsonIgnore
-    public String getDrainAreaAsJson() {
+    public String getLocationAsJson() {
         try {
-            return new ObjectMapper().writeValueAsString(drainArea);
+            return objectMapper.writeValueAsString(location);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void setDrainArea(String geoJson) throws JsonProcessingException {
-        if (geoJson != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            this.drainArea = mapper.readValue(geoJson, new TypeReference<>() {
-            });
+    // for back-end persistence
+    public void setLocationAsJson(String geoJson) throws JsonProcessingException {
+        if (geoJson == null || geoJson.isBlank()) {
+            this.location = Map.ofEntries(Map.entry("type", "MultiPolygon"), Map.entry("coordinates", List.of(List.of(List.of()))));
+            return;
         }
+        this.location = objectMapper.readValue(geoJson, new TypeReference<>() {
+        });
     }
 
-    public Long getAssetHolderId() {
-        return assetHolderId;
+    public Long getCapacityLitres() {
+        return capacityLitres;
     }
 
-    public void setAssetHolderId(Long assetHolderId) {
-        this.assetHolderId = assetHolderId;
+    public void setCapacityLitres(Long capacityLitres) {
+        this.capacityLitres = capacityLitres;
+    }
+
+    public String getMaterial() {
+        return material;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setMaterial(String material) {
+        this.material = material;
+    }
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    public LocalDate getInstalledAt() {
+        return installedAt;
+    }
+
+    public void setInstalledAt(LocalDate installedAt) {
+        this.installedAt = installedAt;
+    }
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    public LocalDate getLastInspection() {
+        return lastInspection;
+    }
+
+    public void setLastInspection(LocalDate lastInspection) {
+        this.lastInspection = lastInspection;
     }
 
     public Instant getLastModified() {
@@ -87,13 +169,5 @@ public class Asset {
 
     public void setLastModified(Instant lastModified) {
         this.lastModified = lastModified;
-    }
-
-    public String getRegion() {
-        return region;
-    }
-
-    public void setRegion(String region) {
-        this.region = region;
     }
 }

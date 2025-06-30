@@ -1,19 +1,19 @@
 package uk.ac.bristol.controller;
 
-public class ResponseResult {
+public class ResponseBody {
     private Integer code;
     private Object data;
     private String message;
 
-    public ResponseResult() {
+    public ResponseBody() {
     }
 
-    public ResponseResult(Integer code, Object data) {
+    public ResponseBody(Integer code, Object data) {
         this.data = data;
         this.code = code;
     }
 
-    public ResponseResult(Integer code, Object data, String message) {
+    public ResponseBody(Integer code, Object data, String message) {
         this.code = code;
         this.data = data;
         this.message = message;
