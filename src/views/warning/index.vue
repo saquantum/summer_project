@@ -66,7 +66,7 @@ onMounted(() => {
 
 <template>
   <div class="map-container">
-    <MapCard :map-id="mapId" :location="[warning.area]" />
+    <MapCard :map-id="mapId" :locations="[warning.area]" />
   </div>
 
   <el-descriptions title="Warning Detail" :column="1" direction="vertical">
