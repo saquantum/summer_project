@@ -20,4 +20,6 @@ public interface Settings {
     void createAssets();
 
     void createWeatherWarnings();
+
+    void createNotificationTemplates();
 }

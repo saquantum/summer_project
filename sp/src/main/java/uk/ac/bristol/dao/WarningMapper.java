@@ -27,4 +27,14 @@ public interface WarningMapper {
     int deleteWarningByIDs(@Param("ids") Long[] ids);
 
     int deleteWarningByIDs(@Param("ids") List<Long> ids);
+
+    List<Map<String, Object>> selectAllNotificationTemplates();
+
+    int insertNotificationTemplate(@Param("message") String message);
+
+    int updateNotificationTemplate(Map<String, String> template);
+
+    int deleteNotificationTemplateByIds(@Param("ids") Integer[] ids);
+
+    int deleteNotificationTemplateByIds(@Param("ids") List<Integer> ids);
 }

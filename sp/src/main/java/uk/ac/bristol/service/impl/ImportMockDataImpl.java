@@ -46,6 +46,7 @@ public class ImportMockDataImpl implements ImportMockData {
         settings.createAssetTypes();
         settings.createAssets();
         settings.createWeatherWarnings();
+        settings.createNotificationTemplates();
     }
 
     @Override
@@ -137,6 +138,19 @@ public class ImportMockDataImpl implements ImportMockData {
             }
         } catch (Exception e) {
             throw new SpExceptions.SystemException("Loading Warnings failed." + e.getMessage());
+        }
+    }
+
+    @Override
+    public void importTemplates(InputStream notificationTemplatesInputStream) {
+        try {
+            List<Map<String, String>> templates = mapper.readValue(notificationTemplatesInputStream, new TypeReference<List<Map<String, String>>>() {
+            });
+            for (Map<String, String> template : templates) {
+                warningService.insertNotificationTemplate(template.get("message"));
+            }
+        } catch (IOException e) {
+            throw new SpExceptions.SystemException("Loading Templates failed." + e.getMessage());
         }
     }
 }

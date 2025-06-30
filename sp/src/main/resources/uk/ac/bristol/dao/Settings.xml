@@ -13,6 +13,7 @@
         drop table if exists asset_types cascade;
         drop table if exists assets cascade;
         drop table if exists weather_warnings cascade;
+        drop table if exists templates cascade;
     </update>
 
     <update id="createAddress">
@@ -121,6 +122,14 @@
             warning_further_details    text,
             warning_update_description text,
             warning_area               geometry(multipolygon, 4326)
+        );
+    </update>
+
+    <update id="createNotificationTemplates">
+        create table if not exists templates
+        (
+            templates_id   serial primary key,
+            templates_message text
         );
     </update>
 </mapper>

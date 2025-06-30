@@ -3,13 +3,18 @@ package uk.ac.bristol.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.bristol.pojo.AssetType;
 import uk.ac.bristol.pojo.User;
+import uk.ac.bristol.pojo.Warning;
 import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.UserService;
+import uk.ac.bristol.service.WarningService;
 import uk.ac.bristol.util.QueryTool;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Supplier;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -21,10 +26,12 @@ public class AdminController {
 
     private final UserService userService;
     private final AssetService assetService;
+    private final WarningService warningService;
 
-    public AdminController(UserService userService, AssetService assetService) {
+    public AdminController(UserService userService, AssetService assetService, WarningService warningService) {
         this.userService = userService;
         this.assetService = assetService;
+        this.warningService = warningService;
     }
 
     /**
@@ -33,11 +40,37 @@ public class AdminController {
      * <br>
      * <a href="https://docs.spring.io/spring-framework/reference/web/websocket/stomp.html">Spring Stomp</a>
      */
+//    @PostMapping("/notify")
+//    public ResponseBody sendNotification(@RequestBody Map<String, String> body) {
+//        String m = body.get("message");
+//        messagingTemplate.convertAndSend("/topic/notify", m);
+//        return new ResponseBody(Code.SUCCESS, null, "Notification sent");
+//    }
     @PostMapping("/notify")
-    public ResponseBody sendNotification(@RequestBody Map<String, String> body) {
-        String m = body.get("message");
-        messagingTemplate.convertAndSend("/topic/notify", m);
-        return new ResponseBody(Code.SUCCESS, null, "Notification sent");
+    public ResponseBody sendNotifications(@RequestBody Map<String, String> body) {
+        Long warningId = Long.valueOf(body.get("warningId"));
+        String assetTypeId = body.get("assetTypeId");
+        Integer messageId = Integer.valueOf(body.get("messageId"));
+        List<Warning> warning = warningService.getWarningById(warningId);
+        AssetType type = ((Supplier<AssetType>) () -> {
+            List<AssetType> types = assetService.getAllAssetTypes(null, null, null);
+            for (AssetType t : types) {
+                if (t.getId().equals(assetTypeId)) {
+                    return t;
+                }
+            }
+            return null;
+        }).get();
+        String message = ((Supplier<String>) () -> {
+            List<Map<String, Object>> list = warningService.getAllNotificationTemplates();
+            for (Map<String, Object> map : list) {
+                if (Objects.equals((Integer) map.get("id"), messageId)) {
+                    return map.get("message").toString();
+                }
+            }
+            return null;
+        }).get();
+        return new ResponseBody(Code.SUCCESS, warningService.sendNotifications(warning.get(0), type, message));
     }
 
     @GetMapping("/user/all")

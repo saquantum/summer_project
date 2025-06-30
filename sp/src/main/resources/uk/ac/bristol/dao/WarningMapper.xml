@@ -113,4 +113,27 @@
             #{id}
         </foreach>
     </delete>
+
+    <select id="selectAllNotificationTemplates" resultMap="ResultMaps.TemplateMap">
+        select *
+        from templates;
+    </select>
+
+    <insert id="insertNotificationTemplate">
+        insert into templates (templates_message)
+        values (#{message});
+    </insert>
+
+    <update id="updateNotificationTemplate">
+        update templates
+        set templates_message = #{message}
+        where templates_id = #{id};
+    </update>
+
+    <delete id="deleteNotificationTemplateByIds">
+        delete from templates where templates_id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
 </mapper>

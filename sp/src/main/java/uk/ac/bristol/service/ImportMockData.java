@@ -11,4 +11,6 @@ public interface ImportMockData {
     void importAssets(InputStream typesInputStream, InputStream assetsInputStream);
 
     void importWarnings(InputStream warningsInputStream, InputStream JSConverterInputStream);
+
+    void importTemplates(InputStream notificationTemplatesInputStream);
 }

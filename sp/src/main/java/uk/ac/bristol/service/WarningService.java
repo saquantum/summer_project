@@ -1,5 +1,6 @@
 package uk.ac.bristol.service;
 
+import uk.ac.bristol.pojo.AssetType;
 import uk.ac.bristol.pojo.Warning;
 
 import java.util.List;
@@ -24,4 +25,16 @@ public interface WarningService {
     int deleteWarningByIDs(Long[] ids);
 
     int deleteWarningByIDs(List<Long> ids);
+
+    List<Map<String, Object>> getAllNotificationTemplates();
+
+    int insertNotificationTemplate(String message);
+
+    int updateNotificationTemplate(Map<String, String> template);
+
+    int deleteNotificationTemplateByIds(Integer[] ids);
+
+    int deleteNotificationTemplateByIds(List<Integer> ids);
+
+    List<Map<String, Object>> sendNotifications(Warning warning, AssetType type, String message);
 }

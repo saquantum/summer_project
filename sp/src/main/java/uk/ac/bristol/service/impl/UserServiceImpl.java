@@ -1,7 +1,5 @@
 package uk.ac.bristol.service.impl;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,8 +17,6 @@ import uk.ac.bristol.util.QueryTool;
 
 import java.time.Instant;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
 @Service
@@ -46,7 +42,7 @@ public class UserServiceImpl implements UserService {
         User u = list.get(0);
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", u.getId());
-        if(u.getAssetHolderId() != null){
+        if (u.getAssetHolderId() != null) {
             claims.put("assetHolderId", u.getAssetHolderId());
         }
         claims.put("isAdmin", u.isAdmin());
@@ -64,7 +60,7 @@ public class UserServiceImpl implements UserService {
 
     // get address and contact preferences for the asset holder
     private AssetHolder prepareAssetHolder(AssetHolder assetHolder) {
-        if(assetHolder == null) return null;
+        if (assetHolder == null) return null;
         List<Map<String, String>> address = assetHolderMapper.selectAddressByAssetHolderId(assetHolder.getId());
         if (address.size() != 1) {
             throw new RuntimeException("Get " + address.size() + " addresses for asset holder " + assetHolder.getId());

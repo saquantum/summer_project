@@ -37,6 +37,7 @@ mock-data:
   asset-types: data/asset_types.json
   users: data/users.json
   warnings: data/geojson-sample.json
+  templates: data/templates.json
   js: js/arcgis-converter.js
   state: mock-data-state/mock_data_state.json
 

@@ -88,6 +88,11 @@
         <collection property="warnings" ofType="uk.ac.bristol.pojo.Warning" resultMap="WarningMap"/>
     </resultMap>
 
+    <resultMap id="TemplateMap" type="java.util.Map">
+        <id property="id" column="templates_id"/>
+        <result property="message" column="templates_message"/>
+    </resultMap>
+
     <sql id="orderAndPage">
         <if test="orderList != null and orderList.size() > 0">
             order by
