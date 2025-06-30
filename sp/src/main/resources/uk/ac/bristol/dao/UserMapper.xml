@@ -10,6 +10,53 @@
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
+    <select id="selectAllUsersWithAssetHolder" resultMap="ResultMaps.UserWithAssetHolderMap">
+        select *
+        from users
+            left join asset_holders
+                on users.user_asset_holder_id = asset_holders.asset_holder_id
+        <include refid="ResultMaps.orderAndPage"/>
+    </select>
+
+    <select id="selectAllUnauthorisedUsersWithAssetHolder" resultMap="ResultMaps.UserWithAssetHolderMap">
+        select *
+        from users
+        left join asset_holders
+        on users.user_asset_holder_id = asset_holders.asset_holder_id
+        where user_is_admin = false
+        <include refid="ResultMaps.orderAndPage"/>
+    </select>
+
+    <select id="selectAllUsersWithAccumulator" resultMap="ResultMaps.UserWithAssetHolderMap">
+        select
+        user_id,
+        user_password,
+        user_asset_holder_id,
+        asset_holder_id,
+        asset_holder_name,
+        asset_holder_email,
+        asset_holder_phone,
+        asset_holder_address_id,
+        asset_holder_contact_preferences_id,
+        asset_holder_last_modified,
+        ${function}(a.asset_id) as accumulation
+        from users
+        left join asset_holders
+        on users.user_asset_holder_id = asset_holders.asset_holder_id
+        group by
+        user_id,
+        user_password,
+        user_asset_holder_id,
+        asset_holder_id,
+        asset_holder_name,
+        asset_holder_email,
+        asset_holder_phone,
+        asset_holder_address_id,
+        asset_holder_contact_preferences_id,
+        asset_holder_last_modified
+        <include refid="ResultMaps.orderAndPage"/>
+    </select>
+
     <select id="selectUserById" resultMap="ResultMaps.UserMap">
         select *
         from users
@@ -33,27 +80,6 @@
         select *
         from users
         where user_is_admin = #{isAdmin}
-        <include refid="ResultMaps.orderAndPage"/>
-    </select>
-
-    <select id="selectAllAssetHoldersWithAccumulator" resultType="java.util.Map">
-        select h.asset_holder_id as id,
-               h.asset_holder_name as name,
-               h.asset_holder_email as email,
-               h.asset_holder_phone as phone,
-               h.asset_holder_address_id as addressId,
-               h.asset_holder_contact_preferences_id as contactPreferencesId,
-               h.asset_holder_last_modified as lastModified,
-               ${function}(a.asset_id) as accumulation
-        from asset_holders h
-                 left join assets a on h.asset_holder_id = a.asset_owner_id
-        group by h.asset_holder_id,
-                 h.asset_holder_name,
-                 h.asset_holder_email,
-                 h.asset_holder_phone,
-                 h.asset_holder_address_id,
-                 h.asset_holder_contact_preferences_id,
-                 h.asset_holder_last_modified
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 

@@ -9,7 +9,7 @@ import java.util.*;
 
 public final class QueryTool {
 
-    private QueryTool(){
+    private QueryTool() {
         throw new IllegalStateException("Utility class");
     }
 
@@ -57,5 +57,28 @@ public final class QueryTool {
         }
 
         return false;
+    }
+
+    private static List<String> registeredColumnPrefixes = List.of(
+            "asset_holder",
+            "asset_type",
+            "asset",
+            "user",
+            "address",
+            "contact_preferences",
+            "warning");
+
+    public static List<Map<String, String>> filterOrderList(List<Map<String, String>> originalList, String... prefixes) {
+        if (originalList == null || originalList.isEmpty() || prefixes == null || prefixes.length == 0) return null;
+        List<Map<String, String>> list = new ArrayList<>();
+        for (Map<String, String> item : originalList) {
+            String column = item.get("column");
+            for (String prefix : registeredColumnPrefixes) {
+                if (column.startsWith(prefix)) {
+                    list.add(item);
+                }
+            }
+        }
+        return list;
     }
 }

@@ -4,6 +4,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.validation.ObjectError;
 import uk.ac.bristol.pojo.User;
+import uk.ac.bristol.pojo.UserWithAssetHolder;
 
 import java.util.List;
 import java.util.Map;
@@ -26,11 +27,19 @@ public interface UserMapper {
                                  @Param("limit") Integer limit,
                                  @Param("offset") Integer offset);
 
-    List<Map<String, Object>> selectAllAssetHoldersWithAccumulator(@Param("function") String function,
-                                                                   @Param("column") String column,
-                                                                   @Param("orderList") List<Map<String, String>> orderList,
-                                                                   @Param("limit") Integer limit,
-                                                                   @Param("offset") Integer offset);
+    List<UserWithAssetHolder> selectAllUsersWithAssetHolder(@Param("orderList") List<Map<String, String>> orderList,
+                                                            @Param("limit") Integer limit,
+                                                            @Param("offset") Integer offset);
+
+    List<UserWithAssetHolder> selectAllUnauthorisedUsersWithAssetHolder(@Param("orderList") List<Map<String, String>> orderList,
+                                                                        @Param("limit") Integer limit,
+                                                                        @Param("offset") Integer offset);
+
+    List<UserWithAssetHolder> selectAllUsersWithAccumulator(@Param("function") String function,
+                                                            @Param("column") String column,
+                                                            @Param("orderList") List<Map<String, String>> orderList,
+                                                            @Param("limit") Integer limit,
+                                                            @Param("offset") Integer offset);
 
     int insertUser(User user);
 
