@@ -58,7 +58,12 @@ public class MetOfficeWarningsFetcher {
             // 3. 發送請求並取得字串回應
             HttpResponse<String> response =
                     client.send(request, HttpResponse.BodyHandlers.ofString());
+            /* ---------- HTTP status handling ---------- */
+            if (!handleStatusCode(response.statusCode())) {
+                return;
+            }
 
+            /* ---------- 200 OK flow ---------- */
             if (response.statusCode() != 200) {
                 System.err.println("HTTP error: " + response.statusCode());
                 return;
@@ -164,4 +169,44 @@ public class MetOfficeWarningsFetcher {
         return features.isArray();  // 如果features 不是陣列，就視為錯誤
     }
 
+    private static boolean handleStatusCode(int code) {
+        if (code == 200) return true;
+        String msg;
+        switch (code) {
+                        case 400:
+                msg = "HTTP 400 Bad Request";
+                break;
+            case 401:
+                msg = "HTTP 401 Unauthorized";
+                break;
+            case 403:
+                msg = "HTTP 403 Forbidden";
+                break;
+            case 404:
+                msg = "HTTP 404 Not Found";
+                break;
+            case 408:
+                msg = "HTTP 408 Request Timeout";
+                break;
+            case 429:
+                msg = "HTTP 429 Too Many Requests";
+                break;
+            case 500:
+                msg = "HTTP 500 Internal Server Error";
+                break;
+            case 502:
+                msg = "HTTP 502 Bad Gateway";
+                break;
+            case 503:
+                msg = "HTTP 503 Service Unavailable";
+                break;
+            case 504:
+                msg = "HTTP 504 Gateway Timeout";
+                break;
+            default:
+                msg = "HTTP "+ Integer.toString(code);
+        }
+        System.err.println(msg);
+        return false;
+    }
 }
