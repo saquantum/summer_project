@@ -183,25 +183,32 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserByUserId(String uid,
-                                List<Map<String, String>> orderList,
-                                Integer limit,
-                                Integer offset) {
+    public User getUserByUserId(String uid) {
         List<User> user = userMapper.selectUserById(uid);
         if (user.size() != 1) {
             throw new RuntimeException("Get " + user.size() + " users using user id " + uid);
         }
         if (user.get(0).getAssetHolderId() != null) {
             List<AssetHolder> assetHolder = assetHolderMapper.selectAssetHolderByIDs(
-                    List.of(user.get(0).getAssetHolderId()),
-                    QueryTool.filterOrderList(orderList, "asset_holder"),
-                    limit, offset);
+                    List.of(user.get(0).getAssetHolderId()), null, null, null);
             if (assetHolder.size() != 1) {
                 throw new RuntimeException("Get " + assetHolder.size() + " asset holders using asset holder id " + user.get(0).getAssetHolderId());
             }
             user.get(0).setAssetHolder(this.prepareAssetHolder(assetHolder.get(0)));
         }
         return user.get(0);
+    }
+
+    @Override
+    public boolean testUIDExistence(String id) {
+        List<User> list = userMapper.selectUserById(id);
+        return !list.isEmpty();
+    }
+
+    @Override
+    public boolean testEmailExistence(String email) {
+        Boolean b = assetHolderMapper.testEmailAddressExistence(email);
+        return b != null && b;
     }
 
     @Override
@@ -278,8 +285,16 @@ public class UserServiceImpl implements UserService {
         user.setAssetHolderId(assetHolderId);
         ah.setId(assetHolderId);
         ah.setAddressId(assetHolderId);
+        if(ah.getAddress() == null) {
+            Map<String, String> address = new HashMap<>();
+            ah.setAddress(address);
+        }
         ah.getAddress().put("assetHolderId", ah.getAddressId());
         ah.setContactPreferencesId(assetHolderId);
+        if(ah.getContactPreferences() == null) {
+            Map<String, Object> cp = new HashMap<>();
+            ah.setContactPreferences(cp);
+        }
         ah.getContactPreferences().put("assetHolderId", ah.getContactPreferencesId());
         ah.setLastModified(Instant.now());
 
@@ -336,7 +351,7 @@ public class UserServiceImpl implements UserService {
     public int deleteUserByUserIds(List<String> ids) {
         int sum = 0;
         for (String id : ids) {
-            User user = this.getUserByUserId(id, null, null, null);
+            User user = this.getUserByUserId(id);
             Integer n1 = null;
             if (user.getAssetHolderId() != null) {
                 n1 = this.deleteAssetHolderByAssetHolderIds(new String[]{user.getAssetHolderId()});

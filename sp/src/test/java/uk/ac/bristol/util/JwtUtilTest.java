@@ -40,17 +40,14 @@ public class JwtUtilTest {
 
         request.setCookies(new Cookie("token", "abc123"));
 
-        String token = JwtUtil.getJWTFromCookie(request, response);
+        String token = JwtUtil.getJWTFromCookie(request);
         assertEquals("abc123", token);
 
         request = new MockHttpServletRequest();
-        response = new MockHttpServletResponse();
 
-        token = JwtUtil.getJWTFromCookie(request, response);
+        token = JwtUtil.getJWTFromCookie(request);
 
         assertNull(token);
-        assertEquals(401, response.getStatus());
-        assertTrue(response.getContentAsString().toLowerCase().contains("missing"));
     }
 
     @Test

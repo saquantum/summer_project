@@ -17,10 +17,10 @@ public class SpInterceptor implements HandlerInterceptor {
         }
         String uri = request.getRequestURI();
         if (uri.contains("admin")) {
-            String token = JwtUtil.getJWTFromCookie(request, response);
+            String token = JwtUtil.getJWTFromCookie(request);
             if (token == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Token is missing, sign in.");
+                response.getWriter().write("Missing token.");
                 return false;
             }
             Claims claims;
@@ -31,7 +31,6 @@ public class SpInterceptor implements HandlerInterceptor {
                 response.getWriter().write("Token invalid or expired.");
                 return false;
             }
-
             if (!Boolean.TRUE.equals(claims.get("isAdmin", Boolean.class))) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.getWriter().write("Access denied. Admin only.");

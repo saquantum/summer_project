@@ -37,7 +37,7 @@ public final class QueryTool {
         }
         Claims claims = null;
         try {
-            claims = JwtUtil.parseJWT(JwtUtil.getJWTFromCookie(request, response));
+            claims = JwtUtil.parseJWT(JwtUtil.getJWTFromCookie(request));
         } catch (IOException e) {
             return false;
         }

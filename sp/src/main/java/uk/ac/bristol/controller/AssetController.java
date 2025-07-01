@@ -41,7 +41,7 @@ public class AssetController {
         if (!QueryTool.userIdentityVerification(response, request, id, null)) {
             throw new SpExceptions.GetMethodException("User identification failed");
         }
-        User user = userService.getUserByUserId(id, null, null, null);
+        User user = userService.getUserByUserId(id);
         List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(user.getAssetHolderId(), QueryTool.getOrderList(orderList), limit, offset);
         return new ResponseBody(Code.SELECT_OK, assets);
     }
@@ -65,7 +65,7 @@ public class AssetController {
                                                      @RequestParam(required = false) List<String> orderList,
                                                      @RequestParam(required = false) Integer limit,
                                                      @RequestParam(required = false) Integer offset) {
-        User user = userService.getUserByUserId(id, null, null, null);
+        User user = userService.getUserByUserId(id);
         List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(user.getAssetHolderId(), QueryTool.getOrderList(orderList), limit, offset);
         return new ResponseBody(Code.SELECT_OK, assets);
     }
@@ -255,7 +255,7 @@ public class AssetController {
         List<Asset> asset = assetService.getAssetById(assetId);
         if(asset.size() != 1) return false;
         if(uid != null){
-            User user = userService.getUserByUserId(uid, null, null, null);
+            User user = userService.getUserByUserId(uid);
             if(user.getAssetHolder() == null) return false;
             if(!Objects.equals(user.getAssetHolder().getId(), asset.get(0).getOwnerId())) return false;
         }

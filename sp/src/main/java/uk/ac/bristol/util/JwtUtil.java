@@ -46,13 +46,14 @@ public final class JwtUtil {
     }
 
     public static Claims parseJWT(String jwt) {
+        if (jwt == null || jwt.isBlank()) throw new IllegalArgumentException("jwt is null or blank");
         JwtParser parser = Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build();
         return parser.parseClaimsJws(jwt).getBody();
     }
 
-    public static String getJWTFromCookie(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public static String getJWTFromCookie(HttpServletRequest request) throws IOException {
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
                 if ("token".equals(cookie.getName())) {
@@ -60,10 +61,6 @@ public final class JwtUtil {
                 }
             }
         }
-
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write("{\"code\":401, \"message\":\"Missing or empty token\"}");
         return null;
     }
 
