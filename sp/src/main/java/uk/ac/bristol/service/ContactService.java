@@ -11,4 +11,8 @@ public interface ContactService {
     ResponseBody sendEmail(Map<String, Object> notification);
 
     ResponseBody unsubscribeEmail(String token);
+
+    ResponseBody generateCode(String email);
+
+    ResponseBody validateCode(String email, String code);
 }

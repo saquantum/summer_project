@@ -50,4 +50,6 @@ public interface AssetHolderMapper {
     int deleteAssetHolderByAssetHolderIDs(@Param("ids") String[] ids);
 
     int deleteAssetHolderByAssetHolderIDs(@Param("ids") List<String> ids);
+
+    List<String> selectAssetHolderIdByEmail(@Param("email") String email);
 }

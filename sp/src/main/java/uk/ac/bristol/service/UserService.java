@@ -1,5 +1,6 @@
 package uk.ac.bristol.service;
 
+import org.apache.ibatis.annotations.Param;
 import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
 
@@ -69,4 +70,8 @@ public interface UserService {
     int deleteAssetHolderByAssetHolderIds(String[] ids);
 
     int deleteAssetHolderByAssetHolderIds(List<String> ids);
+
+    int updatePasswordByEmail(String email, String password);
+
+    int updatePasswordByUserId(@Param("id") String id, @Param("password") String password);
 }

@@ -1,5 +1,6 @@
 package uk.ac.bristol.service.impl;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -385,5 +386,19 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Error deleting asset holders: affected rows not compatible");
         }
         return n1;
+    }
+
+    @Override
+    public int updatePasswordByEmail(String email, String password) {
+        List<String> list = assetHolderMapper.selectAssetHolderIdByEmail(email);
+        if (list.size() != 1) {
+            throw new RuntimeException("Error finding asset holder by email");
+        }
+        return updatePasswordByUserId(list.get(0), password);
+    }
+
+    @Override
+    public int updatePasswordByUserId(String id, String password) {
+        return userMapper.updatePasswordByUserId(id, password);
     }
 }

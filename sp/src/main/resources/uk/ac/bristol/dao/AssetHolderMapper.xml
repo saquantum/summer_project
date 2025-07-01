@@ -129,4 +129,8 @@
         delete from asset_holders where asset_holder_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
+
+    <select id="selectAssetHolderIdByEmail" resultMap="ResultMaps.AssetHolderMap">
+        select asset_holder_id from asset_holders where asset_holder_email = #{email};
+    </select>
 </mapper>

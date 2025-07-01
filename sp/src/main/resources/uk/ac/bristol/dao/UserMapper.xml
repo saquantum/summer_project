@@ -108,4 +108,12 @@
         delete from users where user_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
+
+    <update id="updatePasswordByUserId">
+        update users
+        <set>
+            user_password = #{password}
+        </set>
+        where user_id = #{id};
+    </update>
 </mapper>

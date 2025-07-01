@@ -24,6 +24,7 @@ import uk.ac.bristol.util.JwtUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
@@ -34,6 +35,10 @@ public class ContactServiceImpl implements ContactService {
 
     @Value("${app.base-url}")
     private String baseURL;
+
+    private final Map<String, String> codeStore = new ConcurrentHashMap<>();
+    private final Map<String, Long> timestampStore = new ConcurrentHashMap<>();
+    private static final long EXPIRE_TIME = 5 * 60 * 1000;
 
     private final JavaMailSender mailSender;
 
@@ -154,5 +159,59 @@ public class ContactServiceImpl implements ContactService {
 
         ah.getContactPreferences().put("email", false);
         return new ResponseBody(Code.DELETE_OK, null, "Successfully unsubscribed email for user " + uid);
+    }
+
+    @Override
+    public ResponseBody generateCode(String email) {
+        if (email == null) {
+            return new ResponseBody(Code.BUSINESS_ERR, null, "Failed to send email because email address is null");
+        }
+        if (!checkEmailExistsInDB(email)) {
+            return new ResponseBody(Code.BUSINESS_ERR, null, "Failed to send email because email address doesn't exist");
+        }
+        String code = String.valueOf(new Random().nextInt(899999) + 100000);
+        codeStore.put(email, code);
+        timestampStore.put(email, System.currentTimeMillis());
+        sendVerificationEmail(email, code);
+        return new ResponseBody(Code.SUCCESS, null, "Verification code has been sent to " + email);
+    }
+
+    private void sendVerificationEmail(String email, String verificationCode) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(from);
+        message.setTo(email);
+        message.setSubject("Verification your email!");
+
+        message.setText("This verifacation code is valide in 5 minutes."
+                + System.lineSeparator()
+                + verificationCode);
+        mailSender.send(message);
+    }
+
+    private boolean checkEmailExistsInDB(String email) {
+        List<AssetHolder> list = assetHolderMapper.selectAllAssetHolders(null,null,null);
+        for(AssetHolder ah : list) {
+            if (ah.getEmail().equals(email)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public ResponseBody validateCode(String email, String code) {
+        String savedCode = codeStore.get(email);
+        Long time = timestampStore.get(email);
+        if (savedCode == null || time == null) {
+            return new ResponseBody(Code.BUSINESS_ERR, null, "Verification code doesn't exists!");
+        }
+        if (System.currentTimeMillis() - time > EXPIRE_TIME) {
+            return new ResponseBody(Code.BUSINESS_ERR, null, "Verification code has expired!");
+        }
+        if(savedCode.equals(code)) {
+            return new ResponseBody(Code.SUCCESS, null, "Verification code has been validated!");
+        } else {
+            return new ResponseBody(Code.BUSINESS_ERR, null, "You entered wrong verification code!");
+        }
     }
 }
