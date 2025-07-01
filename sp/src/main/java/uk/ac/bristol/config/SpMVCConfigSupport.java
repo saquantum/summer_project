@@ -25,6 +25,6 @@ public class SpMVCConfigSupport extends WebMvcConfigurationSupport {
                 .addPathPatterns("/api/user/**")
                 .addPathPatterns("/api/asset/**")
                 .addPathPatterns("/api/warning/**")
-                .addPathPatterns("/**/admin/**");
+                .addPathPatterns("/api/admin/**");
     }
 }

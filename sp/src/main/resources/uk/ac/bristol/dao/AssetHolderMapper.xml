@@ -89,6 +89,12 @@
         </where>
     </select>
 
+    <select id="testEmailAddressExistence" resultType="java.lang.Boolean">
+        select count(*) > 0
+        from asset_holders
+        where asset_holder_email = #{email};
+    </select>
+
     <insert id="insertAssetHolder" >
         insert into asset_holders (asset_holder_id,
                                    asset_holder_name,

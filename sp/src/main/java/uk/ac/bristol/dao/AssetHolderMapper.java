@@ -41,6 +41,8 @@ public interface AssetHolderMapper {
 
     List<AssetHolder> selectByAssetHolder(AssetHolder assetHolder);
 
+    Boolean testEmailAddressExistence(@Param("email") String email);
+
     int insertAssetHolder(AssetHolder assetHolder);
 
     int insertAssetHolderAutoId(AssetHolder assetHolder);

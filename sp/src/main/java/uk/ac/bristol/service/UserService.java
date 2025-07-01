@@ -45,10 +45,11 @@ public interface UserService {
                                 Integer limit,
                                 Integer offset);
 
-    User getUserByUserId(String id,
-                         List<Map<String, String>> orderList,
-                         Integer limit,
-                         Integer offset);
+    User getUserByUserId(String id);
+
+    boolean testUIDExistence(String id);
+
+    boolean testEmailExistence(String email);
 
     int insertUser(User user);
 

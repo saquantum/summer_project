@@ -1,11 +1,14 @@
 package uk.ac.bristol.controller;
 
 import org.springframework.web.bind.annotation.*;
+import uk.ac.bristol.exception.SpExceptions;
+import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -29,12 +32,57 @@ public class LoginController {
     }
 
     @PostMapping("/register")
-    public ResponseBody register(@RequestBody User user) {
+    public ResponseBody register(@RequestBody Map<String, String> body) {
+        String id = body.get("id");
+        String password = body.get("password");
+        String repassword = body.get("repassword");
+        String name = body.get("name");
+        String email = body.get("email");
+        String phone = body.get("phone");
+
+        if (id == null || id.isBlank()
+                || password == null || password.isBlank()
+                || repassword == null || repassword.isBlank()
+                || name == null || name.isBlank()
+                || email == null || email.isBlank()
+                || phone == null || phone.isBlank()) {
+            throw new SpExceptions.BusinessException("Key fields missing during registration.");
+        }
+
+        if(!password.equals(repassword)) {
+            throw new SpExceptions.BusinessException("Two passwords don't match.");
+        }
+
+        AssetHolder ah = new AssetHolder();
+        ah.setName(name);
+        ah.setEmail(email);
+        ah.setPhone(phone);
+        User user = new User();
+        user.setId(id);
+        user.setPassword(password);
+        user.setAssetHolder(ah);
+
         try {
             userService.registerNewUser(user);
             return new ResponseBody(Code.SUCCESS, null, "Success.");
         } catch (Exception e) {
             return new ResponseBody(Code.REGISTER_ERR, null, "Failed to register the user." + e.getMessage());
         }
+    }
+
+    @GetMapping("/exists/uid/{id}")
+    public ResponseBody checkUIDExistence(@PathVariable String id) {
+        if (userService.testUIDExistence(id)) {
+            return new ResponseBody(Code.SELECT_OK, null, "The user id already exists.");
+        }
+        return new ResponseBody(Code.SELECT_ERR, null, "The user id does not exist.");
+    }
+
+    @GetMapping("/exists/email/{email}")
+    public ResponseBody checkEmailExistence(@PathVariable String email) {
+        if (userService.testEmailExistence(email)) {
+            return new ResponseBody(Code.SELECT_OK, null, "The email address already exists.");
+        }
+        return new ResponseBody(Code.SELECT_ERR, null, "The email address does not exist.");
     }
 }

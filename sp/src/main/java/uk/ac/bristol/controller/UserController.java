@@ -29,7 +29,7 @@ public class UserController {
         if (!QueryTool.userIdentityVerification(response, request, id, null)) {
             throw new SpExceptions.GetMethodException("User identification failed");
         }
-        User user = userService.getUserByUserId(id, null, null, null);
+        User user = userService.getUserByUserId(id);
         user.setPassword(null);
         return new ResponseBody(Code.SELECT_OK, user);
     }

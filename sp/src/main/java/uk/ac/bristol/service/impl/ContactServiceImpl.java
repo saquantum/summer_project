@@ -146,7 +146,7 @@ public class ContactServiceImpl implements ContactService {
         }
         String uid = claims.get("unsubscribe-email-uid").toString();
 
-        User user = userService.getUserByUserId(uid, null, null, null);
+        User user = userService.getUserByUserId(uid);
         AssetHolder ah = user.getAssetHolder();
         if (ah == null) {
             throw new SpExceptions.BusinessException("The user has no active asset holder details");
