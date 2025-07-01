@@ -49,7 +49,6 @@ const tabs = [
 ]
 const dialogVisible = ref(false)
 
-// 使用 computed 确保响应式
 const showUserSideBar = computed(() => {
   if (!userStore.user.admin) {
     return true
@@ -193,6 +192,11 @@ watch(
             <span>Current Warning</span>
           </el-menu-item>
         </el-sub-menu>
+
+        <el-menu-item index="/admin/access/settings">
+          <el-icon><MessageBox /></el-icon>
+          <span>Access Settings</span>
+        </el-menu-item>
 
         <el-menu-item index="/admin/message">
           <el-icon><MessageBox /></el-icon>

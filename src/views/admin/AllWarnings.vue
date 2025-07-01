@@ -2,8 +2,9 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWarningStore } from '@/stores'
-
-const warnings = ref([])
+// TODO: warning display visibility function
+const outdatedWarnings = ref([])
+const liveWarnings = ref([])
 const router = useRouter()
 const warningStore = useWarningStore()
 const mapId = 'allWarningsMap'
@@ -19,7 +20,7 @@ const handleDelete = (row) => {
 
 const processWarnings = () => {
   warningPolygon.value = []
-  warnings.value = warningStore.allWarnings.map((item) => {
+  liveWarnings.value = warningStore.liveWarnings.map((item) => {
     const style = setWarningLevelStyle(item.warningLevel)
     const area = { ...item.area, style }
     warningPolygon.value.push(area)
@@ -31,9 +32,20 @@ const processWarnings = () => {
       warningLikelihood: item.warningLikelihood,
       validFrom: new Date(item.validFrom * 1000).toLocaleString(),
       validTo: new Date(item.validTo * 1000).toLocaleString(),
-      period: `${new Date(item.validFrom * 1000).toLocaleString()} - ${new Date(item.validTo * 1000).toLocaleString()}`,
+      period: `${new Date(item.validFrom * 1000).toLocaleString()} - ${new Date(item.validTo * 1000).toLocaleString()}`
+    }
+  })
 
-      area
+  outdatedWarnings.value = warningStore.outdatedWarnings.map((item) => {
+    return {
+      id: item.id,
+      weatherType: item.weatherType,
+      warningImpact: item.warningImpact,
+      warningLevel: item.warningLevel,
+      warningLikelihood: item.warningLikelihood,
+      validFrom: new Date(item.validFrom * 1000).toLocaleString(),
+      validTo: new Date(item.validTo * 1000).toLocaleString(),
+      period: `${new Date(item.validFrom * 1000).toLocaleString()} - ${new Date(item.validTo * 1000).toLocaleString()}`
     }
   })
 }
@@ -63,6 +75,7 @@ const setWarningLevelStyle = (level) => {
 
 onMounted(async () => {
   await warningStore.getAllWarnings()
+  await warningStore.getAllLiveWarnings()
   processWarnings()
 })
 
@@ -80,7 +93,7 @@ watch(
     <div class="table-section">
       <div class="warning-card">
         <el-table
-          :data="warnings"
+          :data="liveWarnings"
           stripe
           style="width: 100%"
           table-layout="auto"
@@ -121,6 +134,13 @@ watch(
               </el-button>
               <el-button
                 text
+                type="primary"
+                size="small"
+                @click="handleDisplay(scope.row)"
+                >Show Detail
+              </el-button>
+              <el-button
+                text
                 type="danger"
                 size="small"
                 @click="handleDelete(scope.row)"
@@ -134,7 +154,7 @@ watch(
       <!-- expired table -->
       <div class="expired-card">
         <el-table
-          :data="[]"
+          :data="outdatedWarnings"
           stripe
           style="width: 100%"
           table-layout="auto"
@@ -150,7 +170,24 @@ watch(
             width="120"
           />
           <el-table-column prop="period" label="Period" width="180" />
-          <el-table-column label="Actions" width="180"></el-table-column>
+          <el-table-column label="Actions" width="180">
+            <template #default="scope">
+              <el-button
+                text
+                type="primary"
+                size="small"
+                @click="handleShowDetail(scope.row)"
+                >Show Detail
+              </el-button>
+              <el-button
+                text
+                type="danger"
+                size="small"
+                @click="handleDelete(scope.row)"
+                >Delete
+              </el-button>
+            </template>
+          </el-table-column>
         </el-table>
       </div>
     </div>

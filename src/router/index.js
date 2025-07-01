@@ -59,6 +59,10 @@ const router = createRouter({
         {
           path: 'admin/message',
           component: () => import('@/views/message/index.vue')
+        },
+        {
+          path: 'admin/access/settings',
+          component: () => import('@/views/admin/AccessControl.vue')
         }
       ]
     }
