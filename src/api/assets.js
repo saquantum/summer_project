@@ -10,7 +10,7 @@ export const assetUpdateInfoService = (id, ownerId, location) => {
     location: location
   }
   console.log(obj)
-  return request.put('/asset', obj)
+  return request.put('/admin/asset', obj)
 }
 
 export const assetInsertService = (id, ownerId, location) => {

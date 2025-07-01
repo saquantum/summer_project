@@ -1,19 +1,48 @@
 <script setup>
-import { User, Lock } from '@element-plus/icons-vue'
+import { User, Lock, Message, Phone } from '@element-plus/icons-vue'
 import { ref, watch } from 'vue'
 import { userRegisterService } from '@/api/user'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
-const form = ref()
+const loginFormRef = ref()
+const registerFormRef = ref()
+
 const isRegister = ref(false)
 const isRecover = ref(false)
-const formModel = ref({
+
+const loginForm = ref({
   username: '',
   password: '',
   repassword: '',
   captcha: '',
   email: ''
 })
+
+const registerForm = ref({
+  id: '',
+  firstName: '',
+  lastName: '',
+  assetHolder: {
+    name: 'default name',
+    email: '',
+    phone: '',
+    address: {
+      street: '',
+      postcode: '',
+      city: '',
+      country: ''
+    },
+    contact_preferences: {
+      email: true,
+      phone: false,
+      whatsapp: false,
+      discord: false,
+      post: false,
+      telegram: false
+    }
+  }
+})
+
 const rules = {
   // customize rules here
   username: [
@@ -46,7 +75,7 @@ const rules = {
     },
     {
       validator: (rule, value, callback) => {
-        if (value !== formModel.value.password) {
+        if (value !== registerForm.value.password) {
           callback(new Error("Those passwords didn't match. Try again."))
         } else {
           callback()
@@ -80,12 +109,27 @@ const rules = {
       message: 'Please input a valid email address',
       trigger: ['blur', 'change']
     }
+  ],
+  phone: [
+    { required: true, message: 'Phone is required', trigger: 'blur' },
+    {
+      validator: (rule, value, callback) => {
+        const phoneRegex = /^[0-9+\-()\s]{7,20}$/
+        if (!phoneRegex.test(value)) {
+          callback(new Error('Invalid phone number'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
   ]
 }
 
 const register = async () => {
-  await form.value.validate()
-  await userRegisterService(formModel.value)
+  await registerFormRef.value.validate()
+  const res = await userRegisterService(registerForm.value)
+  console.log(res)
   ElMessage.success('success')
   isRegister.value = false
 }
@@ -94,23 +138,23 @@ const router = useRouter()
 const userStore = useUserStore()
 const login = async () => {
   try {
-    await form.value.validate()
+    await loginFormRef.value.validate()
   } catch {
     return
   }
 
   try {
-    await userStore.getUser(formModel.value)
+    await userStore.getUser(loginForm.value)
     ElMessage.success('success')
     router.push('/')
   } catch {
-    formModel.value.password = ''
+    loginForm.value.password = ''
     ElMessage.error('Username or password is incorrect')
   }
 }
 
 watch(isRegister, () => {
-  formModel.value = {
+  loginForm.value = {
     username: '',
     password: '',
     repassword: ''
@@ -124,9 +168,9 @@ watch(isRegister, () => {
       <el-card class="glass-effect" style="width: 90%; max-width: 400px">
         <!-- Sign in form -->
         <el-form
-          :model="formModel"
+          :model="loginForm"
           :rules="rules"
-          ref="form"
+          ref="loginFormRef"
           size="large"
           autocomplete="off"
           class="form-style"
@@ -137,14 +181,14 @@ watch(isRegister, () => {
           </el-form-item>
           <el-form-item prop="username">
             <el-input
-              v-model="formModel.username"
+              v-model="loginForm.username"
               :prefix-icon="User"
               placeholder="Please input username"
             ></el-input>
           </el-form-item>
           <el-form-item prop="password">
             <el-input
-              v-model="formModel.password"
+              v-model="loginForm.password"
               name="password"
               :prefix-icon="Lock"
               type="password"
@@ -181,9 +225,9 @@ watch(isRegister, () => {
         <!-- Register form -->
         <el-form
           class="form-style"
-          :model="formModel"
+          :model="registerForm"
           :rules="rules"
-          ref="form"
+          ref="registerFormRef"
           size="large"
           autocomplete="off"
           v-else-if="isRegister && !isRecover"
@@ -191,9 +235,31 @@ watch(isRegister, () => {
           <el-form-item>
             <h1>Register</h1>
           </el-form-item>
+          <el-form-item prop="email">
+            <el-input
+              v-model="registerForm.assetHolder.email"
+              :prefix-icon="Message"
+              placeholder="Please input your email"
+              style="width: 100%"
+              type="email"
+              autocomplete="email"
+            ></el-input>
+          </el-form-item>
+
+          <el-form-item prop="phone">
+            <el-input
+              v-model="registerForm.assetHolder.phone"
+              :prefix-icon="Phone"
+              placeholder="Please input your phone number"
+              style="width: 100%"
+              type="phone"
+              autocomplete="phone"
+            ></el-input>
+          </el-form-item>
+
           <el-form-item prop="username">
             <el-input
-              v-model="formModel.username"
+              v-model="registerForm.id"
               :prefix-icon="User"
               placeholder="Please input username"
               style="width: 100%"
@@ -201,7 +267,7 @@ watch(isRegister, () => {
           </el-form-item>
           <el-form-item prop="password">
             <el-input
-              v-model="formModel.password"
+              v-model="registerForm.password"
               :prefix-icon="Lock"
               type="password"
               placeholder="Please input password"
@@ -209,7 +275,7 @@ watch(isRegister, () => {
           </el-form-item>
           <el-form-item prop="repassword">
             <el-input
-              v-model="formModel.repassword"
+              v-model="registerForm.repassword"
               :prefix-icon="Lock"
               type="password"
               placeholder="Please input password again"
@@ -231,11 +297,10 @@ watch(isRegister, () => {
             </el-link>
           </el-form-item>
         </el-form>
-
         <!-- recover form -->
         <el-form
           v-if="isRecover"
-          :model="formModel"
+          :model="loginForm"
           :rules="rules"
           ref="form"
           size="large"
@@ -247,7 +312,7 @@ watch(isRegister, () => {
           </el-form-item>
           <el-form-item prop="email">
             <el-input
-              v-model="formModel.email"
+              v-model="loginForm.email"
               :prefix-icon="User"
               placeholder="Enter your email address"
               type="email"
@@ -257,7 +322,7 @@ watch(isRegister, () => {
 
           <el-form-item prop="captcha">
             <el-input
-              v-model="formModel.captcha"
+              v-model="loginForm.captcha"
               :prefix-icon="Lock"
               placeholder="Enter captcha code"
               maxlength="6"

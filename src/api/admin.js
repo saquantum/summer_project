@@ -30,8 +30,10 @@ export const adminGetUserAssetsService = (id) => {
   return request.get(`/admin/user/aid/${id}/asset`)
 }
 
-export const adminGetWarningsService = () => request.get('/admin/warning/all')
+export const adminGetAllWarningsService = () =>
+  request.get('/admin/warning/all')
 
+export const adminGetAllLiveWarningsService = () => request.get('/warning')
 export const adminGetUKMapService = () =>
   request.get(
     'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/united-kingdom.geojson'

@@ -1,7 +1,7 @@
 <script setup>
-import {ref, onMounted, watch} from 'vue'
-import {useRouter} from 'vue-router'
-import {useWarningStore} from '@/stores'
+import { ref, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { useWarningStore } from '@/stores'
 
 const warnings = ref([])
 const router = useRouter()
@@ -21,7 +21,7 @@ const processWarnings = () => {
   warningPolygon.value = []
   warnings.value = warningStore.allWarnings.map((item) => {
     const style = setWarningLevelStyle(item.warningLevel)
-    const area = {...item.area, style}
+    const area = { ...item.area, style }
     warningPolygon.value.push(area)
     return {
       id: item.id,
@@ -38,7 +38,7 @@ const processWarnings = () => {
   })
 }
 
-const getRowClass = ({row}) => {
+const getRowClass = ({ row }) => {
   const level = row.warningLevel?.toLowerCase() || ''
   if (level.includes('red')) return 'row-red'
   if (level.includes('amber')) return 'row-amber'
@@ -47,7 +47,7 @@ const getRowClass = ({row}) => {
 }
 
 const setWarningLevelStyle = (level) => {
-  const style = {weight: 2, fillOpacity: 0.4}
+  const style = { weight: 2, fillOpacity: 0.4 }
   if (level?.toLowerCase().includes('yellow')) {
     style.color = '#cc9900'
     style.fillColor = '#ffff00'
@@ -71,7 +71,7 @@ watch(
   () => {
     processWarnings()
   },
-  {deep: true}
+  { deep: true }
 )
 </script>
 
@@ -87,8 +87,8 @@ watch(
           :row-class-name="getRowClass"
           class="table1"
         >
-          <el-table-column prop="id" label="ID" width="90"/>
-          <el-table-column prop="weatherType" label="Type" width="100"/>
+          <el-table-column prop="id" label="ID" width="90" />
+          <el-table-column prop="weatherType" label="Type" width="100" />
 
           <el-table-column label="Level" width="90" align="center">
             <template #default="scope">
@@ -101,14 +101,14 @@ watch(
             </template>
           </el-table-column>
 
-          <el-table-column prop="warningImpact" label="Impact" width="100"/>
+          <el-table-column prop="warningImpact" label="Impact" width="100" />
           <el-table-column
             prop="warningLikelihood"
             label="Likelihood"
             width="120"
           />
 
-          <el-table-column prop="period" label="Period" width="180"/>
+          <el-table-column prop="period" label="Period" width="180" />
 
           <el-table-column label="Actions" width="180">
             <template #default="scope">
@@ -117,17 +117,15 @@ watch(
                 type="primary"
                 size="small"
                 @click="handleShowDetail(scope.row)"
-              >Show Detail
-              </el-button
-              >
+                >Show Detail
+              </el-button>
               <el-button
                 text
                 type="danger"
                 size="small"
                 @click="handleDelete(scope.row)"
-              >Delete
-              </el-button
-              >
+                >Delete
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -142,16 +140,16 @@ watch(
           table-layout="auto"
           class="expired-table"
         >
-          <el-table-column prop="id" label="ID" width="90"/>
-          <el-table-column prop="weatherType" label="Type" width="100"/>
-          <el-table-column prop="warningLevel" label="Level" width="90"/>
-          <el-table-column prop="warningImpact" label="Impact" width="100"/>
+          <el-table-column prop="id" label="ID" width="90" />
+          <el-table-column prop="weatherType" label="Type" width="100" />
+          <el-table-column prop="warningLevel" label="Level" width="90" />
+          <el-table-column prop="warningImpact" label="Impact" width="100" />
           <el-table-column
             prop="warningLikelihood"
             label="Likelihood"
             width="120"
           />
-          <el-table-column prop="period" label="Period" width="180"/>
+          <el-table-column prop="period" label="Period" width="180" />
           <el-table-column label="Actions" width="180"></el-table-column>
         </el-table>
       </div>
@@ -321,8 +319,9 @@ watch(
   background-color: #ebf5ff;
   color: #409eff;
   border: none;
-  transition: background-color 0.2s,
-  color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 /* hover  */
@@ -336,8 +335,9 @@ watch(
   background-color: #fff0f0;
   color: #f56c6c;
   border: none;
-  transition: background-color 0.2s,
-  color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 /* hover */
