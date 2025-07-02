@@ -113,10 +113,10 @@ onMounted(async () => {
       sortable="custom"
     ></el-table-column>
     <el-table-column label="permission">
-      <template #default="scope">
+      <template #default>
         <div style="display: flex; gap: 3px">
           <PermissionIndicator :status="true"></PermissionIndicator>
-          <PermissionIndicator @click="scope"></PermissionIndicator>
+          <PermissionIndicator></PermissionIndicator>
           <PermissionIndicator></PermissionIndicator>
           <PermissionIndicator></PermissionIndicator>
           <PermissionIndicator></PermissionIndicator>
