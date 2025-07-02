@@ -1,9 +1,14 @@
 <script setup>
 import { User, Lock, Message, Phone } from '@element-plus/icons-vue'
 import { ref, watch } from 'vue'
-import { userRegisterService } from '@/api/user'
+import {
+  userCheckEmailService,
+  userCheckUIDService,
+  userRegisterService
+} from '@/api/user'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
+import CodeUtil from '@/utils/codeUtil'
 const loginFormRef = ref()
 const registerFormRef = ref()
 
@@ -51,6 +56,28 @@ const rules = {
       min: 5,
       max: 10,
       message: 'username must between 5 to 10 characters',
+      trigger: 'blur'
+    }
+  ],
+  id: [
+    { required: true, message: 'Please input username', trigger: 'blur' },
+    {
+      min: 5,
+      max: 10,
+      message: 'username must between 5 to 10 characters',
+      trigger: 'blur'
+    },
+    {
+      validator: async (rule, value, callback) => {
+        const res = await userCheckUIDService(value)
+        // success means find a username called ${value}
+        if (CodeUtil.isSuccess(res.code)) {
+          callback(
+            new Error(`Username ${value} is already exists, try a new one`)
+          )
+        }
+        callback()
+      },
       trigger: 'blur'
     }
   ],
@@ -102,15 +129,25 @@ const rules = {
       trigger: 'blur'
     }
   ],
-  email: [
+  'assetHolder.email': [
     { required: true, message: 'Please input email', trigger: 'blur' },
     {
       type: 'email',
       message: 'Please input a valid email address',
       trigger: ['blur', 'change']
+    },
+    {
+      validator: async (rule, value, callback) => {
+        const res = await userCheckEmailService(value)
+        if (CodeUtil.isSuccess(res.code)) {
+          callback(new Error('This email has already been used'))
+        }
+        callback()
+      },
+      trigger: 'blur'
     }
   ],
-  phone: [
+  'assetHolder.phone': [
     { required: true, message: 'Phone is required', trigger: 'blur' },
     {
       validator: (rule, value, callback) => {
@@ -120,6 +157,15 @@ const rules = {
         } else {
           callback()
         }
+      },
+      trigger: 'blur'
+    },
+    {
+      validator: async (rule, value, callback) => {
+        console.log('???')
+        const res = await userCheckEmailService(value)
+        console.log(res)
+        callback()
       },
       trigger: 'blur'
     }
@@ -235,7 +281,7 @@ watch(isRegister, () => {
           <el-form-item>
             <h1>Register</h1>
           </el-form-item>
-          <el-form-item prop="email">
+          <el-form-item prop="assetHolder.email">
             <el-input
               v-model="registerForm.assetHolder.email"
               :prefix-icon="Message"
@@ -246,7 +292,7 @@ watch(isRegister, () => {
             ></el-input>
           </el-form-item>
 
-          <el-form-item prop="phone">
+          <el-form-item prop="assetHolder.phone">
             <el-input
               v-model="registerForm.assetHolder.phone"
               :prefix-icon="Phone"
@@ -257,7 +303,7 @@ watch(isRegister, () => {
             ></el-input>
           </el-form-item>
 
-          <el-form-item prop="username">
+          <el-form-item prop="id">
             <el-input
               v-model="registerForm.id"
               :prefix-icon="User"

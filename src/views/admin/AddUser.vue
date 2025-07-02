@@ -1,5 +1,10 @@
 <script setup>
-import { userRegisterService } from '@/api/user'
+import {
+  userRegisterService,
+  userCheckUIDService,
+  userCheckEmailService
+} from '@/api/user'
+import CodeUtil from '@/utils/codeUtil'
 import { ElMessage } from 'element-plus'
 import { ref, onMounted } from 'vue'
 
@@ -31,6 +36,40 @@ const form = ref({
 const formRef = ref()
 
 const rules = {
+  id: [
+    { required: true, message: 'Please input username', trigger: 'blur' },
+    {
+      min: 5,
+      max: 10,
+      message: 'username must between 5 to 10 characters',
+      trigger: 'blur'
+    },
+    {
+      validator: async (rule, value, callback) => {
+        const res = await userCheckUIDService(value)
+        // success means find a username called ${value}
+        if (CodeUtil.isSuccess(res.code)) {
+          callback(
+            new Error(`Username ${value} is already exists, try a new one`)
+          )
+        }
+        callback()
+      },
+      trigger: 'blur'
+    }
+  ],
+  password: [
+    {
+      required: true,
+      message: 'Please input password',
+      trigger: 'blur'
+    }
+    // {
+    //   pattern: /^\S{6,15}$/,
+    //   message: 'password must between 6 to 15 characters',
+    //   trigger: 'blur'
+    // }
+  ],
   firstName: [
     { required: true, message: 'First name is required', trigger: 'blur' },
     {
@@ -51,7 +90,17 @@ const rules = {
   ],
   'assetHolder.email': [
     { required: true, message: 'Email is required', trigger: 'blur' },
-    { type: 'email', message: 'Invalid email format', trigger: 'blur' }
+    { type: 'email', message: 'Invalid email format', trigger: 'blur' },
+    {
+      validator: async (rule, value, callback) => {
+        const res = await userCheckEmailService(value)
+        if (CodeUtil.isSuccess(res.code)) {
+          callback(new Error('This email has already been used'))
+        }
+        callback()
+      },
+      trigger: 'blur'
+    }
   ],
   'assetHolder.phone': [
     { required: true, message: 'Phone is required', trigger: 'blur' },

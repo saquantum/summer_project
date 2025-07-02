@@ -14,3 +14,8 @@ export const userGetInfoService = (id) => {
 export const userUpdateService = (id) => {
   return request.get(`/user/uid/${id}`)
 }
+
+export const userCheckUIDService = (id) => request.get(`exists/uid/${id}`)
+
+export const userCheckEmailService = (email) =>
+  request.get(`exists/email/${email}`)

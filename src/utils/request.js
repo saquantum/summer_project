@@ -1,5 +1,6 @@
 import axios from 'axios'
 import router from '@/router'
+import { useUserStore } from '@/stores'
 
 const baseURL = '/api'
 
@@ -24,8 +25,6 @@ instance.interceptors.response.use(
   function (response) {
     // Any status code that lie within the range of 2xx cause this function to trigger
     // Do something with response data
-
-    // TODO: login successful logic
     if (response.data) {
       return response.data
     }
@@ -38,9 +37,10 @@ instance.interceptors.response.use(
 
     // 401 permission denied or token expired
     if (error.response?.status === 401) {
+      const userStore = useUserStore()
+      userStore.reset()
       router.push('/login')
     }
-
     // default
     return Promise.reject(error)
   }

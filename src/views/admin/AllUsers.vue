@@ -2,16 +2,12 @@
 import { ref, onMounted } from 'vue'
 import { adminGetUsersService } from '@/api/admin'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '@/stores'
 
 const router = useRouter()
 const users = ref([])
-const userStore = useUserStore()
-const handleShowDetail = async (row) => {
-  userStore.setProxyId(row.assetHolderId)
 
-  // goto user interface
-  router.push('/myassets/manage')
+const handleEdit = async (row) => {
+  router.push({ path: '/admin/user/detail', query: { id: row.assetHolderId } })
 }
 
 const handleSortChange = ({ prop, order }) => {
@@ -68,8 +64,8 @@ onMounted(async () => {
           text
           type="primary"
           size="small"
-          @click="handleShowDetail(scope.row)"
-          >Show Detail</el-button
+          @click="handleEdit(scope.row)"
+          >Edit</el-button
         >
         <el-button
           text
