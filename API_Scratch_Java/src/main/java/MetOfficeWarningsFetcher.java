@@ -16,7 +16,7 @@ import java.nio.file.Path;
 
 /**
  * 拉取 Met Office 國家級氣象警報 (NSWWS) 的即時資料
- * 精簡參數：只保留 where、outFields、returnGeometry=false、f=pjson
+ * 精簡參數：只保留 where、outFields、returnGeometry=true、f=pjson
  * 原本因為帶了 empty geometry & geometryType，API 回傳會過濾掉所有資料
  */
 public class MetOfficeWarningsFetcher {
@@ -173,7 +173,7 @@ public class MetOfficeWarningsFetcher {
         if (code == 200) return true;
         String msg;
         switch (code) {
-                        case 400:
+            case 400:
                 msg = "HTTP 400 Bad Request";
                 break;
             case 401:

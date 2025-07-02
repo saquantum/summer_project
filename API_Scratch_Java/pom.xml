@@ -45,7 +45,7 @@
         <version>3.2.0</version>
         <configuration>
           <!-- 因為你的 MetOfficeWarningsFetcher 没有 package，直接写类名 -->
-          <mainClass>MetOfficeWarningsFetcher</mainClass>
+          <mainClass>MetOfficeWarningsFetcher_modulized</mainClass>
         </configuration>
       </plugin>
       <!-- Surefire：负责在 mvn test 时执行我们写的所有 @Test 方法 -->
