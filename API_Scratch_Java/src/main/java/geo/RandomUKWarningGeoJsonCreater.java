@@ -20,22 +20,22 @@ public class RandomUKWarningGeoJsonCreater {
 
     public static void main(String[] args) throws Exception {
 
-        /* 0. 檔案輸出目錄 -------------------------------------------------- */
+        /* 檔案輸出目錄  */
         Path dir = Path.of("data");
         if (Files.notExists(dir)) Files.createDirectories(dir);
         String ts  = String.valueOf(Instant.now().toEpochMilli());
         Path out = dir.resolve("random_warning_" + ts + ".json");
 
-        /* 1. 隨機產生中心點 ------------------------------------------------ */
+        /* 1. 隨機產生中心點 */
         double centerLon = randDouble(MIN_LON, MAX_LON);
         double centerLat = randDouble(MIN_LAT, MAX_LAT);
 
-        /* 2. 產生近似圓 polygon（36 點） ---------------------------------- */
+        /* 2. 產生近似圓 polygon（36 點） */
         ArrayNode ring = MAPPER.createArrayNode();      // 第一個線環 (LinearRing)
         int sides = 36;
         double radius = 0.3;                            // 半徑 (deg)
 
-        for (int i = 0; i <= sides; i++) {              // <= 使其閉合，首尾同點
+        for (int i = 0; i <= sides; i++) {              // 使其閉合，首尾同點
             double angle = 2 * Math.PI * i / sides;
             double lon = centerLon + radius * Math.cos(angle);
             double lat = centerLat + radius * Math.sin(angle);
@@ -45,10 +45,10 @@ public class RandomUKWarningGeoJsonCreater {
             ring.add(coord);
         }
 
-        /* 3. 組 Feature --------------------------------------------------- */
+        /* 3. 組 Feature */
         ObjectNode feature = MAPPER.createObjectNode();
         feature.put("type", "Feature");
-        feature.put("id", RND.nextInt(10_000) + 1000);          // 隨機 id
+        feature.put("id", RND.nextInt(10_000) + 1000);   // 隨機 id
 
         // geometry
         ObjectNode geometry = MAPPER.createObjectNode();
@@ -82,31 +82,31 @@ public class RandomUKWarningGeoJsonCreater {
         prop.put("modifiedDateString", "N/A");
         feature.set("properties", prop);
 
-        /* 4. 組 FeatureCollection ----------------------------------------- */
+        /* 4. 組 FeatureCollection */
         ObjectNode fc = MAPPER.createObjectNode();
         fc.put("type", "FeatureCollection");
         fc.set("features", MAPPER.createArrayNode().add(feature));
 
-        /* 5. 輸出 JSON ---------------------------------------------------- */
+        /* 5. 輸出 JSON */
         MAPPER.writerWithDefaultPrettyPrinter()
               .writeValue(out.toFile(), fc);
 
         System.out.println("✅ (fake warning)  GeoJSON saved to  " + out.toAbsolutePath());
     }
 
-    /* ----------- helpers ----------- */
+    /* ----------- helpers */
 
     /** 生成 [min,max] 之間的隨機 double */
     private static double randDouble(double min, double max) {
         return min + RND.nextDouble() * (max - min);
     }
 
-    /** 取自陣列中隨機一個值 */
+    /* 取自陣列中隨機一個值 */
     private static String sample(String[] arr) {
         return arr[RND.nextInt(arr.length)];
     }
 
-    /** ⤴ 讓輸出小數保留六位，提高可讀性 */
+    /* 讓輸出小數保留六位，提高可讀性 */
     private static double round6(double v) {
         return Math.round(v * 1_000_000d) / 1_000_000d;
     }
