@@ -52,6 +52,25 @@ public class WarningServiceImpl implements WarningService {
     }
 
     @Override
+    public int insertWarningsList(List<Warning> warnings) {
+        if (warnings.isEmpty()) return 0;
+        int sum = 0;
+        for (Warning warning : warnings) {
+            List<Warning> search = warningMapper.selectWarningById(warning.getId());
+            if (search.size() > 1) {
+                throw new RuntimeException("Found multiple weather warning data stored in database for id " + warning.getId());
+            } else if (search.size() == 1) {
+                warningMapper.updateWarning(warning);
+                sum++;
+            } else {
+                warningMapper.insertWarning(warning);
+                sum++;
+            }
+        }
+        return sum;
+    }
+
+    @Override
     public int updateWarning(Warning warning) {
         return warningMapper.updateWarning(warning);
     }
