@@ -2,7 +2,6 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAssetStore } from '@/stores'
-import { ArrowUp, ArrowDown } from '@element-plus/icons-vue'
 
 const assets = ref([])
 const router = useRouter()
@@ -20,30 +19,19 @@ const tableRowClassName = (scope) => {
   }
 }
 
+const columns = [
+  { prop: 'id', label: 'Asset Id', width: 180 },
+  { prop: 'assetName', label: 'Asset Name', width: 180 },
+  { prop: 'assetHolderId', label: 'Asset Holder ID', width: 180 },
+  { prop: 'type', label: 'Type', width: 180 },
+  { prop: 'capacityLitres', label: 'Capacity litres', width: 180 },
+  { prop: 'material', label: 'Material', width: 180 },
+  { prop: 'status', label: 'Status', width: 180 },
+  { prop: 'installedAt', label: 'Installed At', width: 180 },
+  { prop: 'lastInspection', label: 'Last inspection', width: 180 }
+]
+
 const multiSort = ref([])
-
-const getColumnLabel = (prop) => {
-  const labels = {
-    id: 'Asset ID',
-    assetName: 'Asset Name',
-    assetHolderId: 'Asset Holder ID',
-    warningLevel: 'Warning Level'
-  }
-  return labels[prop] || prop
-}
-
-const removeSortColumn = (prop) => {
-  const index = multiSort.value.findIndex((item) => item.prop === prop)
-  if (index !== -1) {
-    multiSort.value.splice(index, 1)
-    fetchTableData()
-  }
-}
-
-const clearAllSort = () => {
-  multiSort.value = []
-  fetchTableData()
-}
 
 const handleSortChange = ({ prop, order }) => {
   const index = multiSort.value.findIndex((item) => item.prop === prop)
@@ -131,23 +119,11 @@ onMounted(async () => {
 <template>
   <div>
     <FilterSearch></FilterSearch>
-    <div v-if="multiSort.length > 0" class="sort-status">
-      <span>Current Sort: </span>
-      <el-tag
-        v-for="(sort, index) in multiSort"
-        :key="sort.prop"
-        :type="index === 0 ? 'primary' : 'info'"
-        size="small"
-        closable
-        @close="removeSortColumn(sort.prop)"
-      >
-        {{ getColumnLabel(sort.prop) }}
-        <el-icon
-          ><component :is="sort.order === 'ascending' ? ArrowUp : ArrowDown"
-        /></el-icon>
-      </el-tag>
-      <el-button size="small" text @click="clearAllSort">Clear Sort</el-button>
-    </div>
+    <SortTool
+      v-model:multiSort="multiSort"
+      :columns="columns"
+      :fetch-table-data="fetchTableData"
+    ></SortTool>
 
     <el-table
       :data="assets"
@@ -156,53 +132,12 @@ onMounted(async () => {
       :default-sort="multiSort[0] || {}"
     >
       <el-table-column
-        prop="id"
-        label="Asset ID"
+        v-for="column in columns"
+        :key="column.prop"
+        :prop="column.prop"
+        :label="column.label"
         sortable="custom"
-        width="180"
-      />
-      <el-table-column
-        prop="assetName"
-        label="Asset Name"
-        sortable="custom"
-        width="180"
-      />
-      <el-table-column
-        prop="assetHolderId"
-        label="Asset Holder ID"
-        sortable="custom"
-        width="180"
-      />
-      <el-table-column prop="type" label="Type" sortable="custom" width="180" />
-      <el-table-column
-        prop="capacityLitres"
-        label="Capacity litres"
-        sortable="custom"
-        width="180"
-      />
-      <el-table-column
-        prop="material"
-        label="Material"
-        sortable="custom"
-        width="180"
-      />
-      <el-table-column
-        prop="status"
-        label="Status"
-        sortable="custom"
-        width="180"
-      />
-      <el-table-column
-        prop="installedAt"
-        label="Installed At"
-        sortable="custom"
-        width="180"
-      />
-      <el-table-column
-        prop="lastInspection"
-        label="Last inspection"
-        sortable="custom"
-        width="180"
+        :width="column.width"
       />
       <el-table-column label="Actions">
         <template #default="scope">

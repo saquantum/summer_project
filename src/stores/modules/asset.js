@@ -12,7 +12,6 @@ export const useAssetStore = defineStore(
     const getUserAssets = async (admin, id) => {
       let res
       if (admin) {
-        console.log(11111111111)
         res = await adminGetUserAssetsService(id)
       } else res = await assetsGetInfoService(id)
       console.log(res)

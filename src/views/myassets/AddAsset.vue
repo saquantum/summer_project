@@ -152,6 +152,9 @@ const typeOptions = [
   { label: 'Rain Garden', value: 'type_007' }
 ]
 
+const disabledAfterToday = (time) => {
+  return time.getTime() > Date.now()
+}
 const beginDrawing = () => {
   tipVisible.value = true
   mapCardRef.value.beginDrawing()
@@ -236,13 +239,10 @@ watch(
           <el-input v-model="form.id" />
         </el-form-item>
         <el-form-item label="Asset name">
-          <el-input v-model="form.assetName" />
+          <el-input v-model="form.name" />
         </el-form-item>
         <el-form-item label="Asset type">
-          <el-select
-            v-model="form.typeId"
-            placeholder="Please choose asset type"
-          >
+          <el-select v-model="form.typeId" placeholder="Select type">
             <el-option
               v-for="item in typeOptions"
               :key="item.value"
@@ -264,7 +264,7 @@ watch(
         </el-form-item>
 
         <el-form-item label="Asset status">
-          <el-select v-model="form.status" placeholder="Select material">
+          <el-select v-model="form.status" placeholder="Select status">
             <el-option
               v-for="item in statusOption"
               :key="item.value"
@@ -283,6 +283,8 @@ watch(
             v-model="form.installedAt"
             type="date"
             placeholder="Pick a day"
+            :disabled-date="disabledAfterToday"
+            value-format="YYYY-MM-DD"
           />
         </el-form-item>
 
@@ -291,6 +293,8 @@ watch(
             v-model="form.lastInspection"
             type="date"
             placeholder="Pick a day"
+            :disabled-date="disabledAfterToday"
+            value-format="YYYY-MM-DD"
           />
         </el-form-item>
 
