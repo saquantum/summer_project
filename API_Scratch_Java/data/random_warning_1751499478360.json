@@ -1,0 +1,31 @@
+{
+  "type" : "FeatureCollection",
+  "features" : [ {
+    "type" : "Feature",
+    "id" : 1205,
+    "geometry" : {
+      "type" : "Polygon",
+      "coordinates" : [ [ [ -2.881026, 58.700628 ], [ -2.885584, 58.752722 ], [ -2.899118, 58.803234 ], [ -2.921218, 58.850628 ], [ -2.951213, 58.893464 ], [ -2.98819, 58.930441 ], [ -3.031026, 58.960436 ], [ -3.07842, 58.982536 ], [ -3.128932, 58.99607 ], [ -3.181026, 59.000628 ], [ -3.233121, 58.99607 ], [ -3.283632, 58.982536 ], [ -3.331026, 58.960436 ], [ -3.373862, 58.930441 ], [ -3.410839, 58.893464 ], [ -3.440834, 58.850628 ], [ -3.462934, 58.803234 ], [ -3.476468, 58.752722 ], [ -3.481026, 58.700628 ], [ -3.476468, 58.648534 ], [ -3.462934, 58.598022 ], [ -3.440834, 58.550628 ], [ -3.410839, 58.507792 ], [ -3.373862, 58.470815 ], [ -3.331026, 58.44082 ], [ -3.283632, 58.41872 ], [ -3.233121, 58.405186 ], [ -3.181026, 58.400628 ], [ -3.128932, 58.405186 ], [ -3.07842, 58.41872 ], [ -3.031026, 58.44082 ], [ -2.98819, 58.470815 ], [ -2.951213, 58.507792 ], [ -2.921218, 58.550628 ], [ -2.899118, 58.598022 ], [ -2.885584, 58.648534 ], [ -2.881026, 58.700628 ] ] ]
+    },
+    "properties" : {
+      "OBJECTID" : 1205,
+      "weathertype" : "THUNDERSTORM",
+      "warninglevel" : "YELLOW",
+      "warningheadline" : "Auto-generated test warning",
+      "validfromdate" : 1751499478372,
+      "validtodate" : 1751521078372,
+      "GlobalID" : "ea9e4c64-08b4-48a2-98ca-25d874c53e53",
+      "warningImpact" : "2/Low",
+      "warningLikelihood" : "3/Likely",
+      "warningVersion" : "1.0",
+      "affectedAreas" : "Auto-generated polygon around random centre",
+      "whatToExpect" : "Auto-generated demo data.",
+      "warningUpdateDescription" : null,
+      "issuedDate" : 1751499478372,
+      "issuedDateString" : "N/A",
+      "validFromDateString" : "N/A",
+      "validToDateString" : "N/A",
+      "modifiedDateString" : "N/A"
+    }
+  } ]
+}

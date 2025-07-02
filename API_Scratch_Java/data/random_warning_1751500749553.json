@@ -1,0 +1,20 @@
+{
+  "type" : "FeatureCollection",
+  "features" : [ {
+    "type" : "Feature",
+    "id" : 3924,
+    "geometry" : {
+      "type" : "Polygon",
+      "coordinates" : [ [ [ 0.621015, 57.108418 ], [ 0.731797, 56.883314 ], [ 0.794169, 56.80671 ], [ 0.846525, 56.795869 ], [ 0.91904, 56.80792 ], [ 0.962584, 56.815867 ], [ 1.082324, 56.915093 ], [ 1.12101, 56.949367 ], [ 1.196665, 57.065885 ], [ 1.115566, 57.2867 ], [ 1.039399, 57.343195 ], [ 0.976033, 57.373736 ], [ 0.866186, 57.379694 ], [ 0.797054, 57.362863 ], [ 0.632347, 57.133795 ] ] ]
+    },
+    "properties" : {
+      "OBJECTID" : 3924,
+      "weathertype" : "THUNDERSTORM",
+      "warninglevel" : "YELLOW",
+      "warningheadline" : "Auto-generated test warning",
+      "validfromdate" : 1751500749559,
+      "validtodate" : 1751522349559,
+      "GlobalID" : "8bce9609-12f8-43cb-b73d-9877220abbba"
+    }
+  } ]
+}

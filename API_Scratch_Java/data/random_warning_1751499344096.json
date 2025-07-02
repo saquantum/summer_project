@@ -1,0 +1,31 @@
+{
+  "type" : "FeatureCollection",
+  "features" : [ {
+    "type" : "Feature",
+    "id" : 10038,
+    "geometry" : {
+      "type" : "Polygon",
+      "coordinates" : [ [ [ 0.263365, 54.487645 ], [ 0.258808, 54.539739 ], [ 0.245273, 54.590251 ], [ 0.223173, 54.637645 ], [ 0.193179, 54.680481 ], [ 0.156202, 54.717458 ], [ 0.113365, 54.747452 ], [ 0.065971, 54.769552 ], [ 0.01546, 54.783087 ], [ -0.036635, 54.787645 ], [ -0.088729, 54.783087 ], [ -0.139241, 54.769552 ], [ -0.186635, 54.747452 ], [ -0.229471, 54.717458 ], [ -0.266448, 54.680481 ], [ -0.296442, 54.637645 ], [ -0.318542, 54.590251 ], [ -0.332077, 54.539739 ], [ -0.336635, 54.487645 ], [ -0.332077, 54.43555 ], [ -0.318542, 54.385039 ], [ -0.296442, 54.337645 ], [ -0.266448, 54.294808 ], [ -0.229471, 54.257831 ], [ -0.186635, 54.227837 ], [ -0.139241, 54.205737 ], [ -0.088729, 54.192202 ], [ -0.036635, 54.187645 ], [ 0.01546, 54.192202 ], [ 0.065971, 54.205737 ], [ 0.113365, 54.227837 ], [ 0.156202, 54.257831 ], [ 0.193179, 54.294808 ], [ 0.223173, 54.337645 ], [ 0.245273, 54.385039 ], [ 0.258808, 54.43555 ], [ 0.263365, 54.487645 ] ] ]
+    },
+    "properties" : {
+      "OBJECTID" : 10038,
+      "weathertype" : "THUNDERSTORM",
+      "warninglevel" : "AMBER",
+      "warningheadline" : "Auto-generated test warning",
+      "validfromdate" : 1751499344096,
+      "validtodate" : 1751520944096,
+      "GlobalID" : "f506a8ad-6b4b-4093-81d6-666d852cbca5",
+      "warningImpact" : "2/Low",
+      "warningLikelihood" : "3/Likely",
+      "warningVersion" : "1.0",
+      "affectedAreas" : "Auto-generated polygon around random centre",
+      "whatToExpect" : "Auto-generated demo data.",
+      "warningUpdateDescription" : null,
+      "issuedDate" : 1751499344096,
+      "issuedDateString" : "N/A",
+      "validFromDateString" : "N/A",
+      "validToDateString" : "N/A",
+      "modifiedDateString" : "N/A"
+    }
+  } ]
+}
