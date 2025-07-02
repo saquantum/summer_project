@@ -111,14 +111,52 @@ const handleSizeChange = (size) => {
   fetchTableData()
 }
 
+const screenWidth = ref(window.innerWidth)
+const handleResize = () => {
+  screenWidth.value = window.innerWidth
+  resizeBasedOnWidth(screenWidth.value)
+}
+
+const resizeBasedOnWidth = (width) => {
+  if (width < 576) {
+    console.log('Extra small screen, e.g., portrait phone')
+    handleSizeChange(5)
+  } else if (width >= 576 && width < 768) {
+    handleSizeChange(5)
+    console.log('Small screen, e.g., landscape phone or small tablet')
+    handleSizeChange(10)
+
+    // Your logic for small screens
+  } else if (width >= 768 && width < 992) {
+    handleSizeChange(10)
+
+    console.log('Medium screen, e.g., tablets or small laptops')
+    // Your logic for medium screens
+  } else {
+    handleSizeChange(10)
+    console.log('Large screen, e.g., desktops or larger')
+    // Your logic for large screens
+  }
+}
+
 onMounted(async () => {
   await fetchTableData()
+  resizeBasedOnWidth(screenWidth.value)
+  window.addEventListener('resize', handleResize)
 })
 </script>
 
 <template>
   <div>
     <FilterSearch></FilterSearch>
+    <div class="asset-list">
+      <AssetCard
+        v-for="(item, index) in assets"
+        :key="index"
+        :asset="item"
+      ></AssetCard>
+    </div>
+
     <SortTool
       v-model:multiSort="multiSort"
       :columns="columns"
@@ -130,6 +168,7 @@ onMounted(async () => {
       :row-class-name="tableRowClassName"
       @sort-change="handleSortChange"
       :default-sort="multiSort[0] || {}"
+      class="table"
     >
       <el-table-column
         v-for="column in columns"
@@ -174,6 +213,12 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.asset-list {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
 .sort-status {
   margin-bottom: 16px;
   padding: 12px;
@@ -192,5 +237,11 @@ onMounted(async () => {
 
 .el-table .warning-yellow {
   --el-table-tr-bg-color: var(--el-color-warning-light-8);
+}
+
+@media (max-width: 768px) {
+  .table {
+    display: none !important;
+  }
 }
 </style>

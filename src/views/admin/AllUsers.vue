@@ -92,6 +92,7 @@ onMounted(async () => {
 </script>
 
 <template>
+  <UserCollapse :users="users"></UserCollapse>
   <SortTool
     v-model:multiSort="multiSort"
     :columns="columns"
@@ -103,6 +104,7 @@ onMounted(async () => {
     style="width: 100%"
     @sort-change="handleSortChange"
     :default-sort="multiSort[0] || {}"
+    class="table"
   >
     <el-table-column
       v-for="(item, index) in columns"
@@ -155,4 +157,10 @@ onMounted(async () => {
   />
 </template>
 
-<style scoped></style>
+<style scoped>
+@media (max-width: 768px) {
+  .table {
+    display: none !important;
+  }
+}
+</style>

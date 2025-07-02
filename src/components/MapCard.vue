@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onBeforeUnmount, computed, watch } from 'vue'
+import { onMounted, onBeforeUnmount, watch } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
@@ -24,12 +24,7 @@ const props = defineProps({
   ownerId: String
 })
 
-const emit = defineEmits(['update:mode', 'update:locations'])
-
-const mode = computed({
-  get: () => props.mode,
-  set: (val) => emit('update:mode', val)
-})
+const emit = defineEmits(['update:locations'])
 
 let points = []
 const polygonCoordinates = []
@@ -53,7 +48,7 @@ const finishOneShape = async () => {
   // if there are less than 3 points, reset map
   if (points.length < 3) {
     points = []
-    window.alert('You should specify more than 3 points to shape a polygon.')
+    ElMessage.error('You should specify more than 3 points to shape a polygon.')
     // destroy all layers on the map
     map.eachLayer((layer) => {
       if (!(layer instanceof L.TileLayer)) {
@@ -70,7 +65,7 @@ const finishOneShape = async () => {
     }
   })
   // then generate the new polygon area according to the mode
-  if (mode.value === 'convex') {
+  if (props.mode === 'convex') {
     // turning points to geoJSON
     const pointsGeo = turf.featureCollection(
       points.map((p) => turf.point([p[1], p[0]]))
@@ -86,7 +81,7 @@ const finishOneShape = async () => {
     const multiPolygon = turf.multiPolygon(polygonCoordinates)
     // add layer
     L.geoJSON(multiPolygon).addTo(map)
-  } else if (mode.value === 'sequence') {
+  } else {
     let polygonLayer = L.polygon(points)
     let geoJSON = polygonLayer.toGeoJSON()
 

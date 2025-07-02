@@ -1,6 +1,5 @@
 <script setup>
 import {
-  Management,
   User,
   Crop,
   EditPen,
@@ -12,7 +11,8 @@ import {
   House,
   LocationInformation,
   Warning,
-  CopyDocument
+  CopyDocument,
+  Operation
 } from '@element-plus/icons-vue'
 import avatar from '@/assets/default.png'
 import { ref, watch, computed } from 'vue'
@@ -44,11 +44,7 @@ const handleMailClick = () => {
 
 const activeIndex = ref(route.path)
 
-const tabs = [
-  { label: 'My Assets', path: '/', icon: Management },
-  { label: 'My Profile', path: '/user/profile', icon: User }
-]
-const dialogVisible = ref(false)
+const mobileMenuVisible = ref(false)
 
 const showUserSideBar = computed(() => {
   if (!userStore.user.admin) {
@@ -219,12 +215,19 @@ watch(
 
     <el-container>
       <el-header>
+        <el-button class="mobile-menu" @click="mobileMenuVisible = true">
+          <el-icon><Operation /></el-icon>
+        </el-button>
+        <MobileMenu
+          v-if="mobileMenuVisible"
+          v-model:visible="mobileMenuVisible"
+        ></MobileMenu>
+        <div></div>
         <el-page-header
           v-if="userStore.user.admin && !route.path.includes('admin')"
           @back="router.go(-1)"
         >
         </el-page-header>
-        <div>information</div>
         <div class="header-right">
           <el-badge is-dot class="icon-badge">
             <el-icon @click="handleMailClick" class="bell">
@@ -272,7 +275,6 @@ watch(
 
       <el-main>
         <router-view></router-view>
-        <TabBar :tabs="tabs" class="tabbar-disply"></TabBar>
         <CustomerService v-if="!userStore.user.admin"></CustomerService>
       </el-main>
     </el-container>
@@ -359,6 +361,9 @@ watch(
 @media (min-width: 768px) {
   .tabbar-disply {
     display: none;
+  }
+  .mobile-menu {
+    display: none !important;
   }
 }
 
