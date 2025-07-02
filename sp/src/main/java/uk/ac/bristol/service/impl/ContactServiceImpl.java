@@ -166,7 +166,7 @@ public class ContactServiceImpl implements ContactService {
         if (email == null) {
             return new ResponseBody(Code.BUSINESS_ERR, null, "Failed to send email because email address is null");
         }
-        if (!checkEmailExistsInDB(email)) {
+        if (!assetHolderMapper.testEmailAddressExistence(email)) {
             return new ResponseBody(Code.BUSINESS_ERR, null, "Failed to send email because email address doesn't exist");
         }
         String code = String.valueOf(new Random().nextInt(899999) + 100000);
@@ -186,16 +186,6 @@ public class ContactServiceImpl implements ContactService {
                 + System.lineSeparator()
                 + verificationCode);
         mailSender.send(message);
-    }
-
-    private boolean checkEmailExistsInDB(String email) {
-        List<AssetHolder> list = assetHolderMapper.selectAllAssetHolders(null,null,null);
-        for(AssetHolder ah : list) {
-            if (ah.getEmail().equals(email)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
