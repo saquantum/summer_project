@@ -11,7 +11,8 @@ import {
   Back,
   House,
   LocationInformation,
-  Warning
+  Warning,
+  CopyDocument
 } from '@element-plus/icons-vue'
 import avatar from '@/assets/default.png'
 import { ref, watch, computed } from 'vue'
@@ -193,9 +194,9 @@ watch(
           </el-menu-item>
         </el-sub-menu>
 
-        <el-menu-item index="/admin/access/settings">
-          <el-icon><MessageBox /></el-icon>
-          <span>Access Settings</span>
+        <el-menu-item index="/admin/message/template">
+          <el-icon><CopyDocument /></el-icon>
+          <span>Message Template</span>
         </el-menu-item>
 
         <el-menu-item index="/admin/message">
@@ -363,7 +364,7 @@ watch(
 
 @media (max-width: 768px) {
   .el-aside {
-    display: none;
+    display: none !important;
   }
 }
 

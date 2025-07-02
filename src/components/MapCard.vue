@@ -4,7 +4,6 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
-import { useAssetStore, useUserStore } from '@/stores'
 import { assetUpdateInfoService } from '@/api/assets'
 import * as turf from '@turf/turf'
 
@@ -17,14 +16,12 @@ const customIcon = new L.Icon({
   shadowSize: [41, 41]
 })
 
-const assetStore = useAssetStore()
-const userStore = useUserStore()
-
 const props = defineProps({
   mapId: String,
   locations: Array,
   id: Number,
-  mode: String
+  mode: String,
+  ownerId: String
 })
 
 const emit = defineEmits(['update:mode', 'update:locations'])
@@ -33,13 +30,6 @@ const mode = computed({
   get: () => props.mode,
   set: (val) => emit('update:mode', val)
 })
-
-let item = null
-if (props.id) {
-  item =
-    assetStore.userAssets?.find((item) => item.asset.id === props.id) ||
-    assetStore.allAssets?.find((item) => item.asset.id === props.id)
-}
 
 let points = []
 const polygonCoordinates = []
@@ -113,17 +103,12 @@ const endDrawing = async () => {
   if (points.length > 0) {
     finishOneShape()
   }
-  if (item) {
+  if (props.id) {
     // update asset
     if (polygonCoordinates.length === 0) return
     const multiPolygon = turf.multiPolygon(polygonCoordinates)
-    item.asset.location = multiPolygon.geometry
-    await assetUpdateInfoService(
-      props.id,
-      item.asset.ownerId,
-      multiPolygon.geometry
-    )
-    await assetStore.getUserAssets(userStore.user.id)
+    emit('update:locations', [multiPolygon.geometry])
+    await assetUpdateInfoService(props.id, props.ownerId, multiPolygon.geometry)
   } else {
     // add asset
     if (polygonCoordinates.length === 0) return
@@ -157,6 +142,7 @@ watch(
         map.removeLayer(layer)
       }
     })
+    console.log(newVal)
     const geoLayer = L.geoJSON(newVal, {
       style: (feature) => feature.geometry.style
     }).addTo(map)

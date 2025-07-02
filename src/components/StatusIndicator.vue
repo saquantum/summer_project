@@ -1,7 +1,3 @@
-<template>
-  <div class="indicator" :class="statusClass"></div>
-</template>
-
 <script setup>
 import { computed } from 'vue'
 
@@ -16,6 +12,10 @@ const statusClass = computed(() => {
   return `indicator--${props.status}`
 })
 </script>
+
+<template>
+  <div class="indicator" :class="statusClass"></div>
+</template>
 
 <style scoped>
 .indicator {

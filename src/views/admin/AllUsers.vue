@@ -21,13 +21,17 @@ const handleSortChange = ({ prop, order }) => {
 onMounted(async () => {
   const res = await adminGetUsersService('count')
   console.log(res)
-  users.value = res.data.map((item) => ({
-    uid: item.user.id,
-    username: item.user.id,
-    assetHolderId: item.user.assetHolderId || 'none',
-    assets: item.user.id,
-    count: item.count
-  }))
+  users.value = res.data.map((item) => {
+    console.log(item)
+    return {
+      uid: item.user.id,
+      username: item.user.id,
+      assetHolderId: item.user.assetHolderId || 'none',
+      assets: item.user.id,
+      count: item.count,
+      role: item.user.admin ? 'admin' : 'user'
+    }
+  })
 })
 </script>
 
@@ -45,18 +49,24 @@ onMounted(async () => {
       width="180"
       sortable="custom"
     />
-    <el-table-column
-      prop="username"
-      label="Username"
-      width="180"
-      sortable="custom"
-    />
+    <el-table-column prop="role" label="Role" width="180" sortable="custom" />
     <el-table-column
       prop="count"
       label="Assets"
       width="180"
       sortable="custom"
     />
+    <el-table-column label="permission">
+      <template #default="scope">
+        <div style="display: flex; gap: 3px">
+          <PermissionIndicator :status="true"></PermissionIndicator>
+          <PermissionIndicator @click="scope"></PermissionIndicator>
+          <PermissionIndicator></PermissionIndicator>
+          <PermissionIndicator></PermissionIndicator>
+          <PermissionIndicator></PermissionIndicator>
+        </div>
+      </template>
+    </el-table-column>
     <el-table-column label="Actions">
       <template #default="scope">
         <el-button
@@ -78,3 +88,5 @@ onMounted(async () => {
     </el-table-column>
   </el-table>
 </template>
+
+<style scoped></style>

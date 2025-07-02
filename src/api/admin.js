@@ -19,6 +19,10 @@ export const adminGetUserInfoService = (id) => {
   return request.get(`/admin/user/aid/${id}`)
 }
 
+export const adminGetUserInfoByUIDService = (id) => {
+  return request.get(`/admin/user/uid/${id}`)
+}
+
 export const adminGetAssetsService = (offset, limit, orderList) => {
   console.log(offset, limit, orderList)
   return request.get('/admin/asset/', {

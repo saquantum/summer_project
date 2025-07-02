@@ -61,8 +61,8 @@ const router = createRouter({
           component: () => import('@/views/message/index.vue')
         },
         {
-          path: 'admin/access/settings',
-          component: () => import('@/views/admin/AccessControl.vue')
+          path: 'admin/message/template',
+          component: () => import('@/views/admin/MessageTemplate.vue')
         },
         {
           path: 'admin/user/detail/',

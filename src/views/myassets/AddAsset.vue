@@ -3,6 +3,9 @@ import { ref, watch } from 'vue'
 import request from '@/utils/request'
 import { useUserStore } from '@/stores'
 import { assetInsertService } from '@/api/assets'
+import CodeUtil from '@/utils/codeUtil'
+import { userCheckUIDService } from '@/api/user'
+import { adminGetUserInfoByUIDService } from '@/api/admin'
 
 const userStore = useUserStore()
 
@@ -87,6 +90,30 @@ const form = ref({
   location: ''
 })
 
+const formRef = ref()
+
+const rules = {
+  id: [
+    { required: true, message: 'Please input username', trigger: 'blur' },
+    {
+      validator: async (rule, value, callback) => {
+        const res = await userCheckUIDService(value)
+        const res1 = await adminGetUserInfoByUIDService(value)
+        // success means find a username called ${value}
+        if (CodeUtil.isSuccess(res.code)) {
+          if (res1.data.admin) {
+            callback(new Error('Can not add asset to admin'))
+          }
+          callback()
+        } else {
+          callback(new Error(`Username ${value} does not exists.`))
+        }
+      },
+      trigger: 'blur'
+    }
+  ]
+}
+
 const materialOption = [
   { label: 'Steel', value: 'Steel' },
   { label: 'Concrete', value: 'Concrete' },
@@ -145,7 +172,7 @@ const cancelDrawing = () => {
 }
 
 const submit = async () => {
-  console.log('value:', form)
+  console.log('value:', form.value)
   await assetInsertService(userStore.user.id, location)
   ElMessage.success('Successfully add an asset')
 }
@@ -198,11 +225,14 @@ watch(
   <div class="container">
     <div>
       <el-form
+        :model="form"
+        ref="formRef"
         label-width="auto"
         label-position="left"
+        :rules="rules"
         style="max-width: 600px"
       >
-        <el-form-item label="User id">
+        <el-form-item label="Username" prop="id">
           <el-input v-model="form.id" />
         </el-form-item>
         <el-form-item label="Asset name">
@@ -242,6 +272,10 @@ watch(
               :value="item.value"
             ></el-option>
           </el-select>
+        </el-form-item>
+
+        <el-form-item label="Capacity litres">
+          <el-input v-model="form.capacityLitres" type="number"></el-input>
         </el-form-item>
 
         <el-form-item label="Installed at">

@@ -28,7 +28,10 @@ const mapCardRef = ref()
 const mode = ref('convex')
 
 const locations = computed({
-  get: () => [asset.value.location]
+  get: () => [asset.value.location],
+  set: (val) => {
+    asset.value.location = val[0]
+  }
 })
 
 const displayData = [
@@ -60,6 +63,10 @@ const finishOneShape = () => {
   mapCardRef.value.finishOneShape()
 }
 
+const cancelDrawing = () => {
+  mapCardRef.value.cancelDrawing
+}
+
 const handleShowDetail = (row) => {
   router.push(`/warning/${row.id}`)
 }
@@ -78,8 +85,9 @@ const handleShowDetail = (row) => {
           <MapCard
             ref="mapCardRef"
             :map-id="'mapdetail'"
-            :locations="locations"
+            v-model:locations="locations"
             :id="id"
+            :ownerId="item.asset.ownerId"
             v-model:mode="mode"
           ></MapCard>
         </div>
@@ -155,6 +163,7 @@ const handleShowDetail = (row) => {
     <el-button @click="beginDrawing">Draw new asset</el-button>
     <el-button @click="finishOneShape">Finish one shape</el-button>
     <el-button @click="endDrawing">End drawing</el-button>
+    <el-button @click="cancelDrawing">Cancel drawing</el-button>
   </div>
 </template>
 
