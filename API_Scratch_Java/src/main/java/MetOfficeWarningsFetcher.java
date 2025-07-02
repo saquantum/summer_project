@@ -32,7 +32,7 @@ public class MetOfficeWarningsFetcher {
         + "Met_Office_National_Severe_Weather_Warning_Service_Live/FeatureServer/0/query"
         + "?where=1=1"                                  // 確保回傳全資料
         + "&outFields=*"                                // 取所有屬性欄位
-        + "&returnGeometry=false"                       // 不取 geometry（避免過濾）
+        + "&returnGeometry=true"                        // 取 geometry
         + "&f=pgeojson";                                // 回傳 GeoJSON
 
     // 從 System property 讀取覆寫值，否則回 DEFAULT_URL
