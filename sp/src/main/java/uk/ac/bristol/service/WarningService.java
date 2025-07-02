@@ -20,6 +20,8 @@ public interface WarningService {
 
     int insertWarning(Warning warning);
 
+    int insertWarningsList(List<Warning> warnings);
+
     int updateWarning(Warning warning);
 
     int deleteWarningByIDs(Long[] ids);

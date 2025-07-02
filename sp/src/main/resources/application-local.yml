@@ -46,7 +46,7 @@ mock-data:
   state: mock-data-state/mock_data_state.json
 
 metoffice:
-  url:  "https://services.arcgis.com/Lq3V5RFuTBC9I7kv/arcgis/rest/services/Met_Office_National_Severe_Weather_Warning_Service_Live/FeatureServer/0/query?where=1=1&outFields=*&returnGeometry=false&f=pgeojson"
+  url:  "https://services.arcgis.com/Lq3V5RFuTBC9I7kv/arcgis/rest/services/Met_Office_National_Severe_Weather_Warning_Service_Live/FeatureServer/0/query?where=1=1&outFields=*&returnGeometry=true&f=pgeojson"
   crawler:
     rate: 600000
 

@@ -118,20 +118,7 @@ public class ImportMockDataImpl implements ImportMockData {
                         Map<String, Object> properties = (Map<String, Object>) feature.get("properties");
                         Map<String, Object> geometry = (Map<String, Object>) feature.get("geometry");
 
-                        Warning warning = new Warning();
-                        warning.setId(((Number) properties.get("OBJECTID")).longValue());
-                        warning.setWeatherType((String) properties.get("weathertype"));
-                        warning.setWarningLevel((String) properties.get("warninglevel"));
-                        warning.setWarningHeadLine((String) properties.get("warningheadline"));
-                        warning.setValidFrom(Instant.ofEpochMilli(((Number) properties.get("validfromdate")).longValue()));
-                        warning.setValidTo(Instant.ofEpochMilli(((Number) properties.get("validtodate")).longValue()));
-                        warning.setWarningImpact((String) properties.get("warningImpact"));
-                        warning.setWarningLikelihood((String) properties.get("warningLikelihood"));
-                        warning.setAffectedAreas((String) properties.get("affectedAreas"));
-                        warning.setWhatToExpect((String) properties.get("whatToExpect"));
-                        warning.setWarningFurtherDetails((String) properties.get("warningFurtherDetails"));
-                        warning.setWarningUpdateDescription((String) properties.get("warningUpdateDescription"));
-                        warning.setArea(geometry);
+                        Warning warning = Warning.getWarningFromGeoJSON(properties, geometry);
 
                         warningService.insertWarning(warning);
                     }
