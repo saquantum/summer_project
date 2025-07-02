@@ -1,11 +1,3 @@
-package geo;
-// RandomUKWarningGeoJsonWriter.java
-// -------------------------------------------------------------
-// 依賴：Jackson databind（你原來的 pom.xml 已有）
-// 編譯：mvn -q compile
-// 執行：mvn -q exec:java -Dexec.mainClass=RandomUKWarningGeoJsonWriter
-// -------------------------------------------------------------
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
