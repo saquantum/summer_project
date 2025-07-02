@@ -33,6 +33,8 @@ public class MockDataInitializer implements CommandLineRunner {
     private String TEMPLATES_FILE_PATH;
     @Value("${mock-data.js}")
     private String JS_CONVERTER_FILE_PATH;
+    @Value("${mock-data.notifications}")
+    private String NOTIFICATION_FILE_PATH;
 
     public MockDataInitializer(ImportMockData importMockData) throws IOException {
         this.importMockData = importMockData;
@@ -46,7 +48,7 @@ public class MockDataInitializer implements CommandLineRunner {
         File stateFile = new File(STATE_FILE_PATH);
         if (!stateFile.exists()) {
             stateFile.getParentFile().mkdirs();
-            mapper.writeValue(stateFile, Map.of("users", false, "assets", false, "warnings", false, "templates", false));
+            mapper.writeValue(stateFile, Map.of("users", false, "assets", false, "warnings", false, "templates", false, "templatesMapper", false));
         }
         Map<String, Boolean> state = mapper.readValue(stateFile, Map.class);
         return !Boolean.TRUE.equals(state.get(key));
@@ -69,14 +71,15 @@ public class MockDataInitializer implements CommandLineRunner {
         importMockData.importUsers(getClasspathStream(USERS_FILE_PATH));
         importMockData.importAssets(getClasspathStream(ASSET_TYPES_FILE_PATH), getClasspathStream(ASSETS_FILE_PATH));
         importMockData.importWarnings(getClasspathStream(WARNINGS_FILE_PATH), getClasspathStream(JS_CONVERTER_FILE_PATH));
-        importMockData.importTemplates(getClasspathStream(TEMPLATES_FILE_PATH));
+        importMockData.importTemplates(getClasspathStream(NOTIFICATION_FILE_PATH));
     }
 
     @Override
     public void run(String... args) throws Exception {
         if (shouldImport("users")
                 || shouldImport("assets")
-                || shouldImport("warnings")) {
+                || shouldImport("warnings")
+                || shouldImport("templates")) {
             importMockData.resetSchema();
         }
 
@@ -103,7 +106,7 @@ public class MockDataInitializer implements CommandLineRunner {
         }
 
         if (shouldImport("templates")) {
-            importMockData.importTemplates(getClasspathStream(TEMPLATES_FILE_PATH));
+            importMockData.importTemplates(getClasspathStream(NOTIFICATION_FILE_PATH));
             markAsImported("templates");
         } else {
             System.out.println("Templates file skipped");

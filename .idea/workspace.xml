@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="22202a53-87e9-4775-bbc9-2d7d17f3f97a" name="更改" comment="mail related added" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;history&quot;: [
+    {
+      &quot;state&quot;: &quot;OPEN&quot;
+    }
+  ],
+  &quot;lastFilter&quot;: {}
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/saquantum/summer_project.git&quot;,
+    &quot;accountId&quot;: &quot;67b91aed-86c3-4419-bd5a-f78c162f2691&quot;
+  }
+}</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="Security Analysis" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="2z9VjvIh7tv91hzivXlp7MPPIKt" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "JUnit.AssetHolderMapperTest.executor": "Run",
+    "JUnit.WarningMapperTest.executor": "Run",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.SpApplication.executor": "Run",
+    "git-widget-placeholder": "develop",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "E:/summer_project/sp",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "项目",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\summer_project\sp\src\main\resources\uk\ac\bristol\dao" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="uk.ac.bristol.result" />
+      <recent name="uk.ac.bristol.pojo" />
+      <recent name="uk.ac.bristol.dao" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Spring Boot.SpApplication">
+    <configuration name="AssetHolderMapperTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="sp" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="uk.ac.bristol.dao.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="uk.ac.bristol.dao" />
+      <option name="MAIN_CLASS_NAME" value="uk.ac.bristol.dao.AssetHolderMapperTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="WarningMapperTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="sp" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="uk.ac.bristol.dao.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="uk.ac.bristol.dao" />
+      <option name="MAIN_CLASS_NAME" value="uk.ac.bristol.dao.WarningMapperTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="SpApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="sp" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="uk.ac.bristol.SpApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.WarningMapperTest" />
+        <item itemvalue="JUnit.AssetHolderMapperTest" />
+        <item itemvalue="JUnit.WarningMapperTest" />
+        <item itemvalue="JUnit.AssetHolderMapperTest" />
+        <item itemvalue="JUnit.WarningMapperTest" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-fdfe4dae3a2d-intellij.indexing.shared.core-IU-243.22562.218" />
+        <option value="bundled-js-predefined-d6986cc7102b-deb605915726-JavaScript-IU-243.22562.218" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="应用程序级" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="默认任务">
+      <changelist id="22202a53-87e9-4775-bbc9-2d7d17f3f97a" name="更改" comment="" />
+      <created>1751143415017</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1751143415017</updated>
+      <workItem from="1751143416113" duration="1107000" />
+      <workItem from="1751192252317" duration="4684000" />
+      <workItem from="1751215617481" duration="621000" />
+      <workItem from="1751217312329" duration="5923000" />
+      <workItem from="1751224371930" duration="167000" />
+      <workItem from="1751240156434" duration="1229000" />
+      <workItem from="1751278713749" duration="701000" />
+      <workItem from="1751287518960" duration="438000" />
+      <workItem from="1751289514751" duration="64000" />
+      <workItem from="1751308143146" duration="505000" />
+      <workItem from="1751327356116" duration="2885000" />
+      <workItem from="1751370928163" duration="65000" />
+      <workItem from="1751371015232" duration="2521000" />
+      <workItem from="1751377212369" duration="616000" />
+      <workItem from="1751390787818" duration="336000" />
+      <workItem from="1751403192747" duration="8335000" />
+    </task>
+    <task id="LOCAL-00001" summary="mail related added">
+      <option name="closed" value="true" />
+      <created>1751202357272</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1751202357272</updated>
+    </task>
+    <task id="LOCAL-00002" summary="mail related added">
+      <option name="closed" value="true" />
+      <created>1751278789381</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1751278789381</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="mail related added" />
+    <option name="LAST_COMMIT_MESSAGE" value="mail related added" />
+  </component>
+</project>

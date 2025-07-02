@@ -2,6 +2,7 @@ package uk.ac.bristol.dao;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import uk.ac.bristol.pojo.Templates;
 import uk.ac.bristol.pojo.Warning;
 
 import java.util.List;
@@ -30,7 +31,7 @@ public interface WarningMapper {
 
     List<Map<String, Object>> selectAllNotificationTemplates();
 
-    int insertNotificationTemplate(@Param("message") String message);
+    int insertNotificationTemplate(Templates templates);
 
     int updateNotificationTemplate(Map<String, String> template);
 
@@ -41,4 +42,8 @@ public interface WarningMapper {
     List<String> selectOwnerIdOfAllAssetsIntersectingWithGivenWarning(@Param("warningId") Long warningId);
 
     Boolean testIfGivenAssetIntersectsWithWarning(@Param("assetId") String assetId, @Param("warningId") Long warningId);
+
+    String selectMessageByInfo(@Param("assetType") String assetType, @Param("weatherType") String weatherType, @Param("severity") String severity);
+
+    int updateMessageByInfo(@Param("assetType") String assetType, @Param("weatherType") String weatherType, @Param("severity") String severity, @Param("message") String message);
 }

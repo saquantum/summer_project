@@ -135,8 +135,8 @@
     </select>
 
     <insert id="insertNotificationTemplate">
-        insert into templates (templates_message)
-        values (#{message});
+        insert into templates (templates_asset_type_id, templates_weather_warning_type, templates_severity, templates_message)
+        values (#{assetType}, #{weatherType}, #{severity}, #{message});
     </insert>
 
     <update id="updateNotificationTemplate">
@@ -151,4 +151,20 @@
             #{id}
         </foreach>
     </delete>
+
+    <select id="selectTemplateIdByMessage" resultType="int">
+        select templates_id from templates where templates_message = #{message}
+    </select>
+
+    <select id="selectMessageByInfo" resultType="String">
+        select templates_message
+        from templates
+        where templates_asset_type = #{assetType} and templates_weather_warning_type = #{weatherType} and templates_severity = #{severity}
+    </select>
+
+    <update id="updateMessageByInfo">
+        update templates
+        set templates_message = #{message}
+        where templates_asset_type = #{assetType} and templates_weather_warning_type = #{weatherType} and templates_severity = #{severity}
+    </update>
 </mapper>

@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.AssetHolderMapper;
 import uk.ac.bristol.dao.UserMapper;
 import uk.ac.bristol.dao.WarningMapper;
+import uk.ac.bristol.pojo.Templates;
 import uk.ac.bristol.pojo.Warning;
 import uk.ac.bristol.service.WarningService;
 import uk.ac.bristol.util.QueryTool;
@@ -72,8 +73,8 @@ public class WarningServiceImpl implements WarningService {
     }
 
     @Override
-    public int insertNotificationTemplate(String message) {
-        return warningMapper.insertNotificationTemplate(message);
+    public int insertNotificationTemplate(Templates templates) {
+        return warningMapper.insertNotificationTemplate(templates);
     }
 
     @Override
@@ -89,5 +90,15 @@ public class WarningServiceImpl implements WarningService {
     @Override
     public int deleteNotificationTemplateByIds(List<Integer> ids) {
         return warningMapper.deleteNotificationTemplateByIds(ids);
+    }
+
+    @Override
+    public String getMessageByInfo(String assetType, String weatherType, String severity) {
+        return warningMapper.selectMessageByInfo(assetType, weatherType, severity);
+    }
+
+    @Override
+    public int updateMessageByInfo(String assetType, String weatherType, String severity, String message) {
+        return warningMapper.updateMessageByInfo(assetType, weatherType, severity, message);
     }
 }

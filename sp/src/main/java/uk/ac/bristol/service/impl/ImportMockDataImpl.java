@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.Settings;
+import uk.ac.bristol.dao.WarningMapper;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
 import uk.ac.bristol.service.AssetService;
@@ -144,10 +145,21 @@ public class ImportMockDataImpl implements ImportMockData {
     @Override
     public void importTemplates(InputStream notificationTemplatesInputStream) {
         try {
-            List<Map<String, String>> templates = mapper.readValue(notificationTemplatesInputStream, new TypeReference<List<Map<String, String>>>() {
+            List<Map<String, Object>> templatesMapper = mapper.readValue(notificationTemplatesInputStream, new TypeReference<List<Map<String, Object>>>() {
             });
-            for (Map<String, String> template : templates) {
-                warningService.insertNotificationTemplate(template.get("message"));
+            for (Map<String, Object> map : templatesMapper) {
+                String asset_type_id = (String) map.get("asset_type_id");
+                String weather_warning_type = (String) map.get("weather_warning_type");
+                String severity = (String) map.get("severity");
+                String message = (String) map.get("message");
+
+                Templates template = new Templates();
+                template.setAssetType(asset_type_id);
+                template.setWeatherType(weather_warning_type);
+                template.setSeverity(severity);
+                template.setMessage(message);
+
+                warningService.insertNotificationTemplate(template);
             }
         } catch (IOException e) {
             throw new SpExceptions.SystemException("Loading Templates failed." + e.getMessage());

@@ -41,6 +41,7 @@ mock-data:
   users: data/users.json
   warnings: data/geojson-sample.json
   templates: data/templates.json
+  notifications: data/notifications.json
   js: js/arcgis-converter.js
   state: mock-data-state/mock_data_state.json
 

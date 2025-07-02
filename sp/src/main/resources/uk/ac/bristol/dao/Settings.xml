@@ -14,6 +14,7 @@
         drop table if exists assets cascade;
         drop table if exists weather_warnings cascade;
         drop table if exists templates cascade;
+        drop table if exists templates_mapper cascade;
     </update>
 
     <update id="createAddress">
@@ -128,8 +129,11 @@
     <update id="createNotificationTemplates">
         create table if not exists templates
         (
-            templates_id   serial primary key,
-            templates_message text
+            templates_id                      serial primary key,
+            templates_asset_type_id           varchar(50),
+            templates_weather_warning_type    varchar(50),
+            templates_severity                varchar(50),
+            templates_message                 text
         );
     </update>
 </mapper>
