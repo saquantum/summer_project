@@ -74,7 +74,7 @@ public class LoginController {
     }
 
     @PostMapping("/reset/send")
-    public ResponseBody reset(@RequestParam String email) {
+    public ResponseBody resetPasswordSendEmailWithCode(@RequestParam String email) {
         try {
             return contactService.generateCode(email);
         } catch (Exception e) {
@@ -83,12 +83,12 @@ public class LoginController {
     }
 
     @PostMapping("/reset/validate")
-    public ResponseBody validate(@RequestParam String email, @RequestParam String code) {
+    public ResponseBody resetPasswordValidateCode(@RequestParam String email, @RequestParam String code) {
         return contactService.validateCode(email, code);
     }
 
     @PostMapping("/reset/commit")
-    public ResponseBody commit(@RequestParam String password, @RequestParam String email) {
+    public ResponseBody resetPasswordUpdatePassword(@RequestParam String password, @RequestParam String email) {
         try {
             userService.updatePasswordByEmail(email, password);
             return new ResponseBody(Code.SUCCESS, null, "Success.");

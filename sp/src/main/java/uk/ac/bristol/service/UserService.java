@@ -73,6 +73,4 @@ public interface UserService {
     int deleteAssetHolderByAssetHolderIds(List<String> ids);
 
     int updatePasswordByEmail(String email, String password);
-
-    int updatePasswordByUserId(@Param("id") String id, @Param("password") String password);
 }

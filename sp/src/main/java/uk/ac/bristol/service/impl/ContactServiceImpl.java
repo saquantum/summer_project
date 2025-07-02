@@ -182,7 +182,7 @@ public class ContactServiceImpl implements ContactService {
         message.setTo(email);
         message.setSubject("Verification your email!");
 
-        message.setText("This verifacation code is valide in 5 minutes."
+        message.setText("This verification code expires in 5 minutes."
                 + System.lineSeparator()
                 + verificationCode);
         mailSender.send(message);

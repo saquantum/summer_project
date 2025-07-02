@@ -409,11 +409,9 @@ public class UserServiceImpl implements UserService {
         if (list.size() != 1) {
             throw new RuntimeException("Error finding asset holder by email");
         }
-        return updatePasswordByUserId(list.get(0), password);
-    }
-
-    @Override
-    public int updatePasswordByUserId(String id, String password) {
-        return userMapper.updatePasswordByUserId(id, password);
+        User user = new User();
+        user.setId(list.get(0));
+        user.setPassword(password);
+        return updateUser(user);
     }
 }

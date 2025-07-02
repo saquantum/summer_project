@@ -51,6 +51,4 @@ public interface UserMapper {
     int deleteUserByIds(@Param("ids") String[] ids);
 
     int deleteUserByIds(@Param("ids") List<String> ids);
-
-    int updatePasswordByUserId(String id, @Param("password") String password);
 }
