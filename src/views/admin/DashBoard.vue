@@ -19,7 +19,6 @@ onMounted(async () => {
   mapChart.showLoading()
   echarts.registerMap('UK', res)
 
-  // 创建一个随机饼图 series
   function randomPieSeries(center, radius) {
     const data = ['A', 'B', 'C', 'D'].map((t) => {
       return {
@@ -46,7 +45,6 @@ onMounted(async () => {
     }
   }
 
-  // 设置地图和图表配置项
   const option = {
     geo: {
       map: 'UK',
@@ -73,7 +71,6 @@ onMounted(async () => {
     ]
   }
 
-  // 渲染图表
   mapChart.hideLoading()
   mapChart.setOption(option)
 
@@ -236,7 +233,7 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: center;
 
-  flex: 1; /* 占满剩余高度 */
-  min-height: 0; /* 防止内容溢出不生效 */
+  flex: 1;
+  min-height: 0;
 }
 </style>

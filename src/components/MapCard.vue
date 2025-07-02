@@ -103,17 +103,13 @@ const endDrawing = async () => {
   if (points.length > 0) {
     finishOneShape()
   }
+
+  if (polygonCoordinates.length === 0) return
+  const multiPolygon = turf.multiPolygon(polygonCoordinates)
+  emit('update:locations', [multiPolygon.geometry])
   if (props.id) {
     // update asset
-    if (polygonCoordinates.length === 0) return
-    const multiPolygon = turf.multiPolygon(polygonCoordinates)
-    emit('update:locations', [multiPolygon.geometry])
     await assetUpdateInfoService(props.id, props.ownerId, multiPolygon.geometry)
-  } else {
-    // add asset
-    if (polygonCoordinates.length === 0) return
-    const multiPolygon = turf.multiPolygon(polygonCoordinates)
-    emit('update:locations', [multiPolygon.geometry])
   }
 
   // clear points, turn off click

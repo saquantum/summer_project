@@ -168,12 +168,6 @@ const handleShowDetail = (row) => {
 </template>
 
 <style scoped>
-:deep(.custom-item) {
-}
-
-:deep(.custom-label) {
-}
-/* Your existing multiline text style */
 .multiline-text {
   white-space: pre-wrap;
   word-break: break-word;
