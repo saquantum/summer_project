@@ -213,8 +213,22 @@ public class UserServiceImpl implements UserService {
     @Override
     public int insertUser(User user) {
         if (user.getAssetHolder() != null) {
+            AssetHolder emptyAH = new AssetHolder();
+            emptyAH.setAddressId(UUID.randomUUID().toString());
+            emptyAH.setContactPreferencesId(UUID.randomUUID().toString());
+
             AssetHolder ah = user.getAssetHolder();
+            ah.setId(assetHolderMapper.generateAssetHolderId(emptyAH));
+            ah.setAddressId(ah.getId());
+            ah.getAddress().put("assetHolderId", ah.getAddressId());
+            ah.setContactPreferencesId(ah.getId());
+            ah.getContactPreferences().put("assetHolderId", ah.getContactPreferencesId());
             ah.setLastModified(Instant.now());
+
+            int n3 = assetHolderMapper.updateAssetHolder(ah);
+            if (n3 != 1) {
+                throw new RuntimeException("Failed to insert asset holder for user " + user.getId());
+            }
 
             int n1 = assetHolderMapper.insertAddress(ah.getAddress());
             if (n1 != 1) {
@@ -226,17 +240,7 @@ public class UserServiceImpl implements UserService {
                 throw new RuntimeException("Failed to insert contact preferences for user " + user.getId());
             }
 
-            if (ah.getId() == null || ah.getId().isBlank()) {
-                int n0 = assetHolderMapper.insertAssetHolderAutoId(ah);
-                if (n0 != 1) {
-                    throw new RuntimeException("Failed to insert asset holder using auto ID for user " + user.getId());
-                }
-            } else {
-                int n3 = assetHolderMapper.insertAssetHolder(ah);
-                if (n3 != 1) {
-                    throw new RuntimeException("Failed to insert asset holder for user " + user.getId());
-                }
-            }
+            user.setAssetHolderId(user.getAssetHolder().getId());
         }
         int n4 = userMapper.insertUser(user);
         if (n4 != 1) {

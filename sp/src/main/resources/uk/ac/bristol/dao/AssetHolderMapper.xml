@@ -122,15 +122,15 @@
         returning asset_holder_id
     </insert>
 
-    <insert id="generateAssetHolderId" parameterType="uk.ac.bristol.pojo.AssetHolder" keyProperty="id" keyColumn="asset_holder_id">
+    <select id="generateAssetHolderId" parameterType="uk.ac.bristol.pojo.AssetHolder" resultType="string">
         insert into asset_holders (asset_holder_name,
                                    asset_holder_email,
                                    asset_holder_phone,
                                    asset_holder_address_id,
                                    asset_holder_contact_preferences_id)
-        values ('', '', '', '', '')
+        values ('', '', '', #{addressId}, #{contactPreferencesId})
         returning asset_holder_id
-    </insert>
+    </select>
 
     <update id="updateAssetHolder">
         update asset_holders

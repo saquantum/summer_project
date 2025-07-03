@@ -38,9 +38,9 @@ public class ImportMockDataImpl implements ImportMockData {
     @Override
     public void resetSchema() {
         settings.resetSchema();
+        settings.createAssetHolders();
         settings.createAddress();
         settings.createContactPreferences();
-        settings.createAssetHolders();
         settings.createUsers();
         settings.createAssetTypes();
         settings.createAssets();
@@ -60,15 +60,6 @@ public class ImportMockDataImpl implements ImportMockData {
         for (AssetHolder assetHolder : assetHolders) {
             User user = new User();
             user.setId(assetHolder.getId());
-
-            assetHolder.setId("$" + assetHolder.getId());
-
-            assetHolder.setAddressId(assetHolder.getId());
-            assetHolder.getAddress().put("assetHolderId", assetHolder.getAddressId());
-            assetHolder.setContactPreferencesId(assetHolder.getId());
-            assetHolder.getContactPreferences().put("assetHolderId", assetHolder.getContactPreferencesId());
-
-            user.setAssetHolderId(assetHolder.getId());
             user.setAssetHolder(assetHolder);
             user.setPassword("123456");
             user.setAdmin(false);

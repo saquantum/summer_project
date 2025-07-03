@@ -6,9 +6,9 @@
 <mapper namespace="uk.ac.bristol.dao.Settings">
     <update id="resetSchema">
         create extension if not exists postgis;
+        drop table if exists asset_holders cascade;
         drop table if exists address cascade;
         drop table if exists contact_preferences cascade;
-        drop table if exists asset_holders cascade;
         drop table if exists users cascade;
         drop table if exists asset_types cascade;
         drop table if exists assets cascade;
@@ -16,40 +16,16 @@
         drop table if exists templates cascade;
     </update>
 
-    <update id="createAddress">
-        create table if not exists address
-        (
-            address_id       varchar(50) primary key,
-            address_street   varchar(100),
-            address_city     varchar(100),
-            address_postcode varchar(50),
-            address_country  varchar(100)
-        );
-    </update>
-
-    <update id="createContactPreferences">
-        create table if not exists contact_preferences
-        (
-            contact_preferences_id       varchar(50) primary key,
-            contact_preferences_email    boolean default false,
-            contact_preferences_phone    boolean default false,
-            contact_preferences_post     boolean default false,
-            contact_preferences_whatsapp boolean default false,
-            contact_preferences_discord  boolean default false,
-            contact_preferences_telegram boolean default false
-        );
-    </update>
-
     <update id="createAssetHolders">
         create table if not exists asset_holders
         (
-            asset_holder_row_id                bigserial primary key,
+            asset_holder_row_id                 bigserial primary key,
             asset_holder_id                     varchar(50) unique not null,
             asset_holder_name                   varchar(200)       not null,
             asset_holder_email                  varchar(50)        not null,
             asset_holder_phone                  varchar(50)        not null,
-            asset_holder_address_id             varchar(50) references address (address_id) on update cascade,
-            asset_holder_contact_preferences_id varchar(50) references contact_preferences (contact_preferences_id) on update cascade,
+            asset_holder_address_id             varchar(50) unique not null,
+            asset_holder_contact_preferences_id varchar(50) unique not null,
             asset_holder_last_modified          timestamptz default current_timestamp
         );
 
@@ -58,7 +34,7 @@
         $$
         begin
             if NEW.asset_holder_id is null or NEW.asset_holder_id = '' then
-                NEW.asset_holder_id := '$user_' || NEW.asset_holder_row_id;
+                NEW.asset_holder_id := '$user_' || lpad(NEW.asset_holder_row_id::text, 3, '0');
             end if;
             return NEW;
         end;
@@ -70,6 +46,30 @@
             on asset_holders
             for each row
         execute function set_asset_holder_id();
+    </update>
+
+    <update id="createAddress">
+        create table if not exists address
+        (
+            address_id       varchar(50) primary key references asset_holders (asset_holder_address_id) on update cascade,
+            address_street   varchar(100),
+            address_city     varchar(100),
+            address_postcode varchar(50),
+            address_country  varchar(100)
+        );
+    </update>
+
+    <update id="createContactPreferences">
+        create table if not exists contact_preferences
+        (
+            contact_preferences_id       varchar(50) primary key references asset_holders (asset_holder_contact_preferences_id) on update cascade,
+            contact_preferences_email    boolean default false,
+            contact_preferences_phone    boolean default false,
+            contact_preferences_post     boolean default false,
+            contact_preferences_whatsapp boolean default false,
+            contact_preferences_discord  boolean default false,
+            contact_preferences_telegram boolean default false
+        );
     </update>
 
     <update id="createUsers">
