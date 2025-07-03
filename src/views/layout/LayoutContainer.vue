@@ -206,7 +206,11 @@ watch(
     <el-container>
       <el-header style="display: flex; justify-content: space-between">
         <div class="header-left">
-          <el-button class="mobile-menu" @click="mobileMenuVisible = true">
+          <el-button
+            class="mobile-menu"
+            @click="mobileMenuVisible = true"
+            plain
+          >
             <el-icon><Operation /></el-icon>
           </el-button>
           <el-button @click="searchDialogVisible = true">

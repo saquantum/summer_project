@@ -62,7 +62,7 @@ const convertToGeoJSON = (data, type = 'point') => {
 const disableForUser = ref(false)
 
 const form = ref({
-  id: '',
+  username: '',
   name: '',
   typeId: '',
   ownerId: '',
@@ -95,7 +95,7 @@ const form = ref({
 const formRef = ref()
 
 const rules = {
-  id: [
+  username: [
     { required: true, message: 'Please input username', trigger: 'blur' },
     {
       validator: async (rule, value, callback) => {
@@ -177,14 +177,29 @@ const cancelDrawing = () => {
 }
 
 const submit = async () => {
-  console.log('value:', form.value)
-  await assetInsertService(userStore.user.id, location)
-  ElMessage.success('Successfully add an asset')
+  try {
+    await formRef.value.validate()
+  } catch {
+    return
+  }
+  form.value.location = form.value.locations[0]
+  if (userStore.user.admin) {
+    const res = await adminGetUserInfoByUIDService(form.value.username)
+    form.value.ownerId = res.data.assetHolderId
+  } else {
+    form.value.ownerId = userStore.user.assetHolderId
+  }
+  try {
+    await assetInsertService(form.value)
+    ElMessage.success('Successfully add an asset')
+  } catch {
+    ElMessage.error('An error occurs during adding an asset')
+  }
 }
 
 const reset = () => {
   form.value = {
-    id: '',
+    username: '',
     name: '',
     typeId: '',
     ownerId: '',
@@ -227,7 +242,7 @@ watch(
 
 onMounted(() => {
   if (!userStore.user.admin) {
-    form.value.id = userStore.user.id
+    form.value.username = userStore.user.id
     disableForUser.value = true
   }
 })
@@ -244,8 +259,8 @@ onMounted(() => {
         :rules="rules"
         style="max-width: 600px"
       >
-        <el-form-item label="Username" prop="id">
-          <el-input v-model="form.id" :disabled="disableForUser" />
+        <el-form-item label="Username" prop="username">
+          <el-input v-model="form.username" :disabled="disableForUser" />
         </el-form-item>
         <el-form-item label="Asset name">
           <el-input v-model="form.name" />
@@ -322,7 +337,7 @@ onMounted(() => {
         <div style="height: 400px; max-width: 600px; border: black 1px solid">
           <MapCard
             ref="mapCardRef"
-            :map-id="'testid'"
+            :map-id="'AddAsset'"
             v-model:locations="form.locations"
             v-model:mode="mode"
           ></MapCard>

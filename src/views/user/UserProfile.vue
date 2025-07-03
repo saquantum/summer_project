@@ -139,6 +139,7 @@ onMounted(async () => {
   } else {
     const id = userStore.proxyId || route.query.id
     const res = await adminGetUserInfoService(id)
+    console.log(res)
     user.value = res.data
   }
 

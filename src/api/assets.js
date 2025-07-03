@@ -13,11 +13,6 @@ export const assetUpdateInfoService = (id, ownerId, location) => {
   return request.put('/admin/asset', obj)
 }
 
-export const assetInsertService = (id, ownerId, location) => {
-  const obj = {
-    id: id,
-    ownerId: ownerId,
-    location: location
-  }
-  return request.post('/asset', obj)
+export const assetInsertService = (obj) => {
+  return request.post('/admin/asset', obj)
 }
