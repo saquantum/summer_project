@@ -50,7 +50,11 @@ public interface AssetMapper {
 
     int insertAssetType(AssetType assetType);
 
+    int insertAssetTypeAutoId(AssetType assetType);
+
     int insertAsset(Asset asset);
+
+    int insertAssetAutoId(Asset asset);
 
     int updateAssetType(AssetType assetType);
 

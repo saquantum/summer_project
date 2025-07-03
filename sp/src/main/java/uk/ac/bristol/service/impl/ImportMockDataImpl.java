@@ -106,7 +106,7 @@ public class ImportMockDataImpl implements ImportMockData {
     }
 
     @Override
-    public void importWarnings(InputStream warningsInputStream, InputStream JSConverterInputStream) {
+    public void importWarnings(InputStream warningsInputStream) {
         try {
             List<Map<String, Object>> list = mapper.readValue(warningsInputStream, new TypeReference<List<Map<String, Object>>>() {
             });

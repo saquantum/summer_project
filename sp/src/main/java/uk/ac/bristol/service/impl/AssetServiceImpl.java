@@ -121,13 +121,21 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public int insertAssetType(AssetType assetType) {
-        return assetMapper.insertAssetType(assetType);
+        if(assetType.getId() == null || assetType.getId().isEmpty()) {
+            return assetMapper.insertAssetTypeAutoId(assetType);
+        }else{
+            return assetMapper.insertAssetType(assetType);
+        }
     }
 
     @Override
     public int insertAsset(Asset asset) {
         asset.setLastModified(Instant.now());
-        return assetMapper.insertAsset(asset);
+        if(asset.getId() == null || asset.getId().isEmpty()) {
+            return assetMapper.insertAssetAutoId(asset);
+        }else{
+            return assetMapper.insertAsset(asset);
+        }
     }
 
     @Override

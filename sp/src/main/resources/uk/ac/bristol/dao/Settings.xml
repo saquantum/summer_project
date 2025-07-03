@@ -44,7 +44,7 @@
     <update id="createAssetHolders">
         create table if not exists asset_holders
         (
-            row_id                              bigserial primary key,
+            asset_holders_row_id                bigserial primary key,
             asset_holder_id                     varchar(50) unique not null,
             asset_holder_name                   varchar(200)       not null,
             asset_holder_email                  varchar(50)        not null,
@@ -55,10 +55,11 @@
         );
 
         create or replace function set_asset_holder_id()
-            returns trigger as $$
+            returns trigger as
+        $$
         begin
             if NEW.asset_holder_id is null or NEW.asset_holder_id = '' then
-                NEW.asset_holder_id := '$user_' || NEW.row_id;
+                NEW.asset_holder_id := '$user_' || NEW.asset_holders_row_id;
             end if;
             return NEW;
         end;
@@ -66,7 +67,8 @@
 
         drop trigger if exists asset_holder_id_trigger on asset_holders;
         create trigger asset_holder_id_trigger
-            before insert on asset_holders
+            before insert
+            on asset_holders
             for each row
         execute function set_asset_holder_id();
     </update>
@@ -84,16 +86,36 @@
     <update id="createAssetTypes">
         create table if not exists asset_types
         (
-            asset_type_id          varchar(50) primary key,
-            asset_type_name        varchar(100) not null,
+            asset_type_row_id      bigserial primary key,
+            asset_type_id          varchar(50) unique not null,
+            asset_type_name        varchar(100)       not null,
             asset_type_description varchar(1000)
         );
+
+        create or replace function set_asset_type_id()
+            returns trigger as
+        $$
+        begin
+            if NEW.asset_type_id is null or NEW.asset_type_id = '' then
+                NEW.asset_type_id := 'type_' || lpad(NEW.asset_type_row_id::text, 3, '0');
+            end if;
+            return NEW;
+        end;
+        $$ language plpgsql;
+
+        drop trigger if exists asset_type_id_trigger on asset_types;
+        create trigger asset_type_id_trigger
+            before insert
+            on asset_types
+            for each row
+        execute function set_asset_type_id();
     </update>
 
     <update id="createAssets">
         create table if not exists assets
         (
-            asset_id              varchar(50) primary key,
+            asset_row_id          bigserial primary key,
+            asset_id              varchar(50) unique           not null,
             asset_name            varchar(100)                 not null,
             asset_type_id         varchar(50) references asset_types (asset_type_id) on update cascade,
             asset_owner_id        varchar(50) references asset_holders (asset_holder_id) on update cascade,
@@ -105,6 +127,24 @@
             asset_last_inspection date,
             asset_last_modified   timestamptz default current_timestamp
         );
+
+        create or replace function set_asset_id()
+            returns trigger as
+        $$
+        begin
+            if NEW.asset_id is null or NEW.asset_id = '' then
+                NEW.asset_id := 'asset_' || lpad(NEW.asset_row_id::text, 3, '0');
+            end if;
+            return NEW;
+        end;
+        $$ language plpgsql;
+
+        drop trigger if exists asset_id_trigger on assets;
+        create trigger asset_id_trigger
+            before insert
+            on assets
+            for each row
+        execute function set_asset_id();
     </update>
 
     <update id="createWeatherWarnings">

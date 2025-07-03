@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import uk.ac.bristol.MockDataInitializer;
+import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.Warning;
 import uk.ac.bristol.service.WarningService;
 
@@ -39,6 +41,11 @@ public class ScheduledMetOfficeWarningsCrawler {
 
     @Scheduled(fixedRateString = "${metoffice.crawler.rate:600000}") // default polling rate -- 10 mins per polling
     public void scheduledCrawler() {
+        try {
+            MockDataInitializer.latch.await();
+        } catch (InterruptedException e) {
+            throw new SpExceptions.SystemException("InterruptedException threw, failed to start the scheduled crawler");
+        }
         crawler();
     }
 

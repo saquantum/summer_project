@@ -503,5 +503,74 @@
         }
       }
     ]
+  },
+  {
+    "type" : "FeatureCollection",
+    "features" : [
+      {
+        "type" : "Feature",
+        "id" : 1659,
+        "geometry" :
+        {
+          "type" : "Polygon",
+          "coordinates" :
+          [
+            [
+              [-5.2954, 57.8769],
+              [-5.1526, 57.7892],
+              [-4.9768, 57.71],
+              [-4.9438, 57.6278],
+              [-4.9658, 57.4804],
+              [-4.7681, 57.2196],
+              [-4.7021, 57.0049],
+              [-4.7571, 56.7407],
+              [-4.7351, 56.5413],
+              [-4.6033, 56.4139],
+              [-4.5538, 56.35],
+              [-4.5154, 56.2464],
+              [-4.5264, 56.118],
+              [-4.5593, 55.9953],
+              [-4.7296, 55.826],
+              [-5.0647, 55.7024],
+              [-5.4822, 55.7518],
+              [-5.9052, 55.8907],
+              [-6.1743, 56.0229],
+              [-6.3611, 56.1792],
+              [-6.4874, 56.3622],
+              [-6.4929, 56.5595],
+              [-6.427, 56.7346],
+              [-6.6742, 57.0258],
+              [-6.7841, 57.2879],
+              [-6.828, 57.4745],
+              [-6.4215, 57.7862],
+              [-6.0315, 57.8886],
+              [-5.5811, 57.9528],
+              [-5.2954, 57.8769]
+            ]
+          ]
+        },
+        "properties" : {
+          "OBJECTID" : 1659,
+          "weathertype" : "RAIN",
+          "warninglevel" : "YELLOW",
+          "warningheadline" : "Persistent, heavy rain on Friday and Saturday brings difficult travel conditions and possible flooding in places.",
+          "validfromdate" : 1751605200000,
+          "validtodate" : 1751724000000,
+          "GlobalID" : "9fc2c77e-e989-442d-9fa9-d548453193b5",
+          "warningImpact" : "2/Low",
+          "warningLikelihood" : "3/Likely",
+          "warningVersion" : "1.0",
+          "affectedAreas" : "Central, Tayside & Fife (Perth and Kinross, Stirling);\n\nHighlands & Eilean Siar (Highland);\n\nStrathclyde (Argyll and Bute, Inverclyde, North Ayrshire, Renfrewshire, West Dunbartonshire)",
+          "whatToExpect" : "Spray and flooding on roads probably making journey times longer.\n\nBus and train services probably affected with journey times taking longer.\n\nSome interruption to power supplies and other services possible",
+          "warningFurtherDetails" : "Rain is expected to be persistent, and heavy at times, during much of Friday and overnight, before slowly easing later on Saturday. 40 to 60 mm rain is expected to build up quite widely with in excess of 100 mm over a few mountains. \n\nRain will be accompanied by windy conditions, especially Friday daytime when gusts will reach 40 to 50 mph around coasts and hills.\n\nWhat Should I Do?\n\nKeep yourself and others safe; prepare to avoid travelling by road during potentially dangerous road conditions. If you must travel, ensure you watch for possible danger and drive cautiously.  \n\nIt is not safe to drive, walk or swim through floodwater, avoid it where possible and if you are affected by fast flowing or deep-water call 999, and wait for help.  \n\nPreparing a flood kit could save you from loss or damage due to flooding to your home or business.  In your flood kit have: insurance and any other important documents; a torch & spare batteries; a first aid kit, prescription medicines and supplies for looking after your family members or pets; and warm, waterproof clothes, blankets, food and water.  \n\nConsider checking on vulnerable people that you know including older people, those with underlying conditions and those who live alone; they may need support with food and medical supplies. \n\nIf you are worried about your health or that of somebody you know, ring NHS 111.\n\nStay up to date with the weather forecast for your area and follow advice from emergency services and local authorities.",
+          "warningUpdateDescription" : null,
+          "issuedDate" : 1751530422000,
+          "issuedDateString" : "03-07-2025 09:13:42 AM BST",
+          "validFromDateString" : "04-07-2025 06:00:00 AM BST",
+          "validToDateString" : "05-07-2025 03:00:00 PM BST",
+          "modifiedDateString" : "03-07-2025 09:13:42 AM BST"
+        }
+      }
+    ]
   }
 ]

@@ -120,14 +120,13 @@ public class UserServiceImpl implements UserService {
                                                                     Integer limit,
                                                                     Integer offset) {
         List<AssetHolder> assetHolders = assetHolderMapper.selectAllAssetHolders(QueryTool.filterOrderList(orderList, "asset_holder"), limit, offset);
-        List<Asset> assets = assetMapper.selectAllAssets(null, limit, offset);
+        List<Asset> assets = assetMapper.selectAllAssets(null, null, null);
         Map<String, List<String>> mapping = new HashMap<>();
         assets.forEach(asset -> {
             if (!mapping.containsKey(asset.getOwnerId())) {
                 mapping.put(asset.getOwnerId(), new ArrayList<>());
-            } else {
-                mapping.get(asset.getOwnerId()).add(asset.getId());
             }
+            mapping.get(asset.getOwnerId()).add(asset.getId());
         });
         List<Map<String, Object>> result = new ArrayList<>();
         for (AssetHolder holder : assetHolders) {
@@ -285,13 +284,13 @@ public class UserServiceImpl implements UserService {
         user.setAssetHolderId(assetHolderId);
         ah.setId(assetHolderId);
         ah.setAddressId(assetHolderId);
-        if(ah.getAddress() == null) {
+        if (ah.getAddress() == null) {
             Map<String, String> address = new HashMap<>();
             ah.setAddress(address);
         }
         ah.getAddress().put("assetHolderId", ah.getAddressId());
         ah.setContactPreferencesId(assetHolderId);
-        if(ah.getContactPreferences() == null) {
+        if (ah.getContactPreferences() == null) {
             Map<String, Object> cp = new HashMap<>();
             ah.setContactPreferences(cp);
         }
