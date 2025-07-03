@@ -32,8 +32,6 @@ public class MockDataInitializer implements CommandLineRunner {
     private String USERS_FILE_PATH;
     @Value("${mock-data.warnings}")
     private String WARNINGS_FILE_PATH;
-    @Value("${mock-data.templates}")
-    private String TEMPLATES_FILE_PATH;
     @Value("${mock-data.notifications}")
     private String NOTIFICATION_FILE_PATH;
 

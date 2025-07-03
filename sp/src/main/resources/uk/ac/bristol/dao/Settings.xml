@@ -14,7 +14,6 @@
         drop table if exists assets cascade;
         drop table if exists weather_warnings cascade;
         drop table if exists templates cascade;
-        drop table if exists templates_mapper cascade;
     </update>
 
     <update id="createAddress">
@@ -44,7 +43,7 @@
     <update id="createAssetHolders">
         create table if not exists asset_holders
         (
-            asset_holders_row_id                bigserial primary key,
+            asset_holder_row_id                bigserial primary key,
             asset_holder_id                     varchar(50) unique not null,
             asset_holder_name                   varchar(200)       not null,
             asset_holder_email                  varchar(50)        not null,
@@ -59,7 +58,7 @@
         $$
         begin
             if NEW.asset_holder_id is null or NEW.asset_holder_id = '' then
-                NEW.asset_holder_id := '$user_' || NEW.asset_holders_row_id;
+                NEW.asset_holder_id := '$user_' || NEW.asset_holder_row_id;
             end if;
             return NEW;
         end;
@@ -169,11 +168,12 @@
     <update id="createNotificationTemplates">
         create table if not exists templates
         (
-            templates_id                      bigserial primary key,
-            templates_asset_type_id           varchar(50),
-            templates_weather_warning_type    varchar(50),
-            templates_severity                varchar(50),
-            templates_message                 text
+            template_id                      bigserial primary key,
+            template_asset_type_id           varchar(50),
+            template_weather_warning_type    varchar(50),
+            template_severity                varchar(50),
+            template_message                 text,
+        constraint joint_unique_identifier unique (template_asset_type_id, template_weather_warning_type,template_severity)
         );
     </update>
 </mapper>

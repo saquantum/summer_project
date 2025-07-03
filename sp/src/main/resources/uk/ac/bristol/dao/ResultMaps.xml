@@ -94,12 +94,12 @@
         <collection property="warnings" ofType="uk.ac.bristol.pojo.Warning" resultMap="WarningMap"/>
     </resultMap>
 
-    <resultMap id="TemplateMap" type="java.util.Map">
-        <id property="id" column="templates_id"/>
-        <result property="message" column="templates_message"/>
-        <result property="assetTypeId" column="templates_asset_type_id"/>
-        <result property="weatherWarningType" column="templates_weather_warning_type"/>
-        <result property="severity" column="templates_severity"/>
+    <resultMap id="TemplateMap" type="uk.ac.bristol.pojo.Template">
+        <id property="id" column="template_id"/>
+        <result property="assetTypeId" column="template_asset_type_id"/>
+        <result property="warningType" column="template_weather_warning_type"/>
+        <result property="severity" column="template_severity"/>
+        <result property="message" column="template_message"/>
     </resultMap>
 
     <sql id="orderAndPage">

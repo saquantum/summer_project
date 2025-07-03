@@ -134,45 +134,65 @@
         from templates;
     </select>
 
+    <select id="selectNotificationTemplateById" resultMap="ResultMaps.TemplateMap">
+        select *
+        from templates
+        where template_id = #{id};
+    </select>
+
+    <select id="selectNotificationTemplateByTypes" resultMap="ResultMaps.TemplateMap">
+        select *
+        from templates
+        where LOWER(template_asset_type_id) = LOWER(#{assetTypeId})
+          and LOWER(template_weather_warning_type) = LOWER(#{warningType})
+          and LOWER(template_severity) = LOWER(#{severity})
+    </select>
+
     <insert id="insertNotificationTemplate">
-        insert into templates (templates_asset_type_id, templates_weather_warning_type, templates_severity, templates_message)
-        values (#{assetType}, #{weatherType}, #{severity}, #{message});
+        insert into templates (template_asset_type_id, template_weather_warning_type, template_severity, template_message)
+        values (#{assetTypeId}, #{warningType}, #{severity}, #{message});
     </insert>
 
-    <update id="updateNotificationTemplate">
+    <update id="updateNotificationTemplateMessageById">
         update templates
-        set templates_message = #{message}
-        where templates_id = #{id};
+        <set>
+            <if test="assetTypeId != null and assetTypeId != ''">
+                template_asset_type_id = assetTypeId,
+            </if>
+            <if test="warningType != null and warningType != ''">
+                template_weather_warning_type = warningType,
+            </if>
+            <if test="severity != null and severity != ''">
+                template_severity = severity,
+            </if>
+            <if test="message != null and message != ''">
+                template_message = message,
+            </if>
+        </set>
+        where template_asset_type_id = #{assetTypeId}
+    </update>
+
+    <update id="updateNotificationTemplateMessageByTypes">
+        update templates
+        set template_message = #{message}
+        where LOWER(template_asset_type_id) = LOWER(#{assetTypeId})
+          and LOWER(template_weather_warning_type) = LOWER(#{warningType})
+          and LOWER(template_severity) = LOWER(#{severity})
     </update>
 
     <delete id="deleteNotificationTemplateByIds">
-        delete from templates where templates_id in
+        delete from templates where template_id in
         <foreach collection="ids" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
     </delete>
 
-    <select id="selectTemplateIdByMessage" resultType="int">
-        select templates_id from templates where templates_message = #{message}
-    </select>
-
-    <select id="selectMessageByInfo" resultType="String">
-        select templates_message
+    <delete id="deleteNotificationTemplateByType">
+        delete
         from templates
-        where LOWER(templates_asset_type) = LOWER(#{assetType}) and LOWER(templates_weather_warning_type) = LOWER(#{weatherType}) and LOWER(templates_severity) = LOWER(#{severity})
-    </select>
+        where LOWER(template_asset_type_id) = LOWER(#{assetTypeId})
+          and LOWER(template_weather_warning_type) = LOWER(#{warningType})
+          and LOWER(template_severity) = LOWER(#{severity})
+    </delete>
 
-    <update id="updateMessageByInfo">
-        update templates
-        set templates_message = #{message}
-        where templates_asset_type = #{assetType} and templates_weather_warning_type = #{weatherType} and templates_severity = #{severity}
-    </update>
-
-    <select id="selectWeatherTypeById" resultType="String">
-        select warning_weather_type from weather_warning where warning_id = #{id}
-    </select>
-
-    <select id="selectWarningLevelById" resultType="String">
-        select warning_level from weather_warning where warning_id = #{id}
-    </select>
 </mapper>

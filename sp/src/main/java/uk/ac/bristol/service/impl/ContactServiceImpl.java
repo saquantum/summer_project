@@ -13,10 +13,7 @@ import uk.ac.bristol.dao.AssetHolderMapper;
 import uk.ac.bristol.dao.AssetMapper;
 import uk.ac.bristol.dao.WarningMapper;
 import uk.ac.bristol.exception.SpExceptions;
-import uk.ac.bristol.pojo.Asset;
-import uk.ac.bristol.pojo.AssetHolder;
-import uk.ac.bristol.pojo.User;
-import uk.ac.bristol.pojo.Warning;
+import uk.ac.bristol.pojo.*;
 import uk.ac.bristol.service.ContactService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
@@ -38,7 +35,7 @@ public class ContactServiceImpl implements ContactService {
 
     private final Map<String, String> codeStore = new ConcurrentHashMap<>();
     private final Map<String, Long> timestampStore = new ConcurrentHashMap<>();
-    private static final long EXPIRE_TIME = 5 * 60 * 1000;
+    private static final long EXPIRE_TIME = 5L * 60 * 1000;
 
     private final JavaMailSender mailSender;
 
@@ -62,21 +59,21 @@ public class ContactServiceImpl implements ContactService {
             return null;
         }
 
-        String assetType = assetMapper.selectAssetTypeByID(assetId);
-        String weatherType = warningMapper.selectWeatherTypeById(warningId);
-        String severity = warningMapper.selectWarningLevelById(warningId);
+        List<Warning> warning = warningMapper.selectWarningById(warningId);
+        if (warning.size() != 1) {
+            throw new SpExceptions.GetMethodException("Get " + warning.size() + " warnings using id " + warningId);
+        }
 
-        String message = warningMapper.selectMessageByInfo(assetType, weatherType, severity);
+        String typeId = assetMapper.selectAssetTypeByID(assetId);
+        String warningType = warning.get(0).getWeatherType();
+        String severity = warning.get(0).getWarningLevel();
 
-//        String message = ((Supplier<String>) () -> {
-//            List<Map<String, Object>> list = warningMapper.selectAllNotificationTemplates();
-//            for (Map<String, Object> map : list) {
-//                if (Objects.equals((Integer) map.get("id"), messageId)) {
-//                    return map.get("message").toString();
-//                }
-//            }
-//            return null;
-//        }).get();
+        List<Template> template = warningMapper.selectNotificationTemplateByTypes(typeId, warningType, severity);
+        if (template.size() != 1) {
+            throw new SpExceptions.GetMethodException("Get " + template.size() + " templates using id " + warningId);
+        }
+
+        String message = template.get(0).getMessage();
 
         if (message == null) {
             throw new SpExceptions.GetMethodException("The message type you required does not exist");
@@ -84,38 +81,17 @@ public class ContactServiceImpl implements ContactService {
 
         String assetOwnerId = assetMapper.selectAssetOwnerIdByAssetId(assetId);
 
-//        List<Asset> asset = assetMapper.selectAssetByID(assetId);
-//        if (asset.size() != 1) {
-//            throw new SpExceptions.GetMethodException("The database might be modified by another transaction");
-//        }
-
-//        List<Warning> warning = warningMapper.selectWarningById(warningId);
-//        if (warning.size() != 1) {
-//            throw new SpExceptions.GetMethodException("The database might be modified by another transaction");
-//        }
-
         String id = UUID.randomUUID().toString();
-//        String typeId = asset.get(0).getTypeId();
-//        String warningType = warning.get(0).getWeatherType();
-//        String warningSeverity = warning.get(0).getWarningLevel();
         LocalDateTime now = LocalDateTime.now();
         return new HashMap<>(Map.of(
                 "id", id,
-                "assetTypeId", assetType,
+                "assetTypeId", typeId,
                 "toOwnerId", assetOwnerId,
-                "weatherWarningType", weatherType,
+                "weatherWarningType", warningType,
                 "severity", severity,
                 "message", message,
                 "createdAt", now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 "channel", ""));
-//                "id", id,
-//                "assetTypeId", typeId,
-//                "toOwnerId", asset.get(0).getOwnerId(),
-//                "weatherWarningType", warningType,
-//                "severity", warningSeverity,
-//                "message", message,
-//                "createdAt", now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-//                "channel", ""));
     }
 
     @Override
@@ -221,7 +197,7 @@ public class ContactServiceImpl implements ContactService {
         if (System.currentTimeMillis() - time > EXPIRE_TIME) {
             return new ResponseBody(Code.BUSINESS_ERR, null, "Verification code has expired!");
         }
-        if(savedCode.equals(code)) {
+        if (savedCode.equals(code)) {
             return new ResponseBody(Code.SUCCESS, null, "Verification code has been validated!");
         } else {
             return new ResponseBody(Code.BUSINESS_ERR, null, "You entered wrong verification code!");

@@ -2,7 +2,7 @@ package uk.ac.bristol.dao;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import uk.ac.bristol.pojo.Templates;
+import uk.ac.bristol.pojo.Template;
 import uk.ac.bristol.pojo.Warning;
 
 import java.util.List;
@@ -21,6 +21,10 @@ public interface WarningMapper {
 
     List<Warning> selectWarningById(@Param("id") Long id);
 
+    List<String> selectOwnerIdOfAllAssetsIntersectingWithGivenWarning(@Param("warningId") Long warningId);
+
+    Boolean testIfGivenAssetIntersectsWithWarning(@Param("assetId") String assetId, @Param("warningId") Long warningId);
+
     int insertWarning(Warning warning);
 
     int updateWarning(Warning warning);
@@ -29,25 +33,23 @@ public interface WarningMapper {
 
     int deleteWarningByIDs(@Param("ids") List<Long> ids);
 
-    List<Map<String, Object>> selectAllNotificationTemplates();
+    List<Template> selectAllNotificationTemplates();
 
-    int insertNotificationTemplate(Templates templates);
+    List<Template> selectNotificationTemplateByTypes(@Param("assetTypeId") String assetTypeId, @Param("warningType") String warningType, @Param("severity") String severity);
 
-    int updateNotificationTemplate(Map<String, String> template);
+    List<Template> selectNotificationTemplateByTypes(Template template);
 
-    int deleteNotificationTemplateByIds(@Param("ids") Integer[] ids);
+    List<Template> selectNotificationTemplateById(@Param("id") Long id);
 
-    int deleteNotificationTemplateByIds(@Param("ids") List<Integer> ids);
+    int insertNotificationTemplate(Template template);
 
-    List<String> selectOwnerIdOfAllAssetsIntersectingWithGivenWarning(@Param("warningId") Long warningId);
+    int updateNotificationTemplateMessageByTypes(Template template);
 
-    Boolean testIfGivenAssetIntersectsWithWarning(@Param("assetId") String assetId, @Param("warningId") Long warningId);
+    int updateNotificationTemplateMessageById(Template template);
 
-    String selectMessageByInfo(@Param("assetType") String assetType, @Param("weatherType") String weatherType, @Param("severity") String severity);
+    int deleteNotificationTemplateByIds(@Param("ids") Long[] ids);
 
-    int updateMessageByInfo(@Param("assetType") String assetType, @Param("weatherType") String weatherType, @Param("severity") String severity, @Param("message") String message);
+    int deleteNotificationTemplateByIds(@Param("ids") List<Long> ids);
 
-    String selectWeatherTypeById(@Param("id") Long id);
-
-    String selectWarningLevelById(@Param("id") Long id);
+    int deleteNotificationTemplateByType(Template template);
 }

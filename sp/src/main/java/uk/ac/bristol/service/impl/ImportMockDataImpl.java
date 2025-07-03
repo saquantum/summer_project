@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.Settings;
-import uk.ac.bristol.dao.WarningMapper;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
 import uk.ac.bristol.service.AssetService;
@@ -16,7 +15,6 @@ import uk.ac.bristol.service.WarningService;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -135,18 +133,22 @@ public class ImportMockDataImpl implements ImportMockData {
             List<Map<String, Object>> templatesMapper = mapper.readValue(notificationTemplatesInputStream, new TypeReference<List<Map<String, Object>>>() {
             });
             for (Map<String, Object> map : templatesMapper) {
-                String asset_type_id = (String) map.get("asset_type_id");
-                String weather_warning_type = (String) map.get("weather_warning_type");
+                String assetTypeId = (String) map.get("asset_type_id");
+                String warningType = (String) map.get("weather_warning_type");
                 String severity = (String) map.get("severity");
                 String message = (String) map.get("message");
 
-                Templates template = new Templates();
-                template.setAssetType(asset_type_id);
-                template.setWeatherType(weather_warning_type);
+                Template template = new Template();
+                template.setAssetTypeId(assetTypeId);
+                template.setWarningType(warningType);
                 template.setSeverity(severity);
                 template.setMessage(message);
 
-                warningService.insertNotificationTemplate(template);
+                if (!warningService.getNotificationTemplateByTypes(template).isEmpty()) {
+                    warningService.updateNotificationTemplateMessageByTypes(template);
+                } else {
+                    warningService.insertNotificationTemplate(template);
+                }
             }
         } catch (IOException e) {
             throw new SpExceptions.SystemException("Loading Templates failed." + e.getMessage());

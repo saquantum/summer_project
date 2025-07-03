@@ -112,16 +112,24 @@
         values (#{id}, #{name}, #{email}, #{phone}, #{addressId}, #{contactPreferencesId}, #{lastModified});
     </insert>
 
-    <insert id="insertAssetHolderAutoId" >
-        INSERT INTO asset_holders (
-            asset_holder_name,
-            asset_holder_email,
-            asset_holder_phone,
-            asset_holder_address_id,
-            asset_holder_contact_preferences_id,
-            asset_holder_last_modified
-        )
-        VALUES (#{name}, #{email}, #{phone}, #{addressId}, #{contactPreferencesId}, #{lastModified})
+    <insert id="insertAssetHolderAutoId" parameterType="uk.ac.bristol.pojo.AssetHolder" keyProperty="id" keyColumn="asset_holder_id">
+        insert into asset_holders (asset_holder_name,
+                                   asset_holder_email,
+                                   asset_holder_phone,
+                                   asset_holder_address_id,
+                                   asset_holder_contact_preferences_id)
+        values (#{name}, #{email}, #{phone}, #{addressId}, #{contactPreferencesId})
+        returning asset_holder_id
+    </insert>
+
+    <insert id="generateAssetHolderId" parameterType="uk.ac.bristol.pojo.AssetHolder" keyProperty="id" keyColumn="asset_holder_id">
+        insert into asset_holders (asset_holder_name,
+                                   asset_holder_email,
+                                   asset_holder_phone,
+                                   asset_holder_address_id,
+                                   asset_holder_contact_preferences_id)
+        values ('', '', '', '', '')
+        returning asset_holder_id
     </insert>
 
     <update id="updateAssetHolder">

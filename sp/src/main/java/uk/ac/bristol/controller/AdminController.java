@@ -3,6 +3,7 @@ package uk.ac.bristol.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.bristol.pojo.Template;
 import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.UserService;
@@ -117,18 +118,46 @@ public class AdminController {
         return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
     }
 
-    @GetMapping("/templates")
-    public ResponseBody getTemplates(@RequestParam(value = "assetType", required = false) String assetType,
-                                     @RequestParam(value = "weatherType", required = false) String weatherType,
-                                     @RequestParam(value = "severity", required = false) String severity) {
-        return new ResponseBody(Code.SELECT_OK, warningService.getMessageByInfo(assetType, weatherType, severity));
+    @GetMapping("/template")
+    public ResponseBody getAllTemplates() {
+        return new ResponseBody(Code.SELECT_OK, warningService.getAllNotificationTemplates());
     }
 
-    @PutMapping("/templates")
-    public ResponseBody updateTemplates(@RequestParam(value = "assetType", required = false) String assetType,
-                                        @RequestParam(value = "weatherType", required = false) String weatherType,
-                                        @RequestParam(value = "severity", required = false) String severity,
-                                        @RequestParam(value = "message", required = false) String message) {
-        return new ResponseBody(Code.UPDATE_OK, warningService.updateMessageByInfo(assetType, weatherType, severity, message));
+    @GetMapping("/template/type")
+    public ResponseBody getTemplateByTypes(@RequestParam(value = "assetTypeId", required = false) String assetTypeId,
+                                           @RequestParam(value = "warningType", required = false) String warningType,
+                                           @RequestParam(value = "severity", required = false) String severity) {
+        Template template = new Template();
+        template.setAssetTypeId(assetTypeId);
+        template.setWarningType(warningType);
+        template.setSeverity(severity);
+        return new ResponseBody(Code.SELECT_OK, warningService.getNotificationTemplateByTypes(template));
+    }
+
+    @GetMapping("/template/id/{id}")
+    public ResponseBody getTemplateById(@PathVariable Long id) {
+        return new ResponseBody(Code.SELECT_OK, warningService.getNotificationTemplateById(id));
+    }
+
+    @PostMapping("/template")
+    public ResponseBody insertTemplate(@RequestBody Template template) {
+        template.setId(null);
+        return new ResponseBody(Code.INSERT_OK, warningService.insertNotificationTemplate(template));
+    }
+
+    @PutMapping("/template/type")
+    public ResponseBody updateTemplateByTypes(@RequestBody Template template) {
+        return new ResponseBody(Code.UPDATE_OK, warningService.updateNotificationTemplateMessageByTypes(template));
+    }
+
+    @PutMapping("/template/id")
+    public ResponseBody updateTemplateById(@RequestBody Template template) {
+        return new ResponseBody(Code.UPDATE_OK, warningService.updateNotificationTemplateMessageById(template));
+    }
+
+    @DeleteMapping("/template")
+    public ResponseBody deleteTemplatesByIds(@RequestBody Map<String, Object> body) {
+        List<Long> ids = (List<Long>) body.get("ids");
+        return new ResponseBody(Code.DELETE_OK, warningService.deleteNotificationTemplateByIds(ids));
     }
 }

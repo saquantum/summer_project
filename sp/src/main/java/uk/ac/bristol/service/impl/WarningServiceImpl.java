@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.AssetHolderMapper;
 import uk.ac.bristol.dao.UserMapper;
 import uk.ac.bristol.dao.WarningMapper;
-import uk.ac.bristol.pojo.Templates;
+import uk.ac.bristol.pojo.Template;
 import uk.ac.bristol.pojo.Warning;
 import uk.ac.bristol.service.WarningService;
 import uk.ac.bristol.util.QueryTool;
@@ -87,37 +87,47 @@ public class WarningServiceImpl implements WarningService {
     }
 
     @Override
-    public List<Map<String, Object>> getAllNotificationTemplates() {
+    public List<Template> getAllNotificationTemplates() {
         return warningMapper.selectAllNotificationTemplates();
     }
 
     @Override
-    public int insertNotificationTemplate(Templates templates) {
+    public List<Template> getNotificationTemplateByTypes(Template template) {
+        return warningMapper.selectNotificationTemplateByTypes(template);
+    }
+
+    @Override
+    public List<Template> getNotificationTemplateById(Long id) {
+        return warningMapper.selectNotificationTemplateById(id);
+    }
+
+    @Override
+    public int insertNotificationTemplate(Template templates) {
         return warningMapper.insertNotificationTemplate(templates);
     }
 
     @Override
-    public int updateNotificationTemplate(Map<String, String> template) {
-        return warningMapper.updateNotificationTemplate(template);
+    public int updateNotificationTemplateMessageById(Template template) {
+        return warningMapper.updateNotificationTemplateMessageById(template);
     }
 
     @Override
-    public int deleteNotificationTemplateByIds(Integer[] ids) {
+    public int updateNotificationTemplateMessageByTypes(Template template) {
+        return warningMapper.updateNotificationTemplateMessageByTypes(template);
+    }
+
+    @Override
+    public int deleteNotificationTemplateByIds(Long[] ids) {
         return warningMapper.deleteNotificationTemplateByIds(ids);
     }
 
     @Override
-    public int deleteNotificationTemplateByIds(List<Integer> ids) {
+    public int deleteNotificationTemplateByIds(List<Long> ids) {
         return warningMapper.deleteNotificationTemplateByIds(ids);
     }
 
     @Override
-    public String getMessageByInfo(String assetType, String weatherType, String severity) {
-        return warningMapper.selectMessageByInfo(assetType, weatherType, severity);
-    }
-
-    @Override
-    public int updateMessageByInfo(String assetType, String weatherType, String severity, String message) {
-        return warningMapper.updateMessageByInfo(assetType, weatherType, severity, message);
+    public int deleteNotificationTemplateByType(Template template) {
+        return warningMapper.deleteNotificationTemplateByType(template);
     }
 }

@@ -1,6 +1,6 @@
 package uk.ac.bristol.service;
 
-import uk.ac.bristol.pojo.Templates;
+import uk.ac.bristol.pojo.Template;
 import uk.ac.bristol.pojo.Warning;
 
 import java.util.List;
@@ -28,17 +28,22 @@ public interface WarningService {
 
     int deleteWarningByIDs(List<Long> ids);
 
-    List<Map<String, Object>> getAllNotificationTemplates();
+    List<Template> getAllNotificationTemplates();
 
-    int insertNotificationTemplate(Templates templates);
+    List<Template> getNotificationTemplateByTypes(Template template);
 
-    int updateNotificationTemplate(Map<String, String> template);
+    List<Template> getNotificationTemplateById(Long id);
 
-    int deleteNotificationTemplateByIds(Integer[] ids);
+    int insertNotificationTemplate(Template templates);
 
-    int deleteNotificationTemplateByIds(List<Integer> ids);
+    int updateNotificationTemplateMessageById(Template template);
 
-    String getMessageByInfo(String assetType, String weatherType, String severity);
+    int updateNotificationTemplateMessageByTypes(Template template);
 
-    int updateMessageByInfo(String assetType, String weatherType, String severity, String message);
+    int deleteNotificationTemplateByIds(Long[] ids);
+
+    int deleteNotificationTemplateByIds(List<Long> ids);
+
+    int deleteNotificationTemplateByType(Template template);
+
 }

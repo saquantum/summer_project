@@ -115,6 +115,7 @@ public class AssetController {
         if (!QueryTool.userIdentityVerification(response, request, id, null)) {
             throw new SpExceptions.PostMethodException("User identification failed");
         }
+        asset.setId(null);
         return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset));
     }
 
@@ -126,11 +127,13 @@ public class AssetController {
         if (!QueryTool.userIdentityVerification(response, request, null, id)) {
             throw new SpExceptions.PostMethodException("User identification failed");
         }
+        asset.setId(null);
         return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset));
     }
 
     @PostMapping("/admin/asset")
     public ResponseBody insertAsset(@RequestBody Asset asset) {
+        asset.setId(null);
         return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset));
     }
 
@@ -202,6 +205,7 @@ public class AssetController {
 
     @PostMapping("/admin/asset/type")
     public ResponseBody insertAssetType(@RequestBody AssetType type) {
+        type.setId(null);
         return new ResponseBody(Code.INSERT_OK, assetService.insertAssetType(type));
     }
 
