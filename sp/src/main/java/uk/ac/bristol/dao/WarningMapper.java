@@ -33,7 +33,9 @@ public interface WarningMapper {
 
     int deleteWarningByIDs(@Param("ids") List<Long> ids);
 
-    List<Template> selectAllNotificationTemplates();
+    List<Template> selectAllNotificationTemplates(@Param("orderList") List<Map<String, String>> orderList,
+                                                  @Param("limit") Integer limit,
+                                                  @Param("offset") Integer offset);
 
     List<Template> selectNotificationTemplateByTypes(@Param("assetTypeId") String assetTypeId, @Param("warningType") String warningType, @Param("severity") String severity);
 

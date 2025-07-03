@@ -119,8 +119,10 @@ public class AdminController {
     }
 
     @GetMapping("/template")
-    public ResponseBody getAllTemplates() {
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllNotificationTemplates());
+    public ResponseBody getAllTemplates(@RequestParam(required = false) List<String> orderList,
+                                        @RequestParam(required = false) Integer limit,
+                                        @RequestParam(required = false) Integer offset) {
+        return new ResponseBody(Code.SELECT_OK, warningService.getAllNotificationTemplates(QueryTool.getOrderList(orderList), limit, offset));
     }
 
     @GetMapping("/template/type")

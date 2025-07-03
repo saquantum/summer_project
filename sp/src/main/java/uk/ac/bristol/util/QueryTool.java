@@ -66,7 +66,8 @@ public final class QueryTool {
             "user",
             "address",
             "contact_preferences",
-            "warning");
+            "warning",
+            "template");
 
     public static List<Map<String, String>> filterOrderList(List<Map<String, String>> originalList, String... prefixes) {
         if (originalList == null || originalList.isEmpty() || prefixes == null || prefixes.length == 0) return null;

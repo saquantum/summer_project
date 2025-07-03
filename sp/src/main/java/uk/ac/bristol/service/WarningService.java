@@ -28,7 +28,9 @@ public interface WarningService {
 
     int deleteWarningByIDs(List<Long> ids);
 
-    List<Template> getAllNotificationTemplates();
+    List<Template> getAllNotificationTemplates(List<Map<String, String>> orderList,
+                                               Integer limit,
+                                               Integer offset);
 
     List<Template> getNotificationTemplateByTypes(Template template);
 

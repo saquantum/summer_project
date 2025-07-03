@@ -87,8 +87,10 @@ public class WarningServiceImpl implements WarningService {
     }
 
     @Override
-    public List<Template> getAllNotificationTemplates() {
-        return warningMapper.selectAllNotificationTemplates();
+    public List<Template> getAllNotificationTemplates(List<Map<String, String>> orderList,
+                                                      Integer limit,
+                                                      Integer offset) {
+        return warningMapper.selectAllNotificationTemplates(QueryTool.filterOrderList(orderList, "template"), limit, offset);
     }
 
     @Override

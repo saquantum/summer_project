@@ -131,7 +131,8 @@
 
     <select id="selectAllNotificationTemplates" resultMap="ResultMaps.TemplateMap">
         select *
-        from templates;
+        from templates
+        <include refid="ResultMaps.orderAndPage"/>
     </select>
 
     <select id="selectNotificationTemplateById" resultMap="ResultMaps.TemplateMap">
