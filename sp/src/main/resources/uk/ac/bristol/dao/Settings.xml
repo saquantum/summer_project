@@ -169,7 +169,7 @@
     <update id="createNotificationTemplates">
         create table if not exists templates
         (
-            templates_id                      serial primary key,
+            templates_id                      bigserial primary key,
             templates_asset_type_id           varchar(50),
             templates_weather_warning_type    varchar(50),
             templates_severity                varchar(50),
