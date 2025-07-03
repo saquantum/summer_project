@@ -44,7 +44,7 @@ console.log(displayData)
     </template>
 
     <div>
-      <el-descriptions :column="1">
+      <el-descriptions :column="2">
         <el-descriptions-item
           v-for="(item, index) in displayData"
           :key="index"
@@ -55,13 +55,15 @@ console.log(displayData)
           <span>{{ item.value }}</span>
         </el-descriptions-item>
       </el-descriptions>
+      <el-button>Edit</el-button>
+      <el-button type="danger">Delete</el-button>
     </div>
   </el-card>
 </template>
 
 <style scoped>
 .asset-card {
-  width: 300px;
+  width: 350px;
   border-radius: 12px;
   overflow: hidden;
   transition: all 0.3s ease;
@@ -78,7 +80,6 @@ console.log(displayData)
 .card-header {
   display: grid;
   grid-template-columns: 1fr auto;
-  align-s: start;
   column-gap: 8px;
 }
 

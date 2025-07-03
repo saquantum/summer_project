@@ -185,4 +185,29 @@ defineExpose({
   width: 100%;
   height: 100%;
 }
+
+/* Extra small (phones) */
+@media (max-width: 575px) {
+  /* Styles for very small screens */
+}
+
+/* Small (phones in landscape) */
+@media (min-width: 576px) and (max-width: 767px) {
+  /* Styles for small screens */
+}
+
+/* Medium (tablets) */
+@media (min-width: 768px) and (max-width: 991px) {
+  /* Styles for tablets */
+}
+
+/* Large (desktops) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  /* Styles for desktops */
+}
+
+/* Extra Large (large desktops) */
+@media (min-width: 1200px) {
+  /* Styles for large desktops */
+}
 </style>

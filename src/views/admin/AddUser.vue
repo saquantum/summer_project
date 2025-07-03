@@ -10,6 +10,8 @@ import { ref, onMounted } from 'vue'
 
 const form = ref({
   id: '',
+  password: '',
+  repassword: '',
   firstName: '',
   lastName: '',
   assetHolder: {
@@ -69,6 +71,24 @@ const rules = {
     //   message: 'password must between 6 to 15 characters',
     //   trigger: 'blur'
     // }
+  ],
+  repassword: [
+    { required: true, message: 'Please input password', trigger: 'blur' },
+    {
+      pattern: /^\S{6,15}$/,
+      message: 'password must between 6 to 15 characters',
+      trigger: 'blur'
+    },
+    {
+      validator: (rule, value, callback) => {
+        if (value !== form.value.password) {
+          callback(new Error("Those passwords didn't match. Try again."))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
   ],
   firstName: [
     { required: true, message: 'First name is required', trigger: 'blur' },
@@ -150,7 +170,9 @@ const submit = async () => {
   }
   try {
     form.value.assetHolder.name = `${form.value.firstName} ${form.value.lastName}`
-    await userRegisterService(form.value)
+    console.log(form.value)
+    const res = await userRegisterService(form.value)
+    console.log(res)
     ElMessage.success('Successfully add an user')
   } catch {
     ElMessage.error('Server Error')
@@ -203,6 +225,10 @@ onMounted(async () => {})
 
       <el-form-item label="Password" prop="password">
         <el-input type="password" v-model="form.password" />
+      </el-form-item>
+
+      <el-form-item label="Type password again" prop="repassword">
+        <el-input type="password" v-model="form.repassword" />
       </el-form-item>
       <!-- name -->
       <el-row :gutter="20">
@@ -273,7 +299,7 @@ onMounted(async () => {})
         </el-row>
       </el-form-item>
 
-      <el-form-item label="Contact preference">
+      <el-form-item label="Contact preferences">
         <el-checkbox
           label="Email"
           v-model="form.assetHolder.contact_preferences.email"

@@ -92,7 +92,10 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UserCollapse :users="users"></UserCollapse>
+  <div class="collapse-wrapper">
+    <UserCollapse :users="users"></UserCollapse>
+  </div>
+
   <SortTool
     v-model:multiSort="multiSort"
     :columns="columns"
@@ -158,6 +161,11 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+@media (min-width: 768px) {
+  .collapse-wrapper {
+    display: none !important;
+  }
+}
 @media (max-width: 768px) {
   .table {
     display: none !important;

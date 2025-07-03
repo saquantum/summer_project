@@ -358,7 +358,11 @@ watch(
   }
 
   .card-grid {
-    gap: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+
+    justify-content: center !important;
   }
 }
 

@@ -21,7 +21,7 @@ const tableRowClassName = (scope) => {
 
 const columns = [
   { prop: 'id', label: 'Asset Id', width: 180 },
-  { prop: 'assetName', label: 'Asset Name', width: 180 },
+  { prop: 'name', label: 'Asset Name', width: 180 },
   { prop: 'assetHolderId', label: 'Asset Holder ID', width: 180 },
   { prop: 'type', label: 'Type', width: 180 },
   { prop: 'capacityLitres', label: 'Capacity litres', width: 180 },
@@ -55,7 +55,7 @@ const fetchTableData = async () => {
   for (const { prop, order } of multiSort.value) {
     let dbField = ''
     if (prop === 'id') dbField = 'asset_id'
-    else if (prop === 'assetName') dbField = 'asset_name'
+    else if (prop === 'name') dbField = 'asset_name'
     else if (prop === 'assetHolderId') dbField = 'asset_owner_id'
     else if (prop === 'warningLevel') dbField = 'warning_level'
     else if (prop === 'type') dbField = 'asset_type_id'
@@ -83,7 +83,7 @@ const fetchTableData = async () => {
   assets.value = assetStore.allAssets.map((item) => {
     return {
       id: item.asset.id,
-      assetName: item.asset.name,
+      name: item.asset.name,
       type: item.asset.type.name,
       capacityLitres: item.asset.capacityLitres,
       material: item.asset.material,
@@ -112,9 +112,15 @@ const handleSizeChange = (size) => {
 }
 
 const screenWidth = ref(window.innerWidth)
+
+let debounceTimer = null
+
 const handleResize = () => {
-  screenWidth.value = window.innerWidth
-  resizeBasedOnWidth(screenWidth.value)
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    screenWidth.value = window.innerWidth
+    resizeBasedOnWidth(screenWidth.value)
+  }, 200)
 }
 
 const resizeBasedOnWidth = (width) => {
@@ -148,7 +154,9 @@ onMounted(async () => {
 
 <template>
   <div>
-    <FilterSearch></FilterSearch>
+    <div class="search-wrapper">
+      <FilterSearch></FilterSearch>
+    </div>
     <div class="asset-list">
       <AssetCard
         v-for="(item, index) in assets"
@@ -213,6 +221,11 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.search-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
 .asset-list {
   display: flex;
   justify-content: center;
@@ -241,6 +254,12 @@ onMounted(async () => {
 
 @media (max-width: 768px) {
   .table {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .asset-list {
     display: none !important;
   }
 }

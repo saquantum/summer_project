@@ -8,6 +8,7 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const user = ref()
+const isEdit = ref(false)
 const descriptionsItem = ref([])
 
 const checkboxOptions = ref([
@@ -56,7 +57,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <el-descriptions title="User Info" :column="2" border>
+  <UserForm v-if="isEdit" :id="route.query.id"></UserForm>
+  <el-descriptions v-else title="User Info" :column="2" border>
     <el-descriptions-item label="Avatar">
       <el-avatar :size="size" :src="circleUrl" />
     </el-descriptions-item>
@@ -79,5 +81,7 @@ onMounted(async () => {
   </div>
 
   <el-button @click="proxyUser"> Proxy as this user</el-button>
+  <el-button @click="isEdit = true">Edit</el-button>
+  <el-button @click="isEdit = false">Cancel</el-button>
   <el-button type="danger"> Delete </el-button>
 </template>

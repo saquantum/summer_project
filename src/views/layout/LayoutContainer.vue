@@ -12,7 +12,8 @@ import {
   LocationInformation,
   Warning,
   CopyDocument,
-  Operation
+  Operation,
+  Search
 } from '@element-plus/icons-vue'
 import avatar from '@/assets/default.png'
 import { ref, watch, computed } from 'vue'
@@ -46,6 +47,8 @@ const activeIndex = ref(route.path)
 
 const mobileMenuVisible = ref(false)
 
+const searchDialogVisible = ref(false)
+
 const showUserSideBar = computed(() => {
   if (!userStore.user.admin) {
     return true
@@ -69,11 +72,12 @@ watch(
 
 <template>
   <el-container class="layout-container">
-    <!-- user interface -->
-    <el-aside v-if="showUserSideBar" width="200px">
+    <el-aside width="200px">
       <router-link to="/">
         <img src="@/assets/uob-logo.svg" class="el-aside__logo" alt="logo" />
       </router-link>
+
+      <!-- user interface -->
       <el-menu
         :default-active="activeIndex"
         active-text-color="#ffd04b"
@@ -81,6 +85,7 @@ watch(
         text-color="#fff"
         router
         v-model="activeIndex"
+        v-if="showUserSideBar"
       >
         <el-menu-item index="/user/profile">
           <el-icon><User /></el-icon>
@@ -119,29 +124,14 @@ watch(
         </el-menu-item>
       </el-menu>
 
-      <div class="signout-container">
-        <el-button
-          text
-          type="danger"
-          size="large"
-          @click="logout"
-          class="signout-button"
-          >Sign out</el-button
-        >
-      </div>
-    </el-aside>
-
-    <!-- admin interface -->
-    <el-aside v-else width="200px">
-      <router-link to="/">
-        <img src="@/assets/uob-logo.svg" class="el-aside__logo" alt="logo" />
-      </router-link>
+      <!-- admin interface -->
       <el-menu
         active-text-color="#ffd04b"
         background-color="#528add"
         :default-active="$route.path"
         text-color="#fff"
         router
+        v-else
       >
         <el-menu-item index="/admin/dashboard">
           <el-icon><House /></el-icon>
@@ -214,20 +204,24 @@ watch(
     </el-aside>
 
     <el-container>
-      <el-header>
-        <el-button class="mobile-menu" @click="mobileMenuVisible = true">
-          <el-icon><Operation /></el-icon>
-        </el-button>
+      <el-header style="display: flex; justify-content: space-between">
+        <div class="header-left">
+          <el-button class="mobile-menu" @click="mobileMenuVisible = true">
+            <el-icon><Operation /></el-icon>
+          </el-button>
+          <el-button @click="searchDialogVisible = true">
+            <el-icon><Search /></el-icon>
+          </el-button>
+        </div>
         <MobileMenu
           v-if="mobileMenuVisible"
           v-model:visible="mobileMenuVisible"
         ></MobileMenu>
-        <div></div>
-        <el-page-header
+        <!-- <el-page-header
           v-if="userStore.user.admin && !route.path.includes('admin')"
           @back="router.go(-1)"
         >
-        </el-page-header>
+        </el-page-header> -->
         <div class="header-right">
           <el-badge is-dot class="icon-badge">
             <el-icon @click="handleMailClick" class="bell">
@@ -258,24 +252,26 @@ watch(
             </template>
           </el-dropdown>
         </div>
-
-        <!-- consider delete -->
-        <el-dialog v-model="dialogVisible" title="Tips" width="500">
-          <span>This is a message</span>
-          <template #footer>
-            <div class="dialog-footer">
-              <el-button @click="dialogVisible = false"> Cancel </el-button>
-              <el-button type="primary" @click="dialogVisible = false">
-                Confirm
-              </el-button>
-            </div>
-          </template>
-        </el-dialog>
       </el-header>
 
       <el-main>
         <router-view></router-view>
         <CustomerService v-if="!userStore.user.admin"></CustomerService>
+        <!-- consider delete -->
+        <!-- <el-dialog v-model="searchDialogVisible" title="Tips" width="500">
+          <span>This is a message</span>
+          <template #footer>
+            <div class="dialog-footer">
+              <el-button @click="searchDialogVisible = false">
+                Cancel
+              </el-button>
+              <el-button type="primary" @click="searchDialogVisible = false">
+                Confirm
+              </el-button>
+            </div>
+          </template>
+        </el-dialog> -->
+        <SearchDialog v-model:visible="searchDialogVisible"></SearchDialog>
       </el-main>
     </el-container>
   </el-container>

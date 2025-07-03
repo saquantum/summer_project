@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import request from '@/utils/request'
 import { useUserStore } from '@/stores'
 import { assetInsertService } from '@/api/assets'
@@ -59,6 +59,8 @@ const convertToGeoJSON = (data, type = 'point') => {
   }
 }
 
+const disableForUser = ref(false)
+
 const form = ref({
   id: '',
   name: '',
@@ -101,7 +103,7 @@ const rules = {
         const res1 = await adminGetUserInfoByUIDService(value)
         // success means find a username called ${value}
         if (CodeUtil.isSuccess(res.code)) {
-          if (res1.data.admin) {
+          if (userStore.user.admin && res1.data.admin) {
             callback(new Error('Can not add asset to admin'))
           }
           callback()
@@ -222,6 +224,13 @@ watch(
     deep: true
   }
 )
+
+onMounted(() => {
+  if (!userStore.user.admin) {
+    form.value.id = userStore.user.id
+    disableForUser.value = true
+  }
+})
 </script>
 
 <template>
@@ -236,7 +245,7 @@ watch(
         style="max-width: 600px"
       >
         <el-form-item label="Username" prop="id">
-          <el-input v-model="form.id" />
+          <el-input v-model="form.id" :disabled="disableForUser" />
         </el-form-item>
         <el-form-item label="Asset name">
           <el-input v-model="form.name" />

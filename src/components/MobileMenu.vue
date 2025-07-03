@@ -23,7 +23,7 @@ const handleMenuSelect = () => {
     v-model="visible"
     title="I am the title"
     direction="ltr"
-    size="500"
+    size="350"
   >
     <el-menu
       active-text-color="#ffd04b"
