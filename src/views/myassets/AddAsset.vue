@@ -258,6 +258,7 @@ onMounted(() => {
         label-position="left"
         :rules="rules"
         style="max-width: 600px"
+        hide-required-asterisk
       >
         <el-form-item label="Username" prop="username">
           <el-input v-model="form.username" :disabled="disableForUser" />
