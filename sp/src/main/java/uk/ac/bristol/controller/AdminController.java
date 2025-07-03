@@ -117,14 +117,14 @@ public class AdminController {
         return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
     }
 
-    @GetMapping("/getTemplates")
+    @GetMapping("/templates")
     public ResponseBody getTemplates(@RequestParam(value = "assetType", required = false) String assetType,
                                      @RequestParam(value = "weatherType", required = false) String weatherType,
                                      @RequestParam(value = "severity", required = false) String severity) {
         return new ResponseBody(Code.SELECT_OK, warningService.getMessageByInfo(assetType, weatherType, severity));
     }
 
-    @PutMapping("/getTemplates/updateTemplates")
+    @PutMapping("/templates")
     public ResponseBody updateTemplates(@RequestParam(value = "assetType", required = false) String assetType,
                                         @RequestParam(value = "weatherType", required = false) String weatherType,
                                         @RequestParam(value = "severity", required = false) String severity,

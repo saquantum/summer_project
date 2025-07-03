@@ -6,11 +6,13 @@ import java.util.Map;
 
 public interface ContactService {
 
-    Map<String, Object> formatNotification(Long warningId, String assetId, Integer messageId);
+    Map<String, Object> formatNotification(Long warningId, String assetId);
 
     ResponseBody sendEmail(Map<String, Object> notification);
 
     ResponseBody unsubscribeEmail(String token);
+
+//    ResponseBody sendDiscordToAddress(String whatsappMessage, String url);
 
     ResponseBody generateCode(String email);
 

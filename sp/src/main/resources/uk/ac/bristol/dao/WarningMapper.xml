@@ -159,7 +159,7 @@
     <select id="selectMessageByInfo" resultType="String">
         select templates_message
         from templates
-        where templates_asset_type = #{assetType} and templates_weather_warning_type = #{weatherType} and templates_severity = #{severity}
+        where LOWER(templates_asset_type) = LOWER(#{assetType}) and LOWER(templates_weather_warning_type) = LOWER(#{weatherType}) and LOWER(templates_severity) = LOWER(#{severity})
     </select>
 
     <update id="updateMessageByInfo">
@@ -167,4 +167,12 @@
         set templates_message = #{message}
         where templates_asset_type = #{assetType} and templates_weather_warning_type = #{weatherType} and templates_severity = #{severity}
     </update>
+
+    <select id="selectWeatherTypeById" resultType="String">
+        select warning_weather_type from weather_warning where warning_id = #{id}
+    </select>
+
+    <select id="selectWarningLevelById" resultType="String">
+        select warning_level from weather_warning where warning_id = #{id}
+    </select>
 </mapper>

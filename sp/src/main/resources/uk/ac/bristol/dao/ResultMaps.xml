@@ -97,6 +97,9 @@
     <resultMap id="TemplateMap" type="java.util.Map">
         <id property="id" column="templates_id"/>
         <result property="message" column="templates_message"/>
+        <result property="assetTypeId" column="templates_asset_type_id"/>
+        <result property="weatherWarningType" column="templates_weather_warning_type"/>
+        <result property="severity" column="templates_severity"/>
     </resultMap>
 
     <sql id="orderAndPage">

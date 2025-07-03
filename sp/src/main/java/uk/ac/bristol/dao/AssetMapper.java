@@ -63,4 +63,8 @@ public interface AssetMapper {
     int deleteAssetByIDs(@Param("ids") String[] ids);
 
     int deleteAssetByIDs(@Param("ids") List<String> ids);
+
+    String selectAssetTypeByID(@Param("id") String id);
+
+    String selectAssetOwnerIdByAssetId(@Param("id") String id);
 }

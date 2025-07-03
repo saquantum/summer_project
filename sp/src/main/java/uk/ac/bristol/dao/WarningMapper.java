@@ -46,4 +46,8 @@ public interface WarningMapper {
     String selectMessageByInfo(@Param("assetType") String assetType, @Param("weatherType") String weatherType, @Param("severity") String severity);
 
     int updateMessageByInfo(@Param("assetType") String assetType, @Param("weatherType") String weatherType, @Param("severity") String severity, @Param("message") String message);
+
+    String selectWeatherTypeById(@Param("id") Long id);
+
+    String selectWarningLevelById(@Param("id") Long id);
 }

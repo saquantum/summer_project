@@ -18,9 +18,8 @@ public class NotificationController {
 
     @PostMapping("/admin/notify/email")
     public ResponseBody sendEmail(@RequestParam(required = true) Long warningId,
-                                  @RequestParam(required = true) String assetId,
-                                  @RequestParam(required = true) Integer messageId) {
-        Map<String, Object> notification = contactService.formatNotification(warningId, assetId, messageId);
+                                  @RequestParam(required = true) String assetId) {
+        Map<String, Object> notification = contactService.formatNotification(warningId, assetId);
         if (notification == null) {
             return new ResponseBody(Code.SUCCESS, null, "Notification is null, skipped sending email");
         }

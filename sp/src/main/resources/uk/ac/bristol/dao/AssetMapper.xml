@@ -281,4 +281,12 @@
         delete from assets where asset_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
+
+    <select id="selectAssetTypeByID" resultType="String">
+        select asset_type_id from assets where asset_id = #{id}
+    </select>
+
+    <select id="selectAssetOwnerIdByAssetId" resultType="String">
+        select asset_owner_id from assets where asset_id = #{id}
+    </select>
 </mapper>

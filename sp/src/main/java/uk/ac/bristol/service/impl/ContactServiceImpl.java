@@ -56,48 +56,66 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
-    public Map<String, Object> formatNotification(Long warningId, String assetId, Integer messageId) {
+    public Map<String, Object> formatNotification(Long warningId, String assetId) {
         Boolean test = warningMapper.testIfGivenAssetIntersectsWithWarning(assetId, warningId);
         if (test == null || !test) {
             return null;
         }
-        String message = ((Supplier<String>) () -> {
-            List<Map<String, Object>> list = warningMapper.selectAllNotificationTemplates();
-            for (Map<String, Object> map : list) {
-                if (Objects.equals((Integer) map.get("id"), messageId)) {
-                    return map.get("message").toString();
-                }
-            }
-            return null;
-        }).get();
+
+        String assetType = assetMapper.selectAssetTypeByID(assetId);
+        String weatherType = warningMapper.selectWeatherTypeById(warningId);
+        String severity = warningMapper.selectWarningLevelById(warningId);
+
+        String message = warningMapper.selectMessageByInfo(assetType, weatherType, severity);
+
+//        String message = ((Supplier<String>) () -> {
+//            List<Map<String, Object>> list = warningMapper.selectAllNotificationTemplates();
+//            for (Map<String, Object> map : list) {
+//                if (Objects.equals((Integer) map.get("id"), messageId)) {
+//                    return map.get("message").toString();
+//                }
+//            }
+//            return null;
+//        }).get();
+
         if (message == null) {
             throw new SpExceptions.GetMethodException("The message type you required does not exist");
         }
 
-        List<Asset> asset = assetMapper.selectAssetByID(assetId);
-        if (asset.size() != 1) {
-            throw new SpExceptions.GetMethodException("The database might be modified by another transaction");
-        }
+        String assetOwnerId = assetMapper.selectAssetOwnerIdByAssetId(assetId);
 
-        List<Warning> warning = warningMapper.selectWarningById(warningId);
-        if (warning.size() != 1) {
-            throw new SpExceptions.GetMethodException("The database might be modified by another transaction");
-        }
+//        List<Asset> asset = assetMapper.selectAssetByID(assetId);
+//        if (asset.size() != 1) {
+//            throw new SpExceptions.GetMethodException("The database might be modified by another transaction");
+//        }
+
+//        List<Warning> warning = warningMapper.selectWarningById(warningId);
+//        if (warning.size() != 1) {
+//            throw new SpExceptions.GetMethodException("The database might be modified by another transaction");
+//        }
 
         String id = UUID.randomUUID().toString();
-        String typeId = asset.get(0).getTypeId();
-        String warningType = warning.get(0).getWeatherType();
-        String warningSeverity = warning.get(0).getWarningLevel();
+//        String typeId = asset.get(0).getTypeId();
+//        String warningType = warning.get(0).getWeatherType();
+//        String warningSeverity = warning.get(0).getWarningLevel();
         LocalDateTime now = LocalDateTime.now();
         return new HashMap<>(Map.of(
                 "id", id,
-                "assetTypeId", typeId,
-                "toOwnerId", asset.get(0).getOwnerId(),
-                "weatherWarningType", warningType,
-                "severity", warningSeverity,
+                "assetTypeId", assetType,
+                "toOwnerId", assetOwnerId,
+                "weatherWarningType", weatherType,
+                "severity", severity,
                 "message", message,
                 "createdAt", now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 "channel", ""));
+//                "id", id,
+//                "assetTypeId", typeId,
+//                "toOwnerId", asset.get(0).getOwnerId(),
+//                "weatherWarningType", warningType,
+//                "severity", warningSeverity,
+//                "message", message,
+//                "createdAt", now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+//                "channel", ""));
     }
 
     @Override
@@ -160,6 +178,11 @@ public class ContactServiceImpl implements ContactService {
         ah.getContactPreferences().put("email", false);
         return new ResponseBody(Code.DELETE_OK, null, "Successfully unsubscribed email for user " + uid);
     }
+
+//    @Override
+//    public ResponseBody sendDiscordToAddress(String whatsappMessage, String url) {
+//
+//    }
 
     @Override
     public ResponseBody generateCode(String email) {

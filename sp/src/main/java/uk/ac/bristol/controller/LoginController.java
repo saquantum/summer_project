@@ -73,24 +73,24 @@ public class LoginController {
         }
     }
 
-    @PostMapping("/reset/send")
-    public ResponseBody resetPasswordSendEmailWithCode(@RequestParam String email) {
+    @PostMapping("/email/code")
+    public ResponseBody resetPasswordSendEmailWithCode(@RequestBody Map<String, String> body) {
         try {
-            return contactService.generateCode(email);
+            return contactService.generateCode(body.get("email"));
         } catch (Exception e) {
             return new ResponseBody(Code.REGISTER_ERR, null, "Failed to generate Code." + e.getMessage());
         }
     }
 
-    @PostMapping("/reset/validate")
-    public ResponseBody resetPasswordValidateCode(@RequestParam String email, @RequestParam String code) {
-        return contactService.validateCode(email, code);
+    @PostMapping("/email/verification")
+    public ResponseBody resetPasswordValidateCode(@RequestBody Map<String, String> body) {
+        return contactService.validateCode(body.get("email"), body.get("code"));
     }
 
-    @PostMapping("/reset/commit")
-    public ResponseBody resetPasswordUpdatePassword(@RequestParam String password, @RequestParam String email) {
+    @PostMapping("/email/password")
+    public ResponseBody resetPasswordUpdatePassword(@RequestBody Map<String, String> body) {
         try {
-            userService.updatePasswordByEmail(email, password);
+            userService.updatePasswordByEmail(body.get("email"), body.get("password"));
             return new ResponseBody(Code.SUCCESS, null, "Success.");
         } catch (Exception e) {
             return new ResponseBody(Code.BUSINESS_ERR, null, "Failed to update password.");
