@@ -38,14 +38,15 @@ public class ImportMockDataImpl implements ImportMockData {
     @Override
     public void resetSchema() {
         settings.resetSchema();
-        settings.createAssetHolders();
-        settings.createAddress();
-        settings.createContactPreferences();
-        settings.createUsers();
-        settings.createAssetTypes();
-        settings.createAssets();
-        settings.createWeatherWarnings();
-        settings.createNotificationTemplates();
+        settings.createTableMetaData();
+        settings.createAssetHolders("asset_holders");
+        settings.createAddress("address");
+        settings.createContactPreferences("contact_preferences");
+        settings.createUsers("users");
+        settings.createAssetTypes("asset_types");
+        settings.createAssets("assets");
+        settings.createWeatherWarnings("weather_warnings");
+        settings.createNotificationTemplates("templates");
     }
 
     @Override

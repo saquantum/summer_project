@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.AssetHolderMapper;
 import uk.ac.bristol.dao.AssetMapper;
+import uk.ac.bristol.dao.Settings;
 import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.AssetType;
@@ -21,10 +22,12 @@ import java.util.stream.Collectors;
 @Service
 public class AssetServiceImpl implements AssetService {
 
+    private final Settings settings;
     private final AssetMapper assetMapper;
     private final AssetHolderMapper assetHolderMapper;
 
-    public AssetServiceImpl(AssetMapper assetMapper, AssetHolderMapper assetHolderMapper) {
+    public AssetServiceImpl(Settings settings, AssetMapper assetMapper, AssetHolderMapper assetHolderMapper) {
+        this.settings = settings;
         this.assetMapper = assetMapper;
         this.assetHolderMapper = assetHolderMapper;
     }
@@ -121,21 +124,27 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public int insertAssetType(AssetType assetType) {
-        if(assetType.getId() == null || assetType.getId().isEmpty()) {
-            return assetMapper.insertAssetTypeAutoId(assetType);
-        }else{
-            return assetMapper.insertAssetType(assetType);
+        int n;
+        if (assetType.getId() == null || assetType.getId().isEmpty()) {
+            n = assetMapper.insertAssetTypeAutoId(assetType);
+        } else {
+            n = assetMapper.insertAssetType(assetType);
         }
+        settings.increaseTotalCountByTableName("asset_types", n);
+        return n;
     }
 
     @Override
     public int insertAsset(Asset asset) {
+        int n;
         asset.setLastModified(Instant.now());
-        if(asset.getId() == null || asset.getId().isEmpty()) {
-            return assetMapper.insertAssetAutoId(asset);
-        }else{
-            return assetMapper.insertAsset(asset);
+        if (asset.getId() == null || asset.getId().isEmpty()) {
+            n = assetMapper.insertAssetAutoId(asset);
+        } else {
+            n = assetMapper.insertAsset(asset);
         }
+        settings.increaseTotalCountByTableName("assets", n);
+        return n;
     }
 
     @Override
@@ -156,21 +165,29 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public int deleteAssetTypeByIDs(String[] ids) {
-        return assetMapper.deleteAssetTypeByIDs(ids);
+        int n = assetMapper.deleteAssetTypeByIDs(ids);
+        settings.increaseTotalCountByTableName("asset_types", -n);
+        return n;
     }
 
     @Override
     public int deleteAssetTypeByIDs(List<String> ids) {
-        return assetMapper.deleteAssetTypeByIDs(ids);
+        int n = assetMapper.deleteAssetTypeByIDs(ids);
+        settings.increaseTotalCountByTableName("asset_types", -n);
+        return n;
     }
 
     @Override
     public int deleteAssetByIDs(String[] ids) {
-        return assetMapper.deleteAssetByIDs(ids);
+        int n = assetMapper.deleteAssetByIDs(ids);
+        settings.increaseTotalCountByTableName("assets", -n);
+        return n;
     }
 
     @Override
     public int deleteAssetByIDs(List<String> ids) {
-        return assetMapper.deleteAssetByIDs(ids);
+        int n = assetMapper.deleteAssetByIDs(ids);
+        settings.increaseTotalCountByTableName("assets", -n);
+        return n;
     }
 }

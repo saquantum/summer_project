@@ -6,6 +6,7 @@
 <mapper namespace="uk.ac.bristol.dao.Settings">
     <update id="resetSchema">
         create extension if not exists postgis;
+        drop table if exists table_meta_data cascade;
         drop table if exists asset_holders cascade;
         drop table if exists address cascade;
         drop table if exists contact_preferences cascade;
@@ -16,6 +17,41 @@
         drop table if exists templates cascade;
         drop table if exists global_permission_config cascade;
         drop table if exists user_permission_config cascade;
+    </update>
+
+    <update id="createTableMetaData">
+        create table if not exists table_meta_data
+        (
+            table_name  varchar(100) primary key,
+            total_count bigint not null
+        );
+    </update>
+
+    <sql id="initTableMetaData">
+        insert into table_meta_data (table_name, total_count)
+        values (#{tableName}, 0)
+        on conflict (table_name) do nothing;
+    </sql>
+
+    <select id="selectAllMetaData" resultMap="ResultMaps.MetaDataMap">
+        select *
+        from table_meta_data;
+    </select>
+
+    <select id="selectMetaDataByTableName" resultMap="ResultMaps.MetaDataMap">
+        select *
+        from table_meta_data
+        where table_name = #{tableName};
+    </select>
+
+    <update id="increaseTotalCountByTableName">
+        update table_meta_data
+        <set>
+            <if test="totalCount != null">
+                total_count = total_count + #{totalCount},
+            </if>
+        </set>
+        where table_name = #{tableName};
     </update>
 
     <update id="createAssetHolders">
@@ -48,6 +84,8 @@
             on asset_holders
             for each row
         execute function set_asset_holder_id();
+
+        <include refid="initTableMetaData"/>
     </update>
 
     <update id="createAddress">
@@ -59,6 +97,12 @@
             address_postcode varchar(50),
             address_country  varchar(100)
         );
+
+        insert into table_meta_data (table_name, total_count)
+        values ('asset_holders', 0)
+        on conflict (table_name) do nothing;
+
+        <include refid="initTableMetaData"/>
     </update>
 
     <update id="createContactPreferences">
@@ -72,6 +116,8 @@
             contact_preferences_discord  boolean default false,
             contact_preferences_telegram boolean default false
         );
+
+        <include refid="initTableMetaData"/>
     </update>
 
     <update id="createUsers">
@@ -82,6 +128,8 @@
             user_password        varchar(100) not null,
             user_is_admin        boolean      not null
         );
+
+        <include refid="initTableMetaData"/>
     </update>
 
     <update id="createAssetTypes">
@@ -110,6 +158,8 @@
             on asset_types
             for each row
         execute function set_asset_type_id();
+
+        <include refid="initTableMetaData"/>
     </update>
 
     <update id="createAssets">
@@ -146,6 +196,8 @@
             on assets
             for each row
         execute function set_asset_id();
+
+        <include refid="initTableMetaData"/>
     </update>
 
     <update id="createWeatherWarnings">
@@ -165,6 +217,8 @@
             warning_update_description text,
             warning_area               geometry(multipolygon, 4326)
         );
+
+        <include refid="initTableMetaData"/>
     </update>
 
     <update id="createNotificationTemplates">
@@ -177,5 +231,7 @@
             template_message                 text,
         constraint joint_unique_identifier unique (template_asset_type_id, template_weather_warning_type,template_severity)
         );
+
+        <include refid="initTableMetaData"/>
     </update>
 </mapper>

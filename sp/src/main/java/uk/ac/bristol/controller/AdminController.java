@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.bristol.pojo.Template;
 import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.service.AssetService;
+import uk.ac.bristol.service.MetaDataService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.service.WarningService;
 import uk.ac.bristol.util.QueryTool;
@@ -24,11 +25,13 @@ public class AdminController {
     private final UserService userService;
     private final AssetService assetService;
     private final WarningService warningService;
+    private final MetaDataService metaDataService;
 
-    public AdminController(UserService userService, AssetService assetService, WarningService warningService) {
+    public AdminController(UserService userService, AssetService assetService, WarningService warningService, MetaDataService metaDataService) {
         this.userService = userService;
         this.assetService = assetService;
         this.warningService = warningService;
+        this.metaDataService = metaDataService;
     }
 
     @GetMapping("/user/all")
@@ -81,6 +84,16 @@ public class AdminController {
         User user = userService.getUserByAssetHolderId(id, QueryTool.getOrderList(orderList), limit, offset);
         user.setPassword(null);
         return new ResponseBody(Code.SELECT_OK, user);
+    }
+
+    @GetMapping("/metadata")
+    public ResponseBody getAllMetaData() {
+        return new ResponseBody(Code.SELECT_OK, metaDataService.getAllMetaData());
+    }
+
+    @GetMapping("/metadata/{tableName}")
+    public ResponseBody getMetaDataByTableName(@PathVariable String tableName) {
+        return new ResponseBody(Code.SELECT_OK, metaDataService.getMetaDataByTableName(tableName));
     }
 
     @PostMapping("/user")

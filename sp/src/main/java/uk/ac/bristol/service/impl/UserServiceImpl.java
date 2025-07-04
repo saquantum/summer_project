@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.AssetHolderMapper;
 import uk.ac.bristol.dao.AssetMapper;
+import uk.ac.bristol.dao.Settings;
 import uk.ac.bristol.dao.UserMapper;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.Asset;
@@ -23,13 +24,13 @@ import java.util.*;
 @Service
 public class UserServiceImpl implements UserService {
 
+    private final Settings settings;
     private final AssetHolderMapper assetHolderMapper;
-
     private final UserMapper userMapper;
-
     private final AssetMapper assetMapper;
 
-    public UserServiceImpl(AssetHolderMapper assetHolderMapper, UserMapper userMapper, AssetMapper assetMapper) {
+    public UserServiceImpl(Settings settings, AssetHolderMapper assetHolderMapper, UserMapper userMapper, AssetMapper assetMapper) {
+        this.settings = settings;
         this.assetHolderMapper = assetHolderMapper;
         this.userMapper = userMapper;
         this.assetMapper = assetMapper;
@@ -240,12 +241,17 @@ public class UserServiceImpl implements UserService {
                 throw new RuntimeException("Failed to insert contact preferences for user " + user.getId());
             }
 
+            settings.increaseTotalCountByTableName("asset_holders", 1);
+            settings.increaseTotalCountByTableName("address", 1);
+            settings.increaseTotalCountByTableName("contact_preferences", 1);
+
             user.setAssetHolderId(user.getAssetHolder().getId());
         }
         int n4 = userMapper.insertUser(user);
         if (n4 != 1) {
             throw new RuntimeException("Failed to insert user " + user.getId());
         }
+        settings.increaseTotalCountByTableName("users", 1);
         return n4;
     }
 
@@ -317,6 +323,10 @@ public class UserServiceImpl implements UserService {
         if (n4 != 1) {
             throw new RuntimeException("Failed to insert user " + user.getId());
         }
+        settings.increaseTotalCountByTableName("asset_holders", 1);
+        settings.increaseTotalCountByTableName("address", 1);
+        settings.increaseTotalCountByTableName("contact_preferences", 1);
+        settings.increaseTotalCountByTableName("users", 1);
         return n4;
     }
 
@@ -365,6 +375,7 @@ public class UserServiceImpl implements UserService {
             }
             sum += n2;
         }
+        settings.increaseTotalCountByTableName("users", -sum);
         return sum;
     }
 
@@ -387,6 +398,7 @@ public class UserServiceImpl implements UserService {
             }
             sum += n2;
         }
+        settings.increaseTotalCountByTableName("users", -sum);
         return sum;
     }
 
@@ -403,6 +415,7 @@ public class UserServiceImpl implements UserService {
         if (n1 != n2 || n3 != n2) {
             throw new RuntimeException("Error deleting asset holders: affected rows not compatible");
         }
+        settings.increaseTotalCountByTableName("asset_holders", -n1);
         return n1;
     }
 
