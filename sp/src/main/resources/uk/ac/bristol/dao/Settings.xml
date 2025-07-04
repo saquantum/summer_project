@@ -98,10 +98,6 @@
             address_country  varchar(100)
         );
 
-        insert into table_meta_data (table_name, total_count)
-        values ('asset_holders', 0)
-        on conflict (table_name) do nothing;
-
         <include refid="initTableMetaData"/>
     </update>
 
