@@ -22,4 +22,10 @@ public interface Settings {
     void createWeatherWarnings();
 
     void createNotificationTemplates();
+
+    // 👉 新增总权限设定表
+    void createGlobalPermissionConfig();
+
+    // 👉 新增个别用戶权限设定表
+    void createUserPermissionConfig();
 }
