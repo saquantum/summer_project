@@ -2,10 +2,11 @@
 import { ref, watch, onMounted } from 'vue'
 import request from '@/utils/request'
 import { useUserStore } from '@/stores'
-import { assetInsertService } from '@/api/assets'
 import CodeUtil from '@/utils/codeUtil'
 import { userCheckUIDService } from '@/api/user'
 import { adminGetUserInfoByUIDService } from '@/api/admin'
+import { userInsertAssetService } from '../../api/user'
+import { adminInsertAssetService } from '../../api/admin'
 
 const userStore = useUserStore()
 
@@ -100,11 +101,13 @@ const rules = {
     {
       validator: async (rule, value, callback) => {
         const res = await userCheckUIDService(value)
-        const res1 = await adminGetUserInfoByUIDService(value)
         // success means find a username called ${value}
         if (CodeUtil.isSuccess(res.code)) {
-          if (userStore.user.admin && res1.data.admin) {
-            callback(new Error('Can not add asset to admin'))
+          if (userStore.user.admin) {
+            const res = await adminGetUserInfoByUIDService(value)
+            if (res.data.admin) {
+              callback(new Error('Can not add asset to admin'))
+            }
           }
           callback()
         } else {
@@ -176,21 +179,36 @@ const cancelDrawing = () => {
   mapCardRef.value.cancelDrawing()
 }
 
-const submit = async () => {
+const userSubmit = async () => {
   try {
     await formRef.value.validate()
   } catch {
     return
   }
   form.value.location = form.value.locations[0]
-  if (userStore.user.admin) {
-    const res = await adminGetUserInfoByUIDService(form.value.username)
-    form.value.ownerId = res.data.assetHolderId
-  } else {
-    form.value.ownerId = userStore.user.assetHolderId
-  }
+  form.value.ownerId = userStore.user.assetHolderId
+
   try {
-    await assetInsertService(form.value)
+    await userInsertAssetService(userStore.user.assetHolderId, form.value)
+    ElMessage.success('Successfully add an asset')
+  } catch {
+    ElMessage.error('An error occurs during adding an asset')
+  }
+}
+
+const adminSubmit = async () => {
+  try {
+    await formRef.value.validate()
+  } catch {
+    return
+  }
+  form.value.location = form.value.locations[0]
+
+  const res = await adminGetUserInfoByUIDService(form.value.username)
+  form.value.ownerId = res.data.assetHolderId
+
+  try {
+    await adminInsertAssetService(form.value)
     ElMessage.success('Successfully add an asset')
   } catch {
     ElMessage.error('An error occurs during adding an asset')
@@ -359,7 +377,15 @@ onMounted(() => {
         </div>
 
         <div class="form-button">
-          <el-button type="primary" @click="submit">Submit</el-button>
+          <el-button
+            type="primary"
+            @click="adminSubmit"
+            v-if="userStore.user.admin"
+            >Submit</el-button
+          >
+          <el-button type="primary" v-else @click="userSubmit"
+            >Submit</el-button
+          >
           <el-button @click="reset">Reset</el-button>
         </div>
       </div>

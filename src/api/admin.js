@@ -42,6 +42,10 @@ export const adminGetAllLiveWarningsService = () => request.get('/warning')
 export const adminGetNotificationService = () => {
   return
 }
+
+export const adminInsertAssetService = (obj) =>
+  request.post('/admin/asset', obj)
+
 export const adminGetUKMapService = () =>
   request.get(
     'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/united-kingdom.geojson'

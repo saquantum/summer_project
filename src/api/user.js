@@ -19,3 +19,6 @@ export const userCheckUIDService = (id) => request.get(`exists/uid/${id}`)
 
 export const userCheckEmailService = (email) =>
   request.get(`exists/email/${email}`)
+
+export const userInsertAssetService = (assetHolderId, obj) =>
+  request.post(`/user/aid/${assetHolderId}/asset`, obj)
