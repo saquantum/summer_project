@@ -158,19 +158,19 @@
         update templates
         <set>
             <if test="assetTypeId != null and assetTypeId != ''">
-                template_asset_type_id = assetTypeId,
+                template_asset_type_id = #{assetTypeId},
             </if>
             <if test="warningType != null and warningType != ''">
-                template_weather_warning_type = warningType,
+                template_weather_warning_type = #{warningType},
             </if>
             <if test="severity != null and severity != ''">
-                template_severity = severity,
+                template_severity = #{severity},
             </if>
             <if test="message != null and message != ''">
-                template_message = message,
+                template_message = #{message},
             </if>
         </set>
-        where template_asset_type_id = #{assetTypeId}
+        where template_id = #{id}
     </update>
 
     <update id="updateNotificationTemplateMessageByTypes">

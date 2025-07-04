@@ -215,7 +215,7 @@ public class AssetController {
     }
 
     @DeleteMapping("/admin/asset/type")
-    public ResponseBody deleteByAssetTypesByIds(@RequestBody Map<String, Object> body) {
+    public ResponseBody deleteAssetTypesByIds(@RequestBody Map<String, Object> body) {
         List<String> ids = (List<String>) body.get("ids");
         return new ResponseBody(Code.DELETE_OK, assetService.deleteAssetTypeByIDs(ids));
     }

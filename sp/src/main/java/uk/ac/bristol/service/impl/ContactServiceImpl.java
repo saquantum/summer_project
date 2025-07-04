@@ -172,7 +172,7 @@ public class ContactServiceImpl implements ContactService {
         codeStore.put(email, code);
         timestampStore.put(email, System.currentTimeMillis());
         sendVerificationEmail(email, code);
-        return new ResponseBody(Code.SUCCESS, null, "Verification code has been sent to " + email);
+        return new ResponseBody(Code.SUCCESS, code, "Verification code has been sent to " + email);
     }
 
     private void sendVerificationEmail(String email, String verificationCode) {
