@@ -8,9 +8,10 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const user = ref()
-const isEdit = ref(false)
+
 const descriptionsItem = ref([])
 
+const userFormRef = ref()
 const checkboxOptions = ref([
   { label: 'Add new asset', value: false },
   { label: 'Add polygon', value: false },
@@ -23,8 +24,14 @@ const checkboxOptions = ref([
 const proxyUser = () => {
   // goto user interface
   userStore.setProxyId(route.query.id)
-  router.push('/myassets/manage')
+  router.push({ path: '/myassets/manage', query: { id: route.query.id } })
+  // router.push('/myassets/manage')
 }
+
+const setEdit = (val) => {
+  userFormRef.value.setEdit(val)
+}
+
 onMounted(async () => {
   const id = route.query.id
   const res = await adminGetUserInfoService(id)
@@ -57,19 +64,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UserForm v-if="isEdit" :id="route.query.id"></UserForm>
-  <el-descriptions v-else title="User Info" :column="2" border>
-    <el-descriptions-item label="Avatar">
-      <el-avatar :size="size" :src="circleUrl" />
-    </el-descriptions-item>
-    <el-descriptions-item
-      v-for="(item, index) in descriptionsItem"
-      :key="index"
-      :label="item.label"
-    >
-      {{ item.value }}</el-descriptions-item
-    >
-  </el-descriptions>
+  <UserForm ref="userFormRef"></UserForm>
 
   <div>
     <h3>Permission</h3>
@@ -81,7 +76,7 @@ onMounted(async () => {
   </div>
 
   <el-button @click="proxyUser"> Proxy as this user</el-button>
-  <el-button @click="isEdit = true">Edit</el-button>
-  <el-button @click="isEdit = false">Cancel</el-button>
+  <el-button @click="setEdit(true)">Edit</el-button>
+  <el-button @click="setEdit(false)">Cancel</el-button>
   <el-button type="danger"> Delete </el-button>
 </template>

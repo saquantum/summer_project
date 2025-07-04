@@ -1,42 +1,60 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores'
-import { userUpdateService } from '@/api/user'
+import { userUpdateInfoService } from '@/api/user'
 import { adminGetUserInfoService } from '@/api/admin'
+import { useRoute } from 'vue-router'
+
 const userStore = useUserStore()
 
-const props = defineProps({
-  id: String
-})
-const assetHolder = ref({})
+const route = useRoute()
+
+const user = ref({})
+const descriptionsItem = ref([])
 const form = ref({
+  id: '',
+  password: '',
+  repassword: '',
   firstName: '',
   lastName: '',
-  email: '',
-  phone: '',
-  address: {
-    street: '',
-    postCode: '',
-    city: '',
-    country: ''
+  assetHolder: {
+    name: '',
+    email: '',
+    phone: '',
+    address: {
+      street: '',
+      postcode: '',
+      city: '',
+      country: ''
+    },
+    contact_preferences: {
+      email: '',
+      phone: '',
+      whatsapp: '',
+      discord: '',
+      post: '',
+      telegram: ''
+    }
   }
 })
 const formRef = ref()
+
+const isEdit = ref(false)
 // Avatar upload
-const avatarUrl = ref(assetHolder.value.avatar || '')
-const avatarFile = ref(null)
+// const avatarUrl = ref(assetHolder.value.avatar || '')
+// const avatarFile = ref(null)
 
-const handleAvatarChange = (e) => {
-  const file = e.target.files[0]
-  if (!file) return
+// const handleAvatarChange = (e) => {
+//   const file = e.target.files[0]
+//   if (!file) return
 
-  const reader = new FileReader()
-  reader.onload = () => {
-    avatarUrl.value = reader.result
-  }
-  reader.readAsDataURL(file)
-  avatarFile.value = file
-}
+//   const reader = new FileReader()
+//   reader.onload = () => {
+//     avatarUrl.value = reader.result
+//   }
+//   reader.readAsDataURL(file)
+//   avatarFile.value = file
+// }
 
 const rules = {
   firstName: [
@@ -75,10 +93,10 @@ const rules = {
       trigger: 'blur'
     }
   ],
-  'address.street': [
+  'assetHolder.address.street': [
     { required: true, message: 'Street is required', trigger: 'blur' }
   ],
-  'address.postCode': [
+  'assetHolder.address.postcode': [
     { required: true, message: 'Post code is required', trigger: 'blur' },
     {
       validator: (rule, value, callback) => {
@@ -92,57 +110,147 @@ const rules = {
       trigger: 'blur'
     }
   ],
-  'address.city': [
+  'assetHolder.address.city': [
     { required: true, message: 'City is required', trigger: 'blur' }
   ],
-  'address.country': [
+  'assetHolder.address.country': [
     { required: true, message: 'Country is required', trigger: 'blur' }
   ]
 }
 
 const submit = async () => {
   try {
-    await form.value.validate()
-
-    await userUpdateService({
-      ...form.value,
-      avatar: avatarUrl.value
-    })
-
-    ElMessage.success('Profile updated!')
+    await formRef.value.validate()
   } catch {
-    ElMessage.error('Please fix form errors')
+    return
+  }
+
+  try {
+    const submitData = {
+      ...form.value,
+      assetHolder: {
+        ...form.value.assetHolder,
+        name: `${form.value.firstName} ${form.value.lastName}`
+      }
+    }
+
+    console.log(submitData)
+    const res = await userUpdateInfoService(userStore.user.id, submitData)
+    console.log(res)
+    ElMessage.success('Profile updated!')
+    await userStore.getUserInfo()
+    await loadUserData()
+
+    isEdit.value = false
+  } catch (error) {
+    console.error('Update failed:', error)
+    ElMessage.error('Failed to update profile')
   }
 }
 
-onMounted(async () => {
-  // load data according to data type
-  if (!userStore.user.admin) {
-    assetHolder.value = userStore.user.assetHolder
-  } else {
-    const id = userStore.proxyId || props.id
-    const res = await adminGetUserInfoService(id)
-    assetHolder.value = res.data.assetHolder
-  }
-
-  const arr = assetHolder.value.name.split(' ')
-  form.value = {
-    firstName: arr[0],
-    lastName: arr[1],
-    email: assetHolder.value.email,
-    phone: assetHolder.value.phone,
-    address: {
-      street: assetHolder.value.address.street,
-      postCode: assetHolder.value.address.postcode,
-      city: assetHolder.value.address.city,
-      country: assetHolder.value.address.country
+const loadUserData = async () => {
+  try {
+    if (!userStore.user.admin) {
+      user.value = userStore.user
+      console.log(userStore.user)
+    } else {
+      const id = userStore.proxyId || route.query.id
+      const res = await adminGetUserInfoService(id)
+      console.log(res)
+      user.value = res.data
     }
+
+    const arr = user.value.assetHolder.name.split(' ')
+    form.value = { ...user.value }
+    form.value.firstName = arr[0]
+    form.value.lastName = arr[1]
+
+    descriptionsItem.value = [
+      { label: 'User id', value: user.value.id },
+      { label: 'First name', value: arr[0] },
+      { label: 'Last name', value: arr[1] },
+      { label: 'Email', value: user.value.assetHolder.email ?? '' },
+      { label: 'Phone', value: user.value.assetHolder.phone ?? '' },
+      {
+        label: 'Street',
+        value: user.value.assetHolder.address?.street ?? ''
+      },
+      {
+        label: 'Postcode',
+        value: user.value.assetHolder.address?.postcode ?? ''
+      },
+      { label: 'City', value: user.value.assetHolder.address?.city ?? '' },
+      {
+        label: 'Country',
+        value: user.value.assetHolder.address?.country ?? ''
+      }
+    ]
+  } catch (error) {
+    console.error('Failed to load user data:', error)
+    ElMessage.error('Failed to load user data')
   }
+}
+
+const setEdit = (val) => {
+  isEdit.value = val
+}
+
+onMounted(async () => {
+  await loadUserData()
+})
+
+defineExpose({
+  setEdit,
+  submit,
+  isEdit
 })
 </script>
 
 <template>
+  <el-descriptions title="User Info" :column="2" border v-if="!isEdit">
+    <el-descriptions-item label="Avatar">
+      <el-avatar :size="size" :src="circleUrl" />
+    </el-descriptions-item>
+    <el-descriptions-item
+      v-for="(item, index) in descriptionsItem"
+      :key="index"
+      :label="item.label"
+    >
+      {{ item.value }}</el-descriptions-item
+    >
+    <el-descriptions-item
+      label="Contact preferences"
+      v-if="user && user.assetHolder && user.assetHolder.contact_preferences"
+    >
+      <el-checkbox
+        v-model="user.assetHolder.contact_preferences.email"
+        :disabled="!isEdit"
+        >Email</el-checkbox
+      >
+      <el-checkbox
+        v-model="user.assetHolder.contact_preferences.phone"
+        :disabled="!isEdit"
+        >Phone</el-checkbox
+      >
+      <el-checkbox
+        v-model="user.assetHolder.contact_preferences.discord"
+        :disabled="!isEdit"
+        >Discord</el-checkbox
+      >
+      <el-checkbox
+        v-model="user.assetHolder.contact_preferences.post"
+        :disabled="!isEdit"
+        >Post</el-checkbox
+      >
+      <el-checkbox
+        v-model="user.assetHolder.contact_preferences.telegram"
+        :disabled="!isEdit"
+        >Telegram</el-checkbox
+      >
+    </el-descriptions-item>
+  </el-descriptions>
   <el-form
+    v-else
     ref="formRef"
     :model="form"
     label-position="top"
@@ -161,25 +269,25 @@ onMounted(async () => {
     <!-- name -->
     <el-row :gutter="20">
       <el-col :span="12">
-        <el-form-item label="FIRST NAME" prop="lastName">
+        <el-form-item label="FIRST NAME" prop="firstName">
           <el-input v-model="form.firstName" />
         </el-form-item>
       </el-col>
       <el-col :span="12">
-        <el-form-item label="LAST NAME" prop="email">
+        <el-form-item label="LAST NAME" prop="lastName">
           <el-input v-model="form.lastName" />
         </el-form-item>
       </el-col>
     </el-row>
 
     <!-- email -->
-    <el-form-item label="EMAIL ADDRESS" prop="email">
-      <el-input v-model="form.email" />
+    <el-form-item label="EMAIL ADDRESS" prop="assetHolder.email">
+      <el-input v-model="form.assetHolder.email" />
     </el-form-item>
 
     <!-- phone -->
-    <el-form-item label="PHONE" prop="phone">
-      <el-input v-model="form.phone" />
+    <el-form-item label="PHONE" prop="assetHolder.phone">
+      <el-input v-model="form.assetHolder.phone" />
     </el-form-item>
 
     <!-- address -->
@@ -189,43 +297,65 @@ onMounted(async () => {
           <el-form-item
             label="Street"
             label-width="100px"
-            prop="address.street"
+            prop="assetHolder.address.street"
           >
-            <el-input v-model="form.address.street" />
+            <el-input v-model="form.assetHolder.address.street" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item
             label="Post Code"
             label-width="100px"
-            prop="address.postCode"
+            prop="assetHolder.address.postCode"
           >
-            <el-input v-model="form.address.postCode" />
+            <el-input v-model="form.assetHolder.address.postcode" />
           </el-form-item>
         </el-col>
       </el-row>
 
       <el-row :gutter="20" style="width: 100%">
         <el-col :span="12">
-          <el-form-item label="City" label-width="100px" prop="address.city">
-            <el-input v-model="form.address.city" />
+          <el-form-item
+            label="City"
+            label-width="100px"
+            prop="assetHolder.address.city"
+          >
+            <el-input v-model="form.assetHolder.address.city" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item
             label="Country"
             label-width="100px"
-            prop="address.country"
+            prop="assetHolder.address.country"
           >
-            <el-input v-model="form.address.country" />
+            <el-input v-model="form.assetHolder.address.country" />
           </el-form-item>
         </el-col>
       </el-row>
     </el-form-item>
 
-    <!--submit botton -->
-    <el-form-item>
-      <el-button type="primary" @click="submit">Submit</el-button>
+    <el-form-item label="Contact preferences">
+      <el-checkbox
+        label="Email"
+        v-model="form.assetHolder.contact_preferences.email"
+      />
+      <el-checkbox
+        label="Phone"
+        v-model="form.assetHolder.contact_preferences.phone"
+      />
+      <el-checkbox
+        label="Discord"
+        v-model="form.assetHolder.contact_preferences.discord"
+      />
+      <el-checkbox
+        label="Post"
+        v-model="form.assetHolder.contact_preferences.post"
+      />
+      <el-checkbox
+        label="telegram"
+        v-model="form.assetHolder.contact_preferences.telegram"
+      />
     </el-form-item>
   </el-form>
 </template>

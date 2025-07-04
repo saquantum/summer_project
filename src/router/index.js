@@ -67,6 +67,10 @@ const router = createRouter({
         {
           path: 'admin/user/detail/',
           component: () => import('@/views/admin/UserDetail.vue')
+        },
+        {
+          path: 'security/verify-mail',
+          component: () => import('@/views/user/ResetPassword.vue')
         }
       ]
     }
