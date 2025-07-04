@@ -115,7 +115,7 @@ public class ContactServiceImpl implements ContactService {
 
         String emailAddress = holder.get(0).getEmail();
         sendEmailToAddress(emailAddress, notification.toString());
-        return new ResponseBody(Code.SUCCESS, null, "The email has been sent to " + emailAddress);
+        return new ResponseBody(Code.SUCCESS, notification.get("message"), "The email has been sent to " + emailAddress);
     }
 
     private void sendEmailToAddress(String toEmailAddress, String emailContent) {
