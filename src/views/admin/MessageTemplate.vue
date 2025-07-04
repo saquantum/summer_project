@@ -1,6 +1,9 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { adminGetNotificationService } from '@/api/admin'
+
+import { userTemplateStore } from '@/stores/modules/template'
+
+const templateStore = userTemplateStore()
 const warningTypeOption = [
   { label: 'Rain', value: 'Rain' },
   { label: 'Thunderstorms', value: 'Thunderstorms' },
@@ -24,29 +27,25 @@ const typeOptions = [
 
 const warningLevelOptions = [
   {
-    value: 'No',
-    label: 'No Warning'
-  },
-  {
-    value: 'YELLOW',
+    value: 'Yellow',
     label: 'Yellow Warning'
   },
   {
-    value: 'AMBER',
+    value: 'Amber',
     label: 'Amber Warning'
   },
   {
-    value: 'RED',
+    value: 'Red',
     label: 'Red Warning'
   }
 ]
 
-const warningType = ref()
-const warningLevel = ref()
-const assetType = ref()
+const warningType = ref('Rain')
+const warningLevel = ref('Yellow')
+const assetType = ref('type_001')
 
 const isEdit = ref(false)
-const templateText = ref('Maintenance activity scheduled soon.')
+const templateText = ref(`You haven't set message for this.`)
 
 const finish = () => {
   isEdit.value = false
@@ -57,16 +56,30 @@ const cancel = () => {
 }
 
 onMounted(async () => {
-  await adminGetNotificationService()
+  await templateStore.getTemplates()
 })
 
-watch([warningType, warningLevel, assetType], () => {
-  templateText.value = 'aaa'
-})
+watch(
+  [warningType, warningLevel, assetType],
+  ([newWarningType, newWarningLevel, newAssetType]) => {
+    console.log(newWarningType, newWarningLevel, newAssetType)
+    const item = templateStore.templates.find(
+      (item) =>
+        item.warningType === newWarningType &&
+        item.severity === newWarningLevel &&
+        item.assetTypeId === newAssetType
+    )
+    console.log(item)
+    templateText.value = item?.message || `You haven't set message for this.`
+  },
+  {
+    immediate: true
+  }
+)
 </script>
 
 <template>
-  <el-select>
+  <el-select v-model="warningType">
     <el-option
       v-for="item in warningTypeOption"
       :key="item.value"
@@ -75,7 +88,7 @@ watch([warningType, warningLevel, assetType], () => {
     ></el-option>
   </el-select>
 
-  <el-select placeholder="Please choose asset type">
+  <el-select v-model="assetType" placeholder="Please choose asset type">
     <el-option
       v-for="item in typeOptions"
       :key="item.value"
@@ -84,7 +97,7 @@ watch([warningType, warningLevel, assetType], () => {
     />
   </el-select>
 
-  <el-select v-model="assetWarningLevel" placeholder="Select warning level">
+  <el-select v-model="warningLevel" placeholder="Select warning level">
     <el-option
       v-for="item in warningLevelOptions"
       :key="item.value"
@@ -93,7 +106,7 @@ watch([warningType, warningLevel, assetType], () => {
     ></el-option>
   </el-select>
 
-  <div>
+  <div class="edit-area">
     <el-input
       v-if="isEdit"
       v-model="templateText"
@@ -110,3 +123,9 @@ watch([warningType, warningLevel, assetType], () => {
   <el-button v-if="isEdit" @click="finish">Finish</el-button>
   <el-button v-if="isEdit" @click="cancel">Cancel</el-button>
 </template>
+
+<style scoped>
+.text-area {
+  margin-top: 20px;
+}
+</style>

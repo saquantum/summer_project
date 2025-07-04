@@ -50,3 +50,9 @@ export const adminGetUKMapService = () =>
   request.get(
     'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/united-kingdom.geojson'
   )
+
+/**
+ * template
+ */
+
+export const adminGetTemplateSerive = () => request.get('/admin/template')
