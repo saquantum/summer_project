@@ -23,6 +23,11 @@ const loginForm = ref({
   email: ''
 })
 
+const passwordInput = ref(null)
+const shiftFocusToPassword = () => {
+  passwordInput.value?.focus()
+}
+
 const registerForm = ref({
   id: '',
   firstName: '',
@@ -230,15 +235,18 @@ watch(isRegister, () => {
               v-model="loginForm.username"
               :prefix-icon="User"
               placeholder="Please input username"
+              @keydown.shift.enter="shiftFocusToPassword"
             ></el-input>
           </el-form-item>
           <el-form-item prop="password">
             <el-input
+              ref="passwordInput"
               v-model="loginForm.password"
               name="password"
               :prefix-icon="Lock"
               type="password"
               placeholder="Please input password"
+              @keydown.enter="login"
             ></el-input>
           </el-form-item>
           <el-form-item>
