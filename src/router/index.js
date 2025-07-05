@@ -3,7 +3,17 @@ import { useUserStore } from '@/stores'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/login', component: () => import('@/views/login/LoginPage.vue') },
+    {
+      path: '/login',
+      component: () => import('@/views/login/LoginPage.vue'),
+      children: [
+        {
+          path: '/recover',
+          component: () => import('@/components/RecoverForm.vue')
+        },
+        { path: '', component: () => import('@/components/LoginForm.vue') }
+      ]
+    },
     {
       path: '/',
       component: () => import('@/views/layout/LayoutContainer.vue'),

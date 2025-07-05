@@ -22,3 +22,12 @@ export const userCheckEmailService = (email) =>
 
 export const userInsertAssetService = (assetHolderId, obj) =>
   request.post(`/user/aid/${assetHolderId}/asset`, obj)
+
+export const userGetEmailService = (email) =>
+  request.post('/email/code', { email })
+
+export const userEmailVerificationService = ({ email, code }) =>
+  request.post('/email/verification', { email, code })
+
+export const userResetPasswordService = ({ email, password }) =>
+  request.post('/email/verification', { email, password })
