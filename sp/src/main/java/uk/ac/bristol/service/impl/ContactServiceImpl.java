@@ -68,12 +68,12 @@ public class ContactServiceImpl implements ContactService {
         String warningType = warning.get(0).getWeatherType();
         String severity = warning.get(0).getWarningLevel();
 
-        List<Template> template = warningMapper.selectNotificationTemplateByTypes(typeId, warningType, severity);
+        List<Template> template = warningMapper.selectNotificationTemplateByTypes(new Template(typeId, warningType, severity, "Email"));
         if (template.size() != 1) {
             throw new SpExceptions.GetMethodException("Get " + template.size() + " templates using id " + warningId);
         }
 
-        String message = template.get(0).getMessage();
+        String message = template.get(0).getBody();
 
         if (message == null) {
             throw new SpExceptions.GetMethodException("The message type you required does not exist");

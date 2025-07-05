@@ -1,17 +1,22 @@
 [
   {
-    "message": "Weather alert for strong winds in your area."
+    "title": ": Secure Your {{asset-model}}",
+    "body": "Dear {{contact_name}}: secure your asset. If it sent by SMS, keep it short. If it is sent by email, insert helpful images and links."
   },
   {
-    "message": "Reminder: upcoming inspection required."
+    "title": ": Protect Your {{asset-model}}",
+    "body": "Dear {{contact_name}}: protect your asset. If it sent by SMS, keep it short. If it is sent by email, insert helpful images and links."
   },
   {
-    "message": "Heavy rain expected \u2013 please check your systems."
+    "title": ": Water Your {{asset-model}}",
+    "body": "Dear {{contact_name}}: water your asset. If it sent by SMS, keep it short. If it is sent by email, insert helpful images and links."
   },
   {
-    "message": "Flood warning issued for your region."
+    "title": ": Use Your {{asset-model}}",
+    "body": "Dear {{contact_name}}: use your asset. If it sent by SMS, keep it short. If it is sent by email, insert helpful images and links."
   },
   {
-    "message": "Maintenance activity scheduled soon."
+    "title": ": Drain Your {{asset-model}}",
+    "body": "Dear {{contact_name}}: drain your asset. If it sent by SMS, keep it short. If it is sent by email, insert helpful images and links."
   }
 ]

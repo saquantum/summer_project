@@ -37,8 +37,6 @@ public interface WarningMapper {
                                                   @Param("limit") Integer limit,
                                                   @Param("offset") Integer offset);
 
-    List<Template> selectNotificationTemplateByTypes(@Param("assetTypeId") String assetTypeId, @Param("warningType") String warningType, @Param("severity") String severity);
-
     List<Template> selectNotificationTemplateByTypes(Template template);
 
     List<Template> selectNotificationTemplateById(@Param("id") Long id);

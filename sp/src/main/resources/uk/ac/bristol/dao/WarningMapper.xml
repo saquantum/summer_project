@@ -147,11 +147,17 @@
         where LOWER(template_asset_type_id) = LOWER(#{assetTypeId})
           and LOWER(template_weather_warning_type) = LOWER(#{warningType})
           and LOWER(template_severity) = LOWER(#{severity})
+          and LOWER(template_contact_channel) = LOWER(#{contactChannel})
     </select>
 
     <insert id="insertNotificationTemplate">
-        insert into templates (template_asset_type_id, template_weather_warning_type, template_severity, template_message)
-        values (#{assetTypeId}, #{warningType}, #{severity}, #{message});
+        insert into templates (template_asset_type_id,
+                               template_weather_warning_type,
+                               template_severity,
+                               template_contact_channel,
+                               template_title,
+                               template_body)
+        values (#{assetTypeId}, #{warningType}, #{severity}, #{contactChannel}, #{title}, #{body});
     </insert>
 
     <update id="updateNotificationTemplateMessageById">
@@ -166,8 +172,14 @@
             <if test="severity != null and severity != ''">
                 template_severity = #{severity},
             </if>
-            <if test="message != null and message != ''">
-                template_message = #{message},
+            <if test="contactChannel != null and contactChannel != ''">
+                template_contact_channel = #{contactChannel},
+            </if>
+            <if test="title != null and title != ''">
+                template_title = #{title},
+            </if>
+            <if test="body != null and body != ''">
+                template_body = #{body},
             </if>
         </set>
         where template_id = #{id}
@@ -175,10 +187,11 @@
 
     <update id="updateNotificationTemplateMessageByTypes">
         update templates
-        set template_message = #{message}
+        set template_title = #{title}, template_body = #{body}
         where LOWER(template_asset_type_id) = LOWER(#{assetTypeId})
           and LOWER(template_weather_warning_type) = LOWER(#{warningType})
           and LOWER(template_severity) = LOWER(#{severity})
+          and LOWER(template_contact_channel) = LOWER(#{contactChannel})
     </update>
 
     <delete id="deleteNotificationTemplateByIds">
@@ -194,6 +207,7 @@
         where LOWER(template_asset_type_id) = LOWER(#{assetTypeId})
           and LOWER(template_weather_warning_type) = LOWER(#{warningType})
           and LOWER(template_severity) = LOWER(#{severity})
+          and LOWER(template_contact_channel) = LOWER(#{contactChannel})
     </delete>
 
 </mapper>

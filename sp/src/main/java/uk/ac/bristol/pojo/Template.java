@@ -6,7 +6,32 @@ public class Template {
     private String assetTypeId;
     private String warningType;
     private String severity;
-    private String message;
+    private String contactChannel;
+    private String title;
+    private String body;
+
+    public Template() {
+    }
+
+    public Template(String assetTypeId, String warningType, String severity, String contactChannel) {
+        this.assetTypeId = assetTypeId;
+        this.warningType = warningType;
+        this.severity = severity;
+        this.contactChannel = contactChannel;
+    }
+
+    @Override
+    public String toString() {
+        return "Template{" +
+                "id=" + id +
+                ", assetTypeId='" + assetTypeId + '\'' +
+                ", warningType='" + warningType + '\'' +
+                ", severity='" + severity + '\'' +
+                ", contactChannel='" + contactChannel + '\'' +
+                ", title='" + title + '\'' +
+                ", body='" + body + '\'' +
+                '}';
+    }
 
     public Long getId() {
         return id;
@@ -40,11 +65,27 @@ public class Template {
         this.severity = severity;
     }
 
-    public String getMessage() {
-        return message;
+    public String getContactChannel() {
+        return contactChannel;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setContactChannel(String contactChannel) {
+        this.contactChannel = contactChannel;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
     }
 }

@@ -139,13 +139,15 @@ public class AdminController {
     }
 
     @GetMapping("/template/type")
-    public ResponseBody getTemplateByTypes(@RequestParam(value = "assetTypeId", required = false) String assetTypeId,
-                                           @RequestParam(value = "warningType", required = false) String warningType,
-                                           @RequestParam(value = "severity", required = false) String severity) {
+    public ResponseBody getTemplateByTypes(@RequestParam(value = "assetTypeId", required = true) String assetTypeId,
+                                           @RequestParam(value = "warningType", required = true) String warningType,
+                                           @RequestParam(value = "severity", required = true) String severity,
+                                           @RequestParam(value = "channel", required = true) String channel) {
         Template template = new Template();
         template.setAssetTypeId(assetTypeId);
         template.setWarningType(warningType);
         template.setSeverity(severity);
+        template.setContactChannel(channel);
         return new ResponseBody(Code.SELECT_OK, warningService.getNotificationTemplateByTypes(template));
     }
 

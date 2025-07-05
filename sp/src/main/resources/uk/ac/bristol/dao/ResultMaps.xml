@@ -105,7 +105,9 @@
         <result property="assetTypeId" column="template_asset_type_id"/>
         <result property="warningType" column="template_weather_warning_type"/>
         <result property="severity" column="template_severity"/>
-        <result property="message" column="template_message"/>
+        <result property="contactChannel" column="template_contact_channel"/>
+        <result property="title" column="template_title"/>
+        <result property="body" column="template_body"/>
     </resultMap>
 
     <sql id="orderAndPage">

@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
 @Service
@@ -122,24 +123,35 @@ public class ImportMockDataImpl implements ImportMockData {
     @Override
     public void importTemplates(InputStream notificationTemplatesInputStream) {
         try {
-            List<Map<String, Object>> templatesMapper = mapper.readValue(notificationTemplatesInputStream, new TypeReference<List<Map<String, Object>>>() {
+            List<Map<String, Object>> templates = mapper.readValue(notificationTemplatesInputStream, new TypeReference<List<Map<String, Object>>>() {
             });
-            for (Map<String, Object> map : templatesMapper) {
-                String assetTypeId = (String) map.get("asset_type_id");
-                String warningType = (String) map.get("weather_warning_type");
-                String severity = (String) map.get("severity");
-                String message = (String) map.get("message");
 
-                Template template = new Template();
-                template.setAssetTypeId(assetTypeId);
-                template.setWarningType(warningType);
-                template.setSeverity(severity);
-                template.setMessage(message);
+            List<String> warningTypes = List.of("rain", "thunderstorm", "wind", "snow", "lightning", "ice", "heat", "fog");
+            List<String> severities = List.of("YELLOW", "AMBER", "RED");
+            List<String> assetTypeIds = List.of("type_001", "type_002", "type_003", "type_004", "type_005", "type_006", "type_007");
+            List<String> channels= List.of("Email", "SMS");
 
-                if (!warningService.getNotificationTemplateByTypes(template).isEmpty()) {
-                    warningService.updateNotificationTemplateMessageByTypes(template);
-                } else {
-                    warningService.insertNotificationTemplate(template);
+            Random r =  new Random();
+            for (String warningType : warningTypes) {
+                for (String severity : severities) {
+                    for (String assetTypeId : assetTypeIds) {
+                        int idx = r.nextInt(templates.size());
+                        for (String channel : channels) {
+                            Template template = new Template();
+                            template.setAssetTypeId(assetTypeId);
+                            template.setWarningType(warningType);
+                            template.setSeverity(severity);
+                            template.setContactChannel(channel);
+                            template.setTitle(templates.get(idx).get("title").toString());
+                            template.setBody(templates.get(idx).get("body").toString());
+
+                            if (!warningService.getNotificationTemplateByTypes(template).isEmpty()) {
+                                warningService.updateNotificationTemplateMessageByTypes(template);
+                            } else {
+                                warningService.insertNotificationTemplate(template);
+                            }
+                        }
+                    }
                 }
             }
         } catch (IOException e) {

@@ -220,12 +220,17 @@
     <update id="createNotificationTemplates">
         create table if not exists templates
         (
-            template_id                      bigserial primary key,
-            template_asset_type_id           varchar(50),
-            template_weather_warning_type    varchar(50),
-            template_severity                varchar(50),
-            template_message                 text,
-        constraint joint_unique_identifier unique (template_asset_type_id, template_weather_warning_type,template_severity)
+            template_id                   bigserial primary key,
+            template_asset_type_id        varchar(50),
+            template_weather_warning_type varchar(50),
+            template_severity             varchar(50),
+            template_contact_channel      varchar(50),
+            template_title                text,
+            template_body                 text,
+            constraint joint_unique_identifier unique (template_asset_type_id,
+                                                       template_weather_warning_type,
+                                                       template_severity,
+                                                       template_contact_channel)
         );
 
         <include refid="initTableMetaData"/>
