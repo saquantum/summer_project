@@ -109,7 +109,6 @@ const handleConfirm = async () => {
     :rules="rules"
     ref="formRef"
     size="large"
-    autocomplete="off"
     class="form-style"
     v-if="!resetFormVisible"
   >

@@ -1,7 +1,8 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAssetStore } from '@/stores'
+import { adminDeleteAssetService } from '@/api/admin'
 
 const assets = ref([])
 const router = useRouter()
@@ -9,6 +10,38 @@ const assetStore = useAssetStore()
 
 const handleShowDetail = (row) => {
   router.push(`/asset/${row.id}`)
+}
+
+// delete dialog
+const dialogVisible = ref(false)
+const confirmDisabled = ref(true)
+const countdown = ref(5)
+let timer = null
+const deleteId = ref([])
+
+const startCountDown = () => {
+  countdown.value = 5
+  confirmDisabled.value = true
+  timer = setInterval(() => {
+    countdown.value--
+    if (countdown.value <= 0) {
+      clearInterval(timer)
+      confirmDisabled.value = false
+    }
+  }, 1000)
+}
+
+const triggerDelete = (row) => {
+  dialogVisible.value = true
+  deleteId.value.push(row.id)
+}
+const handleDelete = async () => {
+  dialogVisible.value = true
+  const res = await adminDeleteAssetService(deleteId.value)
+  deleteId.value = []
+  console.log(res)
+  await fetchTableData()
+  dialogVisible.value = false
 }
 
 const tableRowClassName = (scope) => {
@@ -150,13 +183,19 @@ onMounted(async () => {
   resizeBasedOnWidth(screenWidth.value)
   window.addEventListener('resize', handleResize)
 })
+
+watch(dialogVisible, (val) => {
+  if (val) {
+    startCountDown()
+  } else {
+    clearInterval(timer)
+    confirmDisabled.value = true
+  }
+})
 </script>
 
 <template>
   <div>
-    <div class="search-wrapper">
-      <FilterSearch></FilterSearch>
-    </div>
     <div class="asset-list">
       <AssetCard
         v-for="(item, index) in assets"
@@ -164,12 +203,14 @@ onMounted(async () => {
         :asset="item"
       ></AssetCard>
     </div>
-
-    <SortTool
-      v-model:multiSort="multiSort"
-      :columns="columns"
-      :fetch-table-data="fetchTableData"
-    ></SortTool>
+    <div class="search-wrapper">
+      <FilterSearch></FilterSearch>
+      <SortTool
+        v-model:multiSort="multiSort"
+        :columns="columns"
+        :fetch-table-data="fetchTableData"
+      ></SortTool>
+    </div>
 
     <el-table
       :data="assets"
@@ -200,7 +241,7 @@ onMounted(async () => {
             text
             type="danger"
             size="small"
-            @click="handleDelete(scope.row)"
+            @click="triggerDelete(scope.row)"
           >
             Delete
           </el-button>
@@ -217,6 +258,22 @@ onMounted(async () => {
       @current-change="handlePageChange"
       @size-change="handleSizeChange"
     />
+
+    <el-dialog v-model="dialogVisible" title="Tips" width="500">
+      <span>Notice: This will permanently delete this asset</span>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogVisible = false">Cancel</el-button>
+          <el-button
+            type="primary"
+            :disabled="confirmDisabled"
+            @click="handleDelete"
+          >
+            {{ confirmDisabled ? `Confirm (${countdown})` : 'Confirm' }}
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -224,6 +281,9 @@ onMounted(async () => {
 .search-wrapper {
   display: flex;
   justify-content: center;
+  align-items: flex-start;
+  height: 35px;
+  gap: 10px;
   margin-bottom: 10px;
 }
 .asset-list {

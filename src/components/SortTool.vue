@@ -31,29 +31,34 @@ const clearAllSort = () => {
 </script>
 
 <template>
-  <div v-if="props.multiSort.length > 0" class="sort-status">
-    <span>Current Sort: </span>
-    <el-tag
-      v-for="(sort, index) in props.multiSort"
-      :key="sort.prop"
-      :type="index === 0 ? 'primary' : 'info'"
-      size="small"
-      closable
-      @close="removeSortColumn(sort.prop)"
-    >
-      {{ getColumnLabel(sort.prop) }}
-      <el-icon
-        ><component :is="sort.order === 'ascending' ? ArrowUp : ArrowDown"
-      /></el-icon>
-    </el-tag>
-    <el-button size="small" text @click="clearAllSort">Clear Sort</el-button>
+  <div class="sort-wrapper">
+    <div v-if="props.multiSort.length > 0" class="sort-status">
+      <span>Current Sort: </span>
+      <el-tag
+        v-for="(sort, index) in props.multiSort"
+        :key="sort.prop"
+        :type="index === 0 ? 'primary' : 'info'"
+        size="small"
+        closable
+        @close="removeSortColumn(sort.prop)"
+      >
+        {{ getColumnLabel(sort.prop) }}
+        <el-icon
+          ><component :is="sort.order === 'ascending' ? ArrowUp : ArrowDown"
+        /></el-icon>
+      </el-tag>
+      <el-button size="small" text @click="clearAllSort">Clear Sort</el-button>
+    </div>
   </div>
 </template>
 
 <style scoped>
+.sort-wrapper {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
 .sort-status {
-  margin-bottom: 16px;
-  padding: 12px;
   background-color: var(--el-fill-color-light);
   border-radius: 4px;
 }

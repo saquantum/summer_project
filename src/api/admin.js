@@ -51,6 +51,13 @@ export const adminGetUKMapService = () =>
     'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/united-kingdom.geojson'
   )
 
+export const adminDeleteAssetService = (assets) => {
+  console.log(assets)
+  return request.delete('/admin/asset', {
+    data: { ids: assets }
+  })
+}
+
 /**
  * template
  */
