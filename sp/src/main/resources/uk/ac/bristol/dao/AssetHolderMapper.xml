@@ -95,7 +95,7 @@
         where asset_holder_email = #{email};
     </select>
 
-    <select id="selectAssetHolderIdByEmail" resultMap="ResultMaps.AssetHolderMap">
+    <select id="selectAssetHolderIdByEmail" resultType="String">
         select asset_holder_id
         from asset_holders
         where asset_holder_email = #{email};
