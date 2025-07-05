@@ -332,7 +332,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public int updateUser(User user) {
-        System.out.println(user.getId()+" "+user.getAssetHolderId()+" "+user.getPassword());
         int n1 = userMapper.updateUserByUserId(user);
         Integer n2 = null;
         if (user.getAssetHolder() != null) {
@@ -422,14 +421,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public int updatePasswordByEmail(String email, String password) {
-        System.out.println(email+" "+password);
         List<String> list = assetHolderMapper.selectAssetHolderIdByEmail(email);
-        System.out.println(list);
         if (list.size() != 1) {
             throw new RuntimeException("Error finding asset holder by email");
         }
-        System.out.println(list.get(0));
-        System.out.println("here!");
         User user = new User();
         String uid = userMapper.selectUidByAid(list.get(0));
         user.setId(uid);
