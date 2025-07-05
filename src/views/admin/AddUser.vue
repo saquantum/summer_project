@@ -52,7 +52,7 @@ const rules = {
         // success means find a username called ${value}
         if (CodeUtil.isSuccess(res.code)) {
           callback(
-            new Error(`Username ${value} is already exists, try a new one`)
+            new Error(`Username '${value}' is already exists, try a new one`)
           )
         }
         callback()
@@ -218,6 +218,7 @@ onMounted(async () => {})
       label-position="left"
       style="max-width: 600px"
       :rules="rules"
+      hide-required-asterisk
     >
       <el-form-item label="Username" prop="id">
         <el-input v-model="form.id" />

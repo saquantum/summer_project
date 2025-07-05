@@ -292,17 +292,6 @@ watch(dialogVisible, (val) => {
   flex-wrap: wrap;
   gap: 16px;
 }
-.sort-status {
-  margin-bottom: 16px;
-  padding: 12px;
-  background-color: var(--el-fill-color-light);
-  border-radius: 4px;
-}
-
-.sort-status .el-tag {
-  margin-right: 8px;
-  margin-bottom: 4px;
-}
 
 .el-table .warning-red {
   --el-table-tr-bg-color: var(--el-color-danger-light-8);

@@ -92,15 +92,18 @@ onMounted(async () => {
 </script>
 
 <template>
+  <div class="search-wrapper">
+    <FilterSearch></FilterSearch>
+    <SortTool
+      v-model:multiSort="multiSort"
+      :columns="columns"
+      :fetch-table-data="fetchTableData"
+    ></SortTool>
+  </div>
+
   <div class="collapse-wrapper">
     <UserCollapse :users="users"></UserCollapse>
   </div>
-
-  <SortTool
-    v-model:multiSort="multiSort"
-    :columns="columns"
-    :fetch-table-data="fetchTableData"
-  ></SortTool>
   <el-table
     :data="users"
     stripe
@@ -161,6 +164,15 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.search-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 35px;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
 @media (min-width: 768px) {
   .collapse-wrapper {
     display: none !important;

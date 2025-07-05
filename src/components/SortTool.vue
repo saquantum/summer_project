@@ -56,8 +56,6 @@ const clearAllSort = () => {
   align-items: center;
   background-color: var(--el-fill-color-light);
   border-radius: 4px;
-  margin: 0 !important;
-  padding: 0 !important;
   height: 100%;
 }
 
