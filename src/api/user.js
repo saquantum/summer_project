@@ -30,4 +30,4 @@ export const userEmailVerificationService = ({ email, code }) =>
   request.post('/email/verification', { email, code })
 
 export const userResetPasswordService = ({ email, password }) =>
-  request.post('/email/verification', { email, password })
+  request.post('/email/password', { email, password })
