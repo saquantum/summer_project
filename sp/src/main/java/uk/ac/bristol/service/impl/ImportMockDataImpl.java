@@ -73,6 +73,33 @@ public class ImportMockDataImpl implements ImportMockData {
         admin.setPassword("admin");
         admin.setAdmin(true);
         userService.insertUser(admin);
+
+        // register two users with actual email address to test
+        AssetHolder YCJ = new AssetHolder();
+        YCJ.setName("Yi Cheng-Jun");
+        YCJ.setPhone("0123456789");
+        YCJ.setEmail("lw24658@bristol.ac.uk");
+        YCJ.setAddress(Map.of());
+        YCJ.setContactPreferences(Map.of("email", true));
+        User user_YCJ = new User();
+        user_YCJ.setId(YCJ.getName());
+        user_YCJ.setPassword("123456");
+        user_YCJ.setAdmin(false);
+        user_YCJ.setAssetHolder(YCJ);
+        userService.insertUser(user_YCJ);
+
+        AssetHolder ZR = new AssetHolder();
+        ZR.setName("Zhang Rui");
+        ZR.setEmail("xs24368@bristol.ac.uk");
+        ZR.setPhone("0123456789");
+        ZR.setAddress(Map.of());
+        ZR.setContactPreferences(Map.of("email", true));
+        User user_ZR = new User();
+        user_ZR.setId(ZR.getName());
+        user_ZR.setPassword("123456");
+        user_ZR.setAdmin(false);
+        user_ZR.setAssetHolder(ZR);
+        userService.insertUser(user_ZR);
     }
 
     @Override
@@ -126,12 +153,12 @@ public class ImportMockDataImpl implements ImportMockData {
             List<Map<String, Object>> templates = mapper.readValue(notificationTemplatesInputStream, new TypeReference<List<Map<String, Object>>>() {
             });
 
-            List<String> warningTypes = List.of("rain", "thunderstorm", "wind", "snow", "lightning", "ice", "heat", "fog");
+            List<String> warningTypes = List.of("Rain", "Thunderstorm", "Wind", "Snow", "Lightning", "Ice", "Heat", "Fog");
             List<String> severities = List.of("YELLOW", "AMBER", "RED");
             List<String> assetTypeIds = List.of("type_001", "type_002", "type_003", "type_004", "type_005", "type_006", "type_007");
-            List<String> channels= List.of("Email", "SMS");
+            List<String> channels = List.of("Email", "SMS");
 
-            Random r =  new Random();
+            Random r = new Random();
             for (String warningType : warningTypes) {
                 for (String severity : severities) {
                     for (String assetTypeId : assetTypeIds) {
@@ -142,7 +169,7 @@ public class ImportMockDataImpl implements ImportMockData {
                             template.setWarningType(warningType);
                             template.setSeverity(severity);
                             template.setContactChannel(channel);
-                            template.setTitle(templates.get(idx).get("title").toString());
+                            template.setTitle(warningType + templates.get(idx).get("title").toString());
                             template.setBody(templates.get(idx).get("body").toString());
 
                             if (!warningService.getNotificationTemplateByTypes(template).isEmpty()) {

@@ -53,7 +53,7 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
-    public Map<String, Object> formatNotification(Long warningId, String assetId) {
+    public Map<String, Object> formatNotificationWithIds(Long warningId, String assetId, String ownerId) {
         Boolean test = warningMapper.testIfGivenAssetIntersectsWithWarning(assetId, warningId);
         if (test == null || !test) {
             return null;
@@ -79,19 +79,23 @@ public class ContactServiceImpl implements ContactService {
             throw new SpExceptions.GetMethodException("The message type you required does not exist");
         }
 
-        String assetOwnerId = assetMapper.selectAssetOwnerIdByAssetId(assetId);
-
         String id = UUID.randomUUID().toString();
         LocalDateTime now = LocalDateTime.now();
         return new HashMap<>(Map.of(
                 "id", id,
                 "assetTypeId", typeId,
-                "toOwnerId", assetOwnerId,
+                "toOwnerId", ownerId,
                 "weatherWarningType", warningType,
                 "severity", severity,
                 "message", message,
                 "createdAt", now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 "channel", ""));
+    }
+
+    @Override
+    public Map<String, Object> formatNotification(Long warningId, String assetId) {
+        String assetOwnerId = assetMapper.selectAssetOwnerIdByAssetId(assetId);
+        return formatNotificationWithIds(warningId, assetId, assetOwnerId);
     }
 
     @Override

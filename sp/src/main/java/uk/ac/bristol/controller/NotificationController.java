@@ -1,7 +1,9 @@
 package uk.ac.bristol.controller;
 
 import org.springframework.web.bind.annotation.*;
+import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.service.ContactService;
+import uk.ac.bristol.service.UserService;
 
 import java.util.Map;
 
@@ -11,9 +13,11 @@ import java.util.Map;
 public class NotificationController {
 
     private final ContactService contactService;
+    private final UserService userService;
 
-    public NotificationController(ContactService contactService) {
+    public NotificationController(ContactService contactService, UserService userService) {
         this.contactService = contactService;
+        this.userService = userService;
     }
 
     @PostMapping("/admin/notify/email")
@@ -29,6 +33,17 @@ public class NotificationController {
     @GetMapping("/user/notify/email/unsubscribe")
     public ResponseBody unsubscribe(@RequestParam(required = true) String token) {
         return contactService.unsubscribeEmail(token);
+    }
+
+    @PostMapping("/admin/notify/email/test")
+    public ResponseBody test__sendEmailToGivenUser(@RequestParam(required = true) String userId,
+                                                   @RequestParam(required = true) Long warningId,
+                                                   @RequestParam(required = true) String assetId) {
+        User user = userService.getUserByUserId(userId);
+        if(user == null || user.getAssetHolderId() == null || user.getAssetHolderId().isBlank()){
+            return new ResponseBody(Code.BUSINESS_ERR, null, "The user is null or assetHolderId is null");
+        }
+        return contactService.sendEmail(contactService.formatNotificationWithIds(warningId, assetId, user.getAssetHolderId()));
     }
 
     /**

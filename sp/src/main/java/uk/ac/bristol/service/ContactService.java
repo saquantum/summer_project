@@ -6,6 +6,8 @@ import java.util.Map;
 
 public interface ContactService {
 
+    Map<String, Object> formatNotificationWithIds(Long warningId, String assetId, String ownerId);
+
     Map<String, Object> formatNotification(Long warningId, String assetId);
 
     ResponseBody sendEmail(Map<String, Object> notification);
