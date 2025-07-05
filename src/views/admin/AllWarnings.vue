@@ -6,7 +6,6 @@ import { useWarningStore } from '@/stores'
 
 const activeNames = ref(['live', 'expired'])
 
-
 const outdatedWarnings = ref([])
 const liveWarnings = ref([])
 const router = useRouter()
