@@ -106,17 +106,7 @@ watch(
     ></el-option>
   </el-select>
 
-  <div class="edit-area">
-    <el-input
-      v-if="isEdit"
-      v-model="templateText"
-      style="width: 240px"
-      :rows="2"
-      type="textarea"
-      placeholder="Please input"
-    />
-    <span v-else>{{ templateText }}</span>
-  </div>
+  <TiptapEditor v-model:content="templateText"></TiptapEditor>
 
   <el-button @click="isEdit = true">Edit</el-button>
 
