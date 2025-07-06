@@ -84,13 +84,21 @@ const finishOneShape = async () => {
   if (props.mode === 'convex') {
     // turning points to geoJSON
     const pointsGeo = turf.featureCollection(
-      points.map((p) => turf.point([p[1], p[0]]))
+      points.map((p) => turf.point([p[0], p[1]]))
     )
 
     const convexHull = turf.convex(pointsGeo)
 
     if (!convexHull) {
-      alert('can not create polygon')
+      points = []
+      ElMessage.error('can not create polygon')
+      // destroy all layers on the map
+      m.eachLayer((layer) => {
+        if (!(layer instanceof L.TileLayer)) {
+          m.removeLayer(layer)
+        }
+      })
+      layer.addTo(m)
       return
     }
     polygonCoordinates.push(convexHull.geometry.coordinates)
