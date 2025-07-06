@@ -307,7 +307,7 @@ watch(isRegister, () => {
         v-model="loginForm.username"
         :prefix-icon="User"
         placeholder="Username"
-        @keydown.shift.enter="shiftFocusToPassword"
+        @keydown.enter="shiftFocusToPassword"
       />
     </el-form-item>
 
