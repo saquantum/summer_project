@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import {
-  userRegisterService,
-  userCheckUIDService,
-  userCheckEmailService
-} from '@/api/user'
+import { userCheckUIDService, userCheckEmailService } from '@/api/user'
 import CodeUtil from '@/utils/codeUtil'
 import { ElMessage } from 'element-plus'
 import { ref, onMounted } from 'vue'
 import type { FormRules } from 'element-plus'
 import type { UserInfoForm } from '@/types'
 import type { InternalRuleItem } from 'async-validator'
+import { adminInsertUserService } from '@/api/admin'
 
 const form = ref<UserInfoForm>({
   id: '',
@@ -18,10 +15,13 @@ const form = ref<UserInfoForm>({
   firstName: '',
   lastName: '',
   assetHolder: {
+    id: '',
     name: '',
     email: '',
     phone: '',
+    addressId: '',
     address: {
+      assetHolderId: '',
       street: '',
       postcode: '',
       city: '',
@@ -33,7 +33,8 @@ const form = ref<UserInfoForm>({
       whatsapp: false,
       discord: false,
       post: false,
-      telegram: false
+      telegram: false,
+      assetHolderId: ''
     }
   }
 })
@@ -196,7 +197,7 @@ const submit = async () => {
   try {
     form.value.assetHolder.name = `${form.value.firstName} ${form.value.lastName}`
     console.log(form.value)
-    const res = await userRegisterService(form.value)
+    const res = await adminInsertUserService([form.value])
     console.log(res)
     ElMessage.success('Successfully add an user')
   } catch {

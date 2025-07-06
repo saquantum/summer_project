@@ -3,7 +3,7 @@ export interface ContactPreferences {
   discord: boolean
   post: boolean
   phone: boolean
-  assetHolderId: string
+  assetHolderId?: string
   telegram: boolean
   email: boolean
 }
@@ -23,16 +23,16 @@ export interface AssetHolder {
   phone: string
   addressId?: string
   address: Address
-  contactPreferencesId: string
-  lastModified: number
+  contactPreferencesId?: string
+  lastModified?: number
   contact_preferences: ContactPreferences
 }
 
 export interface User {
   id: string
   password: string | null
-  assetHolderId: string | null
-  assetHolder: AssetHolder | null
+  assetHolderId?: string | null
+  assetHolder?: AssetHolder | null
   admin: boolean
   token: string | null
 }
@@ -45,29 +45,12 @@ export interface LoginForm {
 
 export interface UserInfoForm {
   id: string
-  password?: string
+  password: string | null
   repassword?: string
   firstName?: string
   lastName?: string
-  assetHolder: {
-    name: string
-    email: string
-    phone: string
-    address: {
-      street: string
-      postcode: string
-      city: string
-      country: string
-    }
-    contact_preferences: {
-      email: boolean
-      phone: boolean
-      whatsapp: boolean
-      discord: boolean
-      post: boolean
-      telegram: boolean
-    }
-  }
+  assetHolderId?: string | null
+  assetHolder: AssetHolder
 }
 
 export interface UserItem {

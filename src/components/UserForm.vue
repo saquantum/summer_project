@@ -39,6 +39,7 @@ const form = ref<UserInfoForm>({
   firstName: '',
   lastName: '',
   assetHolder: {
+    id: '',
     name: '',
     email: '',
     phone: '',
@@ -54,7 +55,8 @@ const form = ref<UserInfoForm>({
       whatsapp: false,
       discord: false,
       post: false,
-      telegram: false
+      telegram: false,
+      assetHolderId: ''
     }
   }
 })
@@ -153,7 +155,9 @@ const userToForm = (user: User): UserInfoForm => {
     repassword: '',
     firstName: '',
     lastName: '',
+
     assetHolder: {
+      id: user.assetHolder?.id ?? '',
       name: user.assetHolder?.name ?? '',
       email: user.assetHolder?.email ?? '',
       phone: user.assetHolder?.phone ?? '',
@@ -161,9 +165,11 @@ const userToForm = (user: User): UserInfoForm => {
         street: user.assetHolder?.address?.street ?? '',
         postcode: user.assetHolder?.address?.postcode ?? '',
         city: user.assetHolder?.address?.city ?? '',
-        country: user.assetHolder?.address?.country ?? ''
+        country: user.assetHolder?.address?.country ?? '',
+        assetHolderId: user.assetHolderId as string
       },
       contact_preferences: {
+        assetHolderId: user.assetHolderId as string,
         email: user.assetHolder?.contact_preferences.email ?? false,
         phone: user.assetHolder?.contact_preferences.phone ?? false,
         discord: user.assetHolder?.contact_preferences.discord ?? false,
@@ -190,10 +196,13 @@ const submit = async () => {
         name: `${form.value.firstName} ${form.value.lastName}`
       }
     }
-
     console.log(submitData)
-    const res = await userUpdateInfoService(user.value.id, submitData)
-    console.log(res)
+
+    if (currentUser.value?.id) {
+      const res = await userUpdateInfoService(currentUser.value.id, submitData)
+      console.log(res)
+    }
+
     ElMessage.success('Profile updated!')
     await userStore.getUserInfo()
     await loadUserData()

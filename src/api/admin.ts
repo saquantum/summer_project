@@ -8,6 +8,7 @@ import type {
   AssetWithWarnings,
   Template,
   User,
+  UserInfoForm,
   UserItem,
   Warning
 } from '@/types'
@@ -70,6 +71,10 @@ export const adminGetAllLiveWarningsService = (): Promise<
 
 export const adminInsertAssetService = (obj: object): Promise<ApiResponse> =>
   request.post('/admin/asset', obj)
+
+export const adminInsertUserService = (
+  users: UserInfoForm[]
+): Promise<ApiResponse> => request.post('/admin/user', users)
 
 export const adminGetUKMapService = (): Promise<ApiResponse> =>
   request.get(
