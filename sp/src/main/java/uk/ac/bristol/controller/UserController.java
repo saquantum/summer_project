@@ -22,75 +22,75 @@ public class UserController {
 
     /* --------- for users and admin proxy --------- */
 
-    @GetMapping("/uid/{id}")
+    @GetMapping("/uid/{uid}")
     public ResponseBody getMyProfileByUserId(HttpServletResponse response,
                                              HttpServletRequest request,
-                                             @PathVariable String id) {
-        if (!QueryTool.userIdentityVerification(response, request, id, null)) {
+                                             @PathVariable String uid) {
+        if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
             throw new SpExceptions.GetMethodException("User identification failed");
         }
-        User user = userService.getUserByUserId(id);
+        User user = userService.getUserByUserId(uid);
         user.setPassword(null);
         return new ResponseBody(Code.SELECT_OK, user);
     }
 
-    @GetMapping("/aid/{id}")
+    @GetMapping("/aid/{aid}")
     public ResponseBody getMyProfileByAssetHolderId(HttpServletResponse response,
                                                     HttpServletRequest request,
-                                                    @PathVariable String id) {
-        if (!QueryTool.userIdentityVerification(response, request, null, id)) {
+                                                    @PathVariable String aid) {
+        if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
             throw new SpExceptions.GetMethodException("User identification failed");
         }
-        User user = userService.getUserByAssetHolderId(id, null, null, null);
+        User user = userService.getUserByAssetHolderId(aid, null, null, null);
         user.setPassword(null);
         return new ResponseBody(Code.SELECT_OK, user);
     }
 
     // NOTICE: No Post Mapping. A common user cannot insert new users, unless they access login controller to register
 
-    @PutMapping("/uid/{id}")
+    @PutMapping("/uid/{uid}")
     public ResponseBody updateMyProfileWithUserId(HttpServletResponse response,
                                                   HttpServletRequest request,
-                                                  @PathVariable String id,
+                                                  @PathVariable String uid,
                                                   @RequestBody User user) {
-        if (!QueryTool.userIdentityVerification(response, request, id, null)) {
+        if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
             throw new SpExceptions.PostMethodException("User identification failed");
         }
         userService.updateUser(user);
         return new ResponseBody(Code.UPDATE_OK, null);
     }
 
-    @PutMapping("/aid/{id}")
+    @PutMapping("/aid/{aid}")
     public ResponseBody updateMyProfileWithAssetHolderId(HttpServletResponse response,
                                                          HttpServletRequest request,
-                                                         @PathVariable String id,
+                                                         @PathVariable String aid,
                                                          @RequestBody User user) {
-        if (!QueryTool.userIdentityVerification(response, request, null, id)) {
+        if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
             throw new SpExceptions.PostMethodException("User identification failed");
         }
         userService.updateUser(user);
         return new ResponseBody(Code.UPDATE_OK, null);
     }
 
-    @DeleteMapping("/uid/{id}")
+    @DeleteMapping("/uid/{uid}")
     public ResponseBody deleteMyProfileWithUserId(HttpServletResponse response,
                                                   HttpServletRequest request,
-                                                  @PathVariable String id) {
-        if (!QueryTool.userIdentityVerification(response, request, id, null)) {
+                                                  @PathVariable String uid) {
+        if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
             throw new SpExceptions.DeleteMethodException("User identification failed");
         }
-        userService.deleteUserByUserIds(new String[]{id});
+        userService.deleteUserByUserIds(new String[]{uid});
         return new ResponseBody(Code.DELETE_OK, null);
     }
 
-    @DeleteMapping("/aid/{id}")
+    @DeleteMapping("/aid/{aid}")
     public ResponseBody deleteMyProfileWithAssetHolderId(HttpServletResponse response,
                                                          HttpServletRequest request,
-                                                         @PathVariable String id) {
-        if (!QueryTool.userIdentityVerification(response, request, null, id)) {
+                                                         @PathVariable String aid) {
+        if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
             throw new SpExceptions.DeleteMethodException("User identification failed");
         }
-        userService.deleteUserByAssetHolderIds(new String[]{id});
+        userService.deleteUserByAssetHolderIds(new String[]{aid});
         return new ResponseBody(Code.DELETE_OK, null);
     }
 

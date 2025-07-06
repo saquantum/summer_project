@@ -31,51 +31,51 @@ public class AssetController {
         this.warningService = warningService;
     }
 
-    @GetMapping("/user/uid/{id}/asset")
+    @GetMapping("/user/uid/{uid}/asset")
     public ResponseBody getMyAssetsByUserId(HttpServletResponse response,
                                             HttpServletRequest request,
-                                            @PathVariable String id,
+                                            @PathVariable String uid,
                                             @RequestParam(required = false) List<String> orderList,
                                             @RequestParam(required = false) Integer limit,
                                             @RequestParam(required = false) Integer offset) {
-        if (!QueryTool.userIdentityVerification(response, request, id, null)) {
+        if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
             throw new SpExceptions.GetMethodException("User identification failed");
         }
-        User user = userService.getUserByUserId(id);
+        User user = userService.getUserByUserId(uid);
         List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(user.getAssetHolderId(), QueryTool.getOrderList(orderList), limit, offset);
         return new ResponseBody(Code.SELECT_OK, assets);
     }
 
-    @GetMapping("/user/aid/{id}/asset")
+    @GetMapping("/user/aid/{aid}/asset")
     public ResponseBody getMyAssetsByAssetHolderId(HttpServletResponse response,
                                                    HttpServletRequest request,
-                                                   @PathVariable String id,
+                                                   @PathVariable String aid,
                                                    @RequestParam(required = false) List<String> orderList,
                                                    @RequestParam(required = false) Integer limit,
                                                    @RequestParam(required = false) Integer offset) {
-        if (!QueryTool.userIdentityVerification(response, request, null, id)) {
+        if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
             throw new SpExceptions.GetMethodException("User identification failed");
         }
-        List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(id, QueryTool.getOrderList(orderList), limit, offset);
+        List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(aid, QueryTool.getOrderList(orderList), limit, offset);
         return new ResponseBody(Code.SELECT_OK, assets);
     }
 
-    @GetMapping("/admin/user/uid/{id}/asset")
-    public ResponseBody getAllAssetsOfHolderByUserId(@PathVariable String id,
+    @GetMapping("/admin/user/uid/{uid}/asset")
+    public ResponseBody getAllAssetsOfHolderByUserId(@PathVariable String uid,
                                                      @RequestParam(required = false) List<String> orderList,
                                                      @RequestParam(required = false) Integer limit,
                                                      @RequestParam(required = false) Integer offset) {
-        User user = userService.getUserByUserId(id);
+        User user = userService.getUserByUserId(uid);
         List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(user.getAssetHolderId(), QueryTool.getOrderList(orderList), limit, offset);
         return new ResponseBody(Code.SELECT_OK, assets);
     }
 
-    @GetMapping("/admin/user/aid/{id}/asset")
-    public ResponseBody getAllAssetsOfHolderByAssetHolderId(@PathVariable String id,
+    @GetMapping("/admin/user/aid/{aid}/asset")
+    public ResponseBody getAllAssetsOfHolderByAssetHolderId(@PathVariable String aid,
                                                             @RequestParam(required = false) List<String> orderList,
                                                             @RequestParam(required = false) Integer limit,
                                                             @RequestParam(required = false) Integer offset) {
-        List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(id, QueryTool.getOrderList(orderList), limit, offset);
+        List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(aid, QueryTool.getOrderList(orderList), limit, offset);
         return new ResponseBody(Code.SELECT_OK, assets);
     }
 
@@ -87,7 +87,7 @@ public class AssetController {
         if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
             throw new SpExceptions.GetMethodException("User identification failed");
         }
-        if(!verifyAssetOwnership(assetId, uid, null)){
+        if (!verifyAssetOwnership(assetId, uid, null)) {
             throw new SpExceptions.GetMethodException("Asset owner identification failed");
         }
         return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
@@ -101,30 +101,30 @@ public class AssetController {
         if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
             throw new SpExceptions.GetMethodException("User identification failed");
         }
-        if(!verifyAssetOwnership(assetId, null, aid)){
+        if (!verifyAssetOwnership(assetId, null, aid)) {
             throw new SpExceptions.GetMethodException("Asset owner identification failed");
         }
         return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
     }
 
-    @PostMapping("/user/uid/{id}/asset")
+    @PostMapping("/user/uid/{uid}/asset")
     public ResponseBody insertAssetWithUserId(HttpServletResponse response,
                                               HttpServletRequest request,
-                                              @PathVariable String id,
+                                              @PathVariable String uid,
                                               @RequestBody Asset asset) {
-        if (!QueryTool.userIdentityVerification(response, request, id, null)) {
+        if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
             throw new SpExceptions.PostMethodException("User identification failed");
         }
         asset.setId(null);
         return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset));
     }
 
-    @PostMapping("/user/aid/{id}/asset")
+    @PostMapping("/user/aid/{aid}/asset")
     public ResponseBody insertAssetWithAssetHolderId(HttpServletResponse response,
                                                      HttpServletRequest request,
-                                                     @PathVariable String id,
+                                                     @PathVariable String aid,
                                                      @RequestBody Asset asset) {
-        if (!QueryTool.userIdentityVerification(response, request, null, id)) {
+        if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
             throw new SpExceptions.PostMethodException("User identification failed");
         }
         asset.setId(null);
@@ -137,24 +137,30 @@ public class AssetController {
         return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset));
     }
 
-    @PutMapping("/user/uid/{id}/asset")
+    @PutMapping("/user/uid/{uid}/asset")
     public ResponseBody updateAssetWithUserId(HttpServletResponse response,
                                               HttpServletRequest request,
-                                              @PathVariable String id,
+                                              @PathVariable String uid,
                                               @RequestBody Asset asset) {
-        if (!QueryTool.userIdentityVerification(response, request, id, null)) {
+        if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
             throw new SpExceptions.PutMethodException("User identification failed");
+        }
+        if (!verifyAssetOwnership(asset.getId(), uid, null)) {
+            throw new SpExceptions.PutMethodException("Asset owner identification failed");
         }
         return new ResponseBody(Code.UPDATE_OK, assetService.updateAsset(asset));
     }
 
-    @PutMapping("/user/aid/{id}/asset")
+    @PutMapping("/user/aid/{aid}/asset")
     public ResponseBody updateAssetWithAssetHolderId(HttpServletResponse response,
                                                      HttpServletRequest request,
-                                                     @PathVariable String id,
+                                                     @PathVariable String aid,
                                                      @RequestBody Asset asset) {
-        if (!QueryTool.userIdentityVerification(response, request, null, id)) {
+        if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
             throw new SpExceptions.PutMethodException("User identification failed");
+        }
+        if (!verifyAssetOwnership(asset.getId(), null, aid)) {
+            throw new SpExceptions.PutMethodException("Asset owner identification failed");
         }
         return new ResponseBody(Code.UPDATE_OK, assetService.updateAsset(asset));
     }
@@ -164,27 +170,37 @@ public class AssetController {
         return new ResponseBody(Code.UPDATE_OK, assetService.updateAsset(asset));
     }
 
-    @DeleteMapping("/user/uid/{id}/asset")
+    @DeleteMapping("/user/uid/{uid}/asset")
     public ResponseBody deleteAssetsWithUserIdByIds(HttpServletResponse response,
                                                     HttpServletRequest request,
-                                                    @PathVariable String id,
+                                                    @PathVariable String uid,
                                                     @RequestBody Map<String, Object> body) {
-        if (!QueryTool.userIdentityVerification(response, request, id, null)) {
-            throw new SpExceptions.PutMethodException("User identification failed");
+        if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
+            throw new SpExceptions.DeleteMethodException("User identification failed");
         }
         List<String> ids = (List<String>) body.get("ids");
+        for (String s : ids) {
+            if (!verifyAssetOwnership(s, uid, null)) {
+                throw new SpExceptions.PutMethodException("Asset owner identification failed: " + s + " does not belong to current user");
+            }
+        }
         return new ResponseBody(Code.DELETE_OK, assetService.deleteAssetByIDs(ids));
     }
 
-    @DeleteMapping("/user/aid/{id}/asset")
+    @DeleteMapping("/user/aid/{aid}/asset")
     public ResponseBody deleteAssetsWithAssetHolderIdByIds(HttpServletResponse response,
                                                            HttpServletRequest request,
-                                                           @PathVariable String id,
+                                                           @PathVariable String aid,
                                                            @RequestBody Map<String, Object> body) {
-        if (!QueryTool.userIdentityVerification(response, request, null, id)) {
-            throw new SpExceptions.PutMethodException("User identification failed");
+        if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
+            throw new SpExceptions.DeleteMethodException("User identification failed");
         }
         List<String> ids = (List<String>) body.get("ids");
+        for (String s : ids) {
+            if (!verifyAssetOwnership(s, null, aid)) {
+                throw new SpExceptions.PutMethodException("Asset owner identification failed");
+            }
+        }
         return new ResponseBody(Code.DELETE_OK, assetService.deleteAssetByIDs(ids));
     }
 
@@ -249,24 +265,24 @@ public class AssetController {
         return new ResponseBody(Code.DELETE_OK, warningService.deleteWarningByIDs(ids));
     }
 
-    private boolean verifyAssetOwnership(String assetId, String uid, String aid){
-        if(assetId == null){
+    private boolean verifyAssetOwnership(String assetId, String uid, String aid) {
+        if (assetId == null) {
             return false;
         }
-        if(uid == null && aid == null){
+        if (uid == null && aid == null) {
             return false;
         }
         List<Asset> asset = assetService.getAssetById(assetId);
-        if(asset.size() != 1) return false;
-        if(uid != null){
+        if (asset.size() != 1) return false;
+        if (uid != null) {
             User user = userService.getUserByUserId(uid);
-            if(user.getAssetHolder() == null) return false;
-            if(!Objects.equals(user.getAssetHolder().getId(), asset.get(0).getOwnerId())) return false;
+            if (user.getAssetHolder() == null) return false;
+            if (!Objects.equals(user.getAssetHolder().getId(), asset.get(0).getOwnerId())) return false;
         }
-        if(aid != null){
+        if (aid != null) {
             User user = userService.getUserByAssetHolderId(aid, null, null, null);
-            if(user.getAssetHolder() == null) return false;
-            if(!Objects.equals(user.getAssetHolder().getId(), asset.get(0).getOwnerId())) return false;
+            if (user.getAssetHolder() == null) return false;
+            if (!Objects.equals(user.getAssetHolder().getId(), asset.get(0).getOwnerId())) return false;
         }
         return true;
     }

@@ -97,9 +97,9 @@ public class LoginController {
         }
     }
 
-    @GetMapping("/exists/uid/{id}")
-    public ResponseBody checkUIDExistence(@PathVariable String id) {
-        if (userService.testUIDExistence(id)) {
+    @GetMapping("/exists/uid/{uid}")
+    public ResponseBody checkUIDExistence(@PathVariable String uid) {
+        if (userService.testUIDExistence(uid)) {
             return new ResponseBody(Code.SELECT_OK, null, "The user id already exists.");
         }
         return new ResponseBody(Code.SELECT_ERR, null, "The user id does not exist.");
