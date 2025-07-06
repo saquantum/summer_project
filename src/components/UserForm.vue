@@ -1,17 +1,31 @@
-<script setup>
-import { ref, onMounted } from 'vue'
-import { useUserStore } from '@/stores'
+<script setup lang="ts">
+import { ref, onMounted, computed } from 'vue'
+import { useUserStore } from '@/stores/index.ts'
 import { userUpdateInfoService } from '@/api/user'
 import { adminGetUserInfoService } from '@/api/admin'
 import { useRoute } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import type { User, UserInfoForm } from '@/types'
+import type { InternalRuleItem } from 'async-validator'
 
 const userStore = useUserStore()
 
 const route = useRoute()
 
-const user = ref({})
-const descriptionsItem = ref([])
-const form = ref({
+const user = computed(() => {
+  if (!userStore.user) {
+    throw new Error('User not logged in or expired')
+  }
+  return userStore.user
+})
+
+const currentUser = ref<User | null>(null)
+type DescriptionItem = {
+  label: string
+  value: string
+}
+const descriptionsItem = ref<DescriptionItem[]>([])
+const form = ref<UserInfoForm>({
   id: '',
   password: '',
   repassword: '',
@@ -28,12 +42,12 @@ const form = ref({
       country: ''
     },
     contact_preferences: {
-      email: '',
-      phone: '',
-      whatsapp: '',
-      discord: '',
-      post: '',
-      telegram: ''
+      email: true,
+      phone: false,
+      whatsapp: false,
+      discord: false,
+      post: false,
+      telegram: false
     }
   }
 })
@@ -82,7 +96,11 @@ const rules = {
   phone: [
     { required: true, message: 'Phone is required', trigger: 'blur' },
     {
-      validator: (rule, value, callback) => {
+      validator: (
+        rule: InternalRuleItem,
+        value: string,
+        callback: (_error?: Error) => void
+      ) => {
         const phoneRegex = /^[0-9+\-()\s]{7,20}$/
         if (!phoneRegex.test(value)) {
           callback(new Error('Invalid phone number'))
@@ -99,7 +117,11 @@ const rules = {
   'assetHolder.address.postcode': [
     { required: true, message: 'Post code is required', trigger: 'blur' },
     {
-      validator: (rule, value, callback) => {
+      validator: (
+        rule: InternalRuleItem,
+        value: string,
+        callback: (error?: Error) => void
+      ) => {
         const ukPostcodeRegex = /^[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}$/i
         if (!ukPostcodeRegex.test(value)) {
           callback(new Error('Invalid UK postcode (e.g. SW1A 1AA)'))
@@ -116,6 +138,35 @@ const rules = {
   'assetHolder.address.country': [
     { required: true, message: 'Country is required', trigger: 'blur' }
   ]
+}
+
+const userToForm = (user: User): UserInfoForm => {
+  return {
+    id: user.id,
+    password: '',
+    repassword: '',
+    firstName: '',
+    lastName: '',
+    assetHolder: {
+      name: user.assetHolder?.name ?? '',
+      email: user.assetHolder?.email ?? '',
+      phone: user.assetHolder?.phone ?? '',
+      address: {
+        street: user.assetHolder?.address?.street ?? '',
+        postcode: user.assetHolder?.address?.postcode ?? '',
+        city: user.assetHolder?.address?.city ?? '',
+        country: user.assetHolder?.address?.country ?? ''
+      },
+      contact_preferences: {
+        email: user.assetHolder?.contact_preferences.email ?? false,
+        phone: user.assetHolder?.contact_preferences.phone ?? false,
+        discord: user.assetHolder?.contact_preferences.discord ?? false,
+        post: user.assetHolder?.contact_preferences.post ?? false,
+        whatsapp: user.assetHolder?.contact_preferences.post ?? false,
+        telegram: user.assetHolder?.contact_preferences.post ?? false
+      }
+    }
+  }
 }
 
 const submit = async () => {
@@ -135,7 +186,7 @@ const submit = async () => {
     }
 
     console.log(submitData)
-    const res = await userUpdateInfoService(userStore.user.id, submitData)
+    const res = await userUpdateInfoService(user.value.id, submitData)
     console.log(res)
     ElMessage.success('Profile updated!')
     await userStore.getUserInfo()
@@ -150,18 +201,19 @@ const submit = async () => {
 
 const loadUserData = async () => {
   try {
-    if (!userStore.user.admin) {
-      user.value = userStore.user
+    if (user.value.admin) {
+      currentUser.value = userStore.user
       console.log(userStore.user)
     } else {
-      const id = userStore.proxyId || route.query.id
+      const id = (userStore.proxyId || route.query.id) as string
       const res = await adminGetUserInfoService(id)
       console.log(res)
-      user.value = res.data
+      currentUser.value = res.data
     }
 
-    const arr = user.value.assetHolder.name.split(' ')
-    form.value = { ...user.value }
+    if (!currentUser.value?.assetHolder) throw new Error('User does not exist')
+    const arr = currentUser.value.assetHolder.name.split(' ')
+    form.value = userToForm(currentUser.value)
     form.value.firstName = arr[0]
     form.value.lastName = arr[1]
 
@@ -169,20 +221,23 @@ const loadUserData = async () => {
       { label: 'User id', value: user.value.id },
       { label: 'First name', value: arr[0] },
       { label: 'Last name', value: arr[1] },
-      { label: 'Email', value: user.value.assetHolder.email ?? '' },
-      { label: 'Phone', value: user.value.assetHolder.phone ?? '' },
+      { label: 'Email', value: currentUser.value.assetHolder.email ?? '' },
+      { label: 'Phone', value: currentUser.value.assetHolder.phone ?? '' },
       {
         label: 'Street',
-        value: user.value.assetHolder.address?.street ?? ''
+        value: currentUser.value.assetHolder.address?.street ?? ''
       },
       {
         label: 'Postcode',
-        value: user.value.assetHolder.address?.postcode ?? ''
+        value: currentUser.value.assetHolder.address?.postcode ?? ''
       },
-      { label: 'City', value: user.value.assetHolder.address?.city ?? '' },
+      {
+        label: 'City',
+        value: currentUser.value.assetHolder.address?.city ?? ''
+      },
       {
         label: 'Country',
-        value: user.value.assetHolder.address?.country ?? ''
+        value: currentUser.value.assetHolder.address?.country ?? ''
       }
     ]
   } catch (error) {
@@ -191,7 +246,7 @@ const loadUserData = async () => {
   }
 }
 
-const setEdit = (val) => {
+const setEdit = (val: boolean) => {
   isEdit.value = val
 }
 
@@ -209,7 +264,7 @@ defineExpose({
 <template>
   <el-descriptions title="User Info" :column="2" border v-if="!isEdit">
     <el-descriptions-item label="Avatar">
-      <el-avatar :size="size" :src="circleUrl" />
+      <!-- <el-avatar :size="size" :src="circleUrl" /> -->
     </el-descriptions-item>
     <el-descriptions-item
       v-for="(item, index) in descriptionsItem"
@@ -259,12 +314,12 @@ defineExpose({
     :rules="rules"
   >
     <!-- Avatar upload -->
-    <el-form-item label="Avatar">
+    <!-- <el-form-item label="Avatar">
       <div style="display: flex; align-items: center; gap: 16px">
         <el-avatar :src="avatarUrl" size="large" />
         <input type="file" accept="image/*" @change="handleAvatarChange" />
       </div>
-    </el-form-item>
+    </el-form-item> -->
 
     <!-- name -->
     <el-row :gutter="20">

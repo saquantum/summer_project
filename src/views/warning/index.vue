@@ -1,18 +1,26 @@
-<script setup>
+<script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { useWarningStore } from '@/stores'
-import { onMounted } from 'vue'
-
+import { onMounted, computed, ref } from 'vue'
+import type { Style } from '@/types'
 const route = useRoute()
 const warningStore = useWarningStore()
 
 const mapId = 'map-' + route.params.id
-const warning = warningStore.allWarnings.find(
-  (item) => item.id === Number(route.params.id)
+
+const warning = computed(() =>
+  warningStore.allWarnings.find((item) => item.id === Number(route.params.id))
 )
 
-const setWarningLevelStyle = (level) => {
-  const style = { weight: 2, fillOpacity: 0.4 }
+const style = ref<Style>({
+  weight: 1,
+  fillOpacity: 0,
+  color: '',
+  fillColor: ''
+})
+
+const setWarningLevelStyle = (level: string): Style => {
+  const style = { weight: 2, fillOpacity: 0.4, color: '', fillColor: '' }
   const l = level?.toLowerCase()
   if (l?.includes('yellow')) {
     style.color = '#cc9900'
@@ -26,35 +34,44 @@ const setWarningLevelStyle = (level) => {
   }
   return style
 }
-warning.area.style = setWarningLevelStyle(warning.warningLevel)
 
-const displayData = [
-  { label: 'Warning ID', value: warning.id },
-  { label: 'Weather Type', value: warning.weatherType },
-  { label: 'Warning Level', value: warning.warningLevel },
-  { label: 'Warning HeadLine', value: warning.warningHeadLine },
-  {
-    label: 'Valid From',
-    value: new Date(warning.validFrom * 1000).toLocaleString()
-  },
-  {
-    label: 'Valid To',
-    value: new Date(warning.validTo * 1000).toLocaleString()
-  },
-  { label: 'Warning Impact', value: warning.warningImpact },
-  { label: 'Warning Likelihood', value: warning.warningLikelihood },
-  {
-    label: 'Affected Areas',
-    value: warning.affectedAreas.replace(/\\n/g, '\n'),
-    isMultiline: true
-  },
-  {
-    label: 'Further Details',
-    value: warning.warningFurtherDetails.replace(/\\n/g, '\n'),
-    isMultiline: true
-  },
-  { label: 'Update Description', value: warning.warningUpdateDescription }
-]
+if (warning.value) {
+  style.value = setWarningLevelStyle(warning.value.warningLevel)
+}
+
+const displayData = computed(() => {
+  if (!warning.value) return []
+  return [
+    { label: 'Warning ID', value: warning.value.id },
+    { label: 'Weather Type', value: warning.value.weatherType },
+    { label: 'Warning Level', value: warning.value.warningLevel },
+    { label: 'Warning HeadLine', value: warning.value.warningHeadLine },
+    {
+      label: 'Valid From',
+      value: new Date(warning.value.validFrom * 1000).toLocaleString()
+    },
+    {
+      label: 'Valid To',
+      value: new Date(warning.value.validTo * 1000).toLocaleString()
+    },
+    { label: 'Warning Impact', value: warning.value.warningImpact },
+    { label: 'Warning Likelihood', value: warning.value.warningLikelihood },
+    {
+      label: 'Affected Areas',
+      value: warning.value.affectedAreas.replace(/\\n/g, '\n'),
+      isMultiline: true
+    },
+    {
+      label: 'Further Details',
+      value: warning.value.warningFurtherDetails.replace(/\\n/g, '\n'),
+      isMultiline: true
+    },
+    {
+      label: 'Update Description',
+      value: warning.value.warningUpdateDescription
+    }
+  ]
+})
 
 onMounted(() => {
   // get warnings if not exist
@@ -66,7 +83,7 @@ onMounted(() => {
 
 <template>
   <div class="map-container">
-    <MapCard :map-id="mapId" :locations="[warning.area]" />
+    <MapCard :map-id="mapId" :locations="[warning?.area]" :style="style" />
   </div>
 
   <el-descriptions title="Warning Detail" :column="1" direction="vertical">

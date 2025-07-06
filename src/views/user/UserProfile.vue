@@ -1,10 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 
 import { useRouter } from 'vue-router'
 const router = useRouter()
 const userFormRef = ref()
-const setEdit = (val) => {
+const setEdit = (val: boolean) => {
   userFormRef.value.setEdit(val)
 }
 const submit = () => {

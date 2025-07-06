@@ -1,14 +1,22 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, onBeforeUnmount } from 'vue'
 import { adminGetUKMapService } from '@/api/admin'
 import * as echarts from 'echarts'
+import type { ECharts } from 'echarts'
+import ukmap from '@/assets/ukmap.json'
+import type { GeoJSONSourceInput } from 'echarts/types/src/coord/geo/geoTypes.js'
+let mapChart: ECharts | null = null
+let barChart: ECharts | null = null
+let lineChart: ECharts | null = null
+let nightingaleChart: ECharts | null = null
 
-let mapChart, barChart, lineChart, nightingaleChart
 const handleResize = () => {
-  mapChart.resize()
-  barChart.resize()
-  lineChart.resize()
-  nightingaleChart.resize()
+  if (mapChart && barChart && lineChart && nightingaleChart) {
+    mapChart.resize()
+    barChart.resize()
+    lineChart.resize()
+    nightingaleChart.resize()
+  }
 }
 
 onMounted(async () => {
@@ -17,9 +25,9 @@ onMounted(async () => {
 
   mapChart = echarts.init(document.getElementById('main'))
   mapChart.showLoading()
-  echarts.registerMap('UK', res)
+  echarts.registerMap('UK', ukmap as GeoJSONSourceInput)
 
-  function randomPieSeries(center, radius) {
+  function randomPieSeries(center: number[], radius: number) {
     const data = ['A', 'B', 'C', 'D'].map((t) => {
       return {
         value: Math.round(Math.random() * 100),

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import {
   User,
   Crop,
@@ -17,7 +17,7 @@ import {
 } from '@element-plus/icons-vue'
 import avatar from '@/assets/default.png'
 import { ref, watch, computed } from 'vue'
-import { useAssetStore, useUserStore } from '@/stores'
+import { useAssetStore, useUserStore } from '@/stores/index.ts'
 import { useRouter, useRoute } from 'vue-router'
 
 const userStore = useUserStore()
@@ -30,7 +30,7 @@ const logout = () => {
   assetStore.reset()
   router.push('/login')
 }
-const handleCommand = (command) => {
+const handleCommand = (command: string) => {
   if (command === 'logout') {
     logout()
   } else if (command === 'profile') {
@@ -39,7 +39,7 @@ const handleCommand = (command) => {
 }
 
 const handleMailClick = () => {
-  if (userStore.user.admin) router.push('/admin/message')
+  if (userStore.user?.admin) router.push('/admin/message')
   else router.push('/message')
 }
 
@@ -50,7 +50,7 @@ const mobileMenuVisible = ref(false)
 const searchDialogVisible = ref(false)
 
 const showUserSideBar = computed(() => {
-  if (!userStore.user.admin) {
+  if (!userStore.user?.admin) {
     return true
   } else if (
     userStore.user.admin &&
@@ -118,7 +118,7 @@ watch(
           <span>Message</span>
         </el-menu-item>
 
-        <el-menu-item v-if="userStore.user.admin" index="/">
+        <el-menu-item v-if="userStore.user?.admin" index="/">
           <el-icon><Back /></el-icon>
           <span>Back to admin</span>
         </el-menu-item>
@@ -260,21 +260,7 @@ watch(
 
       <el-main>
         <router-view></router-view>
-        <CustomerService v-if="!userStore.user.admin"></CustomerService>
-        <!-- consider delete -->
-        <!-- <el-dialog v-model="searchDialogVisible" title="Tips" width="500">
-          <span>This is a message</span>
-          <template #footer>
-            <div class="dialog-footer">
-              <el-button @click="searchDialogVisible = false">
-                Cancel
-              </el-button>
-              <el-button type="primary" @click="searchDialogVisible = false">
-                Confirm
-              </el-button>
-            </div>
-          </template>
-        </el-dialog> -->
+        <CustomerService v-if="!userStore.user?.admin"></CustomerService>
         <SearchDialog v-model:visible="searchDialogVisible"></SearchDialog>
       </el-main>
     </el-container>

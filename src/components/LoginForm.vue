@@ -1,32 +1,80 @@
-<script setup>
+<script setup lang="ts">
 import { User, Lock, Message, Phone } from '@element-plus/icons-vue'
 import { ref, watch } from 'vue'
-import { userRegisterService } from '@/api/user'
+import {
+  userCheckEmailService,
+  userCheckUIDService,
+  userRegisterService
+} from '@/api/user'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '@/stores'
-
+import { useUserStore } from '@/stores/index.ts'
+import CodeUtil from '@/utils/codeUtil'
+import type { FormItemRule } from 'element-plus'
+import { ElMessage } from 'element-plus'
+import type { LoginForm } from '@/types'
 const loginFormRef = ref()
 const registerFormRef = ref()
+
 const isRegister = ref(false)
 
-const loginForm = ref({
+const loginForm = ref<LoginForm>({
   username: '',
   password: '',
-  repassword: '',
-  captcha: '',
   email: ''
 })
 
+const passwordInput = ref<HTMLInputElement | null>(null)
+
+const shiftFocusToPassword = () => {
+  passwordInput.value?.focus()
+}
+
+// register
 const currentStep = ref(1)
 const openSteps = ref(['1'])
-
 const stepStatus = ref({
   1: false,
   2: false,
   3: false
 })
 
-const editingStep = ref(null)
+const editingStep = ref<number | null>(null)
+
+const confirmEmail = async () => {
+  const valid = await registerFormRef.value.validateField('assetHolder.email')
+  if (valid) {
+    stepStatus.value[1] = true
+    currentStep.value = 2
+    editingStep.value = null
+    if (!openSteps.value.includes('2')) openSteps.value.push('2')
+  }
+}
+
+const goToStep3 = async () => {
+  const valid = await registerFormRef.value.validateField([
+    'id',
+    'assetHolder.phone'
+  ])
+  if (valid) {
+    stepStatus.value[2] = true
+    currentStep.value = 3
+    editingStep.value = null
+    openSteps.value = ['1', '2', '3']
+  }
+}
+
+const editStep = (step: number) => {
+  currentStep.value = step
+  editingStep.value = step
+  openSteps.value = [String(step)]
+}
+
+const getStepTitleClass = (step: number) => {
+  return {
+    'step-header-disabled':
+      editingStep.value !== null && editingStep.value !== step
+  }
+}
 
 const registerForm = ref({
   id: '',
@@ -50,7 +98,9 @@ const registerForm = ref({
       post: false,
       telegram: false
     }
-  }
+  },
+  password: '',
+  repassword: ''
 })
 
 const rules = {
@@ -71,20 +121,24 @@ const rules = {
       max: 10,
       message: 'username must between 5 to 10 characters',
       trigger: 'blur'
+    },
+    {
+      validator: async (
+        rule: FormItemRule,
+        value: string,
+        callback: (error?: Error) => void
+      ) => {
+        const res = await userCheckUIDService(value)
+        // success means find a username called ${value}
+        if (CodeUtil.isSuccess(res.code)) {
+          callback(
+            new Error(`Username ${value} is already exists, try a new one`)
+          )
+        }
+        callback()
+      },
+      trigger: 'blur'
     }
-    // {
-    //   validator: async (rule, value, callback) => {
-    //     const res = await userCheckUIDService(value)
-    //     // success means find a username called ${value}
-    //     if (CodeUtil.isSuccess(res.code)) {
-    //       callback(
-    //         new Error(`Username ${value} is already exists, try a new one`)
-    //       )
-    //     }
-    //     callback()
-    //   },
-    //   trigger: 'blur'
-    // }
   ],
   password: [
     {
@@ -104,17 +158,21 @@ const rules = {
       pattern: /^\S{6,15}$/,
       message: 'password must between 6 to 15 characters',
       trigger: 'blur'
+    },
+    {
+      validator: (
+        rule: FormItemRule,
+        value: string,
+        callback: (error?: Error) => void
+      ) => {
+        if (value !== registerForm.value.password) {
+          callback(new Error("Those passwords didn't match. Try again."))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
     }
-    // {
-    //   validator: (rule, value, callback) => {
-    //     if (value !== registerForm.value.password) {
-    //       callback(new Error("Those passwords didn't match. Try again."))
-    //     } else {
-    //       callback()
-    //     }
-    //   },
-    //   trigger: 'blur'
-    // }
   ],
   captcha: [
     {
@@ -140,22 +198,30 @@ const rules = {
       type: 'email',
       message: 'Please input a valid email address',
       trigger: ['blur', 'change']
+    },
+    {
+      validator: async (
+        rule: FormItemRule,
+        value: string,
+        callback: (error?: Error) => void
+      ) => {
+        const res = await userCheckEmailService(value)
+        if (CodeUtil.isSuccess(res.code)) {
+          callback(new Error('This email has already been used'))
+        }
+        callback()
+      },
+      trigger: 'blur'
     }
-    // {
-    //   validator: async (rule, value, callback) => {
-    //     const res = await userCheckEmailService(value)
-    //     if (CodeUtil.isSuccess(res.code)) {
-    //       callback(new Error('This email has already been used'))
-    //     }
-    //     callback()
-    //   },
-    //   trigger: 'blur'
-    // }
   ],
   'assetHolder.phone': [
     { required: true, message: 'Phone is required', trigger: 'blur' },
     {
-      validator: (rule, value, callback) => {
+      validator: (
+        rule: FormItemRule,
+        value: string,
+        callback: (error?: Error) => void
+      ) => {
         const phoneRegex = /^[0-9+\-()\s]{7,20}$/
         if (!phoneRegex.test(value)) {
           callback(new Error('Invalid phone number'))
@@ -164,53 +230,21 @@ const rules = {
         }
       },
       trigger: 'blur'
+    },
+    {
+      validator: async (
+        rule: FormItemRule,
+        value: string,
+        callback: (error?: Error) => void
+      ) => {
+        console.log('???')
+        const res = await userCheckEmailService(value)
+        console.log(res)
+        callback()
+      },
+      trigger: 'blur'
     }
-    // {
-    //   validator: async (rule, value, callback) => {
-    //     console.log('???')
-    //     const res = await userCheckEmailService(value)
-    //     console.log(res)
-    //     callback()
-    //   },
-    //   trigger: 'blur'
-    // }
   ]
-}
-
-const confirmEmail = async () => {
-  const valid = await registerFormRef.value.validateField('assetHolder.email')
-  if (valid) {
-    stepStatus.value[1] = true
-    currentStep.value = 2
-    editingStep.value = null
-    if (!openSteps.value.includes('2')) openSteps.value.push('2')
-  }
-}
-
-const goToStep3 = async () => {
-  const valid = await registerFormRef.value.validateField([
-    'id',
-    'assetHolder.phone'
-  ])
-  if (valid) {
-    stepStatus.value[2] = true
-    currentStep.value = 3
-    editingStep.value = null
-    openSteps.value = ['1', '2', '3']
-  }
-}
-
-const editStep = (step) => {
-  currentStep.value = step
-  editingStep.value = step
-  openSteps.value = [String(step)]
-}
-
-const getStepTitleClass = (step) => {
-  return {
-    'step-header-disabled':
-      editingStep.value !== null && editingStep.value !== step
-  }
 }
 
 const register = async () => {
@@ -244,20 +278,21 @@ watch(isRegister, () => {
   loginForm.value = {
     username: '',
     password: '',
-    repassword: ''
+    email: ''
   }
-  currentStep.value = 1
 })
 </script>
 
 <template>
+  <!-- Sign in form -->
   <el-form
-    v-if="!isRegister"
     :model="loginForm"
     :rules="rules"
     ref="loginFormRef"
     size="large"
+    autocomplete="off"
     class="form-style"
+    v-if="!isRegister"
   >
     <!-- Sign in-->
     <el-form-item class="form-heading">
@@ -272,15 +307,18 @@ watch(isRegister, () => {
         v-model="loginForm.username"
         :prefix-icon="User"
         placeholder="Username"
+        @keydown.shift.enter="shiftFocusToPassword"
       />
     </el-form-item>
 
     <el-form-item prop="password">
       <el-input
+        ref="passwordInput"
         v-model="loginForm.password"
         :prefix-icon="Lock"
         type="password"
         placeholder="Password"
+        @keydown.enter="login"
       />
     </el-form-item>
 

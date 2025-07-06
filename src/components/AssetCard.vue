@@ -1,27 +1,30 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
-const props = defineProps({
-  asset: Object
-})
+import type { AssetTableItem } from '@/types'
+const props = defineProps<{
+  asset: AssetTableItem
+}>()
 const displayData = ref()
 
-displayData.value = [
-  { label: 'ID', value: props.asset.id },
+if (props.asset) {
+  displayData.value = [
+    { label: 'ID', value: props.asset.id },
 
-  { label: 'Type', value: props.asset.type },
-  { label: 'Capacity litres', value: props.asset.capacityLitres },
-  {
-    label: 'Material',
-    value: props.asset.material
-  },
-  {
-    label: 'status',
-    value: props.asset.status
-  },
-  { label: 'Installed at', value: props.asset.installedAt },
-  { label: 'Last inspection', value: props.asset.lastInspection }
-]
-console.log(displayData)
+    { label: 'Type', value: props.asset.type },
+    { label: 'Capacity litres', value: props.asset.capacityLitres },
+    {
+      label: 'Material',
+      value: props.asset.material
+    },
+    {
+      label: 'status',
+      value: props.asset.status
+    },
+    { label: 'Installed at', value: props.asset.installedAt },
+    { label: 'Last inspection', value: props.asset.lastInspection }
+  ]
+  console.log(displayData)
+}
 </script>
 
 <template>
@@ -31,15 +34,15 @@ console.log(displayData)
         <h3
           class="asset-title"
           :class="{
-            'warning-low': !props.warningLevel,
-            'warning-medium': props.warningLevel === 'YELLOW',
-            'warning-high': props.warningLevel === 'AMBER',
-            'warning-severe': props.warningLevel === 'RED'
+            'warning-low': props.asset.warningLevel,
+            'warning-medium': props.asset.warningLevel === 'YELLOW',
+            'warning-high': props.asset.warningLevel === 'AMBER',
+            'warning-severe': props.asset.warningLevel === 'RED'
           }"
         >
           {{ asset.name || 'Asset Name' }}
         </h3>
-        <StatusIndicator :status="status" />
+        <StatusIndicator :status="asset.status" />
       </div>
     </template>
 

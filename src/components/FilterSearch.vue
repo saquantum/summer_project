@@ -1,7 +1,13 @@
-<script setup>
+<script setup lang="ts">
 import { Filter } from '@element-plus/icons-vue'
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
-const assetTypeOptions = [
+
+interface AssetTypeOption {
+  value: string
+  label: string
+}
+
+const assetTypeOptions: AssetTypeOption[] = [
   { value: 'type_001', label: 'Water Tank' },
   { value: 'type_002', label: 'Soakaway' },
   { value: 'type_003', label: 'Green Roof' },
@@ -11,37 +17,38 @@ const assetTypeOptions = [
   { value: 'type_007', label: 'Rain Garden' }
 ]
 
-const visible = ref(false)
-const detail = ref(false)
-const assetType = ref()
-const assetId = ref()
-let lastType
+const visible = ref<boolean>(false)
+const detail = ref<boolean>(false)
+const assetType = ref<string | null>(null)
+const assetId = ref<string | null>(null)
+let lastType: string | null = null
 
-const popoverRef = ref(null)
-const referenceRef = ref(null)
+const popoverRef = ref<{ popperRef?: { contentRef: HTMLElement } } | null>(null)
+const referenceRef = ref<{ $el: HTMLElement } | null>(null)
+const inputRef = ref<HTMLInputElement | null>(null)
 
-const handleClickOutside = (e) => {
-  console.log(visible.value)
+const handleClickOutside = (e: MouseEvent) => {
   const popoverEl = popoverRef.value?.popperRef?.contentRef
-  const referenceEl = referenceRef.value.$el
-  const dropdownEl = document.querySelector('.el-select-dropdown') // select 的弹窗
+  const referenceEl = referenceRef.value?.$el
+  const dropdownEl = document.querySelector('.el-select-dropdown')
   if (
-    !popoverEl.contains(e.target) &&
-    !referenceEl.contains(e.target) &&
-    (!dropdownEl || !dropdownEl.contains(e.target)) &&
-    !inputRef.value.contains(e.target)
+    popoverEl &&
+    referenceEl &&
+    !popoverEl.contains(e.target as Node) &&
+    !referenceEl.contains(e.target as Node) &&
+    (!dropdownEl || !dropdownEl.contains(e.target as Node)) &&
+    inputRef.value &&
+    !inputRef.value.contains(e.target as Node)
   ) {
     visible.value = false
-    console.log('trigger')
   }
-  console.log(visible.value)
 }
 
-const handleSelectVisibleChange = () => {}
+interface TableRow {
+  date: string
+}
 
-const handleSelect = () => {}
-
-const tableData = [
+const tableData: TableRow[] = [
   { date: '1' },
   { date: '1' },
   { date: '1' },
@@ -49,16 +56,14 @@ const tableData = [
   { date: '1' }
 ]
 
-const handleRowClick = (row) => {
-  console.log(row)
+const handleRowClick = (row: TableRow) => {
   tags.value.push(row.date)
 }
-// custom input
-const tags = ref([])
-const input = ref('')
-const inputRef = ref()
 
-const handleKeydown = (e) => {
+const tags = ref<string[]>([])
+const input = ref<string>('')
+
+const handleKeydown = (e: KeyboardEvent) => {
   if (
     (e.key === 'Enter' || e.key === ',' || e.key === ' ') &&
     input.value.trim()
@@ -71,17 +76,20 @@ const handleKeydown = (e) => {
   }
 }
 
-const removeTag = (index) => {
+const removeTag = (index: number) => {
   tags.value.splice(index, 1)
 }
 
 const focusInput = () => {
-  inputRef.value.focus()
+  inputRef.value?.focus()
   visible.value = true
   detail.value = false
 }
 
-const querySearch = (queryString, cb) => {
+const querySearch = (
+  queryString: string,
+  cb: (_results: { value: string }[]) => void
+) => {
   const list = ['1', '2', '3', '4', '5']
   const result = list.map((item) => ({
     value: item
@@ -97,7 +105,7 @@ const handleFilterClick = () => {
   }
 }
 
-const material = ref()
+const material = ref<string | null>(null)
 const materialOption = [
   { label: 'Steel', value: 'Steel' },
   { label: 'Concrete', value: 'Concrete' },
@@ -105,28 +113,31 @@ const materialOption = [
   { label: 'Composite', value: 'Composite' }
 ]
 
-const status = ref()
+const status = ref<string | null>(null)
 const statusOption = [
   { label: 'inactive', value: 'inactive' },
   { label: 'active', value: 'active' },
   { label: 'maintenance', value: 'maintenance' }
 ]
 
-// slide bar
-const capacityLitres = ref([0, 10000])
-
-// installed at
-const installedAt = ref()
-
-const lastInspection = ref()
+const capacityLitres = ref<[number, number]>([0, 10000])
+const installedAt = ref<[Date, Date] | null>(null)
+const lastInspection = ref<[Date, Date] | null>(null)
 
 watch([assetType], () => {
   if (!assetType.value) {
-    tags.value.splice(tags.value.indexOf(lastType))
+    if (lastType) {
+      const index = tags.value.indexOf(lastType)
+      if (index !== -1) tags.value.splice(index, 1)
+    }
     return
   }
   const obj = assetTypeOptions.find((item) => item.value === assetType.value)
-  tags.value.splice(tags.value.indexOf(obj.label))
+  if (!obj) return
+  if (lastType) {
+    const index = tags.value.indexOf(lastType)
+    if (index !== -1) tags.value.splice(index, 1)
+  }
   tags.value.push(obj.label)
   lastType = obj.label
 })
@@ -242,7 +253,6 @@ onBeforeUnmount(() => {
         range-separator="To"
         start-placeholder="Start date"
         end-placeholder="End date"
-        :shortcuts="shortcuts"
       />
       <div class="label">Last inspection</div>
       <el-date-picker
@@ -252,7 +262,6 @@ onBeforeUnmount(() => {
         range-separator="To"
         start-placeholder="Start date"
         end-placeholder="End date"
-        :shortcuts="shortcuts"
       />
       <div style="margin-top: 20px">
         <el-button>Search</el-button>

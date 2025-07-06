@@ -1,10 +1,10 @@
-<script setup></script>
+<script setup lang="ts"></script>
 
 <template>
   <div class="login-page">
     <div class="card-wrapper">
       <el-card class="glass-effect" style="width: 90%; max-width: 400px">
-        <router-view />
+        <router-view></router-view>
       </el-card>
     </div>
   </div>
@@ -14,14 +14,15 @@
 .login-page {
   height: 100vh;
   background: url('@/assets/login_bg.png') no-repeat center / cover;
-  --el-text-color-disabled: #89a0c8;
 }
+
 .card-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
 }
+
 .glass-effect {
   background-color: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);

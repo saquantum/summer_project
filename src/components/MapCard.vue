@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, onBeforeUnmount, watch } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -6,6 +6,15 @@ import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 import { assetUpdateInfoService } from '@/api/assets'
 import * as turf from '@turf/turf'
+import type { LeafletMouseEvent } from 'leaflet'
+import { ElMessage } from 'element-plus'
+import type {
+  Feature,
+  FeatureCollection,
+  MultiPolygon,
+  Position
+} from 'geojson'
+import type { Style } from '@/types'
 
 const customIcon = new L.Icon({
   iconUrl: markerIcon,
@@ -16,24 +25,27 @@ const customIcon = new L.Icon({
   shadowSize: [41, 41]
 })
 
-const props = defineProps({
-  mapId: String,
-  locations: Array,
-  id: Number,
-  mode: String,
-  ownerId: String
-})
+const props = defineProps<{
+  mapId: string
+  locations: MultiPolygon[]
+  id: string
+  mode: string
+  ownerId: string
+  style: Style
+}>()
 
 const emit = defineEmits(['update:locations'])
 
-let points = []
-const polygonCoordinates = []
-let map = null
-let saveLayer = null
-const handleClick = (e) => {
+let points: Position[] = []
+const polygonCoordinates: Position[][][] = []
+let map: L.Map | null = null
+let saveLayer: L.GeoJSON | null = null
+const handleClick = (e: LeafletMouseEvent) => {
+  if (!map) return
   const { lat, lng } = e.latlng
   const index = points.length
-  points.push([lat, lng])
+  const position: Position = [lng, lat]
+  points.push(position)
   const marker = L.marker([lat, lng], { icon: customIcon }).addTo(map)
   marker.on('dragend', () => {
     points[index] = [marker.getLatLng().lat, marker.getLatLng().lng]
@@ -41,27 +53,31 @@ const handleClick = (e) => {
 }
 
 const beginDrawing = () => {
+  if (!map) return
   map.on('click', handleClick)
 }
 
 const finishOneShape = async () => {
+  const m = map
+  const layer = saveLayer
+  if (!m || !layer) return
   // if there are less than 3 points, reset map
   if (points.length < 3) {
     points = []
     ElMessage.error('You should specify more than 3 points to shape a polygon.')
     // destroy all layers on the map
-    map.eachLayer((layer) => {
+    m.eachLayer((layer) => {
       if (!(layer instanceof L.TileLayer)) {
-        map.removeLayer(layer)
+        m.removeLayer(layer)
       }
     })
-    saveLayer.addTo(map)
+    layer.addTo(m)
     return
   }
   // destroy all layers on the map
-  map.eachLayer((layer) => {
+  m.eachLayer((layer) => {
     if (!(layer instanceof L.TileLayer)) {
-      map.removeLayer(layer)
+      m.removeLayer(layer)
     }
   })
   // then generate the new polygon area according to the mode
@@ -78,16 +94,18 @@ const finishOneShape = async () => {
       return
     }
     polygonCoordinates.push(convexHull.geometry.coordinates)
-    const multiPolygon = turf.multiPolygon(polygonCoordinates)
+    const multiPolygon: Feature = turf.multiPolygon(polygonCoordinates)
     // add layer
-    L.geoJSON(multiPolygon).addTo(map)
+    L.geoJSON(multiPolygon).addTo(m)
   } else {
-    let polygonLayer = L.polygon(points)
-    let geoJSON = polygonLayer.toGeoJSON()
+    // type cast
+    const leafletPoints: L.LatLngExpression[] = points.map((p) => [p[1], p[0]])
+    const polygonLayer = L.polygon(leafletPoints)
+    const geoJSON = polygonLayer.toGeoJSON()
 
-    polygonCoordinates.push(geoJSON.geometry.coordinates)
+    polygonCoordinates.push(geoJSON.geometry.coordinates as Position[][])
     const multiPolygon = turf.multiPolygon(polygonCoordinates)
-    L.geoJSON(multiPolygon).addTo(map)
+    L.geoJSON(multiPolygon).addTo(m)
   }
 
   // reset point
@@ -109,37 +127,55 @@ const endDrawing = async () => {
 
   // clear points, turn off click
   points = []
-  map.off('click', handleClick)
+  if (map) {
+    map.off('click', handleClick)
+  }
 }
 
 const cancelDrawing = () => {
+  const m = map
+  const layer = saveLayer
+  if (!m || !layer) return
   // destroy all layers on the map
-  map.eachLayer((layer) => {
+  m.eachLayer((layer) => {
     if (!(layer instanceof L.TileLayer)) {
-      map.removeLayer(layer)
+      m.removeLayer(layer)
     }
   })
-  saveLayer.addTo(map)
+  layer.addTo(m)
   // clear points, turn off click
   points = []
-  map.off('click', handleClick)
+  m.off('click', handleClick)
 }
+
 watch(
   () => props.locations,
   (newVal) => {
-    // destroy all layers on the map
-    map.eachLayer((layer) => {
+    const m = map
+    if (!m) return
+
+    m.eachLayer((layer) => {
       if (!(layer instanceof L.TileLayer)) {
-        map.removeLayer(layer)
+        m.removeLayer(layer)
       }
     })
-    console.log(newVal)
-    const geoLayer = L.geoJSON(newVal, {
-      style: (feature) => feature.geometry.style
-    }).addTo(map)
-    if (geoLayer) {
-      map.fitBounds(geoLayer.getBounds())
+
+    if (!newVal || newVal.length === 0) return
+
+    const featureCollection: FeatureCollection = {
+      type: 'FeatureCollection',
+      features: newVal.map((geometry) => ({
+        type: 'Feature',
+        geometry,
+        properties: {}
+      }))
     }
+
+    const geoLayer = L.geoJSON(featureCollection, {
+      style: props.style
+    }).addTo(m)
+
+    m.fitBounds(geoLayer.getBounds())
   },
   {
     deep: true
@@ -152,8 +188,18 @@ onMounted(async () => {
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map)
-  saveLayer = L.geoJSON(props.locations, {
-    style: (feature) => feature.geometry.style
+
+  const featureCollection: FeatureCollection = {
+    type: 'FeatureCollection',
+    features: props.locations?.map((geometry) => ({
+      type: 'Feature',
+      geometry,
+      properties: {}
+    }))
+  }
+
+  saveLayer = L.geoJSON(featureCollection, {
+    style: props.style
   }).addTo(map)
   if (saveLayer) {
     map.fitBounds(saveLayer.getBounds())

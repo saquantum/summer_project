@@ -1,21 +1,29 @@
-<script setup>
-const props = defineProps({
-  multiSort: Array,
-  columns: Array,
-  fetchTableData: Function
-})
+<script setup lang="ts">
+import { ArrowDown, ArrowUp } from '@element-plus/icons-vue'
+interface SortItem {
+  prop: string
+  order: 'ascending' | 'descending'
+}
 
-console.log(props.multiSort)
+interface ColumnItem {
+  prop: string
+  label: string
+}
+
+const props = defineProps<{
+  multiSort: SortItem[]
+  columns: ColumnItem[]
+  fetchTableData: () => void
+}>()
 
 const emit = defineEmits(['update:multiSort'])
 
-const getColumnLabel = (prop) => {
-  console.log(props.multiSort)
+const getColumnLabel = (prop: string): string | undefined => {
   const obj = props.columns.find((item) => item.prop === prop)
-  return obj.label
+  return obj?.label
 }
 
-const removeSortColumn = (prop) => {
+const removeSortColumn = (prop: string): void => {
   const index = props.multiSort.findIndex((item) => item.prop === prop)
   if (index !== -1) {
     const newSort = props.multiSort.filter((item) => item.prop !== prop)
@@ -24,7 +32,7 @@ const removeSortColumn = (prop) => {
   }
 }
 
-const clearAllSort = () => {
+const clearAllSort = (): void => {
   emit('update:multiSort', [])
   props.fetchTableData()
 }
@@ -42,9 +50,9 @@ const clearAllSort = () => {
       @close="removeSortColumn(sort.prop)"
     >
       {{ getColumnLabel(sort.prop) }}
-      <el-icon
-        ><component :is="sort.order === 'ascending' ? ArrowUp : ArrowDown"
-      /></el-icon>
+      <el-icon>
+        <component :is="sort.order === 'ascending' ? ArrowUp : ArrowDown" />
+      </el-icon>
     </el-tag>
     <el-button size="small" text @click="clearAllSort">Clear Sort</el-button>
   </div>

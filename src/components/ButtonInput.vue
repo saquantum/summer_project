@@ -1,24 +1,29 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import type { ElPopover } from 'element-plus'
+
 const visible = ref(false)
 
-// custom input
-const tags = ref([])
+const tags = ref<string[]>([])
+
 const input = ref('')
-const inputRef = ref()
-const popoverRef = ref()
-const removeTag = (index) => {
+
+const inputRef = ref<HTMLInputElement | null>(null)
+
+const popoverRef = ref<InstanceType<typeof ElPopover> | null>(null)
+
+const removeTag = (index: number) => {
   tags.value.splice(index, 1)
 }
 
-const handleKeydown = (e) => {
+const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Backspace' && !input.value && tags.value.length) {
     tags.value.pop()
   }
 }
 
 const focusInput = () => {
-  inputRef.value.focus()
+  inputRef.value?.focus()
   visible.value = true
 }
 
@@ -29,18 +34,27 @@ const tableData = [
   { date: '1' },
   { date: '1' }
 ]
-const handleRowClick = (row) => {
+
+const handleRowClick = (row: { date: string }) => {
   tags.value.push(row.date)
   visible.value = false
 }
 
-const handleClickOutside = (e) => {
-  const popoverEl = popoverRef.value?.popperRef?.contentRef
-  const dropdownEl = document.querySelector('.el-select-dropdown') // select 的弹窗
+const handleClickOutside = (e: MouseEvent) => {
+  const target = e.target as Node | null
+  const popoverEl = popoverRef.value?.popperRef
+    ?.contentRef as HTMLElement | null
+  const dropdownEl = document.querySelector(
+    '.el-select-dropdown'
+  ) as HTMLElement | null
+
   if (
-    !popoverEl.contains(e.target) &&
-    (!dropdownEl || !dropdownEl.contains(e.target)) &&
-    !inputRef.value.contains(e.target)
+    target &&
+    popoverEl &&
+    !popoverEl.contains(target) &&
+    (!dropdownEl || !dropdownEl.contains(target)) &&
+    inputRef.value &&
+    !inputRef.value.contains(target)
   ) {
     visible.value = false
   }

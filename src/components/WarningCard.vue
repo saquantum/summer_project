@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import {
   Warning,
@@ -26,9 +26,10 @@ const warningData = ref({
     'Initial issue of warning for Scotland region due to forecasted weather system.'
 })
 
+type Style = { color: string; bgColor: string; borderColor: string }
 // Get styles based on warning level
-const getLevelStyle = (level) => {
-  const styles = {
+const getLevelStyle = (level: string): Style => {
+  const styles: Record<string, Style> = {
     RED: {
       color: '#F56C6C',
       bgColor: '#FEF0F0',
@@ -49,7 +50,7 @@ const getLevelStyle = (level) => {
 }
 
 // Format date string
-const formatDate = (dateStr) => {
+const formatDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleString('en-GB')
 }
 

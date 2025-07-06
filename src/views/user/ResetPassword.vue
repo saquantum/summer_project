@@ -1,7 +1,7 @@
-<script setup>
+<script setup lang="ts">
 import { Lock } from '@element-plus/icons-vue'
 import { ref, nextTick } from 'vue'
-import { useAssetStore, useUserStore } from '@/stores'
+import { useAssetStore, useUserStore } from '@/stores/index.ts'
 import {
   userGetEmailService,
   userEmailVerificationService,
@@ -9,6 +9,7 @@ import {
 } from '@/api/user'
 import CodeUtil from '@/utils/codeUtil'
 import { useRouter } from 'vue-router'
+import type { FormItemRule } from 'element-plus'
 const userStore = useUserStore()
 const assetStore = useAssetStore()
 const router = useRouter()
@@ -17,8 +18,64 @@ const form = ref({
   code: '',
   password: '',
   repassword: '',
-  email: userStore.user.assetHolder.email
+  email: userStore.user?.assetHolder?.email || ''
 })
+
+const rules = {
+  // customize rules here
+  password: [
+    {
+      required: true,
+      message: 'Please input password',
+      trigger: 'blur'
+    }
+    // {
+    //   pattern: /^\S{6,15}$/,
+    //   message: 'password must between 6 to 15 characters',
+    //   trigger: 'blur'
+    // }
+  ],
+  repassword: [
+    { required: true, message: 'Please input password', trigger: 'blur' },
+    {
+      pattern: /^\S{6,15}$/,
+      message: 'password must between 6 to 15 characters',
+      trigger: 'blur'
+    },
+    {
+      validator: (
+        rule: FormItemRule,
+        value: string,
+        callback: (error?: Error) => void
+      ) => {
+        if (value !== form.value.password) {
+          callback(new Error("Those passwords didn't match. Try again."))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
+  ],
+  code: [
+    {
+      required: true,
+      message: 'Please input captcha',
+      trigger: 'blur'
+    },
+    {
+      min: 6,
+      max: 6,
+      message: 'Captcha must be exactly 6 characters',
+      trigger: 'blur'
+    },
+    {
+      pattern: /^[A-Za-z0-9]{6}$/,
+      message: 'Captcha must contain only letters and numbers',
+      trigger: 'blur'
+    }
+  ]
+}
 
 const resetFormVisible = ref(false)
 
@@ -58,7 +115,7 @@ const handleConfirm = async () => {
   <div>For your account safety, we need to verify your email</div>
   <div>
     OTP code will send to your email
-    {{ userStore.user.assetHolder.email }}
+    {{ userStore.user?.assetHolder?.email }}
   </div>
   <el-form
     :model="form"

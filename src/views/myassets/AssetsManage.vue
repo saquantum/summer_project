@@ -1,8 +1,9 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ref, watch, computed } from 'vue'
-import { useUserStore, useAssetStore } from '@/stores'
+import { useUserStore, useAssetStore } from '@/stores/index.ts'
+import type { AssetWithWarnings } from '@/types'
 const assetStore = useAssetStore()
 const userStore = useUserStore()
 const router = useRouter()
@@ -13,7 +14,7 @@ const assetWarningLevel = ref('')
 const assetType = ref('')
 
 // filtered assets
-const currentAssets = ref([])
+const currentAssets = ref<AssetWithWarnings[] | []>([])
 
 // select value
 const warningLevelOptions = [
@@ -47,7 +48,7 @@ const assetTypeOptions = [
 // page change
 const currentPage = ref(1)
 const pageSize = 8
-const handlePageChange = (page) => {
+const handlePageChange = (page: number) => {
   currentPage.value = page
 }
 
@@ -79,12 +80,14 @@ const currentPageAssets = computed(() => {
 onMounted(async () => {
   currentAssets.value = []
   let id
-  if (!userStore.user.admin) {
-    id = userStore.user.assetHolderId
+  if (!userStore.user?.admin) {
+    id = userStore.user?.assetHolderId
   } else {
     id = userStore.proxyId
   }
-  await assetStore.getUserAssets(userStore.user.admin, id)
+  if (userStore.user && id) {
+    await assetStore.getUserAssets(userStore.user.admin, id)
+  }
   if (assetStore.userAssets) {
     currentAssets.value = assetStore.userAssets
   }

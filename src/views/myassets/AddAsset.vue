@@ -1,16 +1,25 @@
-<script setup>
+<script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import request from '@/utils/request'
-import { useUserStore } from '@/stores'
+import { useUserStore } from '@/stores/index.ts'
 import CodeUtil from '@/utils/codeUtil'
 import { userCheckUIDService } from '@/api/user'
 import { adminGetUserInfoByUIDService } from '@/api/admin'
-import { userInsertAssetService } from '../../api/user'
-import { adminInsertAssetService } from '../../api/admin'
+import { userInsertAssetService } from '@/api/user'
+import { adminInsertAssetService } from '@/api/admin'
+import type { Feature, MultiPolygon } from 'geojson'
+import { ElMessage, type FormItemRule } from 'element-plus'
+import type { ComponentPublicInstance } from 'vue'
+import type MapCard from '@/components/MapCard.vue'
+import type { AssetForm, NominatimResult } from '@/types'
 
+// user store
 const userStore = useUserStore()
 
-const convertToGeoJSON = (data, type = 'point') => {
+const convertToGeoJSON = (
+  data: NominatimResult,
+  type: 'point' | 'polygon' | 'multipolygon' = 'point'
+): Feature => {
   if (!data || !data.lat || !data.lon) {
     throw new Error('Invalid input data: missing lat/lon')
   }
@@ -24,11 +33,16 @@ const convertToGeoJSON = (data, type = 'point') => {
     importance: data.importance
   }
 
-  if (
-    type === 'polygon' ||
-    (type === 'multipolygon' && Array.isArray(data.boundingbox))
-  ) {
-    const [south, north, west, east] = data.boundingbox.map(Number)
+  if (!Array.isArray(data.boundingbox) || data.boundingbox.length < 4) {
+    throw new Error('Invalid boundingbox')
+  }
+  const [south, north, west, east] = data.boundingbox.map(Number) as [
+    number,
+    number,
+    number,
+    number
+  ]
+  if (type === 'multipolygon' && data.boundingbox) {
     const polygon = [
       [west, south],
       [east, south],
@@ -37,12 +51,31 @@ const convertToGeoJSON = (data, type = 'point') => {
       [west, south] // close the polygon
     ]
 
-    const coordinates = type === 'multipolygon' ? [[polygon]] : [polygon]
+    const coordinates = [[polygon]]
 
     return {
       type: 'Feature',
       geometry: {
-        type: type === 'multipolygon' ? 'MultiPolygon' : 'Polygon',
+        type: 'MultiPolygon',
+        coordinates
+      },
+      properties
+    }
+  } else if (type === 'polygon' && data.boundingbox) {
+    const polygon = [
+      [west, south],
+      [east, south],
+      [east, north],
+      [west, north],
+      [west, south] // close the polygon
+    ]
+
+    const coordinates = [polygon]
+
+    return {
+      type: 'Feature',
+      geometry: {
+        type: 'Polygon',
         coordinates
       },
       properties
@@ -62,13 +95,12 @@ const convertToGeoJSON = (data, type = 'point') => {
 
 const disableForUser = ref(false)
 
-const form = ref({
+const form = ref<AssetForm>({
   username: '',
   name: '',
   typeId: '',
   ownerId: '',
   address: '',
-  // london by default
   locations: [
     {
       type: 'MultiPolygon',
@@ -93,25 +125,31 @@ const form = ref({
   location: ''
 })
 
-const formRef = ref()
+const formRef = ref<InstanceType<
+  (typeof import('element-plus'))['ElForm']
+> | null>(null)
 
 const rules = {
   username: [
     { required: true, message: 'Please input username', trigger: 'blur' },
     {
-      validator: async (rule, value, callback) => {
+      validator: async (
+        rule: FormItemRule,
+        value: string,
+        callback: (error?: Error) => void
+      ) => {
         const res = await userCheckUIDService(value)
-        // success means find a username called ${value}
         if (CodeUtil.isSuccess(res.code)) {
-          if (userStore.user.admin) {
+          if (userStore.user?.admin) {
             const res = await adminGetUserInfoByUIDService(value)
             if (res.data.admin) {
               callback(new Error('Can not add asset to admin'))
+              return
             }
           }
           callback()
         } else {
-          callback(new Error(`Username ${value} does not exists.`))
+          callback(new Error(`Username ${value} does not exist.`))
         }
       },
       trigger: 'blur'
@@ -131,18 +169,19 @@ const statusOption = [
   { label: 'active', value: 'active' },
   { label: 'maintenance', value: 'maintenance' }
 ]
+
 const mode = ref('convex')
-const mapCardRef = ref()
+const mapCardRef = ref<ComponentPublicInstance<typeof MapCard> | null>(null)
 const tipVisible = ref(false)
 
-const searchLocation = async (address) => {
+const searchLocation = async (address: string) => {
   if (!address) return
   const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
-  const data = await request(url)
+  const data = (await request(url)) as NominatimResult[]
   if (data.length > 0) {
-    const geometry = convertToGeoJSON(data[0], 'multipolygon')
+    const multiPolygon = convertToGeoJSON(data[0]!, 'multipolygon')
     form.value.locations = []
-    form.value.locations.push(geometry.geometry)
+    form.value.locations.push(multiPolygon.geometry as MultiPolygon)
   }
   console.log(form.value.locations)
 }
@@ -157,40 +196,45 @@ const typeOptions = [
   { label: 'Rain Garden', value: 'type_007' }
 ]
 
-const disabledAfterToday = (time) => {
+const disabledAfterToday = (time: Date) => {
   return time.getTime() > Date.now()
 }
+
 const beginDrawing = () => {
   tipVisible.value = true
-  mapCardRef.value.beginDrawing()
+  mapCardRef.value?.beginDrawing()
 }
 
 const finishOneShape = () => {
-  mapCardRef.value.finishOneShape()
+  mapCardRef.value?.finishOneShape()
 }
 
 const endDrawing = () => {
   tipVisible.value = false
-  mapCardRef.value.endDrawing()
+  mapCardRef.value?.endDrawing()
 }
 
 const cancelDrawing = () => {
   tipVisible.value = false
-  mapCardRef.value.cancelDrawing()
+  mapCardRef.value?.cancelDrawing()
 }
 
 const userSubmit = async () => {
   try {
-    await formRef.value.validate()
+    await formRef.value?.validate()
   } catch {
     return
   }
-  form.value.location = form.value.locations[0]
-  form.value.ownerId = userStore.user.assetHolderId
+  form.value.location = form.value.locations[0] ?? ''
+  if (userStore.user?.assetHolderId) {
+    form.value.ownerId = userStore.user.assetHolderId
+  }
 
   try {
-    await userInsertAssetService(userStore.user.assetHolderId, form.value)
-    ElMessage.success('Successfully add an asset')
+    if (userStore.user?.assetHolderId) {
+      await userInsertAssetService(userStore.user?.assetHolderId, form.value)
+      ElMessage.success('Successfully add an asset')
+    }
   } catch {
     ElMessage.error('An error occurs during adding an asset')
   }
@@ -198,14 +242,16 @@ const userSubmit = async () => {
 
 const adminSubmit = async () => {
   try {
-    await formRef.value.validate()
+    await formRef.value?.validate()
   } catch {
     return
   }
-  form.value.location = form.value.locations[0]
+  form.value.location = form.value.locations[0] ?? ''
 
   const res = await adminGetUserInfoByUIDService(form.value.username)
-  form.value.ownerId = res.data.assetHolderId
+  if (res.data.assetHolderId) {
+    form.value.ownerId = res.data.assetHolderId
+  }
 
   try {
     await adminInsertAssetService(form.value)
@@ -222,7 +268,6 @@ const reset = () => {
     typeId: '',
     ownerId: '',
     address: '',
-    // london by default
     locations: [
       {
         type: 'MultiPolygon',
@@ -259,8 +304,8 @@ watch(
 )
 
 onMounted(() => {
-  if (!userStore.user.admin) {
-    form.value.username = userStore.user.id
+  if (!userStore.user?.admin && userStore.user?.id) {
+    form.value.username = userStore.user?.id
     disableForUser.value = true
   }
 })
@@ -380,7 +425,7 @@ onMounted(() => {
           <el-button
             type="primary"
             @click="adminSubmit"
-            v-if="userStore.user.admin"
+            v-if="userStore.user?.admin"
             >Submit</el-button
           >
           <el-button type="primary" v-else @click="userSubmit"

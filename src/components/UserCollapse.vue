@@ -1,11 +1,11 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 const props = defineProps({
   users: Object
 })
 const activeNames = ref(0)
 
-const handleChange = (val) => {
+const handleChange = (val: number) => {
   console.log(val)
 }
 </script>

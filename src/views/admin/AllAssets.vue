@@ -1,14 +1,15 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAssetStore } from '@/stores'
+import { useAssetStore } from '@/stores/index'
 import { adminDeleteAssetService } from '@/api/admin'
+import type { AssetTableItem } from '@/types'
 
-const assets = ref([])
+const assets = ref<AssetTableItem[]>([])
 const router = useRouter()
 const assetStore = useAssetStore()
 
-const handleShowDetail = (row) => {
+const handleShowDetail = (row: AssetTableItem) => {
   router.push(`/asset/${row.id}`)
 }
 
@@ -16,27 +17,30 @@ const handleShowDetail = (row) => {
 const dialogVisible = ref(false)
 const confirmDisabled = ref(true)
 const countdown = ref(5)
-let timer = null
-const deleteId = ref([])
+let timer: ReturnType<typeof setInterval> | null = null
+const deleteId = ref<string[]>([])
 
 const startCountDown = () => {
   countdown.value = 5
   confirmDisabled.value = true
   timer = setInterval(() => {
     countdown.value--
-    if (countdown.value <= 0) {
+    if (countdown.value <= 0 && timer !== null) {
       clearInterval(timer)
+      timer = null
       confirmDisabled.value = false
     }
   }, 1000)
 }
 
-const triggerDelete = (row) => {
+const triggerDelete = (row: AssetTableItem) => {
   dialogVisible.value = true
   deleteId.value.push(row.id)
 }
+
 const handleDelete = async () => {
   dialogVisible.value = true
+  if (deleteId.value.length === 0) return
   const res = await adminDeleteAssetService(deleteId.value)
   deleteId.value = []
   console.log(res)
@@ -44,12 +48,14 @@ const handleDelete = async () => {
   dialogVisible.value = false
 }
 
-const tableRowClassName = (scope) => {
-  if (scope.row.warningLevel.toLowerCase().includes('red')) {
+const tableRowClassName = (scope: { row: AssetTableItem }) => {
+  const warningLevel = scope.row.warningLevel.toLowerCase()
+  if (warningLevel.includes('red')) {
     return 'warning-red'
-  } else if (scope.row.warningLevel.toLowerCase().includes('yellow')) {
+  } else if (warningLevel.includes('yellow')) {
     return 'warning-yellow'
   }
+  return ''
 }
 
 const columns = [
@@ -64,26 +70,14 @@ const columns = [
   { prop: 'lastInspection', label: 'Last inspection', width: 180 }
 ]
 
-const multiSort = ref([])
+const multiSort = ref<{ prop: string; order: string }[]>([])
 
-const handleSortChange = ({ prop, order }) => {
-  const index = multiSort.value.findIndex((item) => item.prop === prop)
-  if (index !== -1) {
-    if (!order) {
-      multiSort.value.splice(index, 1)
-    } else {
-      multiSort.value[index].order = order
-    }
-  } else {
-    if (order) {
-      multiSort.value.push({ prop, order })
-    }
-  }
-  fetchTableData()
-}
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(50)
 
 const fetchTableData = async () => {
-  const propOrderList = []
+  const propOrderList: string[] = []
 
   for (const { prop, order } of multiSort.value) {
     let dbField = ''
@@ -97,7 +91,6 @@ const fetchTableData = async () => {
     else if (prop === 'status') dbField = 'asset_status'
     else if (prop === 'installedAt') dbField = 'asset_installed_at'
     else if (prop === 'lastInspection') dbField = 'asset_last_inspection'
-    // if no field, skip
     else continue
 
     const sortDir = order === 'descending' ? 'desc' : 'asc'
@@ -124,57 +117,64 @@ const fetchTableData = async () => {
       installedAt: item.asset.installedAt,
       lastInspection: item.asset.lastInspection,
       assetHolderId: item.asset.ownerId,
-      warningLevel: item.warnings[0]?.warningLevel.toLowerCase() || 'None'
+      warningLevel: item.warnings[0]?.warningLevel?.toLowerCase() ?? 'none'
     }
   })
 }
 
-const currentPage = ref(1)
-const pageSize = ref(10)
-const total = ref(50)
+const handleSortChange = (sort: { prop: string; order: string | null }) => {
+  const index = multiSort.value.findIndex((item) => item.prop === sort.prop)
+  if (index !== -1) {
+    if (!sort.order) {
+      multiSort.value.splice(index, 1)
+    } else {
+      if (index >= 0 && index < multiSort.value.length) {
+        multiSort.value[index]!.order = sort.order
+      }
+    }
+  } else {
+    if (sort.order) {
+      multiSort.value.push({ prop: sort.prop, order: sort.order })
+    }
+  }
+  fetchTableData()
+}
 
-const handlePageChange = (page) => {
+const handlePageChange = (page: number) => {
   currentPage.value = page
   fetchTableData()
 }
 
-const handleSizeChange = (size) => {
+const handleSizeChange = (size: number) => {
   pageSize.value = size
   currentPage.value = 1
   fetchTableData()
 }
 
 const screenWidth = ref(window.innerWidth)
-
-let debounceTimer = null
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
 const handleResize = () => {
-  clearTimeout(debounceTimer)
+  if (debounceTimer) clearTimeout(debounceTimer)
   debounceTimer = setTimeout(() => {
     screenWidth.value = window.innerWidth
     resizeBasedOnWidth(screenWidth.value)
   }, 200)
 }
 
-const resizeBasedOnWidth = (width) => {
+const resizeBasedOnWidth = (width: number) => {
   if (width < 576) {
     console.log('Extra small screen, e.g., portrait phone')
     handleSizeChange(5)
   } else if (width >= 576 && width < 768) {
-    handleSizeChange(5)
-    console.log('Small screen, e.g., landscape phone or small tablet')
     handleSizeChange(10)
-
-    // Your logic for small screens
+    console.log('Small screen, e.g., landscape phone or small tablet')
   } else if (width >= 768 && width < 992) {
     handleSizeChange(10)
-
     console.log('Medium screen, e.g., tablets or small laptops')
-    // Your logic for medium screens
   } else {
     handleSizeChange(10)
     console.log('Large screen, e.g., desktops or larger')
-    // Your logic for large screens
   }
 }
 
@@ -188,7 +188,10 @@ watch(dialogVisible, (val) => {
   if (val) {
     startCountDown()
   } else {
-    clearInterval(timer)
+    if (timer !== null) {
+      clearInterval(timer)
+      timer = null
+    }
     confirmDisabled.value = true
   }
 })

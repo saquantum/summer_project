@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import {
   userRegisterService,
   userCheckUIDService,
@@ -7,8 +7,11 @@ import {
 import CodeUtil from '@/utils/codeUtil'
 import { ElMessage } from 'element-plus'
 import { ref, onMounted } from 'vue'
+import type { FormRules } from 'element-plus'
+import type { UserInfoForm } from '@/types'
+import type { InternalRuleItem } from 'async-validator'
 
-const form = ref({
+const form = ref<UserInfoForm>({
   id: '',
   password: '',
   repassword: '',
@@ -37,7 +40,7 @@ const form = ref({
 
 const formRef = ref()
 
-const rules = {
+const rules = ref<FormRules<typeof form>>({
   id: [
     { required: true, message: 'Please input username', trigger: 'blur' },
     {
@@ -47,15 +50,21 @@ const rules = {
       trigger: 'blur'
     },
     {
-      validator: async (rule, value, callback) => {
-        const res = await userCheckUIDService(value)
-        // success means find a username called ${value}
-        if (CodeUtil.isSuccess(res.code)) {
-          callback(
-            new Error(`Username '${value}' is already exists, try a new one`)
-          )
+      asyncValidator: async (
+        rule: InternalRuleItem,
+        value: string,
+        callback: (error?: string | Error) => void
+      ) => {
+        try {
+          const res = await userCheckUIDService(value)
+          if (CodeUtil.isSuccess(res.code)) {
+            callback(new Error(`Username '${value}' already exists`))
+          } else {
+            callback()
+          }
+        } catch {
+          callback('Server error')
         }
-        callback()
       },
       trigger: 'blur'
     }
@@ -80,7 +89,11 @@ const rules = {
       trigger: 'blur'
     },
     {
-      validator: (rule, value, callback) => {
+      validator: (
+        rule: InternalRuleItem,
+        value: string,
+        callback: (error?: Error) => void
+      ) => {
         if (value !== form.value.password) {
           callback(new Error("Those passwords didn't match. Try again."))
         } else {
@@ -112,7 +125,11 @@ const rules = {
     { required: true, message: 'Email is required', trigger: 'blur' },
     { type: 'email', message: 'Invalid email format', trigger: 'blur' },
     {
-      validator: async (rule, value, callback) => {
+      asyncValidator: async (
+        rule: InternalRuleItem,
+        value: string,
+        callback: (error?: Error) => void
+      ) => {
         const res = await userCheckEmailService(value)
         if (CodeUtil.isSuccess(res.code)) {
           callback(new Error('This email has already been used'))
@@ -125,7 +142,11 @@ const rules = {
   'assetHolder.phone': [
     { required: true, message: 'Phone is required', trigger: 'blur' },
     {
-      validator: (rule, value, callback) => {
+      validator: (
+        rule: InternalRuleItem,
+        value: string,
+        callback: (error?: Error) => void
+      ) => {
         const phoneRegex = /^[0-9+\-()\s]{7,20}$/
         if (!phoneRegex.test(value)) {
           callback(new Error('Invalid phone number'))
@@ -142,7 +163,11 @@ const rules = {
   'assetHolder.address.postcode': [
     { required: true, message: 'Post code is required', trigger: 'blur' },
     {
-      validator: (rule, value, callback) => {
+      validator: (
+        rule: InternalRuleItem,
+        value: string,
+        callback: (error?: Error) => void
+      ) => {
         const ukPostcodeRegex = /^[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}$/i
         if (!ukPostcodeRegex.test(value)) {
           callback(new Error('Invalid UK postcode (e.g. SW1A 1AA)'))
@@ -159,7 +184,7 @@ const rules = {
   'assetHolder.address.country': [
     { required: true, message: 'Country is required', trigger: 'blur' }
   ]
-}
+})
 
 const submit = async () => {
   try {
@@ -184,6 +209,8 @@ const reset = () => {
     id: '',
     firstName: '',
     lastName: '',
+    password: '',
+    repassword: '',
     assetHolder: {
       name: '',
       email: '',

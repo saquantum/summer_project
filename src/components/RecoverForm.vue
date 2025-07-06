@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { Lock, Message } from '@element-plus/icons-vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -8,6 +8,7 @@ import {
   userResetPasswordService
 } from '@/api/user'
 import CodeUtil from '@/utils/codeUtil'
+import type { FormItemRule } from 'element-plus'
 const router = useRouter()
 const form = ref({
   username: '',
@@ -42,7 +43,11 @@ const rules = {
     //   trigger: 'blur'
     // },
     {
-      validator: (rule, value, callback) => {
+      validator: (
+        rule: FormItemRule,
+        value: string,
+        callback: (error?: Error) => void
+      ) => {
         if (value !== form.value.password) {
           callback(new Error("Those passwords didn't match. Try again."))
         } else {

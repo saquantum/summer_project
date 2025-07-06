@@ -1,54 +1,52 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { adminGetUsersService } from '@/api/admin'
 import { useRouter } from 'vue-router'
+import type { UserItem } from '@/types'
+
+interface TableRow {
+  uid: string
+  username: string
+  assetHolderId: string
+  assets: string
+  count: number
+  role: 'admin' | 'user'
+}
 
 const router = useRouter()
-const users = ref([])
 
-const multiSort = ref([])
+const users = ref<TableRow[]>([])
+
+const multiSort = ref<{ prop: string; order: string }[]>([])
 const columns = ref([
   { prop: 'uid', label: 'UID' },
   { prop: 'assetHolderId', label: 'Asset Holder Id' },
   { prop: 'role', label: 'Role' },
   { prop: 'count', label: 'Asset' }
 ])
-const handleEdit = async (row) => {
+
+const handleEdit = (row: TableRow) => {
   router.push({ path: '/admin/user/detail', query: { id: row.assetHolderId } })
 }
 
-const handleSortChange = ({ prop, order }) => {
-  const index = multiSort.value.findIndex((item) => item.prop === prop)
-  if (index !== -1) {
-    if (!order) {
-      multiSort.value.splice(index, 1)
-    } else {
-      multiSort.value[index].order = order
-    }
-  } else {
-    if (order) {
-      multiSort.value.push({ prop, order })
-    }
-  }
-  fetchTableData()
+const handleDelete = (row: TableRow) => {
+  return row
 }
 
 const fetchTableData = async () => {
-  const propOrderList = []
+  const propOrderList: string[] = []
 
   for (const { prop, order } of multiSort.value) {
     let dbField = ''
     if (prop === 'uid') dbField = 'user_id'
     else if (prop === 'assetHolderId') dbField = 'asset_holder_id'
     else if (prop === 'count') dbField = 'accumulation'
-    // if no field, skip
     else continue
 
     const sortDir = order === 'descending' ? 'desc' : 'asc'
     propOrderList.push(`${dbField},${sortDir}`)
   }
 
-  // order by id asc by default
   const sortStr =
     propOrderList.length > 0 ? propOrderList.join(',') : 'user_id,asc'
 
@@ -59,35 +57,49 @@ const fetchTableData = async () => {
     sortStr
   )
 
-  users.value = res.data.map((item) => {
-    return {
-      uid: item.user.id,
-      username: item.user.id,
-      assetHolderId: item.user.assetHolderId || 'none',
-      assets: item.user.id,
-      count: item.count,
-      role: item.user.admin ? 'admin' : 'user'
+  users.value = res.data.map((item: UserItem) => ({
+    uid: item.user.id,
+    username: item.user.id,
+    assetHolderId: item.user.assetHolderId ?? 'none',
+    assets: item.user.id,
+    count: item.count,
+    role: item.user.admin ? 'admin' : 'user'
+  }))
+}
+
+const handleSortChange = (sort: { prop: string; order: string | null }) => {
+  const index = multiSort.value.findIndex((item) => item.prop === sort.prop)
+  if (index !== -1) {
+    if (!sort.order) {
+      multiSort.value.splice(index, 1)
+    } else {
+      multiSort.value[index].order = sort.order
     }
-  })
+  } else {
+    if (sort.order) {
+      multiSort.value.push({ prop: sort.prop, order: sort.order })
+    }
+  }
+  fetchTableData()
 }
 
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(50)
 
-const handlePageChange = (page) => {
+const handlePageChange = (page: number) => {
   currentPage.value = page
   fetchTableData()
 }
 
-const handleSizeChange = (size) => {
+const handleSizeChange = (size: number) => {
   pageSize.value = size
   currentPage.value = 1
   fetchTableData()
 }
 
-onMounted(async () => {
-  await fetchTableData()
+onMounted(() => {
+  fetchTableData()
 })
 </script>
 

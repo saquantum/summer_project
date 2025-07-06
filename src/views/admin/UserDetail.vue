@@ -1,15 +1,18 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useUserStore } from '@/stores'
+import { useUserStore } from '@/stores/index.ts'
 import { adminGetUserInfoService } from '@/api/admin'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const user = ref()
-
-const descriptionsItem = ref([])
+interface DescriptionItem {
+  label: string
+  value: string
+}
+const descriptionsItem = ref<DescriptionItem[]>([])
 
 const userFormRef = ref()
 const checkboxOptions = ref([
@@ -23,20 +26,25 @@ const checkboxOptions = ref([
 
 const proxyUser = () => {
   // goto user interface
-  userStore.setProxyId(route.query.id)
-  router.push({ path: '/myassets/manage', query: { id: route.query.id } })
-  // router.push('/myassets/manage')
+  const id = route.query.id
+  if (typeof id === 'string') {
+    userStore.setProxyId(id)
+    router.push({ path: '/myassets/manage', query: { id: id } })
+    // router.push('/myassets/manage')
+  }
 }
 
-const setEdit = (val) => {
+const setEdit = (val: boolean) => {
   userFormRef.value.setEdit(val)
 }
 
 onMounted(async () => {
   const id = route.query.id
-  const res = await adminGetUserInfoService(id)
-  console.log(res)
-  user.value = res.data
+  if (typeof id === 'string') {
+    const res = await adminGetUserInfoService(id)
+    console.log(res)
+    user.value = res.data
+  }
 
   const arr = user.value.assetHolder.name.split(' ')
   descriptionsItem.value = [
