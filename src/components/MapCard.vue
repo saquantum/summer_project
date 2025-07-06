@@ -12,9 +12,11 @@ import type {
   Feature,
   FeatureCollection,
   MultiPolygon,
+  Polygon,
   Position
 } from 'geojson'
 import type { Style } from '@/types'
+import { rewind } from '@turf/turf'
 
 const customIcon = new L.Icon({
   iconUrl: markerIcon,
@@ -37,7 +39,8 @@ const props = defineProps<{
 const emit = defineEmits(['update:locations'])
 
 let points: Position[] = []
-const polygonCoordinates: Position[][][] = []
+let polygonCoordinates: Position[][] = []
+const polygonCoorArr: Position[][][] = []
 let map: L.Map | null = null
 let saveLayer: L.GeoJSON | null = null
 const handleClick = (e: LeafletMouseEvent) => {
@@ -64,6 +67,7 @@ const finishOneShape = async () => {
   // if there are less than 3 points, reset map
   if (points.length < 3) {
     points = []
+    polygonCoordinates = []
     ElMessage.error('You should specify more than 3 points to shape a polygon.')
     // destroy all layers on the map
     m.eachLayer((layer) => {
@@ -101,8 +105,17 @@ const finishOneShape = async () => {
       layer.addTo(m)
       return
     }
-    polygonCoordinates.push(convexHull.geometry.coordinates)
-    const multiPolygon: Feature = turf.multiPolygon(polygonCoordinates)
+    if (polygonCoordinates.length == 0) {
+      polygonCoordinates = convexHull.geometry.coordinates
+    } else {
+      polygonCoordinates.push(convexHull.geometry.coordinates[0])
+    }
+
+    // temp is only for display
+    const tempMutiPolygoncoor: Position[][][] = []
+    polygonCoorArr.forEach((item) => tempMutiPolygoncoor.push(item))
+    tempMutiPolygoncoor.push(polygonCoordinates)
+    const multiPolygon: Feature = turf.multiPolygon(tempMutiPolygoncoor)
     // add layer
     L.geoJSON(multiPolygon).addTo(m)
   } else {
@@ -111,22 +124,37 @@ const finishOneShape = async () => {
     const polygonLayer = L.polygon(leafletPoints)
     const geoJSON = polygonLayer.toGeoJSON()
 
-    polygonCoordinates.push(geoJSON.geometry.coordinates as Position[][])
-    const multiPolygon = turf.multiPolygon(polygonCoordinates)
-    L.geoJSON(multiPolygon).addTo(m)
+    if (polygonCoordinates.length === 0) {
+      polygonCoordinates = geoJSON.geometry.coordinates as Position[][]
+    } else {
+      polygonCoordinates.push(geoJSON.geometry.coordinates[0] as Position[])
+    }
+    const polygon = turf.polygon(polygonCoordinates)
+    L.geoJSON(polygon).addTo(m)
   }
 
-  // reset point
   points = []
 }
 
-const endDrawing = async () => {
+const finishOnePolygon = () => {
   if (points.length > 0) {
     finishOneShape()
   }
+  const polygon = turf.polygon(polygonCoordinates)
+  const fixed = rewind(polygon, { reverse: true }) as Feature<Polygon>
+  console.log(fixed)
+  polygonCoorArr.push(fixed.geometry.coordinates)
+  polygonCoordinates = []
+}
 
-  if (polygonCoordinates.length === 0) return
-  const multiPolygon = turf.multiPolygon(polygonCoordinates)
+const endDrawing = async () => {
+  if (polygonCoordinates.length > 0) {
+    finishOnePolygon()
+  }
+
+  if (polygonCoorArr.length === 0) return
+  const multiPolygon = turf.multiPolygon(polygonCoorArr)
+  console.log(multiPolygon)
   emit('update:locations', [multiPolygon.geometry])
   if (props.id) {
     // update asset
@@ -153,6 +181,8 @@ const cancelDrawing = () => {
   layer.addTo(m)
   // clear points, turn off click
   points = []
+  polygonCoordinates = []
+  console.log(points)
   m.off('click', handleClick)
 }
 
@@ -224,6 +254,7 @@ onBeforeUnmount(() => {
 defineExpose({
   beginDrawing,
   finishOneShape,
+  finishOnePolygon,
   endDrawing,
   cancelDrawing,
   map

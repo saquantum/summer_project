@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount } from 'vue'
-import { adminGetUKMapService } from '@/api/admin'
 import * as echarts from 'echarts'
 import type { ECharts } from 'echarts'
 import ukmap from '@/assets/ukmap.json'
@@ -20,9 +19,6 @@ const handleResize = () => {
 }
 
 onMounted(async () => {
-  const res = await adminGetUKMapService()
-  console.log(res)
-
   mapChart = echarts.init(document.getElementById('main'))
   mapChart.showLoading()
   echarts.registerMap('UK', ukmap as GeoJSONSourceInput)

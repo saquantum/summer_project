@@ -209,6 +209,10 @@ const finishOneShape = () => {
   mapCardRef.value?.finishOneShape()
 }
 
+const finishOnePolygon = () => {
+  mapCardRef.value?.finishOnePolygon()
+}
+
 const endDrawing = () => {
   tipVisible.value = false
   mapCardRef.value?.endDrawing()
@@ -417,6 +421,7 @@ onMounted(() => {
         <div class="map-button">
           <el-button @click="beginDrawing">Draw new asset</el-button>
           <el-button @click="finishOneShape">Finish one shape</el-button>
+          <el-button @click="finishOnePolygon">Finish one polygon</el-button>
           <el-button @click="endDrawing">End drawing</el-button>
           <el-button @click="cancelDrawing">Cancel drawing</el-button>
         </div>

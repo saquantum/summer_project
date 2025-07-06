@@ -8,6 +8,13 @@ import { ElMessage } from 'element-plus'
 import type { User, UserInfoForm } from '@/types'
 import type { InternalRuleItem } from 'async-validator'
 
+interface Props {
+  isEdit: boolean
+}
+
+const props = defineProps<Props>()
+
+const emit = defineEmits(['update:isEdit'])
 const userStore = useUserStore()
 
 const route = useRoute()
@@ -53,7 +60,6 @@ const form = ref<UserInfoForm>({
 })
 const formRef = ref()
 
-const isEdit = ref(false)
 // Avatar upload
 // const avatarUrl = ref(assetHolder.value.avatar || '')
 // const avatarFile = ref(null)
@@ -192,7 +198,7 @@ const submit = async () => {
     await userStore.getUserInfo()
     await loadUserData()
 
-    isEdit.value = false
+    emit('update:isEdit', false)
   } catch (error) {
     console.error('Update failed:', error)
     ElMessage.error('Failed to update profile')
@@ -201,7 +207,7 @@ const submit = async () => {
 
 const loadUserData = async () => {
   try {
-    if (user.value.admin) {
+    if (!user.value.admin) {
       currentUser.value = userStore.user
       console.log(userStore.user)
     } else {
@@ -246,18 +252,12 @@ const loadUserData = async () => {
   }
 }
 
-const setEdit = (val: boolean) => {
-  isEdit.value = val
-}
-
 onMounted(async () => {
   await loadUserData()
 })
 
 defineExpose({
-  setEdit,
-  submit,
-  isEdit
+  submit
 })
 </script>
 
@@ -275,32 +275,37 @@ defineExpose({
     >
     <el-descriptions-item
       label="Contact preferences"
-      v-if="user && user.assetHolder && user.assetHolder.contact_preferences"
+      v-if="currentUser && currentUser.assetHolder"
     >
       <el-checkbox
-        v-model="user.assetHolder.contact_preferences.email"
-        :disabled="!isEdit"
+        v-model="currentUser.assetHolder.contact_preferences.email"
+        :disabled="!props.isEdit"
         >Email</el-checkbox
       >
       <el-checkbox
-        v-model="user.assetHolder.contact_preferences.phone"
-        :disabled="!isEdit"
+        v-model="currentUser.assetHolder.contact_preferences.phone"
+        :disabled="!props.isEdit"
         >Phone</el-checkbox
       >
       <el-checkbox
-        v-model="user.assetHolder.contact_preferences.discord"
-        :disabled="!isEdit"
+        v-model="currentUser.assetHolder.contact_preferences.discord"
+        :disabled="!props.isEdit"
         >Discord</el-checkbox
       >
       <el-checkbox
-        v-model="user.assetHolder.contact_preferences.post"
-        :disabled="!isEdit"
+        v-model="currentUser.assetHolder.contact_preferences.post"
+        :disabled="!props.isEdit"
         >Post</el-checkbox
       >
       <el-checkbox
-        v-model="user.assetHolder.contact_preferences.telegram"
-        :disabled="!isEdit"
+        v-model="currentUser.assetHolder.contact_preferences.telegram"
+        :disabled="!props.isEdit"
         >Telegram</el-checkbox
+      >
+      <el-checkbox
+        v-model="currentUser.assetHolder.contact_preferences.whatsapp"
+        :disabled="!props.isEdit"
+        >whatsapp</el-checkbox
       >
     </el-descriptions-item>
   </el-descriptions>
@@ -410,6 +415,10 @@ defineExpose({
       <el-checkbox
         label="telegram"
         v-model="form.assetHolder.contact_preferences.telegram"
+      />
+      <el-checkbox
+        label="telegram"
+        v-model="form.assetHolder.contact_preferences.whatsapp"
       />
     </el-form-item>
   </el-form>

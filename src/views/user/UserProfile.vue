@@ -1,25 +1,23 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 
 import { useRouter } from 'vue-router'
 const router = useRouter()
 const userFormRef = ref()
-const setEdit = (val: boolean) => {
-  userFormRef.value.setEdit(val)
-}
+
 const submit = () => {
   userFormRef.value.submit()
 }
 
-const isEdit = computed(() => userFormRef.value?.isEdit || false)
+const isEdit = ref(false)
 </script>
 
 <template>
-  <UserForm ref="userFormRef"></UserForm>
+  <UserForm ref="userFormRef" v-model:isEdit="isEdit"></UserForm>
 
   <!-- operation -->
-  <el-button @click="setEdit(true)">Edit</el-button>
-  <el-button @click="setEdit(false)">Cancel</el-button>
+  <el-button @click="isEdit = true" v-if="!isEdit">Edit</el-button>
+  <el-button @click="isEdit = false" v-else>Cancel</el-button>
   <el-button v-if="isEdit" type="primary" @click="submit">Submit</el-button>
 
   <el-button @click="router.push('/security/verify-mail')">
