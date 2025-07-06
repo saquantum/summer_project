@@ -187,7 +187,6 @@ onBeforeUnmount(() => {
       <div class="label">Type</div>
       <el-select
         :teleported="false"
-        @visible-change="handleSelectVisibleChange"
         v-model="assetType"
         placeholder="Select type"
         clearable
@@ -203,7 +202,6 @@ onBeforeUnmount(() => {
       <div class="label">Material</div>
       <el-select
         :teleported="false"
-        @visible-change="handleSelectVisibleChange"
         v-model="material"
         placeholder="Select material"
         clearable
@@ -219,7 +217,6 @@ onBeforeUnmount(() => {
       <div class="label">Status</div>
       <el-select
         :teleported="false"
-        @visible-change="handleSelectVisibleChange"
         v-model="status"
         placeholder="Select status"
         clearable
@@ -238,7 +235,6 @@ onBeforeUnmount(() => {
         :fetch-suggestions="querySearch"
         clearable
         placeholder="Please Input"
-        @select="handleSelect"
         :teleported="false"
       />
       <div class="label">test prop</div>
