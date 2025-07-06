@@ -6,6 +6,7 @@ spring.application.name: sp
 
 app:
   base-url: https://sp.zr17.fun
+  http-only: true
 
 spring:
   datasource:

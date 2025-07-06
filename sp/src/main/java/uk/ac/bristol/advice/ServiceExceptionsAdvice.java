@@ -10,7 +10,7 @@ import uk.ac.bristol.exception.SpExceptions;
 @Component
 @Aspect
 public class ServiceExceptionsAdvice {
-    @Pointcut("execution(* *..service.impl.*(..))")
+    @Pointcut("execution(* *..service.impl.*.*(..))")
     public void pt() {
     }
 

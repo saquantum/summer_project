@@ -307,6 +307,10 @@ public class UserServiceImpl implements UserService {
         ah.getContactPreferences().put("assetHolderId", ah.getContactPreferencesId());
         ah.setLastModified(Instant.now());
 
+        int n3 = assetHolderMapper.insertAssetHolder(ah);
+        if (n3 != 1) {
+            throw new RuntimeException("Failed to insert asset holder for user " + user.getId());
+        }
         int n1 = assetHolderMapper.insertAddress(ah.getAddress());
         if (n1 != 1) {
             throw new RuntimeException("Failed to insert address for user " + user.getId());
@@ -314,10 +318,6 @@ public class UserServiceImpl implements UserService {
         int n2 = assetHolderMapper.insertContactPreferences(ah.getContactPreferences());
         if (n2 != 1) {
             throw new RuntimeException("Failed to insert contact preferences for user " + user.getId());
-        }
-        int n3 = assetHolderMapper.insertAssetHolder(ah);
-        if (n3 != 1) {
-            throw new RuntimeException("Failed to insert asset holder for user " + user.getId());
         }
         int n4 = userMapper.insertUser(user);
         if (n4 != 1) {
@@ -392,7 +392,7 @@ public class UserServiceImpl implements UserService {
             if (n1 == 0) {
                 throw new RuntimeException("Error in deleting asset holder " + id + ": the asset holder does not exist");
             }
-            int n2 = userMapper.deleteUserByIds(new String[]{id});
+            int n2 = userMapper.deleteUserByAssetHolderIDs(new String[]{id});
             if (n1 != n2) {
                 throw new RuntimeException("Error in deleting user " + id + ": affected rows not compatible");
             }

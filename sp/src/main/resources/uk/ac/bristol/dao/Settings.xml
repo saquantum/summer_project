@@ -165,7 +165,7 @@
             asset_id              varchar(50) unique           not null,
             asset_name            varchar(100)                 not null,
             asset_type_id         varchar(50) references asset_types (asset_type_id) on update cascade,
-            asset_owner_id        varchar(50) references asset_holders (asset_holder_id) on update cascade,
+            asset_owner_id        varchar(50) references asset_holders (asset_holder_id) on update cascade on delete cascade,
             asset_location        geometry(multipolygon, 4326) not null,
             asset_capacity_litres int,
             asset_material        varchar(50),

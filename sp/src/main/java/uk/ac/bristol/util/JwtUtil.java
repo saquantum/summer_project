@@ -5,9 +5,12 @@ import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -66,7 +69,7 @@ public final class JwtUtil {
 
     public static void bindJWTAsCookie(HttpServletResponse response, String token) {
         ResponseCookie cookie = ResponseCookie.from("token", token)
-                .httpOnly(true)
+                .httpOnly(JwtUtilConfig.HTTP_ONLY)
                 .secure(false)
                 .sameSite("Lax")
                 .path("/")
@@ -99,5 +102,18 @@ public final class JwtUtil {
         } catch (Exception e) {
             return false;
         }
+    }
+}
+
+@Component
+class JwtUtilConfig {
+    @Value("${app.http-only}")
+    public Boolean isHttpOnly;
+
+    public static Boolean HTTP_ONLY;
+
+    @PostConstruct
+    private void init() {
+        HTTP_ONLY = this.isHttpOnly;
     }
 }
