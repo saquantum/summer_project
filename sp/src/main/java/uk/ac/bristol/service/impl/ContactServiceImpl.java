@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,8 @@ import uk.ac.bristol.service.ContactService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -73,9 +76,10 @@ public class ContactServiceImpl implements ContactService {
             throw new SpExceptions.GetMethodException("Get " + template.size() + " templates using id " + warningId);
         }
 
-        String message = template.get(0).getBody();
+        String title = template.get(0).getTitle();
+        String body = template.get(0).getBody();
 
-        if (message == null) {
+        if (body == null) {
             throw new SpExceptions.GetMethodException("The message type you required does not exist");
         }
 
@@ -87,7 +91,8 @@ public class ContactServiceImpl implements ContactService {
                 "toOwnerId", ownerId,
                 "weatherWarningType", warningType,
                 "severity", severity,
-                "message", message,
+                "title", title,
+                "body", body,
                 "createdAt", now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 "channel", ""));
     }
@@ -118,27 +123,43 @@ public class ContactServiceImpl implements ContactService {
         }
 
         String emailAddress = holder.get(0).getEmail();
-        sendEmailToAddress(emailAddress, notification.toString());
-        return new ResponseBody(Code.SUCCESS, notification.get("message"), "The email has been sent to " + emailAddress);
+        sendEmailToAddress(emailAddress, (String) notification.get("title"), (String) notification.get("body"));
+        return new ResponseBody(Code.SUCCESS, notification.get("body"), "The email has been sent to " + emailAddress);
     }
 
-    private void sendEmailToAddress(String toEmailAddress, String emailContent) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(from);
-        message.setTo(toEmailAddress);
-        message.setSubject("Weather Warning Notifications");
+    private void sendEmailToAddress(String toEmailAddress, String emailSubject, String emailContent) {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper mmh;
+        try {
+            mmh = new MimeMessageHelper(message, true, "UTF-8");
+            mmh.setFrom(from);
+            mmh.setTo(toEmailAddress);
+            mmh.setSubject(emailSubject);
 
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("unsubscribe-email-uid", toEmailAddress);
-        claims.put("action", "unsubscribe-email");
-        String unsubscribeUrl = baseURL + "/user/notify/email/unsubscribe?token=" + JwtUtil.generateJWT(claims);
-        message.setText(emailContent
-                + System.lineSeparator()
-                + System.lineSeparator()
-                + "To unsubscribe email notifications, click the link below:"
-                + System.lineSeparator()
-                + unsubscribeUrl);
-        mailSender.send(message);
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("unsubscribe-email-uid", toEmailAddress);
+            claims.put("action", "unsubscribe-email");
+            String unsubscribeUrl = baseURL + "/user/notify/email/unsubscribe?token=" + JwtUtil.generateJWT(claims);
+            mmh.setText("<!DOCTYPE html>\n" +
+                    "<html lang=\"en\">\n" +
+                    "<head>\n" +
+                    "    <meta charset=\"UTF-8\">\n" +
+                    "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+                    "    <title>Document</title>\n" +
+                    "</head>\n" +
+                    "<body>\n" +
+                    emailContent
+                    + "<br>"
+                    + "<br>"
+                    + "To unsubscribe email notifications, click the link below:"
+                    + "<br>"
+                    + "<a href=\"" + unsubscribeUrl + "\">unsubscribe</a>"
+                    + "</body>\n" +
+                    "</html>", true);
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new SpExceptions.SystemException("Failed to send email using mime message helper");
+        }
     }
 
     @Override

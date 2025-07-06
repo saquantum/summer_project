@@ -100,6 +100,19 @@ public class ImportMockDataImpl implements ImportMockData {
         user_ZR.setAdmin(false);
         user_ZR.setAssetHolder(ZR);
         userService.insertUser(user_ZR);
+
+        AssetHolder YZH = new AssetHolder();
+        YZH.setName("Yang Zheng-Hao");
+        YZH.setEmail("kj24716@bristol.ac.uk");
+        YZH.setPhone("0123456789");
+        YZH.setAddress(Map.of());
+        YZH.setContactPreferences(Map.of("email", true));
+        User user_YZH = new User();
+        user_YZH.setId(YZH.getName());
+        user_YZH.setPassword("123456");
+        user_YZH.setAdmin(false);
+        user_YZH.setAssetHolder(YZH);
+        userService.insertUser(user_YZH);
     }
 
     @Override
