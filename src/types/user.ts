@@ -57,3 +57,14 @@ export interface UserItem {
   user: User
   count: number
 }
+
+export interface RegisterForm {
+  id: string
+  firstName: string
+  lastName: string
+  name: string
+  email: string
+  phone: string
+  password: string
+  repassword: string
+}

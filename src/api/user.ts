@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 import type { ApiResponse } from '@/types/api'
-import type { User } from '@/types'
-export const userRegisterService = (obj: object): Promise<ApiResponse> =>
+import type { RegisterForm, User } from '@/types'
+export const userRegisterService = (obj: RegisterForm): Promise<ApiResponse> =>
   request.post('/register', obj)
 
 export const userLoginService = ({

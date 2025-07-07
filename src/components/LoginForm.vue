@@ -41,7 +41,7 @@ const stepStatus = ref({
 const editingStep = ref<number | null>(null)
 
 const confirmEmail = async () => {
-  const valid = await registerFormRef.value.validateField('assetHolder.email')
+  const valid = await registerFormRef.value.validateField('email')
   if (valid) {
     stepStatus.value[1] = true
     currentStep.value = 2
@@ -51,10 +51,7 @@ const confirmEmail = async () => {
 }
 
 const goToStep3 = async () => {
-  const valid = await registerFormRef.value.validateField([
-    'id',
-    'assetHolder.phone'
-  ])
+  const valid = await registerFormRef.value.validateField(['id', 'phone'])
   if (valid) {
     stepStatus.value[2] = true
     currentStep.value = 3
@@ -80,25 +77,9 @@ const registerForm = ref({
   id: '',
   firstName: '',
   lastName: '',
-  assetHolder: {
-    name: 'default name',
-    email: '',
-    phone: '',
-    address: {
-      street: '',
-      postcode: '',
-      city: '',
-      country: ''
-    },
-    contact_preferences: {
-      email: true,
-      phone: false,
-      whatsapp: false,
-      discord: false,
-      post: false,
-      telegram: false
-    }
-  },
+  name: '',
+  email: '',
+  phone: '',
   password: '',
   repassword: ''
 })
@@ -152,6 +133,12 @@ const rules = {
     //   trigger: 'blur'
     // }
   ],
+  firstNmae: [
+    { required: true, message: 'Lastname cannot be empty', trigger: 'blur' }
+  ],
+  lastName: [
+    { required: true, message: 'Firstname cannot be empty', trigger: 'blur' }
+  ],
   repassword: [
     { required: true, message: 'Please input password', trigger: 'blur' },
     {
@@ -174,25 +161,7 @@ const rules = {
       trigger: 'blur'
     }
   ],
-  captcha: [
-    {
-      required: true,
-      message: 'Please input captcha',
-      trigger: 'blur'
-    },
-    {
-      min: 6,
-      max: 6,
-      message: 'Captcha must be exactly 6 characters',
-      trigger: 'blur'
-    },
-    {
-      pattern: /^[A-Za-z0-9]{6}$/,
-      message: 'Captcha must contain only letters and numbers',
-      trigger: 'blur'
-    }
-  ],
-  'assetHolder.email': [
+  email: [
     { required: true, message: 'Please input email', trigger: 'blur' },
     {
       type: 'email',
@@ -214,7 +183,7 @@ const rules = {
       trigger: 'blur'
     }
   ],
-  'assetHolder.phone': [
+  phone: [
     { required: true, message: 'Phone is required', trigger: 'blur' },
     {
       validator: (
@@ -230,29 +199,27 @@ const rules = {
         }
       },
       trigger: 'blur'
-    },
-    {
-      validator: async (
-        rule: FormItemRule,
-        value: string,
-        callback: (error?: Error) => void
-      ) => {
-        console.log('???')
-        const res = await userCheckEmailService(value)
-        console.log(res)
-        callback()
-      },
-      trigger: 'blur'
     }
   ]
 }
 
 const register = async () => {
-  await registerFormRef.value.validate()
-  const res = await userRegisterService(registerForm.value)
-  console.log(res)
-  ElMessage.success('success')
-  isRegister.value = false
+  try {
+    await registerFormRef.value.validate()
+  } catch {
+    return
+  }
+
+  try {
+    registerForm.value.name = `${registerForm.value.firstName} ${registerForm.value.lastName}`
+    console.log(registerForm.value)
+    const res = await userRegisterService(registerForm.value)
+    console.log(res)
+    ElMessage.success('success')
+    isRegister.value = false
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 const router = useRouter()
@@ -375,16 +342,16 @@ watch(isRegister, () => {
 
         <template v-if="editingStep !== 1 && stepStatus[1]">
           <div class="details-line">
-            <span class="email">{{ registerForm.assetHolder.email }}</span>
+            <span class="email">{{ registerForm.email }}</span>
             <el-link type="primary" @click.stop="editStep(1)" class="change">
               CHANGE
             </el-link>
           </div>
         </template>
         <template v-else>
-          <el-form-item prop="assetHolder.email">
+          <el-form-item prop="email">
             <el-input
-              v-model="registerForm.assetHolder.email"
+              v-model="registerForm.email"
               :prefix-icon="Message"
               placeholder="Please input your email"
               type="email"
@@ -416,7 +383,7 @@ watch(isRegister, () => {
           <div class="details-line">
             <div class="details">
               <div>{{ registerForm.id }}</div>
-              <div>{{ registerForm.assetHolder.phone }}</div>
+              <div>{{ registerForm.phone }}</div>
             </div>
             <el-link
               v-if="stepStatus[2] && editingStep !== 2"
@@ -436,9 +403,18 @@ watch(isRegister, () => {
               placeholder="Please input username"
             />
           </el-form-item>
-          <el-form-item prop="assetHolder.phone">
+
+          <el-form-item prop="firstName">
+            <el-input v-model="registerForm.firstName" :prefix-icon="User" />
+          </el-form-item>
+
+          <el-form-item prop="lastName">
+            <el-input v-model="registerForm.lastName" :prefix-icon="User" />
+          </el-form-item>
+
+          <el-form-item prop="phone">
             <el-input
-              v-model="registerForm.assetHolder.phone"
+              v-model="registerForm.phone"
               :prefix-icon="Phone"
               placeholder="Please input your phone number"
               type="phone"
