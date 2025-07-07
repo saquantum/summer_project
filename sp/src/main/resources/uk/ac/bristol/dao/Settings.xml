@@ -15,8 +15,7 @@
         drop table if exists assets cascade;
         drop table if exists weather_warnings cascade;
         drop table if exists templates cascade;
-        drop table if exists global_permission_config cascade;
-        drop table if exists user_permission_config cascade;
+        drop table if exists permission_config cascade;
     </update>
 
     <update id="createTableMetaData">
@@ -236,30 +235,20 @@
         <include refid="initTableMetaData"/>
     </update>
 
-    <update id="createGlobalPermissionConfig">
-        CREATE TABLE global_permission_config (
-                                                  id INT PRIMARY KEY,
-                                                  can_create_asset BOOLEAN DEFAULT FALSE,
-                                                  can_set_polygon_on_create BOOLEAN DEFAULT FALSE,
-                                                  can_update_asset_fields BOOLEAN DEFAULT FALSE,
-                                                  can_update_polygon BOOLEAN DEFAULT FALSE,
-                                                  can_delete_own_asset BOOLEAN DEFAULT FALSE,
-                                                  can_update_self_profile BOOLEAN DEFAULT FALSE
+    <update id="createPermissionConfig">
+        CREATE TABLE permission_config (
+                                           user_id BIGINT PRIMARY KEY,
+                                           can_create_asset BOOLEAN DEFAULT FALSE,
+                                           can_set_polygon_on_create BOOLEAN DEFAULT FALSE,
+                                           can_update_asset_fields BOOLEAN DEFAULT FALSE,
+                                           can_update_polygon BOOLEAN DEFAULT FALSE,
+                                           can_delete_own_asset BOOLEAN DEFAULT FALSE,
+                                           can_update_self_profile BOOLEAN DEFAULT FALSE,
+                                           CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id)
+                                               DEFERRABLE INITIALLY DEFERRED
         );
-        INSERT INTO global_permission_config (id) VALUES (1);
-    </update>
 
-    <update id="createUserPermissionConfig">
-        CREATE TABLE user_permission_config (
-                                                user_id BIGINT PRIMARY KEY,
-                                                can_create_asset BOOLEAN,
-                                                can_set_polygon_on_create BOOLEAN,
-                                                can_update_asset_fields BOOLEAN,
-                                                can_update_polygon BOOLEAN,
-                                                can_delete_own_asset BOOLEAN,
-                                                can_update_self_profile BOOLEAN,
-                                                FOREIGN KEY (user_id) REFERENCES users(id)
-        );
+        INSERT INTO permission_config (user_id) VALUES (NULL);
     </update>
 
 </mapper>

@@ -5,14 +5,14 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.bristol.pojo.Template;
 import uk.ac.bristol.pojo.User;
-import uk.ac.bristol.service.AssetService;
-import uk.ac.bristol.service.MetaDataService;
-import uk.ac.bristol.service.UserService;
-import uk.ac.bristol.service.WarningService;
+import uk.ac.bristol.service.*;
 import uk.ac.bristol.util.QueryTool;
 
 import java.util.List;
 import java.util.Map;
+
+import uk.ac.bristol.pojo.PermissionConfig;
+import uk.ac.bristol.service.PermissionConfigService;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -21,6 +21,9 @@ public class AdminController {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private PermissionConfigService permissionConfigService;
 
     private final UserService userService;
     private final AssetService assetService;
@@ -176,5 +179,20 @@ public class AdminController {
     public ResponseBody deleteTemplatesByIds(@RequestBody Map<String, Object> body) {
         List<Long> ids = (List<Long>) body.get("ids");
         return new ResponseBody(Code.DELETE_OK, warningService.deleteNotificationTemplateByIds(ids));
+    }
+
+    @GetMapping("/permission/{userId}")
+    public ResponseBody getPermissionConfigByUserId(@PathVariable Long userId) {
+        return new ResponseBody(Code.SELECT_OK, permissionConfigService.getPermissionByUserId(userId));
+    }
+
+    @PostMapping("/permission")
+    public ResponseBody saveOrUpdatePermissionConfig(@RequestBody PermissionConfig permissionConfig) {
+        if (permissionConfig.getUserId() == null) {
+            permissionConfigService.insertPermission(permissionConfig);
+        } else {
+            permissionConfigService.updatePermission(permissionConfig);
+        }
+        return new ResponseBody(Code.UPDATE_OK, null);
     }
 }
