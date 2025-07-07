@@ -27,25 +27,42 @@ const typeOptions = [
 
 const warningLevelOptions = [
   {
-    value: 'Yellow',
+    value: 'YELLOW',
     label: 'Yellow Warning'
   },
   {
-    value: 'Amber',
+    value: 'AMBER',
     label: 'Amber Warning'
   },
   {
-    value: 'Red',
+    value: 'RED',
     label: 'Red Warning'
   }
 ]
 
+const contactChannelOptions = [
+  {
+    value: 'Email',
+    label: 'Email'
+  },
+  {
+    value: 'SMS',
+    label: 'SMS'
+  },
+  {
+    value: 'SMS',
+    label: 'SMS'
+  }
+]
+
 const warningType = ref('Rain')
-const warningLevel = ref('Yellow')
+const warningLevel = ref('YELLOW')
 const assetType = ref('type_001')
+const contactChannel = ref('Email')
 
 const isEdit = ref(false)
 const templateText = ref(`You haven't set message for this.`)
+const allowedVariables = ['asset-model', 'contact_name', 'post_town']
 
 const finish = () => {
   isEdit.value = false
@@ -60,17 +77,23 @@ onMounted(async () => {
 })
 
 watch(
-  [warningType, warningLevel, assetType],
-  ([newWarningType, newWarningLevel, newAssetType]) => {
-    console.log(newWarningType, newWarningLevel, newAssetType)
+  [warningType, warningLevel, assetType, contactChannel],
+  ([newWarningType, newWarningLevel, newAssetType, newContactChannel]) => {
+    console.log(
+      newWarningType,
+      newWarningLevel,
+      newAssetType,
+      newContactChannel
+    )
     const item = templateStore.templates.find(
       (item) =>
         item.warningType === newWarningType &&
         item.severity === newWarningLevel &&
-        item.assetTypeId === newAssetType
+        item.assetTypeId === newAssetType &&
+        item.contactChannel === newContactChannel
     )
     console.log(item)
-    templateText.value = item?.message || `You haven't set message for this.`
+    templateText.value = item?.body || `You haven't set message for this.`
   },
   {
     immediate: true
@@ -79,9 +102,23 @@ watch(
 </script>
 
 <template>
+  <div>Allowed variable:</div>
+  <ul>
+    <li v-for="item in allowedVariables" :key="item">{{ item }}</li>
+  </ul>
+
   <el-select v-model="warningType">
     <el-option
       v-for="item in warningTypeOption"
+      :key="item.value"
+      :label="item.label"
+      :value="item.value"
+    ></el-option>
+  </el-select>
+
+  <el-select v-model="contactChannel">
+    <el-option
+      v-for="item in contactChannelOptions"
       :key="item.value"
       :label="item.label"
       :value="item.value"

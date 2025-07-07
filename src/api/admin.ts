@@ -94,5 +94,11 @@ export const adminDeleteAssetService = (
  * template
  */
 
-export const adminGetTemplateSerive = (): Promise<ApiResponse<Template[]>> =>
-  request.get('/admin/template')
+export const adminGetTemplateSerive = (
+  offset: number,
+  limit: number,
+  orderList: string
+): Promise<ApiResponse<Template[]>> =>
+  request.get('/admin/template', {
+    params: { offset: offset, limit: limit, orderList: orderList }
+  })

@@ -3,5 +3,7 @@ export interface Template {
   assetTypeId: string
   warningType: string
   severity: string
-  message: string
+  contactChannel: string
+  title: string
+  body: string
 }

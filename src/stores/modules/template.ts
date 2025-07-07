@@ -6,10 +6,10 @@ import type { Template } from '@/types'
 export const userTemplateStore = defineStore(
   'rain-template',
   () => {
-    const templates = ref<Template | []>([])
+    const templates = ref<Template[]>([])
 
     const getTemplates = async () => {
-      const { data } = await adminGetTemplateSerive()
+      const { data } = await adminGetTemplateSerive(0, 50, '')
       templates.value = data
     }
 
