@@ -34,6 +34,7 @@ public class UserController {
         }
         User user = userService.getUserByUserId(uid);
         user.setPassword(null);
+        user.setPermissionConfig(QueryTool.getUserPermissions(uid, null));
         return new ResponseBody(Code.SELECT_OK, user);
     }
 
@@ -46,6 +47,7 @@ public class UserController {
         }
         User user = userService.getUserByAssetHolderId(aid, null, null, null);
         user.setPassword(null);
+        user.setPermissionConfig(QueryTool.getUserPermissions(null, aid));
         return new ResponseBody(Code.SELECT_OK, user);
     }
 
@@ -110,6 +112,6 @@ public class UserController {
         if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
             throw new SpExceptions.DeleteMethodException("User identification failed");
         }
-        return new ResponseBody(Code.SELECT_OK, permissionConfigService.getPermissionConfigByUserId(uid));
+        return new ResponseBody(Code.SELECT_OK, QueryTool.getUserPermissions(uid, null));
     }
 }

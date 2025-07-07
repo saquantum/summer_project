@@ -144,12 +144,12 @@ public final class QueryTool {
         }
         config = list.get(0);
         return new PermissionConfig(null,
-                adminConfig.get(0).getCanCreateAsset() || config.getCanCreateAsset(),
-                adminConfig.get(0).getCanSetPolygonOnCreate() || config.getCanSetPolygonOnCreate(),
-                adminConfig.get(0).getCanUpdateAssetFields() || config.getCanUpdateAssetFields(),
-                adminConfig.get(0).getCanUpdateAssetPolygon() || config.getCanUpdateAssetPolygon(),
-                adminConfig.get(0).getCanDeleteAsset() || config.getCanDeleteAsset(),
-                adminConfig.get(0).getCanUpdateProfile() || config.getCanUpdateProfile()
+                adminConfig.get(0).getCanCreateAsset() && config.getCanCreateAsset(),
+                adminConfig.get(0).getCanSetPolygonOnCreate() && config.getCanSetPolygonOnCreate(),
+                adminConfig.get(0).getCanUpdateAssetFields() && config.getCanUpdateAssetFields(),
+                adminConfig.get(0).getCanUpdateAssetPolygon() && config.getCanUpdateAssetPolygon(),
+                adminConfig.get(0).getCanDeleteAsset() && config.getCanDeleteAsset(),
+                adminConfig.get(0).getCanUpdateProfile() && config.getCanUpdateProfile()
         );
     }
 }
