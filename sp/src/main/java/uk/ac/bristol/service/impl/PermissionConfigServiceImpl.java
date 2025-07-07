@@ -39,6 +39,11 @@ public class PermissionConfigServiceImpl implements PermissionConfigService {
     }
 
     @Override
+    public List<PermissionConfig> getPermissionConfigByAssetHolderId(String assetHolderId) {
+        return  permissionConfigMapper.selectPermissionConfigByAssetHolderId(assetHolderId);
+    }
+
+    @Override
     public int insertPermissionConfig(PermissionConfig permissionConfig) {
         return permissionConfigMapper.insertPermissionConfig(permissionConfig);
     }

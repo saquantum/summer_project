@@ -57,7 +57,10 @@ public class UserController {
                                                   @PathVariable String uid,
                                                   @RequestBody User user) {
         if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
-            throw new SpExceptions.PostMethodException("User identification failed");
+            throw new SpExceptions.PutMethodException("User identification failed");
+        }
+        if(!QueryTool.getUserPermissions(uid, null).getCanUpdateProfile()){
+            throw new SpExceptions.PutMethodException("The user is not allowed to update profile");
         }
         userService.updateUser(user);
         return new ResponseBody(Code.UPDATE_OK, null);
@@ -69,7 +72,10 @@ public class UserController {
                                                          @PathVariable String aid,
                                                          @RequestBody User user) {
         if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
-            throw new SpExceptions.PostMethodException("User identification failed");
+            throw new SpExceptions.PutMethodException("User identification failed");
+        }
+        if(!QueryTool.getUserPermissions(null, aid).getCanUpdateProfile()){
+            throw new SpExceptions.PutMethodException("The user is not allowed to update profile");
         }
         userService.updateUser(user);
         return new ResponseBody(Code.UPDATE_OK, null);

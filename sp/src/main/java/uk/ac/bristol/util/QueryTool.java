@@ -1,8 +1,12 @@
 package uk.ac.bristol.util;
 
 import io.jsonwebtoken.Claims;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import uk.ac.bristol.dao.MetaDataMapper;
+import uk.ac.bristol.exception.SpExceptions;
+import uk.ac.bristol.pojo.PermissionConfig;
+import uk.ac.bristol.service.MetaDataService;
+import uk.ac.bristol.service.PermissionConfigService;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -119,15 +123,50 @@ public final class QueryTool {
         }
         return list;
     }
+
+    public static PermissionConfig getUserPermissions(String uid, String aid) {
+        List<PermissionConfig> adminConfig = QueryToolConfig.permissionConfigService.getPermissionConfigByUserId("admin");
+        if (adminConfig.size() != 1) {
+            throw new SpExceptions.SystemException("Found " + adminConfig.size() + " global permission configs");
+        }
+
+        List<PermissionConfig> list;
+        PermissionConfig config;
+        if (uid != null) {
+            list = QueryToolConfig.permissionConfigService.getPermissionConfigByUserId(uid);
+        } else if (aid != null) {
+            list = QueryToolConfig.permissionConfigService.getPermissionConfigByAssetHolderId(aid);
+        } else {
+            throw new SpExceptions.BusinessException("No valid uid or aid is received");
+        }
+        if (list.size() != 1) {
+            throw new SpExceptions.SystemException("Found " + list.size() + " permission configs for user " + uid);
+        }
+        config = list.get(0);
+        return new PermissionConfig(null,
+                adminConfig.get(0).getCanCreateAsset() || config.getCanCreateAsset(),
+                adminConfig.get(0).getCanSetPolygonOnCreate() || config.getCanSetPolygonOnCreate(),
+                adminConfig.get(0).getCanUpdateAssetFields() || config.getCanUpdateAssetFields(),
+                adminConfig.get(0).getCanUpdateAssetPolygon() || config.getCanUpdateAssetPolygon(),
+                adminConfig.get(0).getCanDeleteAsset() || config.getCanDeleteAsset(),
+                adminConfig.get(0).getCanUpdateProfile() || config.getCanUpdateProfile()
+        );
+    }
 }
 
 @Component
-class QueryToolConfig{
-    public MetaDataMapper metaDataMapper0;
+class QueryToolConfig {
+    @Autowired
+    public MetaDataService metaDataService0;
+    @Autowired
+    public PermissionConfigService permissionConfigService0;
 
-    public static MetaDataMapper metaDataMapper;
+    public static MetaDataService metaDataService;
+    public static PermissionConfigService permissionConfigService;
+
     @PostConstruct
-    public void init(){
-        metaDataMapper = this.metaDataMapper0;
+    public void init() {
+        metaDataService = this.metaDataService0;
+        permissionConfigService = this.permissionConfigService0;
     }
 }

@@ -115,7 +115,14 @@ public class AssetController {
         if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
             throw new SpExceptions.PostMethodException("User identification failed");
         }
+        if (!QueryTool.getUserPermissions(uid, null).getCanCreateAsset()) {
+            throw new SpExceptions.PostMethodException("The user is not allowed to insert asset.");
+        }
         asset.setId(null);
+        if (!QueryTool.getUserPermissions(uid, null).getCanSetPolygonOnCreate()) {
+            asset.setLocationAsJson(null);
+            return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset), "The asset is successfully inserted but without polygon since the user is not allowed to do so.");
+        }
         return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset));
     }
 
@@ -127,7 +134,14 @@ public class AssetController {
         if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
             throw new SpExceptions.PostMethodException("User identification failed");
         }
+        if (!QueryTool.getUserPermissions(null, aid).getCanCreateAsset()) {
+            throw new SpExceptions.PostMethodException("The user is not allowed to insert asset");
+        }
         asset.setId(null);
+        if (!QueryTool.getUserPermissions(null, aid).getCanSetPolygonOnCreate()) {
+            asset.setLocationAsJson(null);
+            return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset), "The asset is successfully inserted but without polygon since the user is not allowed to do so.");
+        }
         return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset));
     }
 
@@ -148,6 +162,13 @@ public class AssetController {
         if (!verifyAssetOwnership(asset.getId(), uid, null)) {
             throw new SpExceptions.PutMethodException("Asset owner identification failed");
         }
+        if (!QueryTool.getUserPermissions(uid, null).getCanUpdateAssetFields()) {
+            throw new SpExceptions.PutMethodException("The user is not allowed to update asset.");
+        }
+        if (!QueryTool.getUserPermissions(uid, null).getCanUpdateAssetPolygon()) {
+            asset.setLocationAsJson(null);
+            return new ResponseBody(Code.UPDATE_OK, assetService.updateAsset(asset), "The asset is successfully updated but without polygon since the user is not allowed to do so.");
+        }
         return new ResponseBody(Code.UPDATE_OK, assetService.updateAsset(asset));
     }
 
@@ -161,6 +182,13 @@ public class AssetController {
         }
         if (!verifyAssetOwnership(asset.getId(), null, aid)) {
             throw new SpExceptions.PutMethodException("Asset owner identification failed");
+        }
+        if (!QueryTool.getUserPermissions(null, aid).getCanUpdateAssetFields()) {
+            throw new SpExceptions.PutMethodException("The user is not allowed to update asset.");
+        }
+        if (!QueryTool.getUserPermissions(null, aid).getCanUpdateAssetPolygon()) {
+            asset.setLocationAsJson(null);
+            return new ResponseBody(Code.UPDATE_OK, assetService.updateAsset(asset), "The asset is successfully updated but without polygon since the user is not allowed to do so.");
         }
         return new ResponseBody(Code.UPDATE_OK, assetService.updateAsset(asset));
     }
@@ -178,10 +206,14 @@ public class AssetController {
         if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
             throw new SpExceptions.DeleteMethodException("User identification failed");
         }
+        if (!QueryTool.getUserPermissions(uid, null).getCanDeleteAsset()) {
+            throw new SpExceptions.DeleteMethodException("The user is not allowed to delete asset.");
+        }
+
         List<String> ids = (List<String>) body.get("ids");
         for (String s : ids) {
             if (!verifyAssetOwnership(s, uid, null)) {
-                throw new SpExceptions.PutMethodException("Asset owner identification failed: " + s + " does not belong to current user");
+                throw new SpExceptions.DeleteMethodException("Asset owner identification failed: " + s + " does not belong to current user");
             }
         }
         return new ResponseBody(Code.DELETE_OK, assetService.deleteAssetByIDs(ids));
@@ -195,10 +227,14 @@ public class AssetController {
         if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
             throw new SpExceptions.DeleteMethodException("User identification failed");
         }
+        if (!QueryTool.getUserPermissions(null, aid).getCanDeleteAsset()) {
+            throw new SpExceptions.DeleteMethodException("The user is not allowed to delete asset.");
+        }
+
         List<String> ids = (List<String>) body.get("ids");
         for (String s : ids) {
             if (!verifyAssetOwnership(s, null, aid)) {
-                throw new SpExceptions.PutMethodException("Asset owner identification failed");
+                throw new SpExceptions.DeleteMethodException("Asset owner identification failed");
             }
         }
         return new ResponseBody(Code.DELETE_OK, assetService.deleteAssetByIDs(ids));
@@ -265,6 +301,7 @@ public class AssetController {
         return new ResponseBody(Code.DELETE_OK, warningService.deleteWarningByIDs(ids));
     }
 
+    // TODO: move this method to QueryTools
     private boolean verifyAssetOwnership(String assetId, String uid, String aid) {
         if (assetId == null) {
             return false;

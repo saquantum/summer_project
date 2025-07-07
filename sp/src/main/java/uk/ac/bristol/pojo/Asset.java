@@ -112,13 +112,17 @@ public class Asset {
     }
 
     // for back-end persistence
-    public void setLocationAsJson(String geoJson) throws JsonProcessingException {
-        if (geoJson == null || geoJson.isBlank()) {
-            this.location = Map.ofEntries(Map.entry("type", "MultiPolygon"), Map.entry("coordinates", List.of(List.of(List.of()))));
-            return;
+    public void setLocationAsJson(String geoJson){
+        try {
+            if (geoJson == null || geoJson.isBlank()) {
+                this.location = Map.ofEntries(Map.entry("type", "MultiPolygon"), Map.entry("coordinates", List.of(List.of(List.of()))));
+                return;
+            }
+            this.location = objectMapper.readValue(geoJson, new TypeReference<>() {
+            });
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
-        this.location = objectMapper.readValue(geoJson, new TypeReference<>() {
-        });
     }
 
     public Long getCapacityLitres() {

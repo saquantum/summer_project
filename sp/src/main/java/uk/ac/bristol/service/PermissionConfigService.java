@@ -13,6 +13,8 @@ public interface PermissionConfigService {
 
     List<PermissionConfig> getPermissionConfigByUserId(String userId);
 
+    List<PermissionConfig> getPermissionConfigByAssetHolderId(String assetHolderId);
+
     int insertPermissionConfig(PermissionConfig permissionConfig);
 
     int updatePermissionConfigByUserId(PermissionConfig permissionConfig);

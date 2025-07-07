@@ -162,13 +162,17 @@ public class Warning {
     }
 
     // for back-end persistence
-    public void setAreaAsJson(String geoJson) throws JsonProcessingException {
-        if (geoJson == null || geoJson.isBlank()) {
-            this.area = Map.ofEntries(Map.entry("type", "MultiPolygon"), Map.entry("coordinates", List.of(List.of(List.of()))));
-            return;
+    public void setAreaAsJson(String geoJson){
+        try {
+            if (geoJson == null || geoJson.isBlank()) {
+                this.area = Map.ofEntries(Map.entry("type", "MultiPolygon"), Map.entry("coordinates", List.of(List.of(List.of()))));
+                return;
+            }
+            this.area = objectMapper.readValue(geoJson, new TypeReference<>() {
+            });
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
-        this.area = objectMapper.readValue(geoJson, new TypeReference<>() {
-        });
     }
 
     public static Warning getWarningFromGeoJSON(Map<String, Object> properties, Map<String, Object> geometry){

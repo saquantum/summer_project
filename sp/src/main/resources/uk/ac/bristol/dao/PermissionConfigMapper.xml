@@ -16,6 +16,14 @@
         where permission_config_user_id = #{userId};
     </select>
 
+    <select id="selectPermissionConfigByAssetHolderId" resultMap="ResultMaps.PermissionConfigMap">
+        select pc.*
+        from permission_configs pc
+        left join users
+        on permission_config_user_id = user_id
+        where user_asset_holder_id = #{assetHolderId};
+    </select>
+
     <insert id="insertPermissionConfig">
         insert into permission_configs
         <trim prefix="(" suffix=")" suffixOverrides=",">

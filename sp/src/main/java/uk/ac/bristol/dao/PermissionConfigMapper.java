@@ -16,6 +16,8 @@ public interface PermissionConfigMapper {
 
     List<PermissionConfig> selectPermissionConfigByUserId(@Param("userId") String userId);
 
+    List<PermissionConfig> selectPermissionConfigByAssetHolderId(@Param("assetHolderId") String assetHolderId);
+
     int insertPermissionConfig(PermissionConfig permissionConfig);
 
     int updatePermissionConfigByUserId(PermissionConfig permissionConfig);
