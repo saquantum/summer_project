@@ -5,6 +5,7 @@ public class User {
     private String password;
     private String assetHolderId;
     private AssetHolder assetHolder;
+    private PermissionConfig permissionConfig;
     private boolean admin = false;
     private String token;
 
@@ -50,6 +51,14 @@ public class User {
 
     public void setAssetHolder(AssetHolder assetHolder) {
         this.assetHolder = assetHolder;
+    }
+
+    public PermissionConfig getPermissionConfig() {
+        return permissionConfig;
+    }
+
+    public void setPermissionConfig(PermissionConfig permissionConfig) {
+        this.permissionConfig = permissionConfig;
     }
 
     public boolean isAdmin() {

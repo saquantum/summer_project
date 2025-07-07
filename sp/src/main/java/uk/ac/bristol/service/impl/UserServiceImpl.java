@@ -8,10 +8,8 @@ import uk.ac.bristol.dao.AssetMapper;
 import uk.ac.bristol.dao.MetaDataMapper;
 import uk.ac.bristol.dao.UserMapper;
 import uk.ac.bristol.exception.SpExceptions;
-import uk.ac.bristol.pojo.Asset;
-import uk.ac.bristol.pojo.AssetHolder;
-import uk.ac.bristol.pojo.User;
-import uk.ac.bristol.pojo.UserWithAssetHolder;
+import uk.ac.bristol.pojo.*;
+import uk.ac.bristol.service.PermissionConfigService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
 import uk.ac.bristol.util.QueryTool;
@@ -24,12 +22,14 @@ import java.util.*;
 public class UserServiceImpl implements UserService {
 
     private final MetaDataMapper metaDataMapper;
+    private final PermissionConfigService permissionConfigService;
     private final AssetHolderMapper assetHolderMapper;
     private final UserMapper userMapper;
     private final AssetMapper assetMapper;
 
-    public UserServiceImpl(MetaDataMapper metaDataMapper, AssetHolderMapper assetHolderMapper, UserMapper userMapper, AssetMapper assetMapper) {
+    public UserServiceImpl(MetaDataMapper metaDataMapper, PermissionConfigService permissionConfigService, AssetHolderMapper assetHolderMapper, UserMapper userMapper, AssetMapper assetMapper) {
         this.metaDataMapper = metaDataMapper;
+        this.permissionConfigService = permissionConfigService;
         this.assetHolderMapper = assetHolderMapper;
         this.userMapper = userMapper;
         this.assetMapper = assetMapper;
@@ -75,6 +75,16 @@ public class UserServiceImpl implements UserService {
         return assetHolder;
     }
 
+    private User prepareUser(User user) {
+        if (user == null) return null;
+        List<PermissionConfig> config = permissionConfigService.getPermissionConfigByUserId(user.getId());
+        if (config.size() != 1) {
+            throw new RuntimeException("Get " + config.size() + " permission configs for user " + user.getId());
+        }
+        user.setPermissionConfig(config.get(0));
+        return user;
+    }
+
     // This method returns all users, with asset holder info if possible
     @Override
     public List<User> getAllUsersWithAssetHolder(List<Map<String, String>> orderList,
@@ -85,7 +95,7 @@ public class UserServiceImpl implements UserService {
         for (UserWithAssetHolder uwa : list) {
             User user = uwa.getUser();
             user.setAssetHolder(this.prepareAssetHolder(uwa.getAssetHolder()));
-            result.add(user);
+            result.add(this.prepareUser(user));
         }
         return result;
     }
@@ -100,7 +110,7 @@ public class UserServiceImpl implements UserService {
         for (UserWithAssetHolder uwa : list) {
             User user = uwa.getUser();
             user.setAssetHolder(this.prepareAssetHolder(uwa.getAssetHolder()));
-            result.add(user);
+            result.add(this.prepareUser(user));
         }
         return result;
     }
@@ -149,7 +159,7 @@ public class UserServiceImpl implements UserService {
             for (UserWithAssetHolder uwa : list) {
                 User user = uwa.getUser();
                 user.setAssetHolder(this.prepareAssetHolder(uwa.getAssetHolder()));
-                result.add(Map.of("user", user, function, uwa.getAccumulation()));
+                result.add(Map.of("user", this.prepareUser(user), function, uwa.getAccumulation()));
             }
             return result;
         }
@@ -179,7 +189,7 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Get " + assetHolder.size() + " asset holders using asset holder id " + assetHolderId);
         }
         user.get(0).setAssetHolder(this.prepareAssetHolder(assetHolder.get(0)));
-        return user.get(0);
+        return this.prepareUser(user.get(0));
     }
 
     @Override
@@ -196,7 +206,7 @@ public class UserServiceImpl implements UserService {
             }
             user.get(0).setAssetHolder(this.prepareAssetHolder(assetHolder.get(0)));
         }
-        return user.get(0);
+        return this.prepareUser(user.get(0));
     }
 
     @Override
@@ -423,7 +433,7 @@ public class UserServiceImpl implements UserService {
     public int updatePasswordByEmail(String email, String password) {
         List<User> list = userMapper.selectUserByEmailAddress(email);
         if (list.size() != 1) {
-            throw new RuntimeException("Found" + list.size() +" users by email");
+            throw new RuntimeException("Found" + list.size() + " users by email");
         }
 
         User user = list.get(0);
