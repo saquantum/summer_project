@@ -1,12 +1,11 @@
 package uk.ac.bristol.service.impl;
 
-import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.AssetHolderMapper;
 import uk.ac.bristol.dao.AssetMapper;
-import uk.ac.bristol.dao.Settings;
+import uk.ac.bristol.dao.MetaDataMapper;
 import uk.ac.bristol.dao.UserMapper;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.Asset;
@@ -24,13 +23,13 @@ import java.util.*;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final Settings settings;
+    private final MetaDataMapper metaDataMapper;
     private final AssetHolderMapper assetHolderMapper;
     private final UserMapper userMapper;
     private final AssetMapper assetMapper;
 
-    public UserServiceImpl(Settings settings, AssetHolderMapper assetHolderMapper, UserMapper userMapper, AssetMapper assetMapper) {
-        this.settings = settings;
+    public UserServiceImpl(MetaDataMapper metaDataMapper, AssetHolderMapper assetHolderMapper, UserMapper userMapper, AssetMapper assetMapper) {
+        this.metaDataMapper = metaDataMapper;
         this.assetHolderMapper = assetHolderMapper;
         this.userMapper = userMapper;
         this.assetMapper = assetMapper;
@@ -130,9 +129,10 @@ public class UserServiceImpl implements UserService {
             mapping.get(asset.getOwnerId()).add(asset.getId());
         });
         List<Map<String, Object>> result = new ArrayList<>();
-        for (AssetHolder holder : assetHolders) {
-            List<String> ids = mapping.getOrDefault(holder.getId(), new ArrayList<>());
-            result.add(Map.of("assetHolder", holder, "assetIds", ids));
+        for (AssetHolder ah : assetHolders) {
+            ah = prepareAssetHolder(ah);
+            List<String> ids = mapping.getOrDefault(ah.getId(), new ArrayList<>());
+            result.add(Map.of("assetHolder", ah, "assetIds", ids));
         }
         return result;
     }
@@ -241,9 +241,9 @@ public class UserServiceImpl implements UserService {
                 throw new RuntimeException("Failed to insert contact preferences for user " + user.getId());
             }
 
-            settings.increaseTotalCountByTableName("asset_holders", 1);
-            settings.increaseTotalCountByTableName("address", 1);
-            settings.increaseTotalCountByTableName("contact_preferences", 1);
+            metaDataMapper.increaseTotalCountByTableName("asset_holders", 1);
+            metaDataMapper.increaseTotalCountByTableName("address", 1);
+            metaDataMapper.increaseTotalCountByTableName("contact_preferences", 1);
 
             user.setAssetHolderId(user.getAssetHolder().getId());
         }
@@ -251,7 +251,7 @@ public class UserServiceImpl implements UserService {
         if (n4 != 1) {
             throw new RuntimeException("Failed to insert user " + user.getId());
         }
-        settings.increaseTotalCountByTableName("users", 1);
+        metaDataMapper.increaseTotalCountByTableName("users", 1);
         return n4;
     }
 
@@ -323,10 +323,10 @@ public class UserServiceImpl implements UserService {
         if (n4 != 1) {
             throw new RuntimeException("Failed to insert user " + user.getId());
         }
-        settings.increaseTotalCountByTableName("asset_holders", 1);
-        settings.increaseTotalCountByTableName("address", 1);
-        settings.increaseTotalCountByTableName("contact_preferences", 1);
-        settings.increaseTotalCountByTableName("users", 1);
+        metaDataMapper.increaseTotalCountByTableName("asset_holders", 1);
+        metaDataMapper.increaseTotalCountByTableName("address", 1);
+        metaDataMapper.increaseTotalCountByTableName("contact_preferences", 1);
+        metaDataMapper.increaseTotalCountByTableName("users", 1);
         return n4;
     }
 
@@ -375,7 +375,7 @@ public class UserServiceImpl implements UserService {
             }
             sum += n2;
         }
-        settings.increaseTotalCountByTableName("users", -sum);
+        metaDataMapper.increaseTotalCountByTableName("users", -sum);
         return sum;
     }
 
@@ -398,7 +398,7 @@ public class UserServiceImpl implements UserService {
             }
             sum += n2;
         }
-        settings.increaseTotalCountByTableName("users", -sum);
+        metaDataMapper.increaseTotalCountByTableName("users", -sum);
         return sum;
     }
 
@@ -415,21 +415,19 @@ public class UserServiceImpl implements UserService {
         if (n1 != n2 || n3 != n2) {
             throw new RuntimeException("Error deleting asset holders: affected rows not compatible");
         }
-        settings.increaseTotalCountByTableName("asset_holders", -n1);
+        metaDataMapper.increaseTotalCountByTableName("asset_holders", -n1);
         return n1;
     }
 
     @Override
     public int updatePasswordByEmail(String email, String password) {
-        List<String> list = assetHolderMapper.selectAssetHolderIdByEmail(email);
+        List<User> list = userMapper.selectUserByEmailAddress(email);
         if (list.size() != 1) {
-            throw new RuntimeException("Error finding asset holder by email");
+            throw new RuntimeException("Found" + list.size() +" users by email");
         }
-        User user = new User();
-        String uid = userMapper.selectUidByAid(list.get(0));
-        user.setId(uid);
-        user.setAssetHolderId(list.get(0));
+
+        User user = list.get(0);
         user.setPassword(password);
-        return updateUser(user);
+        return userMapper.updateUserPasswordByUserId(user);
     }
 }

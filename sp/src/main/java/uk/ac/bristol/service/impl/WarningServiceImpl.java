@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.AssetHolderMapper;
-import uk.ac.bristol.dao.Settings;
+import uk.ac.bristol.dao.MetaDataMapper;
 import uk.ac.bristol.dao.UserMapper;
 import uk.ac.bristol.dao.WarningMapper;
 import uk.ac.bristol.pojo.Template;
@@ -19,13 +19,13 @@ import java.util.Map;
 @Service
 public class WarningServiceImpl implements WarningService {
 
-    private final Settings settings;
+    private final MetaDataMapper metaDataMapper;
     private final WarningMapper warningMapper;
     private final UserMapper userMapper;
     private final AssetHolderMapper assetHolderMapper;
 
-    public WarningServiceImpl(Settings settings, WarningMapper warningMapper, UserMapper userMapper, AssetHolderMapper assetHolderMapper) {
-        this.settings = settings;
+    public WarningServiceImpl(MetaDataMapper metaDataMapper, WarningMapper warningMapper, UserMapper userMapper, AssetHolderMapper assetHolderMapper) {
+        this.metaDataMapper = metaDataMapper;
         this.warningMapper = warningMapper;
         this.userMapper = userMapper;
         this.assetHolderMapper = assetHolderMapper;
@@ -53,7 +53,7 @@ public class WarningServiceImpl implements WarningService {
     @Override
     public int insertWarning(Warning warning) {
         int n = warningMapper.insertWarning(warning);
-        settings.increaseTotalCountByTableName("weather_warnings", n);
+        metaDataMapper.increaseTotalCountByTableName("weather_warnings", n);
         return n;
     }
 
@@ -73,7 +73,7 @@ public class WarningServiceImpl implements WarningService {
                 sum++;
             }
         }
-        settings.increaseTotalCountByTableName("weather_warnings", sum);
+        metaDataMapper.increaseTotalCountByTableName("weather_warnings", sum);
         return sum;
     }
 
@@ -90,7 +90,7 @@ public class WarningServiceImpl implements WarningService {
     @Override
     public int deleteWarningByIDs(List<Long> ids) {
         int n = warningMapper.deleteWarningByIDs(ids);
-        settings.increaseTotalCountByTableName("weather_warnings", -n);
+        metaDataMapper.increaseTotalCountByTableName("weather_warnings", -n);
         return n;
     }
 
@@ -114,7 +114,7 @@ public class WarningServiceImpl implements WarningService {
     @Override
     public int insertNotificationTemplate(Template templates) {
         int n = warningMapper.insertNotificationTemplate(templates);
-        settings.increaseTotalCountByTableName("templates", n);
+        metaDataMapper.increaseTotalCountByTableName("templates", n);
         return n;
     }
 
@@ -131,21 +131,21 @@ public class WarningServiceImpl implements WarningService {
     @Override
     public int deleteNotificationTemplateByIds(Long[] ids) {
         int n = warningMapper.deleteNotificationTemplateByIds(ids);
-        settings.increaseTotalCountByTableName("templates", -n);
+        metaDataMapper.increaseTotalCountByTableName("templates", -n);
         return n;
     }
 
     @Override
     public int deleteNotificationTemplateByIds(List<Long> ids) {
         int n = warningMapper.deleteNotificationTemplateByIds(ids);
-        settings.increaseTotalCountByTableName("templates", -n);
+        metaDataMapper.increaseTotalCountByTableName("templates", -n);
         return n;
     }
 
     @Override
     public int deleteNotificationTemplateByType(Template template) {
         int n = warningMapper.deleteNotificationTemplateByType(template);
-        settings.increaseTotalCountByTableName("templates", -n);
+        metaDataMapper.increaseTotalCountByTableName("templates", -n);
         return n;
     }
 }

@@ -164,7 +164,7 @@
             asset_row_id          bigserial primary key,
             asset_id              varchar(50) unique           not null,
             asset_name            varchar(100)                 not null,
-            asset_type_id         varchar(50) references asset_types (asset_type_id) on update cascade,
+            asset_type_id         varchar(50) references asset_types (asset_type_id) on update cascade on delete set null,
             asset_owner_id        varchar(50) references asset_holders (asset_holder_id) on update cascade on delete cascade,
             asset_location        geometry(multipolygon, 4326) not null,
             asset_capacity_litres int,
@@ -226,12 +226,16 @@
             template_severity             varchar(50),
             template_contact_channel      varchar(50),
             template_title                text,
-            template_body                 text,
-            constraint joint_unique_identifier unique (template_asset_type_id,
-                                                       template_weather_warning_type,
-                                                       template_severity,
-                                                       template_contact_channel)
+            template_body                 text
         );
+
+        create unique index joint_unique_identifier
+            on templates (
+                          lower(template_asset_type_id),
+                          lower(template_weather_warning_type),
+                          lower(template_severity),
+                          lower(template_contact_channel)
+                );
 
         <include refid="initTableMetaData"/>
     </update>

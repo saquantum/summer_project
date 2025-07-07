@@ -1,7 +1,10 @@
 package uk.ac.bristol.util;
 
 import io.jsonwebtoken.Claims;
+import org.springframework.stereotype.Component;
+import uk.ac.bristol.dao.MetaDataMapper;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -69,8 +72,20 @@ public final class QueryTool {
             "warning",
             "template");
 
+    private final static Set<String> registeredTables = Set.of("table_meta_data",
+            "asset_holders",
+            "asset_types",
+            "assets",
+            "users",
+            "address",
+            "contact_preferences",
+            "weather_warnings",
+            "templates");
+
+    // TODO: user meta data mapper -> filterRegisteredColumnsInTables
     public static List<Map<String, String>> filterOrderList(List<Map<String, String>> originalList, String... prefixes) {
         if (originalList == null || originalList.isEmpty() || prefixes == null || prefixes.length == 0) return null;
+
         Set<String> prefixesSet = new HashSet<>(Arrays.asList(prefixes));
 
         List<Map<String, String>> list = new ArrayList<>();
@@ -103,5 +118,16 @@ public final class QueryTool {
             }
         }
         return list;
+    }
+}
+
+@Component
+class QueryToolConfig{
+    public MetaDataMapper metaDataMapper0;
+
+    public static MetaDataMapper metaDataMapper;
+    @PostConstruct
+    public void init(){
+        metaDataMapper = this.metaDataMapper0;
     }
 }

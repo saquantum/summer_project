@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="uk.ac.bristol.dao.MetaDataMapper">
+    <select id="selectAllMetaData" resultMap="ResultMaps.MetaDataMap">
+        select *
+        from table_meta_data;
+    </select>
+
+    <select id="selectMetaDataByTableName" resultMap="ResultMaps.MetaDataMap">
+        select *
+        from table_meta_data
+        where table_name = #{tableName};
+    </select>
+
+    <update id="increaseTotalCountByTableName">
+        update table_meta_data
+        <set>
+            <if test="totalCount != null">
+                total_count = total_count + #{totalCount},
+            </if>
+        </set>
+        where table_name = #{tableName};
+    </update>
+
+    <select id="filterRegisteredColumnsInTables" resultType="String">
+        select distinct column_name from information_schema.columns where table_schema = 'public'
+        and table_name in
+        <foreach collection="tableNames" item="tableName" separator="," open="(" close=")">#{tableName}</foreach>
+        and column_name in
+        <foreach collection="columnNames" item="columnName" separator="," open="(" close=")">#{columnName}</foreach>
+    </select>
+</mapper>

@@ -86,6 +86,14 @@
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
+    <select id="selectUserByEmailAddress" resultMap="ResultMaps.UserMap">
+        select u.*
+        from users u
+                 join asset_holders ah
+                      on user_asset_holder_id = asset_holder_id
+        where asset_holder_email = #{email}
+    </select>
+
     <insert id="insertUser">
         insert into users (user_id, user_password, user_asset_holder_id, user_is_admin)
         values (#{id}, #{password}, #{assetHolderId}, #{admin});
@@ -95,8 +103,15 @@
         update users
         <set>
             <if test="assetHolderId != null and assetHolderId != ''">user_asset_holder_id = #{assetHolderId},</if>
-            <if test="password != null and password != ''">user_password = #{password},</if>
             <if test="admin != null">user_is_admin = #{admin},</if>
+        </set>
+        where user_id = #{id};
+    </update>
+
+    <update id="updateUserPasswordByUserId">
+        update users
+        <set>
+            <if test="password != null and password != ''">user_password = #{password},</if>
         </set>
         where user_id = #{id};
     </update>
@@ -110,8 +125,4 @@
         delete from users where user_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
-
-    <select id="selectUidByAid" resultType="String">
-        select user_id from users where user_asset_holder_id = #{id}
-    </select>
 </mapper>

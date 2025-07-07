@@ -13,12 +13,6 @@ public interface Settings {
 
     void createTableMetaData();
 
-    List<Map<String, Object>> selectAllMetaData();
-
-    List<Map<String, Object>> selectMetaDataByTableName(@Param("tableName") String tableName);
-
-    int increaseTotalCountByTableName(@Param("tableName") String tableName, @Param("totalCount") Integer totalCount);
-
     void createAddress(@Param("tableName") String tableName);
 
     void createContactPreferences(@Param("tableName") String tableName);

@@ -40,9 +40,13 @@ public interface UserMapper {
                                                             @Param("limit") Integer limit,
                                                             @Param("offset") Integer offset);
 
+    List<User> selectUserByEmailAddress(@Param("email") String email);
+
     int insertUser(User user);
 
     int updateUserByUserId(User user);
+
+    int updateUserPasswordByUserId(User user);
 
     int deleteUserByAssetHolderIDs(@Param("ids") String[] assetHolderIds);
 
@@ -51,6 +55,4 @@ public interface UserMapper {
     int deleteUserByIds(@Param("ids") String[] ids);
 
     int deleteUserByIds(@Param("ids") List<String> ids);
-
-    String selectUidByAid(@Param("id") String aid);
 }

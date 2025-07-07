@@ -28,6 +28,7 @@ public class ServiceExceptionsAdvice {
             } else if (methodName.startsWith("insert")) {
                 throw new SpExceptions.PostMethodException(e.getMessage());
             } else if (methodName.startsWith("update")) {
+                e.printStackTrace();
                 throw new SpExceptions.PutMethodException(e.getMessage());
             } else if (methodName.startsWith("delete")) {
                 throw new SpExceptions.DeleteMethodException(e.getMessage());

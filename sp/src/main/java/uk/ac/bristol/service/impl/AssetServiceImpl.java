@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.AssetHolderMapper;
 import uk.ac.bristol.dao.AssetMapper;
-import uk.ac.bristol.dao.Settings;
+import uk.ac.bristol.dao.MetaDataMapper;
 import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.AssetType;
@@ -22,12 +22,12 @@ import java.util.stream.Collectors;
 @Service
 public class AssetServiceImpl implements AssetService {
 
-    private final Settings settings;
+    private final MetaDataMapper metaDataMapper;
     private final AssetMapper assetMapper;
     private final AssetHolderMapper assetHolderMapper;
 
-    public AssetServiceImpl(Settings settings, AssetMapper assetMapper, AssetHolderMapper assetHolderMapper) {
-        this.settings = settings;
+    public AssetServiceImpl(MetaDataMapper metaDataMapper, AssetMapper assetMapper, AssetHolderMapper assetHolderMapper) {
+        this.metaDataMapper = metaDataMapper;
         this.assetMapper = assetMapper;
         this.assetHolderMapper = assetHolderMapper;
     }
@@ -130,7 +130,7 @@ public class AssetServiceImpl implements AssetService {
         } else {
             n = assetMapper.insertAssetType(assetType);
         }
-        settings.increaseTotalCountByTableName("asset_types", n);
+        metaDataMapper.increaseTotalCountByTableName("asset_types", n);
         return n;
     }
 
@@ -143,7 +143,7 @@ public class AssetServiceImpl implements AssetService {
         } else {
             n = assetMapper.insertAsset(asset);
         }
-        settings.increaseTotalCountByTableName("assets", n);
+        metaDataMapper.increaseTotalCountByTableName("assets", n);
         return n;
     }
 
@@ -154,9 +154,18 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public int updateAsset(Asset asset) {
-        List<AssetHolder> list = assetHolderMapper.selectAssetHolderByIDs(List.of(asset.getOwnerId()), null, null, null);
-        if (list.size() != 1)
+        String ownerId = asset.getOwnerId();
+        if (asset.getOwnerId() == null || asset.getOwnerId().isBlank()) {
+            List<Asset> tmp = assetMapper.selectAssetByID(asset.getId());
+            if (tmp.size() != 1) {
+                throw new RuntimeException("Found " + tmp.size() + " assets for asset id " + asset.getId() + " when updating asset");
+            }
+            ownerId = tmp.get(0).getOwnerId();
+        }
+        List<AssetHolder> list = assetHolderMapper.selectAssetHolderByIDs(List.of(ownerId), null, null, null);
+        if (list.size() != 1) {
             throw new RuntimeException(list.size() + " asset holders found for asset id " + asset.getId() + " when updating asset");
+        }
         Instant now = Instant.now();
         list.get(0).setLastModified(now);
         asset.setLastModified(now);
@@ -166,28 +175,28 @@ public class AssetServiceImpl implements AssetService {
     @Override
     public int deleteAssetTypeByIDs(String[] ids) {
         int n = assetMapper.deleteAssetTypeByIDs(ids);
-        settings.increaseTotalCountByTableName("asset_types", -n);
+        metaDataMapper.increaseTotalCountByTableName("asset_types", -n);
         return n;
     }
 
     @Override
     public int deleteAssetTypeByIDs(List<String> ids) {
         int n = assetMapper.deleteAssetTypeByIDs(ids);
-        settings.increaseTotalCountByTableName("asset_types", -n);
+        metaDataMapper.increaseTotalCountByTableName("asset_types", -n);
         return n;
     }
 
     @Override
     public int deleteAssetByIDs(String[] ids) {
         int n = assetMapper.deleteAssetByIDs(ids);
-        settings.increaseTotalCountByTableName("assets", -n);
+        metaDataMapper.increaseTotalCountByTableName("assets", -n);
         return n;
     }
 
     @Override
     public int deleteAssetByIDs(List<String> ids) {
         int n = assetMapper.deleteAssetByIDs(ids);
-        settings.increaseTotalCountByTableName("assets", -n);
+        metaDataMapper.increaseTotalCountByTableName("assets", -n);
         return n;
     }
 }
