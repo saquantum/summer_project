@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="uk.ac.bristol.dao.PermissionConfigMapper">
+
+    <select id="findByUserId" parameterType="long" resultType="uk.ac.bristol.pojo.PermissionConfig">
+        SELECT * FROM permission_config WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insert" parameterType="uk.ac.bristol.pojo.PermissionConfig">
+        INSERT INTO permission_config(user_id, can_create_asset, can_set_polygon_on_create, can_update_asset_fields, can_update_polygon, can_delete_own_asset, can_update_self_profile)
+        VALUES (#{userId}, #{canCreateAsset}, #{canSetPolygonOnCreate}, #{canUpdateAssetFields}, #{canUpdatePolygon}, #{canDeleteOwnAsset}, #{canUpdateSelfProfile})
+    </insert>
+
+    <update id="update" parameterType="uk.ac.bristol.pojo.PermissionConfig">
+        UPDATE permission_config
+        SET can_create_asset = #{canCreateAsset},
+            can_set_polygon_on_create = #{canSetPolygonOnCreate},
+            can_update_asset_fields = #{canUpdateAssetFields},
+            can_update_polygon = #{canUpdatePolygon},
+            can_delete_own_asset = #{canDeleteOwnAsset},
+            can_update_self_profile = #{canUpdateSelfProfile}
+        WHERE user_id = #{userId}
+    </update>
+
+</mapper>
