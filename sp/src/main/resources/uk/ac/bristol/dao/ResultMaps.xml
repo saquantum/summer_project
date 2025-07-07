@@ -110,6 +110,16 @@
         <result property="body" column="template_body"/>
     </resultMap>
 
+    <resultMap id="PermissionConfigMap" type="uk.ac.bristol.pojo.PermissionConfig">
+        <id property="userId" column="permission_config_user_id"/>
+        <result property="canCreateAsset" column="permission_config_can_create_asset"/>
+        <result property="canSetPolygonOnCreate" column="permission_config_can_set_polygon_on_create"/>
+        <result property="canUpdateAssetFields" column="permission_config_can_update_asset_fields"/>
+        <result property="canUpdateAssetPolygon" column="permission_config_can_update_asset_polygon"/>
+        <result property="canDeleteAsset" column="permission_config_can_delete_asset"/>
+        <result property="canUpdateProfile" column="permission_config_can_update_profile"/>
+    </resultMap>
+
     <sql id="orderAndPage">
         <if test="orderList != null and orderList.size() > 0">
             order by

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="uk.ac.bristol.dao.PermissionConfigMapper">
+
+    <select id="selectAllPermissionConfigs" resultMap="ResultMaps.PermissionConfigMap">
+        select * from permission_configs
+        <include refid="ResultMaps.orderAndPage"/>
+    </select>
+
+    <select id="selectPermissionConfigByUserId" resultMap="ResultMaps.PermissionConfigMap">
+        select *
+        from permission_configs
+        where permission_config_user_id = #{userId};
+    </select>
+
+    <insert id="insertPermissionConfig">
+        insert into permission_configs
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            permission_config_user_id,
+            <if test="canCreateAsset != null">permission_config_can_create_asset,</if>
+            <if test="canSetPolygonOnCreate != null">permission_config_can_set_polygon_on_create,</if>
+            <if test="canUpdateAssetFields != null">permission_config_can_update_asset_fields,</if>
+            <if test="canUpdateAssetPolygon != null">permission_config_can_update_asset_polygon,</if>
+            <if test="canDeleteAsset != null">permission_config_can_delete_asset,</if>
+            <if test="canUpdateProfile != null">permission_config_can_update_profile,</if>
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            #{userId},
+            <if test="canCreateAsset != null">#{canCreateAsset},</if>
+            <if test="canSetPolygonOnCreate != null">#{canSetPolygonOnCreate},</if>
+            <if test="canUpdateAssetFields != null">#{canUpdateAssetFields},</if>
+            <if test="canUpdateAssetPolygon != null">#{canUpdateAssetPolygon},</if>
+            <if test="canDeleteAsset != null">#{canDeleteAsset},</if>
+            <if test="canUpdateProfile != null">#{canUpdateProfile},</if>
+        </trim>
+    </insert>
+
+    <update id="updatePermissionConfigByUserId">
+        update permission_configs
+        <set>
+            <if test="canCreateAsset != null">
+                permission_config_can_create_asset = #{canCreateAsset},
+            </if>
+            <if test="canSetPolygonOnCreate != null">
+                permission_config_can_set_polygon_on_create = #{canSetPolygonOnCreate},
+            </if>
+            <if test="canUpdateAssetFields != null">
+                permission_config_can_update_asset_fields = #{canUpdateAssetFields},
+            </if>
+            <if test="canUpdateAssetPolygon != null">
+                permission_config_can_update_asset_polygon = #{canUpdateAssetPolygon},
+            </if>
+            <if test="canDeleteAsset != null">
+                permission_config_can_delete_asset = #{canDeleteAsset},
+            </if>
+            <if test="canUpdateProfile != null">
+                permission_config_can_update_profile = #{canUpdateProfile},
+            </if>
+        </set>
+        where permission_config_user_id = #{userId}
+    </update>
+
+</mapper>

@@ -8,10 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.Settings;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
-import uk.ac.bristol.service.AssetService;
-import uk.ac.bristol.service.ImportMockData;
-import uk.ac.bristol.service.UserService;
-import uk.ac.bristol.service.WarningService;
+import uk.ac.bristol.service.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,13 +21,15 @@ import java.util.Random;
 public class ImportMockDataImpl implements ImportMockData {
 
     private final Settings settings;
+    private final PermissionConfigService permissionConfigService;
     private final UserService userService;
     private final AssetService assetService;
     private final WarningService warningService;
     private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
-    public ImportMockDataImpl(Settings settings, UserService userService, AssetService assetService, WarningService warningService) {
+    public ImportMockDataImpl(Settings settings, PermissionConfigService permissionConfigService, UserService userService, AssetService assetService, WarningService warningService) {
         this.settings = settings;
+        this.permissionConfigService = permissionConfigService;
         this.userService = userService;
         this.assetService = assetService;
         this.warningService = warningService;
@@ -48,6 +47,7 @@ public class ImportMockDataImpl implements ImportMockData {
         settings.createAssets("assets");
         settings.createWeatherWarnings("weather_warnings");
         settings.createNotificationTemplates("templates");
+        settings.createPermissionConfigs("permission_configs");
     }
 
     @Override
@@ -66,6 +66,7 @@ public class ImportMockDataImpl implements ImportMockData {
             user.setPassword("123456");
             user.setAdmin(false);
             userService.insertUser(user);
+            permissionConfigService.insertPermissionConfig(new PermissionConfig(user.getId()));
         }
         // register admin
         User admin = new User();
@@ -73,6 +74,7 @@ public class ImportMockDataImpl implements ImportMockData {
         admin.setPassword("admin");
         admin.setAdmin(true);
         userService.insertUser(admin);
+        permissionConfigService.insertPermissionConfig(new PermissionConfig("admin"));
 
         // register two users with actual email address to test
         AssetHolder YCJ = new AssetHolder();

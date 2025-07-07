@@ -29,7 +29,5 @@ public interface Settings {
 
     void createNotificationTemplates(@Param("tableName") String tableName);
 
-    void createGlobalPermissionConfig();
-
-    void createUserPermissionConfig();
+    void createPermissionConfigs(@Param("tableName") String tableName);
 }

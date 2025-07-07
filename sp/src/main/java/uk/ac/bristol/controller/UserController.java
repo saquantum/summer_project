@@ -3,6 +3,7 @@ package uk.ac.bristol.controller;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.User;
+import uk.ac.bristol.service.PermissionConfigService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.QueryTool;
 
@@ -15,9 +16,11 @@ import javax.servlet.http.HttpServletResponse;
 public class UserController {
 
     private final UserService userService;
+    private final PermissionConfigService permissionConfigService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, PermissionConfigService permissionConfigService) {
         this.userService = userService;
+        this.permissionConfigService = permissionConfigService;
     }
 
     /* --------- for users and admin proxy --------- */
@@ -94,5 +97,13 @@ public class UserController {
         return new ResponseBody(Code.DELETE_OK, null);
     }
 
-
+    @GetMapping("/uid/{uid}/permission")
+    public ResponseBody getMyPermission(HttpServletResponse response,
+                                        HttpServletRequest request,
+                                        @PathVariable String uid) {
+        if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
+            throw new SpExceptions.DeleteMethodException("User identification failed");
+        }
+        return new ResponseBody(Code.SELECT_OK, permissionConfigService.getPermissionConfigByUserId(uid));
+    }
 }

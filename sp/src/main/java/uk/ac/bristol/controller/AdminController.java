@@ -3,12 +3,10 @@ package uk.ac.bristol.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.bristol.pojo.PermissionConfig;
 import uk.ac.bristol.pojo.Template;
 import uk.ac.bristol.pojo.User;
-import uk.ac.bristol.service.AssetService;
-import uk.ac.bristol.service.MetaDataService;
-import uk.ac.bristol.service.UserService;
-import uk.ac.bristol.service.WarningService;
+import uk.ac.bristol.service.*;
 import uk.ac.bristol.util.QueryTool;
 
 import java.util.List;
@@ -26,12 +24,14 @@ public class AdminController {
     private final AssetService assetService;
     private final WarningService warningService;
     private final MetaDataService metaDataService;
+    private final PermissionConfigService permissionConfigService;
 
-    public AdminController(UserService userService, AssetService assetService, WarningService warningService, MetaDataService metaDataService) {
+    public AdminController(UserService userService, AssetService assetService, WarningService warningService, MetaDataService metaDataService, PermissionConfigService permissionConfigService) {
         this.userService = userService;
         this.assetService = assetService;
         this.warningService = warningService;
         this.metaDataService = metaDataService;
+        this.permissionConfigService = permissionConfigService;
     }
 
     @GetMapping("/user/all")
@@ -176,5 +176,27 @@ public class AdminController {
     public ResponseBody deleteTemplatesByIds(@RequestBody Map<String, Object> body) {
         List<Long> ids = (List<Long>) body.get("ids");
         return new ResponseBody(Code.DELETE_OK, warningService.deleteNotificationTemplateByIds(ids));
+    }
+
+    @GetMapping("/permission")
+    public ResponseBody getAllPermissions(@RequestParam(required = false) List<String> orderList,
+                                          @RequestParam(required = false) Integer limit,
+                                          @RequestParam(required = false) Integer offset) {
+        return new ResponseBody(Code.SELECT_OK, permissionConfigService.getAllPermissionConfigs(QueryTool.getOrderList(orderList), limit, offset));
+    }
+
+    @GetMapping("/permission/{uid}")
+    public ResponseBody getPermissionByUserId(@PathVariable String uid) {
+        return new ResponseBody(Code.SELECT_OK, permissionConfigService.getPermissionConfigByUserId(uid));
+    }
+
+    @PostMapping("/permission")
+    public ResponseBody insertPermissionConfig(@RequestBody PermissionConfig permissionConfig) {
+        return new ResponseBody(Code.INSERT_OK, permissionConfigService.insertPermissionConfig(permissionConfig));
+    }
+
+    @PutMapping("/permission")
+    public ResponseBody updatePermissionConfig(@RequestBody PermissionConfig permissionConfig) {
+        return new ResponseBody(Code.UPDATE_OK, permissionConfigService.updatePermissionConfigByUserId(permissionConfig));
     }
 }
