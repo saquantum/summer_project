@@ -16,8 +16,9 @@ const isEdit = ref(false)
 const handleEdit = () => {
   if (userStore.user?.permissionConfig.canUpdateProfile) {
     isEdit.value = true
+  } else {
+    ElMessage.error('Can not update profile')
   }
-  ElMessage.error('Can not update profile')
 }
 </script>
 

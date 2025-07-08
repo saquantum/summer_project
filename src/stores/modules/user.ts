@@ -3,6 +3,8 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 import type { LoginForm, User } from '@/types'
+import CodeUtil from '@/utils/codeUtil'
+import { ElMessage } from 'element-plus'
 
 export const useUserStore = defineStore(
   'rain-user',
@@ -10,9 +12,19 @@ export const useUserStore = defineStore(
     const user = ref<User | null>(null)
     const proxyId = ref('')
     const getUser = async (form: LoginForm) => {
-      const { data } = await userLoginService(form)
-      user.value = data
-      if (!user.value?.admin) getUserInfo()
+      try {
+        const res = await userLoginService(form)
+        if (CodeUtil.isSuccess(res.code)) {
+          user.value = res.data
+          if (!user.value?.admin) getUserInfo()
+          ElMessage.success('Success')
+        } else {
+          ElMessage.error('Username or password is incorrect.')
+          throw new Error('Username or password is incorrect.')
+        }
+      } catch (e) {
+        throw new Error(String(e))
+      }
     }
 
     const getUserInfo = async () => {

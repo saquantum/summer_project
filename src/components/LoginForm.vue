@@ -233,11 +233,9 @@ const login = async () => {
 
   try {
     await userStore.getUser(loginForm.value)
-    ElMessage.success('success')
     router.push('/')
   } catch {
     loginForm.value.password = ''
-    ElMessage.error('Username or password is incorrect')
   }
 }
 
@@ -301,7 +299,7 @@ watch(isRegister, () => {
         <el-link
           type="primary"
           :underline="false"
-          @click="router.push('/login/recover')"
+          @click="router.push('/recover')"
           >Forget password?
         </el-link>
       </div>

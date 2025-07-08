@@ -108,6 +108,26 @@ const editor = useEditor({
 
 const fileList = ref<File[]>([])
 
+const setLink = () => {
+  const previousUrl = editor.getAttributes('link').href
+  const url = window.prompt('URL', previousUrl)
+
+  // cancelled
+  if (url === null) {
+    return
+  }
+
+  // empty
+  if (url === '') {
+    editor.chain().focus().extendMarkRange('link').unsetLink().run()
+
+    return
+  }
+
+  // update link
+  editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+}
+
 watch(content, (newValue) => {
   if (editor.value && newValue !== editor.value.getHTML()) {
     editor.value.commands.setContent(newValue)
@@ -161,6 +181,16 @@ watch(fileList, (newVal) => {
 
     <button @click="editor.chain().focus().toggleCode().run()">
       Toggle code
+    </button>
+
+    <button @click="setLink" :class="{ 'is-active': editor.isActive('link') }">
+      Set link
+    </button>
+    <button
+      @click="editor.chain().focus().unsetLink().run()"
+      :disabled="!editor.isActive('link')"
+    >
+      Unset link
     </button>
   </div>
   <div class="editor">
