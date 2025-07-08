@@ -2,17 +2,18 @@
 import { ref, onMounted, watch } from 'vue'
 
 import { userTemplateStore } from '@/stores/modules/template'
+import { adminGetTemplateByTypes } from '@/api/admin'
 
 const templateStore = userTemplateStore()
 const warningTypeOption = [
   { label: 'Rain', value: 'Rain' },
-  { label: 'Thunderstorms', value: 'Thunderstorms' },
+  { label: 'Thunderstorm', value: 'Thunderstorm' },
   { label: 'Lightning', value: 'Lightning' },
   { label: 'Snow', value: 'Snow' },
   { label: 'Ice', value: 'Ice' },
   { label: 'Fog', value: 'Fog' },
   { label: 'Wind', value: 'Wind' },
-  { label: 'Extreme Heat', value: 'Extreme Heat' }
+  { label: 'Extreme Heat', value: 'Heat' }
 ]
 
 const typeOptions = [
@@ -48,10 +49,6 @@ const contactChannelOptions = [
   {
     value: 'SMS',
     label: 'SMS'
-  },
-  {
-    value: 'SMS',
-    label: 'SMS'
   }
 ]
 
@@ -78,22 +75,21 @@ onMounted(async () => {
 
 watch(
   [warningType, warningLevel, assetType, contactChannel],
-  ([newWarningType, newWarningLevel, newAssetType, newContactChannel]) => {
-    console.log(
+  async ([
+    newWarningType,
+    newWarningLevel,
+    newAssetType,
+    newContactChannel
+  ]) => {
+    const res = await adminGetTemplateByTypes(
+      newAssetType,
       newWarningType,
       newWarningLevel,
-      newAssetType,
       newContactChannel
     )
-    const item = templateStore.templates.find(
-      (item) =>
-        item.warningType === newWarningType &&
-        item.severity === newWarningLevel &&
-        item.assetTypeId === newAssetType &&
-        item.contactChannel === newContactChannel
-    )
-    console.log(item)
-    templateText.value = item?.body || `You haven't set message for this.`
+    console.log(res.data)
+
+    templateText.value = res.data[0].body ?? `You haven't set message for this.`
   },
   {
     immediate: true

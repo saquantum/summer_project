@@ -128,3 +128,18 @@ export const adminUpdatePermissionService = (
   permission: Permission
 ): Promise<ApiResponse<Permission[]>> =>
   request.put(`/admin/permission/`, permission)
+
+export const adminGetTemplateByTypes = (
+  assetTypeId: string,
+  warningType: string,
+  severity: string,
+  channel: string
+) =>
+  request.get('/admin/template/type', {
+    params: {
+      assetTypeId: assetTypeId,
+      warningType: warningType,
+      severity: severity,
+      channel: channel
+    }
+  })
