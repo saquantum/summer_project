@@ -90,7 +90,7 @@ public class LoginController {
     @PostMapping("/email/password")
     public ResponseBody resetPasswordUpdatePassword(@RequestBody Map<String, String> body) {
         String password = body.get("password");
-        if (password == null || !password.matches("^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?~`]+$\n")) {
+        if (password == null || !password.matches("^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?~`]+$")) {
             throw new SpExceptions.BusinessException("Invalid password: empty or contains improper characters");
         }
         if(password.length() < 6 || password.length() > 20){
@@ -118,5 +118,14 @@ public class LoginController {
             return new ResponseBody(Code.SELECT_OK, null, "The email address already exists.");
         }
         return new ResponseBody(Code.SELECT_ERR, null, "The email address does not exist.");
+    }
+
+    @PostMapping("/register/email/code")
+    public ResponseBody registerSendEmailWithCode(@RequestBody Map<String, String> body) {
+        try {
+            return contactService.registerGenerateCode(body.get("email"));
+        } catch (Exception e) {
+            return new ResponseBody(Code.REGISTER_ERR, null, "Failed to generate code." + e.getMessage());
+        }
     }
 }

@@ -79,6 +79,9 @@ public class ContactServiceImpl implements ContactService {
         String title = template.get(0).getTitle();
         String body = template.get(0).getBody();
 
+        title = fillVariablesWithValues(title,assetId);
+        body = fillVariablesWithValues(body,assetId);
+
         if (body == null) {
             throw new SpExceptions.GetMethodException("The message type you required does not exist");
         }
@@ -227,5 +230,36 @@ public class ContactServiceImpl implements ContactService {
         } else {
             return new ResponseBody(Code.BUSINESS_ERR, null, "You entered wrong verification code!");
         }
+    }
+
+    @Override
+    public ResponseBody registerGenerateCode(String email) {
+        if (email == null) {
+            return new ResponseBody(Code.BUSINESS_ERR, null, "Failed to send email because email address is null");
+        }
+        if (assetHolderMapper.testEmailAddressExistence(email)) {
+            return new ResponseBody(Code.BUSINESS_ERR, null, "This email already registered! You can use this email to login");
+        }
+        String code = String.valueOf(new Random().nextInt(899999) + 100000);
+        codeStore.put(email, code);
+        timestampStore.put(email, System.currentTimeMillis());
+        sendVerificationEmail(email, code);
+        return new ResponseBody(Code.SUCCESS, code, "Verification code has been sent to " + email);
+    }
+
+    private String fillVariablesWithValues(String emailContent, String assetId) {
+        List<Asset> assetList = assetMapper.selectAssetByID(assetId);
+        String assetName = assetList.get(0).getName();
+
+        List<String> assetHolderIdList = Collections.singletonList(assetList.get(0).getOwnerId());
+        List<AssetHolder> assetHolderList = assetHolderMapper.selectAssetHolderByIDs(assetHolderIdList,null,null,null);
+        String contactName = assetHolderList.get(0).getName();
+
+        String postTown = assetHolderMapper.selectAddressByAssetHolderId(assetHolderList.get(0).getAddressId()).get(0).get("city");
+
+        emailContent = emailContent.replace("{{asset-model}}", assetName);
+        emailContent = emailContent.replace("{{contact_name}}", contactName);
+        emailContent = emailContent.replace("{{post_town}}", postTown);
+        return emailContent;
     }
 }
