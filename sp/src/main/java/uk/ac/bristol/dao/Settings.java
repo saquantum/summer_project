@@ -30,4 +30,6 @@ public interface Settings {
     void createNotificationTemplates(@Param("tableName") String tableName);
 
     void createPermissionConfigs(@Param("tableName") String tableName);
+
+    void createNotificationStatus(@Param("tableName") String tableName);
 }

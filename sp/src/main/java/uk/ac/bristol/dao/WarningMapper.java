@@ -52,4 +52,12 @@ public interface WarningMapper {
     int deleteNotificationTemplateByIds(@Param("ids") List<Long> ids);
 
     int deleteNotificationTemplateByType(Template template);
+
+    int insertNotificationStatus(@Param("assetId") String assetId, @Param("warningId") String warningId);
+
+    int deleteNotificationStatusByWarningId(@Param("warningId") String warningId);
+
+    int deleteNotificationStatusByStatus();
+
+    int updateNotificationStatus(@Param("assetId") String assetId, @Param("warningId") String warningId);
 }
