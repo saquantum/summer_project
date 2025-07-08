@@ -1,7 +1,6 @@
 /**
  * only admin can use the api below
  */
-
 import request from '@/utils/request'
 import type { ApiResponse } from '@/types/api'
 import type {
@@ -12,6 +11,11 @@ import type {
   UserItem,
   Warning
 } from '@/types'
+import type { Permission } from '@/types/permission'
+
+/**
+ * user
+ */
 
 export const adminGetUsersService = (
   functionName: string,
@@ -41,6 +45,33 @@ export const adminGetUserInfoByUIDService = (
   return request.get(`/admin/user/uid/${id}`)
 }
 
+export const adminInsertUserService = (
+  users: UserInfoForm[]
+): Promise<ApiResponse> => request.post('/admin/user', users)
+
+export const adminDeleteUserService = (params: { ids: string[] }) =>
+  request.delete('/admin/user', {
+    data: params
+  })
+
+/**
+ * template
+ */
+export const adminGetTemplateSerive = (
+  offset: number,
+  limit: number,
+  orderList: string
+): Promise<ApiResponse<Template[]>> =>
+  request.get('/admin/template', {
+    params: { offset: offset, limit: limit, orderList: orderList }
+  })
+
+export const adminUpdateUserInfoService = (userInforArr: UserInfoForm[]) =>
+  request.put('/admin/user', userInforArr)
+
+/**
+ * asset
+ */
 export const adminGetAssetsService = (
   offset: number,
   limit: number,
@@ -58,29 +89,6 @@ export const adminGetUserAssetsService = (
   return request.get(`/admin/user/aid/${id}/asset`)
 }
 
-export const adminGetAllWarningsService = (): Promise<ApiResponse<Warning[]>> =>
-  request.get('/admin/warning/all')
-
-export const adminGetAllLiveWarningsService = (): Promise<
-  ApiResponse<Warning[]>
-> => request.get('/warning')
-
-// export const adminGetNotificationService = (): Promise<ApiResponse> => {
-
-// }
-
-export const adminInsertAssetService = (obj: object): Promise<ApiResponse> =>
-  request.post('/admin/asset', obj)
-
-export const adminInsertUserService = (
-  users: UserInfoForm[]
-): Promise<ApiResponse> => request.post('/admin/user', users)
-
-export const adminGetUKMapService = (): Promise<ApiResponse> =>
-  request.get(
-    'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/united-kingdom.geojson'
-  )
-
 export const adminDeleteAssetService = (
   assets: string[]
 ): Promise<ApiResponse> => {
@@ -90,15 +98,33 @@ export const adminDeleteAssetService = (
   })
 }
 
+export const adminInsertAssetService = (obj: object): Promise<ApiResponse> =>
+  request.post('/admin/asset', obj)
+
 /**
- * template
+ * warning
  */
 
-export const adminGetTemplateSerive = (
-  offset: number,
-  limit: number,
-  orderList: string
-): Promise<ApiResponse<Template[]>> =>
-  request.get('/admin/template', {
-    params: { offset: offset, limit: limit, orderList: orderList }
-  })
+export const adminGetAllWarningsService = (): Promise<ApiResponse<Warning[]>> =>
+  request.get('/admin/warning/all')
+
+export const adminGetAllLiveWarningsService = (): Promise<
+  ApiResponse<Warning[]>
+> => request.get('/warning')
+
+/**
+ * permisssion
+ */
+
+export const adminGetAllPermissionService = (): Promise<
+  ApiResponse<Permission[]>
+> => request.get('/admin/permission')
+
+export const adminGetPermissionByUIDService = (
+  id: string
+): Promise<ApiResponse<Permission[]>> => request.get(`/admin/permission/${id}`)
+
+export const adminUpdatePermissionService = (
+  permission: Permission
+): Promise<ApiResponse<Permission[]>> =>
+  request.put(`/admin/permission/`, permission)

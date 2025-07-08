@@ -2,27 +2,21 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/index.ts'
-import { adminGetUserInfoService } from '@/api/admin'
+import {
+  adminGetPermissionByUIDService,
+  adminGetUserInfoService,
+  adminUpdatePermissionService
+} from '@/api/admin'
+import type { Permission } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const user = ref()
-interface DescriptionItem {
-  label: string
-  value: string
-}
-const descriptionsItem = ref<DescriptionItem[]>([])
 
 const userFormRef = ref()
-const checkboxOptions = ref([
-  { label: 'Add new asset', value: false },
-  { label: 'Add polygon', value: false },
-  { label: 'Update polygon', value: false },
-  { label: 'Update basic information', value: false },
-  { label: 'Delete asset', value: false },
-  { label: 'Update profile', value: false }
-])
+const permission = ref<Permission[] | null>(null)
+const checkboxOptions = ref<{ label: string; value: boolean }[]>([])
 
 const proxyUser = () => {
   // goto user interface
@@ -35,39 +29,42 @@ const proxyUser = () => {
 }
 
 const isEdit = ref(false)
-const submit = () => {
+const submit = async () => {
   userFormRef.value.submit()
+
+  if (permission.value && permission.value.length > 0) {
+    const p = permission.value[0]
+    p.canCreateAsset = checkboxOptions.value[0].value
+    p.canSetPolygonOnCreate = checkboxOptions.value[1].value
+    p.canUpdateAssetPolygon = checkboxOptions.value[2].value
+    p.canUpdateAssetFields = checkboxOptions.value[3].value
+    p.canDeleteAsset = checkboxOptions.value[4].value
+    p.canUpdateProfile = checkboxOptions.value[5].value
+    console.log(p)
+    await adminUpdatePermissionService(p)
+  }
 }
 onMounted(async () => {
   const id = route.query.id
   if (typeof id === 'string') {
     const res = await adminGetUserInfoService(id)
-    console.log(res)
     user.value = res.data
   }
 
-  const arr = user.value.assetHolder.name.split(' ')
-  descriptionsItem.value = [
-    { label: 'User id', value: user.value.id },
-    { label: 'First name', value: arr[0] },
-    { label: 'Last name', value: arr[1] },
-    { label: 'Email', value: user.value.assetHolder.email ?? '' },
-    { label: 'Phone', value: user.value.assetHolder.phone ?? '' },
-    {
-      label: 'Street',
-      value: user.value.assetHolder.address?.street ?? ''
-    },
-    {
-      label: 'Postcode',
-      value: user.value.assetHolder.address?.postcode ?? ''
-    },
-    { label: 'City', value: user.value.assetHolder.address?.city ?? '' },
-    {
-      label: 'Country',
-      value: user.value.assetHolder.address?.country ?? ''
-    }
-  ]
-  console.log(descriptionsItem)
+  const res = await adminGetPermissionByUIDService(user.value.id)
+  permission.value = res.data
+
+  if (permission.value && permission.value.length > 0) {
+    const p = permission.value[0]
+    checkboxOptions.value = [
+      { label: 'Add new asset', value: p.canCreateAsset },
+      { label: 'Add polygon', value: p.canSetPolygonOnCreate },
+      { label: 'Update polygon', value: p.canUpdateAssetPolygon },
+      { label: 'Update basic information', value: p.canUpdateAssetFields },
+      { label: 'Delete asset', value: p.canDeleteAsset },
+      { label: 'Update profile', value: p.canUpdateProfile }
+    ]
+  }
 })
 </script>
 
@@ -76,9 +73,11 @@ onMounted(async () => {
   <div>
     <h3>Permission</h3>
     <el-checkbox
+      :disabled="!isEdit"
       v-for="(item, index) in checkboxOptions"
       :key="index"
       :label="item.label"
+      v-model="item.value"
     />
   </div>
 

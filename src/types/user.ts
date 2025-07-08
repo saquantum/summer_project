@@ -1,3 +1,5 @@
+import type { Permission } from './permission'
+
 export interface ContactPreferences {
   whatsapp: boolean
   discord: boolean
@@ -35,6 +37,7 @@ export interface User {
   assetHolder?: AssetHolder | null
   admin: boolean
   token: string | null
+  permissionConfig: Permission
 }
 
 export interface LoginForm {

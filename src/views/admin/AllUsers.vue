@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { adminGetUsersService } from '@/api/admin'
+import { adminDeleteUserService, adminGetUsersService } from '@/api/admin'
 import { useRouter } from 'vue-router'
-import type { UserItem } from '@/types'
+import type { Permission, UserItem } from '@/types'
 
 interface TableRow {
   uid: string
@@ -11,6 +11,7 @@ interface TableRow {
   assets: string
   count: number
   role: 'admin' | 'user'
+  permission: Permission
 }
 
 const router = useRouter()
@@ -29,8 +30,14 @@ const handleEdit = (row: TableRow) => {
   router.push({ path: '/admin/user/detail', query: { id: row.assetHolderId } })
 }
 
-const handleDelete = (row: TableRow) => {
-  return row
+const handleDelete = async (row: TableRow) => {
+  console.log(row)
+  try {
+    await adminDeleteUserService({ ids: [row.uid] })
+    fetchTableData()
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 const fetchTableData = async () => {
@@ -63,7 +70,8 @@ const fetchTableData = async () => {
     assetHolderId: item.user.assetHolderId ?? 'none',
     assets: item.user.id,
     count: item.count,
-    role: item.user.admin ? 'admin' : 'user'
+    role: item.user.admin ? 'admin' : 'user',
+    permission: item.user.permissionConfig
   }))
 }
 
@@ -81,6 +89,20 @@ const handleSortChange = (sort: { prop: string; order: string | null }) => {
     }
   }
   fetchTableData()
+}
+
+const permissionFields = [
+  'canCreateAsset',
+  'canSetPolygonOnCreate',
+  'canUpdateAssetFields',
+  'canUpdateAssetPolygon',
+  'canDeleteAsset',
+  'canUpdateProfile'
+] as const
+
+function getPermission(uid: string) {
+  const user = users.value.find((user) => user.uid === uid)
+  return user?.permission
 }
 
 const currentPage = ref(1)
@@ -132,14 +154,15 @@ onMounted(() => {
       width="auto"
       sortable="custom"
     ></el-table-column>
-    <el-table-column label="permission">
-      <template #default>
+    <el-table-column label="Permission">
+      <template #default="scope">
         <div style="display: flex; gap: 3px">
-          <PermissionIndicator :status="true"></PermissionIndicator>
-          <PermissionIndicator></PermissionIndicator>
-          <PermissionIndicator></PermissionIndicator>
-          <PermissionIndicator></PermissionIndicator>
-          <PermissionIndicator></PermissionIndicator>
+          <PermissionIndicator
+            v-for="(field, index) in permissionFields"
+            :key="index"
+            :status="getPermission(scope.row.uid)?.[field] || false"
+            :field="field"
+          />
         </div>
       </template>
     </el-table-column>

@@ -2,7 +2,10 @@
 import { ref, onMounted, computed } from 'vue'
 import { useUserStore } from '@/stores/index.ts'
 import { userUpdateInfoService } from '@/api/user'
-import { adminGetUserInfoService } from '@/api/admin'
+import {
+  adminGetUserInfoService,
+  adminUpdateUserInfoService
+} from '@/api/admin'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { User, UserInfoForm } from '@/types'
@@ -198,9 +201,16 @@ const submit = async () => {
     }
     console.log(submitData)
 
-    if (currentUser.value?.id) {
-      const res = await userUpdateInfoService(currentUser.value.id, submitData)
-      console.log(res)
+    if (user.value.admin) {
+      await adminUpdateUserInfoService([submitData])
+    } else {
+      if (currentUser.value?.id) {
+        const res = await userUpdateInfoService(
+          currentUser.value.id,
+          submitData
+        )
+        console.log(res)
+      }
     }
 
     ElMessage.success('Profile updated!')
@@ -233,7 +243,7 @@ const loadUserData = async () => {
     form.value.lastName = arr[1]
 
     descriptionsItem.value = [
-      { label: 'User id', value: user.value.id },
+      { label: 'User id', value: currentUser.value.id },
       { label: 'First name', value: arr[0] },
       { label: 'Last name', value: arr[1] },
       { label: 'Email', value: currentUser.value.assetHolder.email ?? '' },

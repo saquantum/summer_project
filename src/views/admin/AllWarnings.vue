@@ -122,6 +122,7 @@ watch(
             v-if="warningPolygon.length > 0"
             :map-id="mapId"
             :locations="warningPolygon"
+            :style="style"
           />
         </div>
       </div>
