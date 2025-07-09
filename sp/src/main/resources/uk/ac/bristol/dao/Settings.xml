@@ -125,6 +125,13 @@
             user_is_admin        boolean      not null
         );
 
+        alter table users
+        add constraint fk_user_asset_holder
+        foreign key (user_asset_holder_id)
+        references asset_holders(asset_holder_id)
+        on delete set null;
+        <!--on delete cascade-->
+
         <include refid="initTableMetaData"/>
     </update>
 
@@ -264,10 +271,10 @@
             notification_status         boolean default false
         );
 
-        CREATE UNIQUE INDEX joint_unique_identifier
+        CREATE UNIQUE INDEX joint_unique_identifier_two
         ON notification_status (
                     lower(asset_id),
-                    lower(warning_id),
+                    warning_id
         );
 
         <include refid="initTableMetaData"/>
