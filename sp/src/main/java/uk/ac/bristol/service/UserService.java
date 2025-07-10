@@ -33,6 +33,7 @@ public interface UserService {
 
     List<Map<String, Object>> getAllUsersWithAccumulator(String function,
                                                          String column,
+                                                         Map<String, Object> filters,
                                                          List<Map<String, String>> orderList,
                                                          Integer limit,
                                                          Integer offset);

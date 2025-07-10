@@ -36,6 +36,7 @@ public interface UserMapper {
 
     List<UserWithAssetHolder> selectAllUsersWithAccumulator(@Param("function") String function,
                                                             @Param("column") String column,
+                                                            @Param("filterString") String filterString,
                                                             @Param("orderList") List<Map<String, String>> orderList,
                                                             @Param("limit") Integer limit,
                                                             @Param("offset") Integer offset);

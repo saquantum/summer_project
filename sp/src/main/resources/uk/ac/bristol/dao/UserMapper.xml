@@ -45,6 +45,11 @@
         left join asset_holders
         on users.user_asset_holder_id = asset_holders.asset_holder_id
         left join assets on asset_holder_id = asset_owner_id
+        <where>
+            <if test="filterString != null and filterString != '' ">
+                ${filterString}
+            </if>
+        </where>
         group by
         user_id,
         user_password,

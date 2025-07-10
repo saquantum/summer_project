@@ -3,6 +3,7 @@ package uk.ac.bristol.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.PermissionConfig;
 import uk.ac.bristol.pojo.Template;
 import uk.ac.bristol.pojo.User;
@@ -66,7 +67,22 @@ public class AdminController {
                                                    @RequestParam(required = false) List<String> orderList,
                                                    @RequestParam(required = false) Integer limit,
                                                    @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAccumulator(function, column, QueryTool.getOrderList(orderList), limit, offset));
+        return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAccumulator(function, column, null, QueryTool.getOrderList(orderList), limit, offset));
+    }
+
+    @PostMapping("/user/accumulate/search")
+    public ResponseBody getAllUsersWithAccumulator(@RequestParam String function,
+                                                   @RequestParam String column,
+                                                   @RequestBody Map<String, Object> filter) {
+        if (!filter.containsKey("orderList") && (filter.containsKey("limit") || filter.containsKey("offset"))) {
+            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
+        }
+
+        return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAccumulator(function, column,
+                (Map<String, Object>) filter.getOrDefault("filters", null),
+                QueryTool.getOrderList(((String) filter.getOrDefault("orderList", null)).split(",")),
+                (Integer) filter.getOrDefault("limit", null),
+                (Integer) filter.getOrDefault("offset", null)));
     }
 
     @GetMapping("/user/uid/{id}")
