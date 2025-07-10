@@ -73,7 +73,7 @@ public class ContactServiceImpl implements ContactService {
 
         List<Template> template = warningMapper.selectNotificationTemplateByTypes(new Template(typeId, warningType, severity, "Email"));
         if (template.size() != 1) {
-            throw new SpExceptions.GetMethodException("Get " + template.size() + " templates using id " + warningId);
+            throw new SpExceptions.SystemException("Get " + template.size() + " templates using id " + warningId);
         }
 
         String title = template.get(0).getTitle();
@@ -113,7 +113,7 @@ public class ContactServiceImpl implements ContactService {
         }
         List<Map<String, Object>> contactPreferences = assetHolderMapper.selectContactPreferencesByAssetHolderId(notification.get("toOwnerId").toString());
         if (contactPreferences.size() != 1) {
-            throw new SpExceptions.GetMethodException("The database might be modified by another transaction");
+            throw new SpExceptions.SystemException("The database might be modified by another transaction");
         }
 
         if ((Boolean) contactPreferences.get(0).get("email") == false) {
@@ -122,7 +122,7 @@ public class ContactServiceImpl implements ContactService {
 
         List<AssetHolder> holder = assetHolderMapper.selectAssetHolderByIDs(List.of(notification.get("toOwnerId").toString()), null, null, null);
         if (holder.size() != 1) {
-            throw new SpExceptions.GetMethodException("The database might be modified by another transaction");
+            throw new SpExceptions.SystemException("The database might be modified by another transaction");
         }
 
         String emailAddress = holder.get(0).getEmail();
@@ -169,14 +169,14 @@ public class ContactServiceImpl implements ContactService {
     public ResponseBody unsubscribeEmail(String token) {
         Claims claims = JwtUtil.parseJWT(token);
         if (!"unsubscribe-email".equals(claims.get("action"))) {
-            throw new SpExceptions.BusinessException("The token provided is incorrect to unsubscribe email");
+            throw new SpExceptions.ForbiddenException("The token provided is incorrect to unsubscribe email");
         }
         String uid = claims.get("unsubscribe-email-uid").toString();
 
         User user = userService.getUserByUserId(uid);
         AssetHolder ah = user.getAssetHolder();
         if (ah == null) {
-            throw new SpExceptions.BusinessException("The user has no active asset holder details");
+            throw new SpExceptions.BadRequestException("The user has no active asset holder details");
         }
 
         ah.getContactPreferences().put("email", false);

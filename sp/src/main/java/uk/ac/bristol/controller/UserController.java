@@ -30,7 +30,7 @@ public class UserController {
                                              HttpServletRequest request,
                                              @PathVariable String uid) {
         if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
-            throw new SpExceptions.GetMethodException("User identification failed");
+            throw new SpExceptions.ForbiddenException("User identification failed");
         }
         User user = userService.getUserByUserId(uid);
         user.setPassword(null);
@@ -43,7 +43,7 @@ public class UserController {
                                                     HttpServletRequest request,
                                                     @PathVariable String aid) {
         if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
-            throw new SpExceptions.GetMethodException("User identification failed");
+            throw new SpExceptions.ForbiddenException("User identification failed");
         }
         User user = userService.getUserByAssetHolderId(aid, null, null, null);
         user.setPassword(null);
@@ -59,10 +59,10 @@ public class UserController {
                                                   @PathVariable String uid,
                                                   @RequestBody User user) {
         if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
-            throw new SpExceptions.PutMethodException("User identification failed");
+            throw new SpExceptions.ForbiddenException("User identification failed");
         }
         if(!QueryTool.getUserPermissions(uid, null).getCanUpdateProfile()){
-            throw new SpExceptions.PutMethodException("The user is not allowed to update profile");
+            throw new SpExceptions.ForbiddenException("The user is not allowed to update profile");
         }
         userService.updateUser(user);
         return new ResponseBody(Code.UPDATE_OK, null);
@@ -74,10 +74,10 @@ public class UserController {
                                                          @PathVariable String aid,
                                                          @RequestBody User user) {
         if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
-            throw new SpExceptions.PutMethodException("User identification failed");
+            throw new SpExceptions.ForbiddenException("User identification failed");
         }
         if(!QueryTool.getUserPermissions(null, aid).getCanUpdateProfile()){
-            throw new SpExceptions.PutMethodException("The user is not allowed to update profile");
+            throw new SpExceptions.ForbiddenException("The user is not allowed to update profile");
         }
         userService.updateUser(user);
         return new ResponseBody(Code.UPDATE_OK, null);
@@ -88,7 +88,7 @@ public class UserController {
                                                   HttpServletRequest request,
                                                   @PathVariable String uid) {
         if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
-            throw new SpExceptions.DeleteMethodException("User identification failed");
+            throw new SpExceptions.ForbiddenException("User identification failed");
         }
         userService.deleteUserByUserIds(new String[]{uid});
         return new ResponseBody(Code.DELETE_OK, null);
@@ -99,7 +99,7 @@ public class UserController {
                                                          HttpServletRequest request,
                                                          @PathVariable String aid) {
         if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
-            throw new SpExceptions.DeleteMethodException("User identification failed");
+            throw new SpExceptions.ForbiddenException("User identification failed");
         }
         userService.deleteUserByAssetHolderIds(new String[]{aid});
         return new ResponseBody(Code.DELETE_OK, null);
@@ -110,7 +110,7 @@ public class UserController {
                                         HttpServletRequest request,
                                         @PathVariable String uid) {
         if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
-            throw new SpExceptions.DeleteMethodException("User identification failed");
+            throw new SpExceptions.ForbiddenException("User identification failed");
         }
         return new ResponseBody(Code.SELECT_OK, QueryTool.getUserPermissions(uid, null));
     }

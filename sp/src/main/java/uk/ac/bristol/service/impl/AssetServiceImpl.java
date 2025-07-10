@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.AssetHolderMapper;
 import uk.ac.bristol.dao.AssetMapper;
 import uk.ac.bristol.dao.MetaDataMapper;
+import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.AssetType;
@@ -158,13 +159,13 @@ public class AssetServiceImpl implements AssetService {
         if (asset.getOwnerId() == null || asset.getOwnerId().isBlank()) {
             List<Asset> tmp = assetMapper.selectAssetByID(asset.getId());
             if (tmp.size() != 1) {
-                throw new RuntimeException("Found " + tmp.size() + " assets for asset id " + asset.getId() + " when updating asset");
+                throw new SpExceptions.GetMethodException("Found " + tmp.size() + " assets for asset id " + asset.getId() + " when updating asset");
             }
             ownerId = tmp.get(0).getOwnerId();
         }
         List<AssetHolder> list = assetHolderMapper.selectAssetHolderByIDs(List.of(ownerId), null, null, null);
         if (list.size() != 1) {
-            throw new RuntimeException(list.size() + " asset holders found for asset id " + asset.getId() + " when updating asset");
+            throw new SpExceptions.GetMethodException(list.size() + " asset holders found for asset id " + asset.getId() + " when updating asset");
         }
         Instant now = Instant.now();
         list.get(0).setLastModified(now);

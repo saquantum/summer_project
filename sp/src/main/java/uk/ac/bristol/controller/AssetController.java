@@ -39,7 +39,7 @@ public class AssetController {
                                             @RequestParam(required = false) Integer limit,
                                             @RequestParam(required = false) Integer offset) {
         if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
-            throw new SpExceptions.GetMethodException("User identification failed");
+            throw new SpExceptions.ForbiddenException("User identification failed");
         }
         User user = userService.getUserByUserId(uid);
         List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(user.getAssetHolderId(), QueryTool.getOrderList(orderList), limit, offset);
@@ -54,7 +54,7 @@ public class AssetController {
                                                    @RequestParam(required = false) Integer limit,
                                                    @RequestParam(required = false) Integer offset) {
         if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
-            throw new SpExceptions.GetMethodException("User identification failed");
+            throw new SpExceptions.ForbiddenException("User identification failed");
         }
         List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(aid, QueryTool.getOrderList(orderList), limit, offset);
         return new ResponseBody(Code.SELECT_OK, assets);
@@ -85,10 +85,10 @@ public class AssetController {
                                                @PathVariable String uid,
                                                @PathVariable String assetId) {
         if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
-            throw new SpExceptions.GetMethodException("User identification failed");
+            throw new SpExceptions.ForbiddenException("User identification failed");
         }
         if (!verifyAssetOwnership(assetId, uid, null)) {
-            throw new SpExceptions.GetMethodException("Asset owner identification failed");
+            throw new SpExceptions.ForbiddenException("Asset owner identification failed");
         }
         return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
     }
@@ -99,10 +99,10 @@ public class AssetController {
                                                       @PathVariable String aid,
                                                       @PathVariable String assetId) {
         if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
-            throw new SpExceptions.GetMethodException("User identification failed");
+            throw new SpExceptions.ForbiddenException("User identification failed");
         }
         if (!verifyAssetOwnership(assetId, null, aid)) {
-            throw new SpExceptions.GetMethodException("Asset owner identification failed");
+            throw new SpExceptions.ForbiddenException("Asset owner identification failed");
         }
         return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
     }
@@ -113,10 +113,10 @@ public class AssetController {
                                               @PathVariable String uid,
                                               @RequestBody Asset asset) {
         if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
-            throw new SpExceptions.PostMethodException("User identification failed");
+            throw new SpExceptions.ForbiddenException("User identification failed");
         }
         if (!QueryTool.getUserPermissions(uid, null).getCanCreateAsset()) {
-            throw new SpExceptions.PostMethodException("The user is not allowed to insert asset.");
+            throw new SpExceptions.ForbiddenException("The user is not allowed to insert asset.");
         }
         asset.setId(null);
         if (!QueryTool.getUserPermissions(uid, null).getCanSetPolygonOnCreate()) {
@@ -132,10 +132,10 @@ public class AssetController {
                                                      @PathVariable String aid,
                                                      @RequestBody Asset asset) {
         if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
-            throw new SpExceptions.PostMethodException("User identification failed");
+            throw new SpExceptions.ForbiddenException("User identification failed");
         }
         if (!QueryTool.getUserPermissions(null, aid).getCanCreateAsset()) {
-            throw new SpExceptions.PostMethodException("The user is not allowed to insert asset");
+            throw new SpExceptions.ForbiddenException("The user is not allowed to insert asset");
         }
         asset.setId(null);
         if (!QueryTool.getUserPermissions(null, aid).getCanSetPolygonOnCreate()) {
@@ -157,13 +157,13 @@ public class AssetController {
                                               @PathVariable String uid,
                                               @RequestBody Asset asset) {
         if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
-            throw new SpExceptions.PutMethodException("User identification failed");
+            throw new SpExceptions.ForbiddenException("User identification failed");
         }
         if (!verifyAssetOwnership(asset.getId(), uid, null)) {
-            throw new SpExceptions.PutMethodException("Asset owner identification failed");
+            throw new SpExceptions.ForbiddenException("Asset owner identification failed");
         }
         if (!QueryTool.getUserPermissions(uid, null).getCanUpdateAssetFields()) {
-            throw new SpExceptions.PutMethodException("The user is not allowed to update asset.");
+            throw new SpExceptions.ForbiddenException("The user is not allowed to update asset.");
         }
         if (!QueryTool.getUserPermissions(uid, null).getCanUpdateAssetPolygon()) {
             asset.setLocationAsJson(null);
@@ -178,13 +178,13 @@ public class AssetController {
                                                      @PathVariable String aid,
                                                      @RequestBody Asset asset) {
         if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
-            throw new SpExceptions.PutMethodException("User identification failed");
+            throw new SpExceptions.ForbiddenException("User identification failed");
         }
         if (!verifyAssetOwnership(asset.getId(), null, aid)) {
-            throw new SpExceptions.PutMethodException("Asset owner identification failed");
+            throw new SpExceptions.ForbiddenException("Asset owner identification failed");
         }
         if (!QueryTool.getUserPermissions(null, aid).getCanUpdateAssetFields()) {
-            throw new SpExceptions.PutMethodException("The user is not allowed to update asset.");
+            throw new SpExceptions.ForbiddenException("The user is not allowed to update asset.");
         }
         if (!QueryTool.getUserPermissions(null, aid).getCanUpdateAssetPolygon()) {
             asset.setLocationAsJson(null);
@@ -204,16 +204,16 @@ public class AssetController {
                                                     @PathVariable String uid,
                                                     @RequestBody Map<String, Object> body) {
         if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
-            throw new SpExceptions.DeleteMethodException("User identification failed");
+            throw new SpExceptions.ForbiddenException("User identification failed");
         }
         if (!QueryTool.getUserPermissions(uid, null).getCanDeleteAsset()) {
-            throw new SpExceptions.DeleteMethodException("The user is not allowed to delete asset.");
+            throw new SpExceptions.ForbiddenException("The user is not allowed to delete asset.");
         }
 
         List<String> ids = (List<String>) body.get("ids");
         for (String s : ids) {
             if (!verifyAssetOwnership(s, uid, null)) {
-                throw new SpExceptions.DeleteMethodException("Asset owner identification failed: " + s + " does not belong to current user");
+                throw new SpExceptions.ForbiddenException("Asset owner identification failed: " + s + " does not belong to current user");
             }
         }
         return new ResponseBody(Code.DELETE_OK, assetService.deleteAssetByIDs(ids));
@@ -225,16 +225,16 @@ public class AssetController {
                                                            @PathVariable String aid,
                                                            @RequestBody Map<String, Object> body) {
         if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
-            throw new SpExceptions.DeleteMethodException("User identification failed");
+            throw new SpExceptions.ForbiddenException("User identification failed");
         }
         if (!QueryTool.getUserPermissions(null, aid).getCanDeleteAsset()) {
-            throw new SpExceptions.DeleteMethodException("The user is not allowed to delete asset.");
+            throw new SpExceptions.ForbiddenException("The user is not allowed to delete asset.");
         }
 
         List<String> ids = (List<String>) body.get("ids");
         for (String s : ids) {
             if (!verifyAssetOwnership(s, null, aid)) {
-                throw new SpExceptions.DeleteMethodException("Asset owner identification failed");
+                throw new SpExceptions.ForbiddenException("Asset owner identification failed");
             }
         }
         return new ResponseBody(Code.DELETE_OK, assetService.deleteAssetByIDs(ids));

@@ -44,39 +44,41 @@ public class ScheduledMetOfficeWarningsCrawler {
         try {
             MockDataInitializer.latch.await();
         } catch (InterruptedException e) {
+            e.printStackTrace();
             throw new SpExceptions.SystemException("InterruptedException threw, failed to start the scheduled crawler");
         }
         crawler();
     }
 
     private void crawler() {
+        HttpResponse<String> httpResponse = null;
         String response = null;
         try {
-            HttpResponse<String> httpResponse = getResponse();
-            if (httpResponse.statusCode() != 200) {
-                throw new RuntimeException("Failed to crawl weather warning data due to HTTP error with code "
-                        + httpResponse.statusCode());
-            }
-            response = httpResponse.body();
+            httpResponse = getResponse();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to crawl weather warning data.", e);
+            throw new SpExceptions.SystemException("Failed to crawl weather warning data. " + e.getMessage());
         }
+        if (httpResponse.statusCode() != 200) {
+            throw new SpExceptions.SystemException("Failed to crawl weather warning data due to HTTP error with code "
+                    + httpResponse.statusCode());
+        }
+        response = httpResponse.body();
         try {
             saveWarningData(response);
             System.out.println("Successfully stored weather warning data at "
                     + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         } catch (IOException e) {
-            throw new RuntimeException("Failed to save crawled weather warning data", e);
+            throw new SpExceptions.SystemException("Failed to save crawled weather warning data. " + e.getMessage());
         }
         List<Warning> warnings;
         try {
             List<Feature> features = getFeatures(response);
             warnings = parseWarningFromGeoJSON(features);
         } catch (Exception e) {
-            throw new RuntimeException(
+            throw new SpExceptions.SystemException(
                     "Failed to parse crawled weather warning data at "
                             + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                    , e);
+                            + ". " + e.getMessage());
         }
         if (warnings.isEmpty()) {
             System.out.println("Currently no weather warning is issued, finished.");

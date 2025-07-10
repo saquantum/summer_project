@@ -64,4 +64,44 @@ public class SpExceptions extends RuntimeException {
             super(message);
         }
     }
+
+    public static class BadRequestException extends SpExceptions {
+        public BadRequestException() {
+            super("400 bad request.");
+        }
+
+        public BadRequestException(String message) {
+            super(message);
+        }
+    }
+
+    public static class UnauthorisedException extends SpExceptions {
+        public UnauthorisedException() {
+            super("401 unauthorized.");
+        }
+
+        public UnauthorisedException(String message) {
+            super(message);
+        }
+    }
+
+    public static class ForbiddenException extends SpExceptions {
+        public ForbiddenException() {
+            super("403 forbidden.");
+        }
+
+        public ForbiddenException(String message) {
+            super(message);
+        }
+    }
+
+    public static class NotFoundException extends SpExceptions {
+        public NotFoundException() {
+            super("404 not found.");
+        }
+
+        public NotFoundException(String message) {
+            super(message);
+        }
+    }
 }
