@@ -147,11 +147,11 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- jbcrypt -->
+        <!-- Argon2id -->
         <dependency>
-            <groupId>org.mindrot</groupId>
-            <artifactId>jbcrypt</artifactId>
-            <version>0.4</version>
+            <groupId>com.password4j</groupId>
+            <artifactId>password4j</artifactId>
+            <version>1.8.2</version>
         </dependency>
 
     </dependencies>
