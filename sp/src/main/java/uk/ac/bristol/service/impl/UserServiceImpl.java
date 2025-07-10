@@ -1,6 +1,9 @@
 package uk.ac.bristol.service.impl;
 
-import org.mindrot.jbcrypt.BCrypt;
+import com.password4j.Argon2Function;
+import com.password4j.Hash;
+import com.password4j.Password;
+import com.password4j.types.Argon2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -474,13 +477,31 @@ public class UserServiceImpl implements UserService {
     }
 
     private String hashPassword(String password) {
-        return BCrypt.hashpw(password, BCrypt.gensalt(12));
+        Argon2Function argon2 = Argon2Function.getInstance(
+                19456,
+                2,
+                1,
+                256,
+                Argon2.ID
+        );
+
+        Hash hash = Password.hash(password)
+                .addRandomSalt(16)
+                .with(argon2);
+
+        return hash.getResult();
     }
 
     private boolean verifyPassword(String plainPassword, String hashedPassword) {
-        if (hashedPassword == null || !hashedPassword.startsWith("$2a$")) {
-            throw new IllegalArgumentException("Invalid hash provided for comparison");
-        }
-        return BCrypt.checkpw(plainPassword, hashedPassword);
+        Argon2Function argon2 = Argon2Function.getInstance(
+                19456,
+                2,
+                1,
+                256,
+                Argon2.ID
+        );
+
+        return Password.check(plainPassword, hashedPassword)
+                .with(argon2);
     }
 }
