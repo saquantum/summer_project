@@ -1,5 +1,6 @@
 package uk.ac.bristol.service.impl;
 
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,8 +39,15 @@ public class UserServiceImpl implements UserService {
     // checks uid and password, returns a jwt token
     @Override
     public User login(User user) {
-        List<User> list = userMapper.loginQuery(user);
-        if (list.size() != 1) return null;
+        List<User> list = userMapper.selectUserById(user.getId());
+        if (list.size() != 1) {
+            return null;
+        }
+
+        if (!verifyPassword(user.getPassword(),userMapper.selectPasswordById(user.getId()))) {
+            return null;
+        }
+
         User u = list.get(0);
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", u.getId());
@@ -257,6 +265,9 @@ public class UserServiceImpl implements UserService {
 
             user.setAssetHolderId(user.getAssetHolder().getId());
         }
+
+        user.setPassword(hashPassword(user.getPassword()));
+
         int n4 = userMapper.insertUser(user);
         if (n4 != 1) {
             throw new RuntimeException("Failed to insert user " + user.getId());
@@ -329,6 +340,9 @@ public class UserServiceImpl implements UserService {
         if (n2 != 1) {
             throw new RuntimeException("Failed to insert contact preferences for user " + user.getId());
         }
+
+        user.setPassword(hashPassword(user.getPassword()));
+
         int n4 = userMapper.insertUser(user);
         if (n4 != 1) {
             throw new RuntimeException("Failed to insert user " + user.getId());
@@ -342,6 +356,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public int updateUser(User user) {
+
+        user.setPassword(hashPassword(user.getPassword()));
+
         int n1 = userMapper.updateUserByUserId(user);
         Integer n2 = null;
         if (user.getAssetHolder() != null) {
@@ -437,7 +454,20 @@ public class UserServiceImpl implements UserService {
         }
 
         User user = list.get(0);
-        user.setPassword(password);
+
+        user.setPassword(hashPassword(password));
+
         return userMapper.updateUserPasswordByUserId(user);
+    }
+
+    private String hashPassword(String password) {
+        return BCrypt.hashpw(password, BCrypt.gensalt(12));
+    }
+
+    private boolean verifyPassword(String plainPassword, String hashedPassword) {
+        if (hashedPassword == null || !hashedPassword.startsWith("$2a$")) {
+            throw new IllegalArgumentException("Invalid hash provided for comparison");
+        }
+        return BCrypt.checkpw(plainPassword, hashedPassword);
     }
 }

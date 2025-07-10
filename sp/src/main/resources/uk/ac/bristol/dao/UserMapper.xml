@@ -125,4 +125,10 @@
         delete from users where user_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
+
+    <select id="selectPasswordById" resultType="String">
+        select user_password
+        from users
+        where user_id = #{id};
+    </select>
 </mapper>
