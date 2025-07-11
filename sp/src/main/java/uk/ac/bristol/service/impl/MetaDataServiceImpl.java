@@ -31,6 +31,11 @@ public class MetaDataServiceImpl implements MetaDataService {
     }
 
     @Override
+    public Set<String> getAllRegisteredTableNames() {
+        return metaDataMapper.selectAllRegisteredTableNames();
+    }
+
+    @Override
     public Set<String> filterRegisteredColumnsInTables(List<String> tableNames, List<String> columnNames) {
         return metaDataMapper.filterRegisteredColumnsInTables(tableNames, columnNames);
     }

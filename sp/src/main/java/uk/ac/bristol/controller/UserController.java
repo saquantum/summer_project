@@ -45,7 +45,7 @@ public class UserController {
         if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
             throw new SpExceptions.ForbiddenException("User identification failed");
         }
-        User user = userService.getUserByAssetHolderId(aid, null, null, null);
+        User user = userService.getUserByAssetHolderId(aid);
         user.setPassword(null);
         user.setPermissionConfig(QueryTool.getUserPermissions(null, aid));
         return new ResponseBody(Code.SELECT_OK, user);

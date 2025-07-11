@@ -33,17 +33,25 @@ public class WarningServiceImpl implements WarningService {
     }
 
     @Override
-    public List<Warning> getAllWarnings(List<Map<String, String>> orderList,
+    public List<Warning> getAllWarnings(Map<String, Object> filters,
+                                        List<Map<String, String>> orderList,
                                         Integer limit,
                                         Integer offset) {
-        return warningMapper.selectAllWarnings(QueryTool.filterOrderList(orderList, "warning"), limit, offset);
+        return warningMapper.selectAllWarnings(
+                QueryTool.formatFilters(filters),
+                QueryTool.filterOrderList(orderList, "weather_warnings"),
+                limit, offset);
     }
 
     @Override
-    public List<Warning> getAllWarningsIncludingOutdated(List<Map<String, String>> orderList,
+    public List<Warning> getAllWarningsIncludingOutdated(Map<String, Object> filters,
+                                                         List<Map<String, String>> orderList,
                                                          Integer limit,
                                                          Integer offset) {
-        return warningMapper.selectAllWarningsIncludingOutdated(QueryTool.filterOrderList(orderList, "warning"), limit, offset);
+        return warningMapper.selectAllWarningsIncludingOutdated(
+                QueryTool.formatFilters(filters),
+                QueryTool.filterOrderList(orderList, "weather_warnings"),
+                limit, offset);
     }
 
     @Override
@@ -96,10 +104,14 @@ public class WarningServiceImpl implements WarningService {
     }
 
     @Override
-    public List<Template> getAllNotificationTemplates(List<Map<String, String>> orderList,
+    public List<Template> getAllNotificationTemplates(Map<String, Object> filters,
+                                                      List<Map<String, String>> orderList,
                                                       Integer limit,
                                                       Integer offset) {
-        return warningMapper.selectAllNotificationTemplates(QueryTool.filterOrderList(orderList, "template"), limit, offset);
+        return warningMapper.selectAllNotificationTemplates(
+                QueryTool.formatFilters(filters),
+                QueryTool.filterOrderList(orderList, "templates"),
+                limit, offset);
     }
 
     @Override

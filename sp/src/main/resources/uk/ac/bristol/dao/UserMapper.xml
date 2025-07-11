@@ -7,6 +7,7 @@
     <select id="selectAllUsers" resultMap="ResultMaps.UserMap">
         select *
         from users
+        <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
@@ -15,6 +16,7 @@
         from users
             left join asset_holders
                 on users.user_asset_holder_id = asset_holders.asset_holder_id
+        <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
@@ -24,6 +26,7 @@
         left join asset_holders
         on users.user_asset_holder_id = asset_holders.asset_holder_id
         where user_is_admin = false
+        <include refid="ResultMaps.combinedFiltering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
@@ -45,11 +48,7 @@
         left join asset_holders
         on users.user_asset_holder_id = asset_holders.asset_holder_id
         left join assets on asset_holder_id = asset_owner_id
-        <where>
-            <if test="filterString != null and filterString != '' ">
-                ${filterString}
-            </if>
-        </where>
+        <include refid="ResultMaps.filtering"/>
         group by
         user_id,
         user_password,
@@ -82,13 +81,6 @@
         select *
         from users
         where user_asset_holder_id = #{assetHolderId};
-    </select>
-
-    <select id="selectUserByAdmin" resultMap="ResultMaps.UserMap">
-        select *
-        from users
-        where user_is_admin = #{isAdmin}
-        <include refid="ResultMaps.orderAndPage"/>
     </select>
 
     <select id="selectUserByEmailAddress" resultMap="ResultMaps.UserMap">

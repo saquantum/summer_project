@@ -27,7 +27,10 @@ public final class QueryTool {
         if (value instanceof Boolean) {
             return (Boolean) value ? "true" : "false";
         }
-        return value.toString();
+        if (value instanceof Number) {
+            return value.toString();
+        }
+        return "'" + value.toString() + "'";
     }
 
     public static String formatFilters(Map<String, Object> filters) {
@@ -35,46 +38,44 @@ public final class QueryTool {
             return null;
         }
 
-        List<String> result  = new ArrayList<>();
+        List<String> result = new ArrayList<>();
         for (Map.Entry<String, Object> entry : filters.entrySet()) {
             String column = entry.getKey();
             Object condition = entry.getValue();
 
-            if(!(condition instanceof Map)) {
-                result.add(column + "=" + formatFilterValue(condition));
+            if (!(condition instanceof Map)) {
+                result.add(column + " = " + formatFilterValue(condition));
             }
 
             Map<String, Object> conditionMap = (Map<String, Object>) condition;
 
-            if(!conditionMap.containsKey("op")) {
+            if (!conditionMap.containsKey("op")) {
                 throw new IllegalArgumentException("Filter conditions must contain operator");
             }
             String operator = (String) conditionMap.get("op");
 
-            if("like".equalsIgnoreCase(operator)) {
-                if(!conditionMap.containsKey("val")) {
+            if ("like".equalsIgnoreCase(operator)) {
+                if (!conditionMap.containsKey("val")) {
                     throw new IllegalArgumentException("Like conditions must have a value");
                 }
-                if(conditionMap.get("val") == null) {
+                if (conditionMap.get("val") == null) {
                     throw new IllegalArgumentException("Value of like conditions must not be null");
                 }
-                result.add(column + " like " + "'" + formatFilterValue(conditionMap.get("val")) + "'");
+                result.add("lower(" + column + ") like lower(" + formatFilterValue(conditionMap.get("val")) + ")");
             }
 
-            if("range".equalsIgnoreCase(operator)) {
+            if ("range".equalsIgnoreCase(operator)) {
                 Object min = conditionMap.get("min");
                 Object max = conditionMap.get("max");
 
                 if (min != null && max != null) {
                     result.add(column + " >= " + formatFilterValue(min) +
                             " and " + column + " <= " + formatFilterValue(max));
-                }
-                else if (min != null) {
+                } else if (min != null) {
                     result.add(column + " >= " + formatFilterValue(min));
-                }
-                else if (max != null) {
+                } else if (max != null) {
                     result.add(column + " <= " + formatFilterValue(max));
-                }else{
+                } else {
                     throw new IllegalArgumentException("Range conditions must have a min or a max value");
                 }
             }
@@ -129,62 +130,38 @@ public final class QueryTool {
         return false;
     }
 
-    private final static List<String> registeredColumnPrefixes = List.of(
-            "asset_holder",
-            "asset_type",
-            "asset",
-            "user",
-            "address",
-            "contact_preferences",
-            "warning",
-            "template");
+    private final static Set<String> registeredTables = QueryToolConfig.metaDataService.getAllRegisteredTableNames();
 
-    private final static Set<String> registeredTables = Set.of("table_meta_data",
-            "asset_holders",
-            "asset_types",
-            "assets",
-            "users",
-            "address",
-            "contact_preferences",
-            "weather_warnings",
-            "templates");
+    public static List<Map<String, String>> filterOrderList(List<Map<String, String>> originalList, String... tablesAndColumns) {
+        if (originalList == null || originalList.isEmpty() || tablesAndColumns == null || tablesAndColumns.length == 0){
+            return null;}
 
-    // TODO: user meta data mapper -> filterRegisteredColumnsInTables
-    public static List<Map<String, String>> filterOrderList(List<Map<String, String>> originalList, String... prefixes) {
-        if (originalList == null || originalList.isEmpty() || prefixes == null || prefixes.length == 0) return null;
-
-        Set<String> prefixesSet = new HashSet<>(Arrays.asList(prefixes));
-
-        List<Map<String, String>> list = new ArrayList<>();
-        for (Map<String, String> item : originalList) {
-            String column = item.get("column");
-            boolean matched = false;
-            String matchedPrefix = null;
-            // 1. match registered prefixes by sequence, get first matched prefix
-            for (String prefix : registeredColumnPrefixes) {
-                if (column.startsWith(prefix)) {
-                    matched = true;
-                    matchedPrefix = prefix;
-                    break;
-                }
-            }
-            // 2. add to result if the first matched prefix is in parameter @prefixes
-            if (matched) {
-                if (prefixesSet.contains(matchedPrefix)) {
-                    list.add(item);
-                }
-            }
-            // 3. if the column does not match registered prefixes but is in parameter @prefixes, keep it
-            else {
-                for (String prefix : prefixes) {
-                    if (column.startsWith(prefix)) {
-                        list.add(item);
-                        break;
-                    }
-                }
+        // 1. separate tables and permitted columns from input
+        Set<String> tables = new HashSet<>();
+        Set<String> columns = new HashSet<>();
+        for (String s : tablesAndColumns) {
+            if (registeredTables.contains(s)) {
+                tables.add(s);
+            } else {
+                columns.add(s);
             }
         }
-        return list;
+
+        // 2. get columns that belong to given tables
+        Set<String> registeredColumns = QueryToolConfig.metaDataService.filterRegisteredColumnsInTables(
+                new ArrayList<>(tables),
+                originalList.stream().map(item -> item.get("column")).toList());
+
+        // 3. filter columns using two filters
+        List<Map<String, String>> result = new ArrayList<>();
+        for (Map<String, String> item : originalList) {
+            String column = item.get("column");
+            if(registeredColumns.contains(column) || columns.contains(column)) {
+                result.add(item);
+            }
+        }
+
+        return result;
     }
 
     public static PermissionConfig getUserPermissions(String uid, String aid) {

@@ -11,23 +11,28 @@ public interface UserService {
 
     User login(User user);
 
-    List<User> getAllUsers(List<Map<String, String>> orderList,
+    List<User> getAllUsers(Map<String, Object> filters,
+                           List<Map<String, String>> orderList,
                            Integer limit,
                            Integer offset);
 
-    List<User> getAllUsersWithAssetHolder(List<Map<String, String>> orderList,
+    List<User> getAllUsersWithAssetHolder(Map<String, Object> filters,
+                                          List<Map<String, String>> orderList,
                                           Integer limit,
                                           Integer offset);
 
-    List<User> getAllUnauthorisedUsersWithAssetHolder(List<Map<String, String>> orderList,
+    List<User> getAllUnauthorisedUsersWithAssetHolder(Map<String, Object> filters,
+                                                      List<Map<String, String>> orderList,
                                                       Integer limit,
                                                       Integer offset);
 
-    List<AssetHolder> getAllAssetHolders(List<Map<String, String>> orderList,
+    List<AssetHolder> getAllAssetHolders(Map<String, Object> filters,
+                                         List<Map<String, String>> orderList,
                                          Integer limit,
                                          Integer offset);
 
-    List<Map<String, Object>> getAllAssetHoldersWithAssetIds(List<Map<String, String>> orderList,
+    List<Map<String, Object>> getAllAssetHoldersWithAssetIds(Map<String, Object> filters,
+                                                             List<Map<String, String>> orderList,
                                                              Integer limit,
                                                              Integer offset);
 
@@ -38,14 +43,7 @@ public interface UserService {
                                                          Integer limit,
                                                          Integer offset);
 
-    List<User> getAllAdmins(List<Map<String, String>> orderList,
-                            Integer limit,
-                            Integer offset);
-
-    User getUserByAssetHolderId(String assetHolderId,
-                                List<Map<String, String>> orderList,
-                                Integer limit,
-                                Integer offset);
+    User getUserByAssetHolderId(String assetHolderId);
 
     User getUserByUserId(String id);
 

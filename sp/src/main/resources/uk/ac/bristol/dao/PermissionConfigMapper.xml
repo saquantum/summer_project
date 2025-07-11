@@ -7,6 +7,7 @@
 
     <select id="selectAllPermissionConfigs" resultMap="ResultMaps.PermissionConfigMap">
         select * from permission_configs
+        <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 

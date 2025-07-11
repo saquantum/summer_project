@@ -2,10 +2,7 @@ package uk.ac.bristol.controller;
 
 import org.springframework.web.bind.annotation.*;
 import uk.ac.bristol.exception.SpExceptions;
-import uk.ac.bristol.pojo.Asset;
-import uk.ac.bristol.pojo.AssetType;
-import uk.ac.bristol.pojo.AssetWithWeatherWarnings;
-import uk.ac.bristol.pojo.User;
+import uk.ac.bristol.pojo.*;
 import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.service.WarningService;
@@ -252,7 +249,21 @@ public class AssetController {
     public ResponseBody getAllAssetsTypes(@RequestParam(required = false) List<String> orderList,
                                           @RequestParam(required = false) Integer limit,
                                           @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetTypes(QueryTool.getOrderList(orderList), limit, offset));
+        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetTypes(null, QueryTool.getOrderList(orderList), limit, offset));
+    }
+
+    @PostMapping("/asset/type/search")
+    public ResponseBody getAllAssetsTypes(@RequestBody FilterDTO filter) {
+        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
+            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
+        }
+
+        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetTypes(
+                filter.getFilters(),
+                QueryTool.getOrderList(filter.getOrderList()),
+                filter.getLimit(),
+                filter.getOffset()
+        ));
     }
 
     @PostMapping("/admin/asset/type")
@@ -278,14 +289,42 @@ public class AssetController {
     public ResponseBody getAllLiveWarnings(@RequestParam(required = false) List<String> orderList,
                                            @RequestParam(required = false) Integer limit,
                                            @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarnings(QueryTool.getOrderList(orderList), limit, offset));
+        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarnings(null, QueryTool.getOrderList(orderList), limit, offset));
+    }
+
+    @PostMapping("/warning/search")
+    public ResponseBody getAllLiveWarnings(@RequestBody FilterDTO filter) {
+        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
+            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
+        }
+
+        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarnings(
+                filter.getFilters(),
+                QueryTool.getOrderList(filter.getOrderList()),
+                filter.getLimit(),
+                filter.getOffset()
+        ));
     }
 
     @GetMapping("/admin/warning/all")
     public ResponseBody getAllWarningsIncludingOutdated(@RequestParam(required = false) List<String> orderList,
                                                         @RequestParam(required = false) Integer limit,
                                                         @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarningsIncludingOutdated(QueryTool.getOrderList(orderList), limit, offset));
+        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarningsIncludingOutdated(null, QueryTool.getOrderList(orderList), limit, offset));
+    }
+
+    @PostMapping("/admin/warning/all/search")
+    public ResponseBody getAllWarningsIncludingOutdated(@RequestBody FilterDTO filter) {
+        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
+            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
+        }
+
+        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarningsIncludingOutdated(
+                filter.getFilters(),
+                QueryTool.getOrderList(filter.getOrderList()),
+                filter.getLimit(),
+                filter.getOffset()
+        ));
     }
 
     @GetMapping("/warning/{id}")
@@ -317,7 +356,7 @@ public class AssetController {
             if (!Objects.equals(user.getAssetHolder().getId(), asset.get(0).getOwnerId())) return false;
         }
         if (aid != null) {
-            User user = userService.getUserByAssetHolderId(aid, null, null, null);
+            User user = userService.getUserByAssetHolderId(aid);
             if (user.getAssetHolder() == null) return false;
             if (!Objects.equals(user.getAssetHolder().getId(), asset.get(0).getOwnerId())) return false;
         }

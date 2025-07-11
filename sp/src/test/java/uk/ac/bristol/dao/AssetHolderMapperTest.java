@@ -285,41 +285,41 @@ public class AssetHolderMapperTest {
     public void selectAllAssetHolders() {
         int pageSize = 10;
         int pageNumber = 1;
-        List<AssetHolder> list = assetHolderMapper.selectAllAssetHolders(QueryTool.getOrderList("asset_holder_name", "asc"), pageSize, (pageNumber - 1) * pageSize);
+        List<AssetHolder> list = assetHolderMapper.selectAllAssetHolders(null, QueryTool.getOrderList("asset_holder_name", "asc"), pageSize, (pageNumber - 1) * pageSize);
         assertEquals(10, list.size());
         assertEquals("$user_024", list.get(0).getId());
         assertEquals("Aiden Lee", list.get(0).getName());
 
         pageSize = 10;
         pageNumber = 1;
-        list = assetHolderMapper.selectAllAssetHolders(QueryTool.getOrderList("asset_holder_name", "desc"), pageSize, (pageNumber - 1) * pageSize);
+        list = assetHolderMapper.selectAllAssetHolders(null, QueryTool.getOrderList("asset_holder_name", "desc"), pageSize, (pageNumber - 1) * pageSize);
         assertEquals(10, list.size());
         assertEquals("$user_036", list.get(0).getId());
         assertEquals("William Carter", list.get(0).getName());
 
         pageSize = 10;
         pageNumber = 2;
-        list = assetHolderMapper.selectAllAssetHolders(null, pageSize, (pageNumber - 1) * pageSize);
+        list = assetHolderMapper.selectAllAssetHolders(null, null, pageSize, (pageNumber - 1) * pageSize);
         assertEquals(10, list.size());
 
         pageSize = 100;
         pageNumber = 1;
-        list = assetHolderMapper.selectAllAssetHolders(null, pageSize, (pageNumber - 1) * pageSize);
+        list = assetHolderMapper.selectAllAssetHolders(null, null, pageSize, (pageNumber - 1) * pageSize);
         assertEquals(50, list.size());
 
         pageSize = 100;
         pageNumber = 2;
-        list = assetHolderMapper.selectAllAssetHolders(null, pageSize, (pageNumber - 1) * pageSize);
+        list = assetHolderMapper.selectAllAssetHolders(null, null, pageSize, (pageNumber - 1) * pageSize);
         assertEquals(0, list.size());
 
-        list = assetHolderMapper.selectAllAssetHolders(null, null, null);
+        list = assetHolderMapper.selectAllAssetHolders(null, null, null, null);
         assertEquals(50, list.size());
     }
 
     @Test
     @Order(10)
     public void selectAssetHolderByIDs() {
-        List<AssetHolder> list = assetHolderMapper.selectAssetHolderByIDs(List.of("$user_010"), null, null, null);
+        List<AssetHolder> list = assetHolderMapper.selectAssetHolderByIDs(List.of("$user_010"));
         assertEquals(1, list.size());
         AssetHolder assetHolder = list.get(0);
         assertEquals("$user_010", assetHolder.getId());
@@ -329,9 +329,9 @@ public class AssetHolderMapperTest {
         assertEquals("$user_010", assetHolder.getAddressId());
         assertEquals("$user_010", assetHolder.getContactPreferencesId());
 
-        assertEquals(0, assetHolderMapper.selectAssetHolderByIDs(List.of("admin"), null, null, null).size());
-        assertEquals(0, assetHolderMapper.selectAssetHolderByIDs(List.of("admin_001"), null, null, null).size());
-        assertEquals(0, assetHolderMapper.selectAssetHolderByIDs(List.of("%user_060"), null, null, null).size());
+        assertEquals(0, assetHolderMapper.selectAssetHolderByIDs(List.of("admin")).size());
+        assertEquals(0, assetHolderMapper.selectAssetHolderByIDs(List.of("admin_001")).size());
+        assertEquals(0, assetHolderMapper.selectAssetHolderByIDs(List.of("%user_060")).size());
     }
 
     @Test
@@ -370,7 +370,7 @@ public class AssetHolderMapperTest {
         assetHolder.setLastModified(now);
         int n = assetHolderMapper.insertAssetHolder(assetHolder);
         assertEquals(1, n);
-        List<AssetHolder> list = assetHolderMapper.selectAssetHolderByIDs(List.of("test_001"), null, null, null);
+        List<AssetHolder> list = assetHolderMapper.selectAssetHolderByIDs(List.of("test_001"));
         assertEquals(1, list.size());
         assertEquals("test_001", list.get(0).getId());
         assertEquals("testName", list.get(0).getName());
@@ -402,7 +402,7 @@ public class AssetHolderMapperTest {
         assetHolder.setLastModified(now);
         int n = assetHolderMapper.updateAssetHolder(assetHolder);
         assertEquals(1, n);
-        List<AssetHolder> list = assetHolderMapper.selectAssetHolderByIDs(List.of("test_001"), null, null, null);
+        List<AssetHolder> list = assetHolderMapper.selectAssetHolderByIDs(List.of("test_001"));
         assertEquals(1, list.size());
         assertEquals("test_001", list.get(0).getId());
         assertEquals("testName1", list.get(0).getName());
@@ -430,7 +430,7 @@ public class AssetHolderMapperTest {
         assetHolder.setId("test_002");
         assetHolderMapper.insertAssetHolder(assetHolder);
 
-        List<AssetHolder> list = assetHolderMapper.selectAllAssetHolders(null, null, null);
+        List<AssetHolder> list = assetHolderMapper.selectAllAssetHolders(null,null, null, null);
         assertEquals(52, list.size());
 
         int n = assetHolderMapper.deleteAssetHolderByAssetHolderIDs(List.of("", ""));
@@ -438,9 +438,9 @@ public class AssetHolderMapperTest {
 
         n = assetHolderMapper.deleteAssetHolderByAssetHolderIDs(List.of("test_001", "test_002"));
         assertEquals(2, n);
-        assertEquals(0, assetHolderMapper.selectAssetHolderByIDs(List.of("test_001"), null, null, null).size());
-        assertEquals(0, assetHolderMapper.selectAssetHolderByIDs(List.of("test_002"), null, null, null).size());
-        list = assetHolderMapper.selectAllAssetHolders(null, null, null);
+        assertEquals(0, assetHolderMapper.selectAssetHolderByIDs(List.of("test_001")).size());
+        assertEquals(0, assetHolderMapper.selectAssetHolderByIDs(List.of("test_002")).size());
+        list = assetHolderMapper.selectAllAssetHolders(null,null, null, null);
         assertEquals(50, list.size());
     }
 }

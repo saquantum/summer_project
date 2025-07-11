@@ -20,6 +20,7 @@
                ST_AsGeoJSON(warning_area) as warning_area
         from weather_warnings
         where now() between warning_valid_from and warning_valid_to
+        <include refid="ResultMaps.combinedFiltering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
     
@@ -38,6 +39,7 @@
                warning_update_description,
                ST_AsGeoJSON(warning_area) as warning_area
         from weather_warnings
+        <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
@@ -132,6 +134,7 @@
     <select id="selectAllNotificationTemplates" resultMap="ResultMaps.TemplateMap">
         select *
         from templates
+        <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 

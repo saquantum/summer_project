@@ -120,6 +120,20 @@
         <result property="canUpdateProfile" column="permission_config_can_update_profile"/>
     </resultMap>
 
+    <sql id="filtering">
+        <where>
+            <if test="filterString != null and filterString != '' ">
+                ${filterString}
+            </if>
+        </where>
+    </sql>
+
+    <sql id="combinedFiltering">
+        <if test="filterString != null and filterString != '' ">
+            and ${filterString}
+        </if>
+    </sql>
+
     <sql id="orderAndPage">
         <if test="orderList != null and orderList.size() > 0">
             order by

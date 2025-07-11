@@ -68,6 +68,7 @@
 
     <select id="selectAllAssetHolders" resultMap="ResultMaps.AssetHolderMap">
         select * from asset_holders
+        <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
@@ -76,7 +77,6 @@
         from asset_holders
         where asset_holder_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
-        <include refid="ResultMaps.orderAndPage"/>
     </select>
 
     <select id="selectByAssetHolder" resultMap="ResultMaps.AssetHolderMap">

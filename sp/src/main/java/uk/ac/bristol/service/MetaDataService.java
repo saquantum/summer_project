@@ -10,5 +10,7 @@ public interface MetaDataService {
 
     List<Map<String, Object>> getMetaDataByTableName(String tableName);
 
+    Set<String> getAllRegisteredTableNames();
+
     Set<String> filterRegisteredColumnsInTables(List<String> tableNames, List<String> columnNames);
 }

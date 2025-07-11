@@ -11,11 +11,13 @@ import java.util.Map;
 @Mapper
 public interface WarningMapper {
 
-    List<Warning> selectAllWarnings(@Param("orderList") List<Map<String, String>> orderList,
+    List<Warning> selectAllWarnings(@Param("filterString") String filterString,
+                                    @Param("orderList") List<Map<String, String>> orderList,
                                     @Param("limit") Integer limit,
                                     @Param("offset") Integer offset);
 
-    List<Warning> selectAllWarningsIncludingOutdated(@Param("orderList") List<Map<String, String>> orderList,
+    List<Warning> selectAllWarningsIncludingOutdated(@Param("filterString") String filterString,
+                                                     @Param("orderList") List<Map<String, String>> orderList,
                                                      @Param("limit") Integer limit,
                                                      @Param("offset") Integer offset);
 
@@ -33,7 +35,8 @@ public interface WarningMapper {
 
     int deleteWarningByIDs(@Param("ids") List<Long> ids);
 
-    List<Template> selectAllNotificationTemplates(@Param("orderList") List<Map<String, String>> orderList,
+    List<Template> selectAllNotificationTemplates(@Param("filterString") String filterString,
+                                                  @Param("orderList") List<Map<String, String>> orderList,
                                                   @Param("limit") Integer limit,
                                                   @Param("offset") Integer offset);
 

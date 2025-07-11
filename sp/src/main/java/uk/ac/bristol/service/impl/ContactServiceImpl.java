@@ -120,7 +120,7 @@ public class ContactServiceImpl implements ContactService {
             return new ResponseBody(Code.SUCCESS, null, "The asset holder prefers not to receive by email");
         }
 
-        List<AssetHolder> holder = assetHolderMapper.selectAssetHolderByIDs(List.of(notification.get("toOwnerId").toString()), null, null, null);
+        List<AssetHolder> holder = assetHolderMapper.selectAssetHolderByIDs(List.of(notification.get("toOwnerId").toString()));
         if (holder.size() != 1) {
             throw new SpExceptions.SystemException("The database might be modified by another transaction");
         }
@@ -252,7 +252,7 @@ public class ContactServiceImpl implements ContactService {
         String assetName = assetList.get(0).getName();
 
         List<String> assetHolderIdList = Collections.singletonList(assetList.get(0).getOwnerId());
-        List<AssetHolder> assetHolderList = assetHolderMapper.selectAssetHolderByIDs(assetHolderIdList,null,null,null);
+        List<AssetHolder> assetHolderList = assetHolderMapper.selectAssetHolderByIDs(assetHolderIdList);
         String contactName = assetHolderList.get(0).getName();
 
         String postTown = assetHolderMapper.selectAddressByAssetHolderId(assetHolderList.get(0).getAddressId()).get(0).get("city");

@@ -10,11 +10,13 @@ import java.util.Map;
 
 public interface AssetService {
 
-    List<Asset> getAllAssets(List<Map<String, String>> orderList,
+    List<Asset> getAllAssets(Map<String, Object> filters,
+                             List<Map<String, String>> orderList,
                              Integer limit,
                              Integer offset);
 
-    List<AssetWithWeatherWarnings> getAllAssetsWithWarnings(List<Map<String, String>> orderList,
+    List<AssetWithWeatherWarnings> getAllAssetsWithWarnings(Map<String, Object> filters,
+                                                            List<Map<String, String>> orderList,
                                                             Integer limit,
                                                             Integer offset);
 
@@ -42,7 +44,8 @@ public interface AssetService {
                                                                            Integer limit,
                                                                            Integer offset);
 
-    List<AssetType> getAllAssetTypes(List<Map<String, String>> orderList,
+    List<AssetType> getAllAssetTypes(Map<String, Object> filters,
+                                     List<Map<String, String>> orderList,
                                      Integer limit,
                                      Integer offset);
 

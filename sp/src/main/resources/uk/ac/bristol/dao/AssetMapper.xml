@@ -17,6 +17,7 @@
                asset_last_inspection,
                asset_last_modified
         from assets
+        <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
@@ -50,6 +51,7 @@
                  left join weather_warnings w
                            on ST_Intersects(a.asset_location, w.warning_area) and
                               now() between w.warning_valid_from and w.warning_valid_to
+        <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
@@ -220,6 +222,7 @@
 
     <select id="selectAllAssetTypes" resultMap="ResultMaps.AssetTypeMap">
         select * from asset_types
+        <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 

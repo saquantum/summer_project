@@ -7,7 +7,8 @@ import java.util.Map;
 
 public interface PermissionConfigService {
 
-    List<PermissionConfig> getAllPermissionConfigs(List<Map<String, String>> orderList,
+    List<PermissionConfig> getAllPermissionConfigs(Map<String, Object> filters,
+                                                   List<Map<String, String>> orderList,
                                                    Integer limit,
                                                    Integer offset);
 

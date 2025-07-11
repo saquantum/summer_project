@@ -25,6 +25,13 @@
         where table_name = #{tableName};
     </update>
 
+    <select id="selectAllRegisteredTableNames" resultType="String">
+        select table_name
+        from information_schema.tables
+        where table_schema = 'public'
+          and table_type = 'BASE TABLE';
+    </select>
+
     <select id="filterRegisteredColumnsInTables" resultType="String">
         select distinct column_name from information_schema.columns where table_schema = 'public'
         and table_name in
