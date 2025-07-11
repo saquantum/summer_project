@@ -1,7 +1,10 @@
 package uk.ac.bristol.service.impl;
 
 import io.jsonwebtoken.Claims;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -21,6 +24,7 @@ import uk.ac.bristol.util.JwtUtil;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -36,9 +40,6 @@ public class ContactServiceImpl implements ContactService {
     @Value("${app.base-url}")
     private String baseURL;
 
-    private final Map<String, String> codeStore = new ConcurrentHashMap<>();
-    private final Map<String, Long> timestampStore = new ConcurrentHashMap<>();
-    private static final long EXPIRE_TIME = 5L * 60 * 1000;
 
     private final JavaMailSender mailSender;
 
@@ -47,12 +48,17 @@ public class ContactServiceImpl implements ContactService {
     private final AssetMapper assetMapper;
     private final AssetHolderMapper assetHolderMapper;
 
-    public ContactServiceImpl(JavaMailSender mailSender, UserService userService, WarningMapper warningMapper, AssetMapper assetMapper, AssetHolderMapper assetHolderMapper) {
+    private final StringRedisTemplate redisTemplate;
+    private final Duration expireTime = Duration.ofMinutes(5);
+    private final String prefix = "email:verify:code:";
+
+    public ContactServiceImpl(JavaMailSender mailSender, UserService userService, WarningMapper warningMapper, AssetMapper assetMapper, AssetHolderMapper assetHolderMapper, StringRedisTemplate redisTemplate) {
         this.mailSender = mailSender;
         this.userService = userService;
         this.warningMapper = warningMapper;
         this.assetMapper = assetMapper;
         this.assetHolderMapper = assetHolderMapper;
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
@@ -197,10 +203,14 @@ public class ContactServiceImpl implements ContactService {
             return new ResponseBody(Code.BUSINESS_ERR, null, "Failed to send email because email address doesn't exist");
         }
         String code = String.valueOf(new Random().nextInt(899999) + 100000);
-        codeStore.put(email, code);
-        timestampStore.put(email, System.currentTimeMillis());
+        saveEmailCode(email, code);
         sendVerificationEmail(email, code);
         return new ResponseBody(Code.SUCCESS, code, "Verification code has been sent to " + email);
+    }
+
+    public void saveEmailCode(String email, String code) {
+        String redisKey = prefix + email;
+        redisTemplate.opsForValue().set(redisKey, code, expireTime);
     }
 
     private void sendVerificationEmail(String email, String verificationCode) {
@@ -217,19 +227,23 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     public ResponseBody validateCode(String email, String code) {
-        String savedCode = codeStore.get(email);
-        Long time = timestampStore.get(email);
-        if (savedCode == null || time == null) {
-            return new ResponseBody(Code.BUSINESS_ERR, null, "Verification code doesn't exists!");
+        String key = prefix + email;
+        ValueOperations<String, String> ops = redisTemplate.opsForValue();
+        String savedCode = ops.get(key);
+        if (savedCode == null) {
+            return new ResponseBody(Code.BUSINESS_ERR, null, "Verification code doesn't exists or has expired!");
         }
-        if (System.currentTimeMillis() - time > EXPIRE_TIME) {
+
+        Long ttl = redisTemplate.getExpire(key);
+        if (ttl == null || ttl <= 0) {
             return new ResponseBody(Code.BUSINESS_ERR, null, "Verification code has expired!");
         }
-        if (savedCode.equals(code)) {
-            return new ResponseBody(Code.SUCCESS, null, "Verification code has been validated!");
-        } else {
+
+        if (!savedCode.equals(code)) {
             return new ResponseBody(Code.BUSINESS_ERR, null, "You entered wrong verification code!");
         }
+        redisTemplate.delete(key);
+        return new ResponseBody(Code.SUCCESS, null, "Verification code has been validated!");
     }
 
     @Override
@@ -241,8 +255,7 @@ public class ContactServiceImpl implements ContactService {
             return new ResponseBody(Code.BUSINESS_ERR, null, "This email already registered! You can use this email to login");
         }
         String code = String.valueOf(new Random().nextInt(899999) + 100000);
-        codeStore.put(email, code);
-        timestampStore.put(email, System.currentTimeMillis());
+        saveEmailCode(email, code);
         sendVerificationEmail(email, code);
         return new ResponseBody(Code.SUCCESS, code, "Verification code has been sent to " + email);
     }
