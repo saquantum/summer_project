@@ -3,6 +3,7 @@ package uk.ac.bristol.pojo;
 public class User {
     private String id;
     private String password;
+    private String passwordPlainText;
     private String assetHolderId;
     private AssetHolder assetHolder;
     private PermissionConfig permissionConfig;
@@ -14,6 +15,7 @@ public class User {
         return "User{" +
                 "id='" + id + '\'' +
                 ", password='" + password + '\'' +
+                ", passwordPlainText='" + passwordPlainText + '\'' +
                 ", assetHolderId='" + assetHolderId + '\'' +
                 ", assetHolder=" + assetHolder +
                 ", admin=" + admin +
@@ -35,6 +37,14 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getPasswordPlainText() {
+        return passwordPlainText;
+    }
+
+    public void setPasswordPlainText(String passwordPlainText) {
+        this.passwordPlainText = passwordPlainText;
     }
 
     public String getAssetHolderId() {

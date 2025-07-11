@@ -277,6 +277,7 @@ public class UserServiceImpl implements UserService {
             user.setAssetHolderId(user.getAssetHolder().getId());
         }
 
+        user.setPasswordPlainText(user.getPassword());
         user.setPassword(hashPassword(user.getPassword()));
 
         int n4 = userMapper.insertUser(user);
@@ -479,6 +480,7 @@ public class UserServiceImpl implements UserService {
 
         User user = list.get(0);
 
+        user.setPasswordPlainText(password);
         user.setPassword(hashPassword(password));
 
         return userMapper.updateUserPasswordByUserId(user);
