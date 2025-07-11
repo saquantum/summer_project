@@ -133,11 +133,11 @@ const rules = {
     //   trigger: 'blur'
     // }
   ],
-  firstNmae: [
-    { required: true, message: 'Lastname cannot be empty', trigger: 'blur' }
+  firstName: [
+    { required: true, message: 'Firstname cannot be empty', trigger: 'blur' }
   ],
   lastName: [
-    { required: true, message: 'Firstname cannot be empty', trigger: 'blur' }
+    { required: true, message: 'Lastname cannot be empty', trigger: 'blur' }
   ],
   repassword: [
     { required: true, message: 'Please input password', trigger: 'blur' },
@@ -381,6 +381,9 @@ watch(isRegister, () => {
           <div class="details-line">
             <div class="details">
               <div>{{ registerForm.id }}</div>
+              <div>
+                {{ registerForm.firstName }} {{ registerForm.lastName }}
+              </div>
               <div>{{ registerForm.phone }}</div>
             </div>
             <el-link
@@ -402,13 +405,20 @@ watch(isRegister, () => {
             />
           </el-form-item>
 
-          <el-form-item prop="firstName">
-            <el-input v-model="registerForm.firstName" :prefix-icon="User" />
-          </el-form-item>
-
-          <el-form-item prop="lastName">
-            <el-input v-model="registerForm.lastName" :prefix-icon="User" />
-          </el-form-item>
+          <div style="display: flex; gap: 10px; width: 100%">
+            <el-form-item prop="firstName" style="flex: 1">
+              <el-input
+                v-model="registerForm.firstName"
+                placeholder="First name"
+              />
+            </el-form-item>
+            <el-form-item prop="lastName" style="flex: 1">
+              <el-input
+                v-model="registerForm.lastName"
+                placeholder="Last name"
+              />
+            </el-form-item>
+          </div>
 
           <el-form-item prop="phone">
             <el-input
