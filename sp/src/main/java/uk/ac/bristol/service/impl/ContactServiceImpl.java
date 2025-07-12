@@ -13,10 +13,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.controller.Code;
 import uk.ac.bristol.controller.ResponseBody;
-import uk.ac.bristol.dao.AssetHolderMapper;
-import uk.ac.bristol.dao.AssetMapper;
-import uk.ac.bristol.dao.ContactMapper;
-import uk.ac.bristol.dao.WarningMapper;
+import uk.ac.bristol.dao.*;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
 import uk.ac.bristol.service.ContactService;
@@ -105,7 +102,8 @@ public class ContactServiceImpl implements ContactService {
                 "severity", severity,
                 "title", title,
                 "body", body,
-                "createdAt", now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                "createdAt", now,
+                "validUntil", warning.get(0).getValidTo(),
                 "channel", ""));
     }
 
@@ -136,6 +134,18 @@ public class ContactServiceImpl implements ContactService {
 
         String emailAddress = holder.get(0).getEmail();
         sendEmailToAddress(emailAddress, (String) notification.get("title"), (String) notification.get("body"));
+
+
+        // tmp test
+        contactMapper.insertInboxMessageToUser(Map.of(
+                "userId", userService.getUserByAssetHolderId(notification.get("toOwnerId").toString()).getId(),
+                "hasRead", false,
+                "issuedDate", notification.get("createdAt"),
+                "validUntil", notification.get("validUntil"),
+                "title", notification.get("title"),
+                "message", notification.get("body")));
+
+
         return new ResponseBody(Code.SUCCESS, notification.get("body"), "The email has been sent to " + emailAddress);
     }
 
