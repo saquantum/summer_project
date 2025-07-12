@@ -1,8 +1,8 @@
 import { assetsGetInfoService } from '@/api/assets'
-import { adminGetAssetsService, adminGetUserAssetsService } from '@/api/admin'
+import { adminGetUserAssetsService, adminSearchAssetService } from '@/api/admin'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { AssetWithWarnings } from '@/types'
+import type { AssetSearchBody, AssetWithWarnings } from '@/types'
 
 export const useAssetStore = defineStore(
   'rain-assets',
@@ -25,13 +25,10 @@ export const useAssetStore = defineStore(
       }
     }
 
-    const getAllAssets = async (
-      offset: number,
-      limit: number,
-      orderList: string
-    ) => {
+    const getAllAssets = async (obj: AssetSearchBody) => {
       try {
-        const res = await adminGetAssetsService(offset, limit, orderList)
+        const res = await adminSearchAssetService(obj)
+        console.log(obj, res)
         allAssets.value = res.data
       } catch (e) {
         console.error('fail to get all asset', e)

@@ -5,10 +5,11 @@ import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import imageUrl from '@/assets/default.png'
 import Code from '@tiptap/extension-code'
+import Link from '@tiptap/extension-link'
+
 import { Extension } from '@tiptap/core'
 import { Decoration, DecorationSet } from 'prosemirror-view'
 import { Plugin, PluginKey } from 'prosemirror-state'
-
 const props = defineProps<{ content: string }>()
 
 const emit = defineEmits(['update:content'])
@@ -99,7 +100,16 @@ const VariableHighlight = Extension.create({
 
 const editor = useEditor({
   content: content.value,
-  extensions: [StarterKit, Image, Code, VariableHighlight],
+  extensions: [
+    StarterKit,
+    Image,
+    Code,
+    Link.configure({
+      openOnClick: false,
+      defaultProtocol: 'https'
+    }),
+    VariableHighlight
+  ],
   onUpdate: ({ editor }) => {
     console.log('Editor onUpdate called')
     content.value = editor.getHTML()
@@ -109,7 +119,7 @@ const editor = useEditor({
 const fileList = ref<File[]>([])
 
 const setLink = () => {
-  const previousUrl = editor.getAttributes('link').href
+  const previousUrl = editor.value.getAttributes('link').href
   const url = window.prompt('URL', previousUrl)
 
   // cancelled
@@ -233,7 +243,6 @@ watch(fileList, (newVal) => {
   font-size: 0.95em;
 }
 
-/* 错误变量样式 */
 .ProseMirror .error-variable {
   text-decoration: red wavy underline !important;
   cursor: help !important;
@@ -242,7 +251,6 @@ watch(fileList, (newVal) => {
   border-radius: 2px !important;
 }
 
-/* 强制样式应用 */
 .ProseMirror span[style*='text-decoration: red wavy underline'] {
   background-color: rgba(255, 0, 0, 0.2) !important;
   padding: 0 2px !important;

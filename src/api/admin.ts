@@ -4,6 +4,7 @@
 import request from '@/utils/request'
 import type { ApiResponse } from '@/types/api'
 import type {
+  AssetSearchBody,
   AssetWithWarnings,
   Template,
   User,
@@ -81,6 +82,10 @@ export const adminGetAssetsService = (
   return request.get('/admin/asset/', {
     params: { offset: offset, limit: limit, orderList: orderList }
   })
+}
+
+export const adminSearchAssetService = (obj: AssetSearchBody) => {
+  return request.post('/admin/asset/search', obj)
 }
 
 export const adminGetUserAssetsService = (

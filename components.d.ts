@@ -51,6 +51,7 @@ declare module 'vue' {
     ElTag: typeof import('element-plus/es')['ElTag']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
     FilterSearch: typeof import('./src/components/FilterSearch.vue')['default']
+    HTMLPreview: typeof import('./src/components/HTMLPreview.vue')['default']
     LoginForm: typeof import('./src/components/LoginForm.vue')['default']
     MapCard: typeof import('./src/components/MapCard.vue')['default']
     MobileMenu: typeof import('./src/components/MobileMenu.vue')['default']

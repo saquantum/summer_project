@@ -1,6 +1,15 @@
 <script setup lang="ts">
+import type { AssetSearchBody, AssetSearchForm } from '@/types'
+import { assetConverFormToFilter } from '@/utils/DataConversion'
 import { Filter } from '@element-plus/icons-vue'
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+
+const props = defineProps<{
+  assetSearchBody: AssetSearchBody
+  fetchTableData: () => void
+}>()
+
+const emit = defineEmits(['update:assetSearchBody'])
 
 interface AssetTypeOption {
   value: string
@@ -19,7 +28,6 @@ const assetTypeOptions: AssetTypeOption[] = [
 
 const visible = ref<boolean>(false)
 const detail = ref<boolean>(false)
-const assetType = ref<string | null>(null)
 const assetId = ref<string | null>(null)
 let lastType: string | null = null
 
@@ -105,7 +113,6 @@ const handleFilterClick = () => {
   }
 }
 
-const material = ref<string | null>(null)
 const materialOption = [
   { label: 'Steel', value: 'Steel' },
   { label: 'Concrete', value: 'Concrete' },
@@ -113,34 +120,59 @@ const materialOption = [
   { label: 'Composite', value: 'Composite' }
 ]
 
-const status = ref<string | null>(null)
 const statusOption = [
   { label: 'inactive', value: 'inactive' },
   { label: 'active', value: 'active' },
   { label: 'maintenance', value: 'maintenance' }
 ]
 
-const capacityLitres = ref<[number, number]>([0, 10000])
-const installedAt = ref<[Date, Date] | null>(null)
-const lastInspection = ref<[Date, Date] | null>(null)
+const form = ref<AssetSearchForm>({
+  id: '',
+  name: '',
+  typeId: '',
+  ownerId: '',
+  capacityLitres: [0, 10000],
+  material: '',
+  status: '',
+  installedAt: null,
+  lastInspection: null
+})
 
-watch([assetType], () => {
-  if (!assetType.value) {
+const handleSearch = () => {
+  const newObj: AssetSearchBody = {
+    ...props.assetSearchBody,
+    filters: assetConverFormToFilter(form.value)
+  }
+  emit('update:assetSearchBody', newObj)
+  props.fetchTableData()
+  visible.value = false
+}
+watch(
+  [form],
+  () => {
+    console.log(111111111)
+    if (!form.value.typeId) {
+      if (lastType) {
+        const index = tags.value.indexOf(lastType)
+        if (index !== -1) tags.value.splice(index, 1)
+      }
+      return
+    }
+    const obj = assetTypeOptions.find(
+      (item) => item.value === form.value.typeId
+    )
+    if (!obj) return
     if (lastType) {
       const index = tags.value.indexOf(lastType)
       if (index !== -1) tags.value.splice(index, 1)
     }
-    return
+    tags.value.push(obj.label)
+    lastType = obj.label
+  },
+  {
+    deep: true
   }
-  const obj = assetTypeOptions.find((item) => item.value === assetType.value)
-  if (!obj) return
-  if (lastType) {
-    const index = tags.value.indexOf(lastType)
-    if (index !== -1) tags.value.splice(index, 1)
-  }
-  tags.value.push(obj.label)
-  lastType = obj.label
-})
+)
 
 onMounted(() => {
   document.addEventListener('mousedown', handleClickOutside)
@@ -148,6 +180,10 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   document.removeEventListener('mousedown', handleClickOutside)
+})
+
+defineExpose({
+  form
 })
 </script>
 
@@ -183,52 +219,97 @@ onBeforeUnmount(() => {
           <el-icon><Filter /></el-icon>
         </el-button></div
     ></template>
-    <div v-if="detail === true">
-      <div class="label">Type</div>
-      <el-select
-        :teleported="false"
-        v-model="assetType"
-        placeholder="Select type"
-        clearable
-        class="select-style"
-      >
-        <el-option
-          v-for="item in assetTypeOptions"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
-        ></el-option>
-      </el-select>
-      <div class="label">Material</div>
-      <el-select
-        :teleported="false"
-        v-model="material"
-        placeholder="Select material"
-        clearable
-        class="select-style"
-      >
-        <el-option
-          v-for="item in materialOption"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
-        ></el-option>
-      </el-select>
-      <div class="label">Status</div>
-      <el-select
-        :teleported="false"
-        v-model="status"
-        placeholder="Select status"
-        clearable
-        class="select-style"
-      >
-        <el-option
-          v-for="item in statusOption"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
-        ></el-option>
-      </el-select>
+    <div v-if="detail">
+      <el-form :model="form" label-width="auto">
+        <el-form-item label="Id">
+          <el-input v-model="form.id"></el-input>
+        </el-form-item>
+        <el-form-item label="Name">
+          <el-input v-model="form.name"></el-input>
+        </el-form-item>
+        <el-form-item label="Type">
+          <el-select
+            :teleported="false"
+            v-model="form.typeId"
+            placeholder="Select type"
+            clearable
+            class="select-style"
+          >
+            <el-option
+              v-for="item in assetTypeOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="Material">
+          <el-select
+            :teleported="false"
+            v-model="form.material"
+            placeholder="Select material"
+            clearable
+            class="select-style"
+          >
+            <el-option
+              v-for="item in materialOption"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="Status">
+          <el-select
+            :teleported="false"
+            v-model="form.status"
+            placeholder="Select status"
+            clearable
+            class="select-style"
+          >
+            <el-option
+              v-for="item in statusOption"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="Capacity litres">
+          <el-slider
+            v-model="form.capacityLitres"
+            range
+            :max="10000"
+          ></el-slider>
+        </el-form-item>
+
+        <el-form-item label="Installed at">
+          <el-date-picker
+            v-model="form.installedAt"
+            type="daterange"
+            unlink-panels
+            range-separator="To"
+            start-placeholder="Start date"
+            end-placeholder="End date"
+          />
+        </el-form-item>
+
+        <el-form-item label="Last inspection">
+          <el-date-picker
+            v-model="form.lastInspection"
+            type="daterange"
+            unlink-panels
+            range-separator="To"
+            start-placeholder="Start date"
+            end-placeholder="End date"
+          />
+        </el-form-item>
+      </el-form>
+
+      <!-- do this later -->
       <div class="label">Id</div>
       <el-autocomplete
         v-model="assetId"
@@ -239,28 +320,8 @@ onBeforeUnmount(() => {
       />
       <div class="label">test prop</div>
       <ButtonInput></ButtonInput>
-      <div class="label">Capacity litres</div>
-      <el-slider v-model="capacityLitres" range :max="10000"></el-slider>
-      <div class="label">Installed at</div>
-      <el-date-picker
-        v-model="installedAt"
-        type="daterange"
-        unlink-panels
-        range-separator="To"
-        start-placeholder="Start date"
-        end-placeholder="End date"
-      />
-      <div class="label">Last inspection</div>
-      <el-date-picker
-        v-model="lastInspection"
-        type="daterange"
-        unlink-panels
-        range-separator="To"
-        start-placeholder="Start date"
-        end-placeholder="End date"
-      />
       <div style="margin-top: 20px">
-        <el-button>Search</el-button>
+        <el-button @click="handleSearch">Search</el-button>
         <el-button>Clear filters</el-button>
       </div>
     </div>

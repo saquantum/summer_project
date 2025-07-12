@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 
 import { userTemplateStore } from '@/stores/modules/template'
 import { adminGetTemplateByTypes } from '@/api/admin'
+import Handlebars from 'handlebars'
 
 const templateStore = userTemplateStore()
 const warningTypeOption = [
@@ -58,12 +59,27 @@ const assetType = ref('type_001')
 const contactChannel = ref('Email')
 
 const isEdit = ref(false)
-const templateText = ref(`You haven't set message for this.`)
+const content = ref(`You haven't set message for this.`)
 const allowedVariables = ['asset-model', 'contact_name', 'post_town']
 
+const mockData = {
+  asset_model: 'Water tank',
+  contact_name: 'Alice',
+  post_town: 'London'
+}
 const finish = () => {
   isEdit.value = false
 }
+
+const renderedHTML = computed(() => {
+  try {
+    const compiled = Handlebars.compile(content.value)
+    return compiled(mockData)
+  } catch (e) {
+    console.error(e)
+    return '<p style="color:red">Syntax Error!</p>'
+  }
+})
 
 const cancel = () => {
   isEdit.value = false
@@ -89,7 +105,7 @@ watch(
     )
     console.log(res.data)
 
-    templateText.value = res.data[0].body ?? `You haven't set message for this.`
+    content.value = res.data[0].body ?? `You haven't set message for this.`
   },
   {
     immediate: true
@@ -139,12 +155,19 @@ watch(
     ></el-option>
   </el-select>
 
-  <TiptapEditor v-model:content="templateText"></TiptapEditor>
+  <TiptapEditor v-model:content="content"></TiptapEditor>
 
   <el-button @click="isEdit = true">Edit</el-button>
 
   <el-button v-if="isEdit" @click="finish">Finish</el-button>
   <el-button v-if="isEdit" @click="cancel">Cancel</el-button>
+
+  <div
+    class="preview"
+    style="width: 50%; border: 1px solid #ccc; padding: 1rem"
+  >
+    <div v-html="renderedHTML"></div>
+  </div>
 </template>
 
 <style scoped>

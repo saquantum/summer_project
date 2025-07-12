@@ -23,7 +23,6 @@ if (props.asset) {
     { label: 'Installed at', value: props.asset.installedAt },
     { label: 'Last inspection', value: props.asset.lastInspection }
   ]
-  console.log(displayData)
 }
 </script>
 

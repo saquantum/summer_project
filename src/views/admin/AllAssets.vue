@@ -3,7 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAssetStore } from '@/stores/index'
 import { adminDeleteAssetService } from '@/api/admin'
-import type { AssetTableItem } from '@/types'
+import { AssetSearchBody, type AssetTableItem } from '@/types'
 
 const assets = ref<AssetTableItem[]>([])
 const router = useRouter()
@@ -76,6 +76,13 @@ const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(50)
 
+const assetSearchBody = ref<AssetSearchBody>({
+  filters: {},
+  orderList: '',
+  limit: pageSize.value,
+  offset: 0
+})
+
 const fetchTableData = async () => {
   const propOrderList: string[] = []
 
@@ -101,11 +108,10 @@ const fetchTableData = async () => {
   const sortStr =
     propOrderList.length > 0 ? propOrderList.join(',') : 'asset_id,asc'
 
-  await assetStore.getAllAssets(
-    (currentPage.value - 1) * pageSize.value,
-    pageSize.value,
-    sortStr
-  )
+  assetSearchBody.value.offset = (currentPage.value - 1) * pageSize.value
+  assetSearchBody.value.limit = pageSize.value
+  assetSearchBody.value.orderList = sortStr
+  await assetStore.getAllAssets(assetSearchBody.value)
   assets.value = assetStore.allAssets.map((item) => {
     return {
       id: item.asset.id,
@@ -180,7 +186,7 @@ const resizeBasedOnWidth = (width: number) => {
 
 onMounted(async () => {
   await fetchTableData()
-  resizeBasedOnWidth(screenWidth.value)
+  // resizeBasedOnWidth(screenWidth.value)
   window.addEventListener('resize', handleResize)
 })
 
@@ -207,9 +213,12 @@ watch(dialogVisible, (val) => {
       ></AssetCard>
     </div>
     <div class="search-wrapper">
-      <FilterSearch></FilterSearch>
+      <FilterSearch
+        :fetch-table-data="fetchTableData"
+        v-model:asset-search-body="assetSearchBody"
+      ></FilterSearch>
       <SortTool
-        v-model:multiSort="multiSort"
+        v-model:multi-sort="multiSort"
         :columns="columns"
         :fetch-table-data="fetchTableData"
       ></SortTool>
