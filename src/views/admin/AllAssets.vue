@@ -1,11 +1,25 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAssetStore } from '@/stores/index'
 import { adminDeleteAssetService } from '@/api/admin'
-import { AssetSearchBody, type AssetTableItem } from '@/types'
+import { type AssetSearchBody, type AssetTableItem } from '@/types'
 
-const assets = ref<AssetTableItem[]>([])
+const assets = computed<AssetTableItem[]>(() =>
+  assetStore.allAssets.map((item) => ({
+    id: item.asset.id,
+    name: item.asset.name,
+    type: item.asset.type.name,
+    capacityLitres: item.asset.capacityLitres,
+    material: item.asset.material,
+    status: item.asset.status,
+    installedAt: item.asset.installedAt,
+    lastInspection: item.asset.lastInspection,
+    assetHolderId: item.asset.ownerId,
+    warningLevel: item.warnings[0]?.warningLevel?.toLowerCase() ?? 'none'
+  }))
+)
+
 const router = useRouter()
 const assetStore = useAssetStore()
 
@@ -112,20 +126,6 @@ const fetchTableData = async () => {
   assetSearchBody.value.limit = pageSize.value
   assetSearchBody.value.orderList = sortStr
   await assetStore.getAllAssets(assetSearchBody.value)
-  assets.value = assetStore.allAssets.map((item) => {
-    return {
-      id: item.asset.id,
-      name: item.asset.name,
-      type: item.asset.type.name,
-      capacityLitres: item.asset.capacityLitres,
-      material: item.asset.material,
-      status: item.asset.status,
-      installedAt: item.asset.installedAt,
-      lastInspection: item.asset.lastInspection,
-      assetHolderId: item.asset.ownerId,
-      warningLevel: item.warnings[0]?.warningLevel?.toLowerCase() ?? 'none'
-    }
-  })
 }
 
 const handleSortChange = (sort: { prop: string; order: string | null }) => {
@@ -144,6 +144,12 @@ const handleSortChange = (sort: { prop: string; order: string | null }) => {
     }
   }
   fetchTableData()
+}
+
+const mutipleSelection = ref<AssetTableItem[]>([])
+const handleSelectionChange = (val: AssetTableItem[]) => {
+  mutipleSelection.value = val
+  console.log(mutipleSelection)
 }
 
 const handlePageChange = (page: number) => {
@@ -230,7 +236,9 @@ watch(dialogVisible, (val) => {
       @sort-change="handleSortChange"
       :default-sort="multiSort[0] || {}"
       class="table"
+      @selection-change="handleSelectionChange"
     >
+      <el-table-column type="selection"> </el-table-column>
       <el-table-column
         v-for="column in columns"
         :key="column.prop"

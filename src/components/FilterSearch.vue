@@ -72,6 +72,10 @@ const tags = ref<string[]>([])
 const input = ref<string>('')
 
 const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Enter') {
+    console.log(input.value)
+    fuzzySearch(input.value)
+  }
   if (
     (e.key === 'Enter' || e.key === ',' || e.key === ' ') &&
     input.value.trim()
@@ -146,6 +150,10 @@ const handleSearch = () => {
   emit('update:assetSearchBody', newObj)
   props.fetchTableData()
   visible.value = false
+}
+
+const fuzzySearch = (input: string) => {
+  console.log(input)
 }
 watch(
   [form],

@@ -23,6 +23,9 @@ importers:
       '@tiptap/extension-image':
         specifier: ^2.24.2
         version: 2.24.2(@tiptap/core@2.25.0(@tiptap/pm@2.24.2))
+      '@tiptap/extension-link':
+        specifier: ^2.26.1
+        version: 2.26.1(@tiptap/core@2.25.0(@tiptap/pm@2.24.2))(@tiptap/pm@2.24.2)
       '@tiptap/pm':
         specifier: ^2.24.2
         version: 2.24.2
@@ -72,9 +75,6 @@ importers:
       '@eslint/js':
         specifier: ^9.22.0
         version: 9.28.0
-      '@tiptap/extension-link':
-        specifier: ^2.25.0
-        version: 2.25.0(@tiptap/core@2.25.0(@tiptap/pm@2.24.2))(@tiptap/pm@2.24.2)
       '@tsconfig/node22':
         specifier: ^22.0.2
         version: 22.0.2
@@ -906,8 +906,8 @@ packages:
     peerDependencies:
       '@tiptap/core': ^2.7.0
 
-  '@tiptap/extension-link@2.25.0':
-    resolution: {integrity: sha512-jNd+1Fd7wiIbxlS51weBzyDtBEBSVzW0cgzdwOzBYQtPJueRyXNNVERksyinDuVgcfvEWgmNZUylgzu7mehnEg==}
+  '@tiptap/extension-link@2.26.1':
+    resolution: {integrity: sha512-7yfum5Jymkue/uOSTQPt2SmkZIdZx7t3QhZLqBU7R9ettkdSCBgEGok6N+scJM1R1Zes+maSckLm0JZw5BKYNA==}
     peerDependencies:
       '@tiptap/core': ^2.7.0
       '@tiptap/pm': ^2.7.0
@@ -3872,7 +3872,7 @@ snapshots:
     dependencies:
       '@tiptap/core': 2.25.0(@tiptap/pm@2.24.2)
 
-  '@tiptap/extension-link@2.25.0(@tiptap/core@2.25.0(@tiptap/pm@2.24.2))(@tiptap/pm@2.24.2)':
+  '@tiptap/extension-link@2.26.1(@tiptap/core@2.25.0(@tiptap/pm@2.24.2))(@tiptap/pm@2.24.2)':
     dependencies:
       '@tiptap/core': 2.25.0(@tiptap/pm@2.24.2)
       '@tiptap/pm': 2.24.2

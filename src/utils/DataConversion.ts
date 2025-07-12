@@ -4,19 +4,19 @@ export const assetConverFormToFilter = (form: AssetSearchForm): AssetFilter => {
   const body: AssetFilter = {}
 
   if (form.id) {
-    body.asset_id = { op: 'like', val: form.id + '%' }
+    body.asset_id = { op: 'like', val: `%${form.id}%` }
   }
 
   if (form.name) {
-    body.asset_name = { op: 'like', val: form.name + '%' }
+    body.asset_name = { op: 'like', val: `%${form.name}%` }
   }
 
   if (form.ownerId) {
-    body.asset_owner_id = { op: 'like', val: form.ownerId + '%' }
+    body.asset_owner_id = { op: 'like', val: `%${form.ownerId}%` }
   }
 
   if (form.typeId) {
-    body.asset_type_id = { op: 'like', val: form.typeId + '%' }
+    body.asset_type_id = { op: 'like', val: `%${form.typeId}%` }
   }
 
   if (form.capacityLitres?.length === 2) {
@@ -29,11 +29,11 @@ export const assetConverFormToFilter = (form: AssetSearchForm): AssetFilter => {
   }
 
   if (form.material) {
-    body.asset_material = { op: 'like', val: form.material + '%' }
+    body.asset_material = { op: 'like', val: `%${form.material}%` }
   }
 
   if (form.status) {
-    body.asset_status = { op: 'like', val: form.status + '%' }
+    body.asset_status = { op: 'like', val: `%${form.status}%` }
   }
 
   if (form.installedAt?.length === 2) {
