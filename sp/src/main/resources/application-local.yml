@@ -13,7 +13,7 @@ spring:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/rainwaterDB?useSSL=false&serverTimezone=UTC
     username: postgres
-    password: 123456
+    password: abc123456
     type: com.zaxxer.hikari.HikariDataSource
 
   mail:
@@ -59,3 +59,8 @@ logging:
         boot:
           autoconfigure:
             mail: DEBUG
+
+twilio:
+  account-sid: ACca414e42cf744fe7c04c1bef9c0d09c3
+  auth-token: 94c438edc8444eae48d0be61a44eadab
+  from-number: "+447473357602"

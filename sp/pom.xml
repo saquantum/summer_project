@@ -105,6 +105,14 @@
             <version>1.20.0</version>
         </dependency>
 
+        <!-- Twilio SDK -->
+
+        <dependency>
+            <groupId>com.twilio.sdk</groupId>
+            <artifactId>twilio</artifactId>
+            <version>8.31.1</version>
+        </dependency>
+
         <!-- Automatic JSON conversion -->
 
         <dependency>

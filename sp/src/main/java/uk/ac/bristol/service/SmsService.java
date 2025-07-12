@@ -1,4 +1,5 @@
 package uk.ac.bristol.service;
 
-public class SmsService {
+public interface SmsService {
+    void sendSms(String to, String messageBody);
 }
