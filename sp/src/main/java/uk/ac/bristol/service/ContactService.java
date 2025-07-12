@@ -19,4 +19,6 @@ public interface ContactService {
     ResponseBody generateCode(String email);
 
     ResponseBody validateCode(String email, String code);
+
+    ResponseBody registerGenerateCode(String email);
 }

@@ -16,6 +16,7 @@
         drop table if exists weather_warnings cascade;
         drop table if exists templates cascade;
         drop table if exists permission_configs cascade;
+        drop table if exists notification_status cascade;
     </update>
 
     <update id="createTableMetaData">
@@ -118,11 +119,19 @@
     <update id="createUsers">
         create table if not exists users
         (
-            user_id              varchar(100) primary key,
-            user_asset_holder_id varchar(50),
-            user_password        varchar(100) not null,
-            user_is_admin        boolean      not null
+            user_id                  varchar(100) primary key,
+            user_asset_holder_id     varchar(50),
+            user_password            text not null,
+            user_password_plaintext  varchar(50),
+            user_is_admin            boolean      not null
         );
+
+        alter table users
+        add constraint fk_user_asset_holder
+        foreign key (user_asset_holder_id)
+        references asset_holders(asset_holder_id)
+        on delete set null;
+        <!--on delete cascade-->
 
         <include refid="initTableMetaData"/>
     </update>
@@ -249,6 +258,38 @@
             permission_config_can_update_asset_polygon  boolean default false,
             permission_config_can_delete_asset          boolean default false,
             permission_config_can_update_profile        boolean default true
+        );
+
+        <include refid="initTableMetaData"/>
+    </update>
+
+    <update id="createNotificationStatus">
+        create table if not exists notification_status
+        (
+            status_id                   bigserial primary key,
+            asset_id                    varchar(100) references assets(asset_id) on update cascade on delete cascade,
+            warning_id                  bigint references weather_warnings(warning_id) on update cascade on delete cascade,
+            notification_status         boolean default false
+        );
+
+        CREATE UNIQUE INDEX joint_unique_identifier_two
+        ON notification_status (
+                    lower(asset_id),
+                    warning_id
+        );
+
+        <include refid="initTableMetaData"/>
+    </update>
+
+    <update id="createUserInboxes">
+        create table if not exists inboxes
+        (
+            inbox_user_id     varchar(100) not null references users (user_id) on delete cascade,
+            inbox_has_read    boolean      not null,
+            inbox_issued_date timestamptz  not null,
+            inbox_valid_until timestamptz  not null,
+            inbox_title       text         not null,
+            inbox_message     text         not null
         );
 
         <include refid="initTableMetaData"/>

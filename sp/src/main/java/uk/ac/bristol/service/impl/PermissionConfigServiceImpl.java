@@ -22,10 +22,13 @@ public class PermissionConfigServiceImpl implements PermissionConfigService {
     }
 
     @Override
-    public List<PermissionConfig> getAllPermissionConfigs(List<Map<String, String>> orderList,
+    public List<PermissionConfig> getAllPermissionConfigs(Map<String, Object> filters,
+                                                          List<Map<String, String>> orderList,
                                                           Integer limit,
                                                           Integer offset) {
-        return permissionConfigMapper.selectAllPermissionConfigs(QueryTool.filterOrderList(orderList, "permission_config"),
+        return permissionConfigMapper.selectAllPermissionConfigs(
+                QueryTool.formatFilters(filters),
+                QueryTool.filterOrderList(orderList, "permission_configs"),
                 limit, offset);
     }
 

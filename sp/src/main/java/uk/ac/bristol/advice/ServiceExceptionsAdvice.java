@@ -18,7 +18,7 @@ public class ServiceExceptionsAdvice {
     public Object classifyExceptions(ProceedingJoinPoint jp) throws Throwable {
         try {
             return jp.proceed();
-        } catch (SpExceptions.SystemException e) {
+        } catch (SpExceptions e) {
             throw e;
         } catch (Exception e) {
             String methodName = jp.getSignature().getName().toLowerCase();
@@ -28,12 +28,11 @@ public class ServiceExceptionsAdvice {
             } else if (methodName.startsWith("insert")) {
                 throw new SpExceptions.PostMethodException(e.getMessage());
             } else if (methodName.startsWith("update")) {
-                e.printStackTrace();
                 throw new SpExceptions.PutMethodException(e.getMessage());
             } else if (methodName.startsWith("delete")) {
                 throw new SpExceptions.DeleteMethodException(e.getMessage());
             } else {
-                throw new SpExceptions.BusinessException(e.getMessage());
+                throw new SpExceptions.SystemException(e.getMessage());
             }
         }
     }

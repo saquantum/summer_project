@@ -3,10 +3,8 @@ package uk.ac.bristol.service.impl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import uk.ac.bristol.dao.AssetHolderMapper;
-import uk.ac.bristol.dao.MetaDataMapper;
-import uk.ac.bristol.dao.UserMapper;
-import uk.ac.bristol.dao.WarningMapper;
+import uk.ac.bristol.dao.*;
+import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.Template;
 import uk.ac.bristol.pojo.Warning;
 import uk.ac.bristol.service.WarningService;
@@ -21,28 +19,34 @@ public class WarningServiceImpl implements WarningService {
 
     private final MetaDataMapper metaDataMapper;
     private final WarningMapper warningMapper;
-    private final UserMapper userMapper;
-    private final AssetHolderMapper assetHolderMapper;
+    private final ContactMapper contactMapper;
 
-    public WarningServiceImpl(MetaDataMapper metaDataMapper, WarningMapper warningMapper, UserMapper userMapper, AssetHolderMapper assetHolderMapper) {
+    public WarningServiceImpl(MetaDataMapper metaDataMapper, WarningMapper warningMapper, ContactMapper contactMapper) {
         this.metaDataMapper = metaDataMapper;
         this.warningMapper = warningMapper;
-        this.userMapper = userMapper;
-        this.assetHolderMapper = assetHolderMapper;
+        this.contactMapper = contactMapper;
     }
 
     @Override
-    public List<Warning> getAllWarnings(List<Map<String, String>> orderList,
+    public List<Warning> getAllWarnings(Map<String, Object> filters,
+                                        List<Map<String, String>> orderList,
                                         Integer limit,
                                         Integer offset) {
-        return warningMapper.selectAllWarnings(QueryTool.filterOrderList(orderList, "warning"), limit, offset);
+        return warningMapper.selectAllWarnings(
+                QueryTool.formatFilters(filters),
+                QueryTool.filterOrderList(orderList, "weather_warnings"),
+                limit, offset);
     }
 
     @Override
-    public List<Warning> getAllWarningsIncludingOutdated(List<Map<String, String>> orderList,
+    public List<Warning> getAllWarningsIncludingOutdated(Map<String, Object> filters,
+                                                         List<Map<String, String>> orderList,
                                                          Integer limit,
                                                          Integer offset) {
-        return warningMapper.selectAllWarningsIncludingOutdated(QueryTool.filterOrderList(orderList, "warning"), limit, offset);
+        return warningMapper.selectAllWarningsIncludingOutdated(
+                QueryTool.formatFilters(filters),
+                QueryTool.filterOrderList(orderList, "weather_warnings"),
+                limit, offset);
     }
 
     @Override
@@ -64,7 +68,7 @@ public class WarningServiceImpl implements WarningService {
         for (Warning warning : warnings) {
             List<Warning> search = warningMapper.selectWarningById(warning.getId());
             if (search.size() > 1) {
-                throw new RuntimeException("Found multiple weather warning data stored in database for id " + warning.getId());
+                throw new SpExceptions.SystemException("Found" + search.size() + " weather warning data stored in database for id " + warning.getId());
             } else if (search.size() == 1) {
                 warningMapper.updateWarning(warning);
                 sum++;
@@ -95,57 +99,92 @@ public class WarningServiceImpl implements WarningService {
     }
 
     @Override
-    public List<Template> getAllNotificationTemplates(List<Map<String, String>> orderList,
+    public List<Template> getAllNotificationTemplates(Map<String, Object> filters,
+                                                      List<Map<String, String>> orderList,
                                                       Integer limit,
                                                       Integer offset) {
-        return warningMapper.selectAllNotificationTemplates(QueryTool.filterOrderList(orderList, "template"), limit, offset);
+        return contactMapper.selectAllNotificationTemplates(
+                QueryTool.formatFilters(filters),
+                QueryTool.filterOrderList(orderList, "templates"),
+                limit, offset);
     }
 
     @Override
     public List<Template> getNotificationTemplateByTypes(Template template) {
-        return warningMapper.selectNotificationTemplateByTypes(template);
+        return contactMapper.selectNotificationTemplateByTypes(template);
     }
 
     @Override
     public List<Template> getNotificationTemplateById(Long id) {
-        return warningMapper.selectNotificationTemplateById(id);
+        return contactMapper.selectNotificationTemplateById(id);
     }
 
     @Override
     public int insertNotificationTemplate(Template templates) {
-        int n = warningMapper.insertNotificationTemplate(templates);
+        int n = contactMapper.insertNotificationTemplate(templates);
         metaDataMapper.increaseTotalCountByTableName("templates", n);
         return n;
     }
 
     @Override
     public int updateNotificationTemplateMessageById(Template template) {
-        return warningMapper.updateNotificationTemplateMessageById(template);
+        return contactMapper.updateNotificationTemplateMessageById(template);
     }
 
     @Override
     public int updateNotificationTemplateMessageByTypes(Template template) {
-        return warningMapper.updateNotificationTemplateMessageByTypes(template);
+        return contactMapper.updateNotificationTemplateMessageByTypes(template);
     }
 
     @Override
     public int deleteNotificationTemplateByIds(Long[] ids) {
-        int n = warningMapper.deleteNotificationTemplateByIds(ids);
+        int n = contactMapper.deleteNotificationTemplateByIds(ids);
         metaDataMapper.increaseTotalCountByTableName("templates", -n);
         return n;
     }
 
     @Override
     public int deleteNotificationTemplateByIds(List<Long> ids) {
-        int n = warningMapper.deleteNotificationTemplateByIds(ids);
+        int n = contactMapper.deleteNotificationTemplateByIds(ids);
         metaDataMapper.increaseTotalCountByTableName("templates", -n);
         return n;
     }
 
     @Override
     public int deleteNotificationTemplateByType(Template template) {
-        int n = warningMapper.deleteNotificationTemplateByType(template);
+        int n = contactMapper.deleteNotificationTemplateByType(template);
         metaDataMapper.increaseTotalCountByTableName("templates", -n);
         return n;
     }
+
+    @Override
+    public Map<String, Object> getUserInboxMessagesByUserId(String userId) {
+        return contactMapper.selectUserInboxMessagesByUserId(userId);
+    }
+
+    @Override
+    public int insertInboxMessageToUser(Map<String, Object> message) {
+        return contactMapper.insertInboxMessageToUser(message);
+    }
+
+    @Override
+    public int updateInboxMessageByUserId(Map<String, Object> message) {
+        return contactMapper.updateInboxMessageByUserId(message);
+    }
+
+    @Override
+    public int deleteInboxMessageByFilter(Map<String, Object> filters) {
+        return contactMapper.deleteInboxMessageByFilter(QueryTool.formatFilters(filters));
+    }
+
+    @Override
+    public int deleteOutDatedInboxMessages() {
+        return contactMapper.deleteOutDatedInboxMessages();
+    }
+
+    @Override
+    public int deleteOutDatedInboxMessagesByUserId(String userId) {
+        return contactMapper.deleteOutDatedInboxMessagesByUserId(userId);
+    }
+
 }

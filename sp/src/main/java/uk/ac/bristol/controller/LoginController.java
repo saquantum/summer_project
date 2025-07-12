@@ -49,11 +49,11 @@ public class LoginController {
                 || name == null || name.isBlank()
                 || email == null || email.isBlank()
                 || phone == null || phone.isBlank()) {
-            throw new SpExceptions.BusinessException("Key fields missing during registration.");
+            throw new SpExceptions.BadRequestException("Key fields missing during registration.");
         }
 
         if (!password.equals(repassword)) {
-            throw new SpExceptions.BusinessException("Two passwords don't match.");
+            throw new SpExceptions.BadRequestException("Two passwords don't match.");
         }
 
         AssetHolder ah = new AssetHolder();
@@ -65,21 +65,13 @@ public class LoginController {
         user.setPassword(password);
         user.setAssetHolder(ah);
 
-        try {
-            userService.registerNewUser(user);
-            return new ResponseBody(Code.SUCCESS, null, "Success.");
-        } catch (Exception e) {
-            return new ResponseBody(Code.REGISTER_ERR, null, "Failed to register the user." + e.getMessage());
-        }
+        userService.registerNewUser(user);
+        return new ResponseBody(Code.SUCCESS, null, "Success.");
     }
 
     @PostMapping("/email/code")
     public ResponseBody resetPasswordSendEmailWithCode(@RequestBody Map<String, String> body) {
-        try {
-            return contactService.generateCode(body.get("email"));
-        } catch (Exception e) {
-            return new ResponseBody(Code.REGISTER_ERR, null, "Failed to generate Code." + e.getMessage());
-        }
+        return contactService.generateCode(body.get("email"));
     }
 
     @PostMapping("/email/verification")
@@ -90,18 +82,15 @@ public class LoginController {
     @PostMapping("/email/password")
     public ResponseBody resetPasswordUpdatePassword(@RequestBody Map<String, String> body) {
         String password = body.get("password");
-        if (password == null || !password.matches("^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?~`]+$\n")) {
+        if (password == null || !password.matches("^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?~`]+$")) {
             throw new SpExceptions.BusinessException("Invalid password: empty or contains improper characters");
         }
-        if(password.length() < 6 || password.length() > 20){
+        if (password.length() < 6 || password.length() > 20) {
             throw new SpExceptions.BusinessException("The length of password should be between 6 and 20 characters");
         }
-        try {
-            userService.updatePasswordByEmail(body.get("email"), password);
-            return new ResponseBody(Code.SUCCESS, null, "Success.");
-        } catch (Exception e) {
-            return new ResponseBody(Code.BUSINESS_ERR, null, "Failed to update password.");
-        }
+
+        userService.updatePasswordByEmail(body.get("email"), password);
+        return new ResponseBody(Code.SUCCESS, null, "Success.");
     }
 
     @GetMapping("/exists/uid/{uid}")
@@ -118,5 +107,10 @@ public class LoginController {
             return new ResponseBody(Code.SELECT_OK, null, "The email address already exists.");
         }
         return new ResponseBody(Code.SELECT_ERR, null, "The email address does not exist.");
+    }
+
+    @PostMapping("/register/email/code")
+    public ResponseBody registerSendEmailWithCode(@RequestBody Map<String, String> body) {
+        return contactService.registerGenerateCode(body.get("email"));
     }
 }

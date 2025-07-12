@@ -1,7 +1,10 @@
 package uk.ac.bristol.service.impl;
 
 import io.jsonwebtoken.Claims;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -10,9 +13,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.controller.Code;
 import uk.ac.bristol.controller.ResponseBody;
-import uk.ac.bristol.dao.AssetHolderMapper;
-import uk.ac.bristol.dao.AssetMapper;
-import uk.ac.bristol.dao.WarningMapper;
+import uk.ac.bristol.dao.*;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
 import uk.ac.bristol.service.ContactService;
@@ -21,6 +22,7 @@ import uk.ac.bristol.util.JwtUtil;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -36,23 +38,27 @@ public class ContactServiceImpl implements ContactService {
     @Value("${app.base-url}")
     private String baseURL;
 
-    private final Map<String, String> codeStore = new ConcurrentHashMap<>();
-    private final Map<String, Long> timestampStore = new ConcurrentHashMap<>();
-    private static final long EXPIRE_TIME = 5L * 60 * 1000;
-
-    private final JavaMailSender mailSender;
+    @Autowired
+    private JavaMailSender mailSender;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     private final UserService userService;
     private final WarningMapper warningMapper;
     private final AssetMapper assetMapper;
     private final AssetHolderMapper assetHolderMapper;
+    private final ContactMapper contactMapper;
 
-    public ContactServiceImpl(JavaMailSender mailSender, UserService userService, WarningMapper warningMapper, AssetMapper assetMapper, AssetHolderMapper assetHolderMapper) {
-        this.mailSender = mailSender;
+
+    private final Duration expireTime = Duration.ofMinutes(5);
+    private final String prefix = "email:verify:code:";
+
+    public ContactServiceImpl(UserService userService, WarningMapper warningMapper, AssetMapper assetMapper, AssetHolderMapper assetHolderMapper, ContactMapper contactMapper) {
         this.userService = userService;
         this.warningMapper = warningMapper;
         this.assetMapper = assetMapper;
         this.assetHolderMapper = assetHolderMapper;
+        this.contactMapper = contactMapper;
     }
 
     @Override
@@ -71,13 +77,16 @@ public class ContactServiceImpl implements ContactService {
         String warningType = warning.get(0).getWeatherType();
         String severity = warning.get(0).getWarningLevel();
 
-        List<Template> template = warningMapper.selectNotificationTemplateByTypes(new Template(typeId, warningType, severity, "Email"));
+        List<Template> template = contactMapper.selectNotificationTemplateByTypes(new Template(typeId, warningType, severity, "Email"));
         if (template.size() != 1) {
-            throw new SpExceptions.GetMethodException("Get " + template.size() + " templates using id " + warningId);
+            throw new SpExceptions.SystemException("Get " + template.size() + " templates using id " + warningId);
         }
 
         String title = template.get(0).getTitle();
         String body = template.get(0).getBody();
+
+        title = fillVariablesWithValues(title, assetId);
+        body = fillVariablesWithValues(body, assetId);
 
         if (body == null) {
             throw new SpExceptions.GetMethodException("The message type you required does not exist");
@@ -93,7 +102,8 @@ public class ContactServiceImpl implements ContactService {
                 "severity", severity,
                 "title", title,
                 "body", body,
-                "createdAt", now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                "createdAt", now,
+                "validUntil", warning.get(0).getValidTo(),
                 "channel", ""));
     }
 
@@ -110,20 +120,32 @@ public class ContactServiceImpl implements ContactService {
         }
         List<Map<String, Object>> contactPreferences = assetHolderMapper.selectContactPreferencesByAssetHolderId(notification.get("toOwnerId").toString());
         if (contactPreferences.size() != 1) {
-            throw new SpExceptions.GetMethodException("The database might be modified by another transaction");
+            throw new SpExceptions.SystemException("The database might be modified by another transaction");
         }
 
         if ((Boolean) contactPreferences.get(0).get("email") == false) {
             return new ResponseBody(Code.SUCCESS, null, "The asset holder prefers not to receive by email");
         }
 
-        List<AssetHolder> holder = assetHolderMapper.selectAssetHolderByIDs(List.of(notification.get("toOwnerId").toString()), null, null, null);
+        List<AssetHolder> holder = assetHolderMapper.selectAssetHolderByIDs(List.of(notification.get("toOwnerId").toString()));
         if (holder.size() != 1) {
-            throw new SpExceptions.GetMethodException("The database might be modified by another transaction");
+            throw new SpExceptions.SystemException("The database might be modified by another transaction");
         }
 
         String emailAddress = holder.get(0).getEmail();
         sendEmailToAddress(emailAddress, (String) notification.get("title"), (String) notification.get("body"));
+
+
+        // tmp test
+        contactMapper.insertInboxMessageToUser(Map.of(
+                "userId", userService.getUserByAssetHolderId(notification.get("toOwnerId").toString()).getId(),
+                "hasRead", false,
+                "issuedDate", notification.get("createdAt"),
+                "validUntil", notification.get("validUntil"),
+                "title", notification.get("title"),
+                "message", notification.get("body")));
+
+
         return new ResponseBody(Code.SUCCESS, notification.get("body"), "The email has been sent to " + emailAddress);
     }
 
@@ -166,14 +188,14 @@ public class ContactServiceImpl implements ContactService {
     public ResponseBody unsubscribeEmail(String token) {
         Claims claims = JwtUtil.parseJWT(token);
         if (!"unsubscribe-email".equals(claims.get("action"))) {
-            throw new SpExceptions.BusinessException("The token provided is incorrect to unsubscribe email");
+            throw new SpExceptions.ForbiddenException("The token provided is incorrect to unsubscribe email");
         }
         String uid = claims.get("unsubscribe-email-uid").toString();
 
         User user = userService.getUserByUserId(uid);
         AssetHolder ah = user.getAssetHolder();
         if (ah == null) {
-            throw new SpExceptions.BusinessException("The user has no active asset holder details");
+            throw new SpExceptions.BadRequestException("The user has no active asset holder details");
         }
 
         ah.getContactPreferences().put("email", false);
@@ -194,10 +216,14 @@ public class ContactServiceImpl implements ContactService {
             return new ResponseBody(Code.BUSINESS_ERR, null, "Failed to send email because email address doesn't exist");
         }
         String code = String.valueOf(new Random().nextInt(899999) + 100000);
-        codeStore.put(email, code);
-        timestampStore.put(email, System.currentTimeMillis());
+        saveEmailCode(email, code);
         sendVerificationEmail(email, code);
         return new ResponseBody(Code.SUCCESS, code, "Verification code has been sent to " + email);
+    }
+
+    public void saveEmailCode(String email, String code) {
+        String redisKey = prefix + email;
+        redisTemplate.opsForValue().set(redisKey, code, expireTime);
     }
 
     private void sendVerificationEmail(String email, String verificationCode) {
@@ -214,18 +240,52 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     public ResponseBody validateCode(String email, String code) {
-        String savedCode = codeStore.get(email);
-        Long time = timestampStore.get(email);
-        if (savedCode == null || time == null) {
-            return new ResponseBody(Code.BUSINESS_ERR, null, "Verification code doesn't exists!");
+        String key = prefix + email;
+        ValueOperations<String, String> ops = redisTemplate.opsForValue();
+        String savedCode = ops.get(key);
+        if (savedCode == null) {
+            return new ResponseBody(Code.BUSINESS_ERR, null, "Verification code doesn't exists or has expired!");
         }
-        if (System.currentTimeMillis() - time > EXPIRE_TIME) {
+
+        Long ttl = redisTemplate.getExpire(key);
+        if (ttl == null || ttl <= 0) {
             return new ResponseBody(Code.BUSINESS_ERR, null, "Verification code has expired!");
         }
-        if (savedCode.equals(code)) {
-            return new ResponseBody(Code.SUCCESS, null, "Verification code has been validated!");
-        } else {
+
+        if (!savedCode.equals(code)) {
             return new ResponseBody(Code.BUSINESS_ERR, null, "You entered wrong verification code!");
         }
+        redisTemplate.delete(key);
+        return new ResponseBody(Code.SUCCESS, null, "Verification code has been validated!");
+    }
+
+    @Override
+    public ResponseBody registerGenerateCode(String email) {
+        if (email == null) {
+            return new ResponseBody(Code.BUSINESS_ERR, null, "Failed to send email because email address is null");
+        }
+        if (assetHolderMapper.testEmailAddressExistence(email)) {
+            return new ResponseBody(Code.BUSINESS_ERR, null, "This email already registered! You can use this email to login");
+        }
+        String code = String.valueOf(new Random().nextInt(899999) + 100000);
+        saveEmailCode(email, code);
+        sendVerificationEmail(email, code);
+        return new ResponseBody(Code.SUCCESS, code, "Verification code has been sent to " + email);
+    }
+
+    private String fillVariablesWithValues(String emailContent, String assetId) {
+        List<Asset> assetList = assetMapper.selectAssetByID(assetId);
+        String assetName = assetList.get(0).getName();
+
+        List<String> assetHolderIdList = Collections.singletonList(assetList.get(0).getOwnerId());
+        List<AssetHolder> assetHolderList = assetHolderMapper.selectAssetHolderByIDs(assetHolderIdList);
+        String contactName = assetHolderList.get(0).getName();
+
+        String postTown = assetHolderMapper.selectAddressByAssetHolderId(assetHolderList.get(0).getAddressId()).get(0).get("city");
+
+        emailContent = emailContent.replace("{{asset-model}}", assetName);
+        emailContent = emailContent.replace("{{contact_name}}", contactName);
+        emailContent = emailContent.replace("{{post_town}}", postTown);
+        return emailContent;
     }
 }

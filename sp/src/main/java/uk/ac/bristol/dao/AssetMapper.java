@@ -12,11 +12,13 @@ import java.util.Map;
 @Mapper
 public interface AssetMapper {
 
-    List<Asset> selectAllAssets(@Param("orderList") List<Map<String, String>> orderList,
+    List<Asset> selectAllAssets(@Param("filterString") String filterString,
+                                @Param("orderList") List<Map<String, String>> orderList,
                                 @Param("limit") Integer limit,
                                 @Param("offset") Integer offset);
 
-    List<AssetWithWeatherWarnings> selectAllAssetsWithWarnings(@Param("orderList") List<Map<String, String>> orderList,
+    List<AssetWithWeatherWarnings> selectAllAssetsWithWarnings(@Param("filterString") String filterString,
+                                                               @Param("orderList") List<Map<String, String>> orderList,
                                                                @Param("limit") Integer limit,
                                                                @Param("offset") Integer offset);
 
@@ -44,7 +46,8 @@ public interface AssetMapper {
                                                                        @Param("limit") Integer limit,
                                                                        @Param("offset") Integer offset);
 
-    List<AssetType> selectAllAssetTypes(@Param("orderList") List<Map<String, String>> orderList,
+    List<AssetType> selectAllAssetTypes(@Param("filterString") String filterString,
+                                        @Param("orderList") List<Map<String, String>> orderList,
                                         @Param("limit") Integer limit,
                                         @Param("offset") Integer offset);
 

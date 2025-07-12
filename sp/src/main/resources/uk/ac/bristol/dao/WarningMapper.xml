@@ -20,6 +20,7 @@
                ST_AsGeoJSON(warning_area) as warning_area
         from weather_warnings
         where now() between warning_valid_from and warning_valid_to
+        <include refid="ResultMaps.combinedFiltering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
     
@@ -38,6 +39,7 @@
                warning_update_description,
                ST_AsGeoJSON(warning_area) as warning_area
         from weather_warnings
+        <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
@@ -128,86 +130,4 @@
             #{id}
         </foreach>
     </delete>
-
-    <select id="selectAllNotificationTemplates" resultMap="ResultMaps.TemplateMap">
-        select *
-        from templates
-        <include refid="ResultMaps.orderAndPage"/>
-    </select>
-
-    <select id="selectNotificationTemplateById" resultMap="ResultMaps.TemplateMap">
-        select *
-        from templates
-        where template_id = #{id};
-    </select>
-
-    <select id="selectNotificationTemplateByTypes" resultMap="ResultMaps.TemplateMap">
-        select *
-        from templates
-        where LOWER(template_asset_type_id) = LOWER(#{assetTypeId})
-          and LOWER(template_weather_warning_type) = LOWER(#{warningType})
-          and LOWER(template_severity) = LOWER(#{severity})
-          and LOWER(template_contact_channel) = LOWER(#{contactChannel})
-    </select>
-
-    <insert id="insertNotificationTemplate">
-        insert into templates (template_asset_type_id,
-                               template_weather_warning_type,
-                               template_severity,
-                               template_contact_channel,
-                               template_title,
-                               template_body)
-        values (#{assetTypeId}, #{warningType}, #{severity}, #{contactChannel}, #{title}, #{body});
-    </insert>
-
-    <update id="updateNotificationTemplateMessageById">
-        update templates
-        <set>
-            <if test="assetTypeId != null and assetTypeId != ''">
-                template_asset_type_id = #{assetTypeId},
-            </if>
-            <if test="warningType != null and warningType != ''">
-                template_weather_warning_type = #{warningType},
-            </if>
-            <if test="severity != null and severity != ''">
-                template_severity = #{severity},
-            </if>
-            <if test="contactChannel != null and contactChannel != ''">
-                template_contact_channel = #{contactChannel},
-            </if>
-            <if test="title != null and title != ''">
-                template_title = #{title},
-            </if>
-            <if test="body != null and body != ''">
-                template_body = #{body},
-            </if>
-        </set>
-        where template_id = #{id}
-    </update>
-
-    <update id="updateNotificationTemplateMessageByTypes">
-        update templates
-        set template_title = #{title}, template_body = #{body}
-        where LOWER(template_asset_type_id) = LOWER(#{assetTypeId})
-          and LOWER(template_weather_warning_type) = LOWER(#{warningType})
-          and LOWER(template_severity) = LOWER(#{severity})
-          and LOWER(template_contact_channel) = LOWER(#{contactChannel})
-    </update>
-
-    <delete id="deleteNotificationTemplateByIds">
-        delete from templates where template_id in
-        <foreach collection="ids" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
-    </delete>
-
-    <delete id="deleteNotificationTemplateByType">
-        delete
-        from templates
-        where LOWER(template_asset_type_id) = LOWER(#{assetTypeId})
-          and LOWER(template_weather_warning_type) = LOWER(#{warningType})
-          and LOWER(template_severity) = LOWER(#{severity})
-          and LOWER(template_contact_channel) = LOWER(#{contactChannel})
-    </delete>
-
 </mapper>

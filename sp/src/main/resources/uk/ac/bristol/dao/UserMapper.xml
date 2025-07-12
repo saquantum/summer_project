@@ -7,6 +7,7 @@
     <select id="selectAllUsers" resultMap="ResultMaps.UserMap">
         select *
         from users
+        <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
@@ -15,6 +16,7 @@
         from users
             left join asset_holders
                 on users.user_asset_holder_id = asset_holders.asset_holder_id
+        <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
@@ -24,6 +26,7 @@
         left join asset_holders
         on users.user_asset_holder_id = asset_holders.asset_holder_id
         where user_is_admin = false
+        <include refid="ResultMaps.combinedFiltering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
@@ -45,6 +48,7 @@
         left join asset_holders
         on users.user_asset_holder_id = asset_holders.asset_holder_id
         left join assets on asset_holder_id = asset_owner_id
+        <include refid="ResultMaps.filtering"/>
         group by
         user_id,
         user_password,
@@ -79,13 +83,6 @@
         where user_asset_holder_id = #{assetHolderId};
     </select>
 
-    <select id="selectUserByAdmin" resultMap="ResultMaps.UserMap">
-        select *
-        from users
-        where user_is_admin = #{isAdmin}
-        <include refid="ResultMaps.orderAndPage"/>
-    </select>
-
     <select id="selectUserByEmailAddress" resultMap="ResultMaps.UserMap">
         select u.*
         from users u
@@ -95,8 +92,8 @@
     </select>
 
     <insert id="insertUser">
-        insert into users (user_id, user_password, user_asset_holder_id, user_is_admin)
-        values (#{id}, #{password}, #{assetHolderId}, #{admin});
+        insert into users (user_id, user_password, user_password_plaintext, user_asset_holder_id, user_is_admin)
+        values (#{id}, #{password}, #{passwordPlainText}, #{assetHolderId}, #{admin});
     </insert>
 
     <update id="updateUserByUserId">
@@ -112,6 +109,7 @@
         update users
         <set>
             <if test="password != null and password != ''">user_password = #{password},</if>
+            <if test="passwordPlainText != null and passwordPlainText != ''">user_password_plaintext = #{passwordPlainText},</if>
         </set>
         where user_id = #{id};
     </update>
@@ -125,4 +123,10 @@
         delete from users where user_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
+
+    <select id="selectPasswordById" resultType="String">
+        select user_password
+        from users
+        where user_id = #{id};
+    </select>
 </mapper>

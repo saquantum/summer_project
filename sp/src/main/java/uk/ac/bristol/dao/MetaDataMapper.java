@@ -16,6 +16,8 @@ public interface MetaDataMapper {
 
     int increaseTotalCountByTableName(@Param("tableName") String tableName, @Param("totalCount") Integer totalCount);
 
+    Set<String> selectAllRegisteredTableNames();
+
     Set<String> filterRegisteredColumnsInTables(@Param("tableNames") List<String> tableNames,
                                                 @Param("columnNames") List<String> columnNames);
 }

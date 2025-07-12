@@ -8,11 +8,13 @@ import java.util.Map;
 
 public interface WarningService {
 
-    List<Warning> getAllWarnings(List<Map<String, String>> orderList,
+    List<Warning> getAllWarnings(Map<String, Object> filters,
+                                 List<Map<String, String>> orderList,
                                  Integer limit,
                                  Integer offset);
 
-    List<Warning> getAllWarningsIncludingOutdated(List<Map<String, String>> orderList,
+    List<Warning> getAllWarningsIncludingOutdated(Map<String, Object> filters,
+                                                  List<Map<String, String>> orderList,
                                                   Integer limit,
                                                   Integer offset);
 
@@ -28,7 +30,8 @@ public interface WarningService {
 
     int deleteWarningByIDs(List<Long> ids);
 
-    List<Template> getAllNotificationTemplates(List<Map<String, String>> orderList,
+    List<Template> getAllNotificationTemplates(Map<String, Object> filters,
+                                               List<Map<String, String>> orderList,
                                                Integer limit,
                                                Integer offset);
 
@@ -48,4 +51,16 @@ public interface WarningService {
 
     int deleteNotificationTemplateByType(Template template);
 
+
+    Map<String, Object> getUserInboxMessagesByUserId(String userId);
+
+    int insertInboxMessageToUser(Map<String, Object> message);
+
+    int updateInboxMessageByUserId(Map<String, Object> message);
+
+    int deleteInboxMessageByFilter(Map<String, Object> filters);
+
+    int deleteOutDatedInboxMessages();
+
+    int deleteOutDatedInboxMessagesByUserId(String userId);
 }

@@ -10,7 +10,8 @@ import java.util.Map;
 @Mapper
 public interface PermissionConfigMapper {
 
-    List<PermissionConfig> selectAllPermissionConfigs(@Param("orderList") List<Map<String, String>> orderList,
+    List<PermissionConfig> selectAllPermissionConfigs(@Param("filterString") String filterString,
+                                                      @Param("orderList") List<Map<String, String>> orderList,
                                                       @Param("limit") Integer limit,
                                                       @Param("offset") Integer offset);
 
