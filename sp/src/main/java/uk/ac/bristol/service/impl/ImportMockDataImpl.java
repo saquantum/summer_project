@@ -49,6 +49,7 @@ public class ImportMockDataImpl implements ImportMockData {
         settings.createNotificationTemplates("templates");
         settings.createPermissionConfigs("permission_configs");
         settings.createNotificationStatus("notification_status");
+        settings.createUserInboxes("inboxes");
     }
 
     @Override

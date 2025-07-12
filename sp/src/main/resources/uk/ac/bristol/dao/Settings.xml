@@ -281,4 +281,18 @@
         <include refid="initTableMetaData"/>
     </update>
 
+    <update id="createUserInboxes">
+        create table if not exists inboxes
+        (
+            inbox_user_id     varchar(100) not null references users (user_id) on delete cascade,
+            inbox_has_read    boolean      not null,
+            inbox_issued_date timestamptz  not null,
+            inbox_valid_until timestamptz  not null,
+            inbox_title       text         not null,
+            inbox_message     text         not null
+        );
+
+        <include refid="initTableMetaData"/>
+    </update>
+
 </mapper>

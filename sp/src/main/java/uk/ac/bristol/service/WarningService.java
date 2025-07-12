@@ -51,4 +51,16 @@ public interface WarningService {
 
     int deleteNotificationTemplateByType(Template template);
 
+
+    Map<String, Object> getUserInboxMessagesByUserId(String userId);
+
+    int insertInboxMessageToUser(Map<String, Object> message);
+
+    int updateInboxMessageByUserId(Map<String, Object> message);
+
+    int deleteInboxMessageByFilter(Map<String, Object> filters);
+
+    int deleteOutDatedInboxMessages();
+
+    int deleteOutDatedInboxMessagesByUserId(String userId);
 }

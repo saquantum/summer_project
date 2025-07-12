@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="uk.ac.bristol.dao.ContactMapper">
+    <select id="selectAllNotificationTemplates" resultMap="ResultMaps.TemplateMap">
+        select *
+        from templates
+        <include refid="ResultMaps.filtering"/>
+        <include refid="ResultMaps.orderAndPage"/>
+    </select>
+
+    <select id="selectNotificationTemplateById" resultMap="ResultMaps.TemplateMap">
+        select *
+        from templates
+        where template_id = #{id};
+    </select>
+
+    <select id="selectNotificationTemplateByTypes" resultMap="ResultMaps.TemplateMap">
+        select *
+        from templates
+        where LOWER(template_asset_type_id) = LOWER(#{assetTypeId})
+          and LOWER(template_weather_warning_type) = LOWER(#{warningType})
+          and LOWER(template_severity) = LOWER(#{severity})
+          and LOWER(template_contact_channel) = LOWER(#{contactChannel})
+    </select>
+
+    <insert id="insertNotificationTemplate">
+        insert into templates (template_asset_type_id,
+                               template_weather_warning_type,
+                               template_severity,
+                               template_contact_channel,
+                               template_title,
+                               template_body)
+        values (#{assetTypeId}, #{warningType}, #{severity}, #{contactChannel}, #{title}, #{body});
+    </insert>
+
+    <update id="updateNotificationTemplateMessageById">
+        update templates
+        <set>
+            <if test="assetTypeId != null and assetTypeId != ''">
+                template_asset_type_id = #{assetTypeId},
+            </if>
+            <if test="warningType != null and warningType != ''">
+                template_weather_warning_type = #{warningType},
+            </if>
+            <if test="severity != null and severity != ''">
+                template_severity = #{severity},
+            </if>
+            <if test="contactChannel != null and contactChannel != ''">
+                template_contact_channel = #{contactChannel},
+            </if>
+            <if test="title != null and title != ''">
+                template_title = #{title},
+            </if>
+            <if test="body != null and body != ''">
+                template_body = #{body},
+            </if>
+        </set>
+        where template_id = #{id}
+    </update>
+
+    <update id="updateNotificationTemplateMessageByTypes">
+        update templates
+        set template_title = #{title}, template_body = #{body}
+        where LOWER(template_asset_type_id) = LOWER(#{assetTypeId})
+          and LOWER(template_weather_warning_type) = LOWER(#{warningType})
+          and LOWER(template_severity) = LOWER(#{severity})
+          and LOWER(template_contact_channel) = LOWER(#{contactChannel})
+    </update>
+
+    <delete id="deleteNotificationTemplateByIds">
+        delete from templates where template_id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteNotificationTemplateByType">
+        delete
+        from templates
+        where LOWER(template_asset_type_id) = LOWER(#{assetTypeId})
+          and LOWER(template_weather_warning_type) = LOWER(#{warningType})
+          and LOWER(template_severity) = LOWER(#{severity})
+          and LOWER(template_contact_channel) = LOWER(#{contactChannel})
+    </delete>
+
+    <insert id="insertNotificationStatus">
+        insert into notification_status (asset_id, warning_id) values (#{assetId}, #{warningId});
+    </insert>
+
+    <delete id="deleteNotificationStatusByWarningId">
+        delete from notification_status where warning_id = #{warningId}
+    </delete>
+
+    <delete id="deleteNotificationStatusByStatus">
+        delete from notification_status where notification_status = true
+    </delete>
+
+    <update id="updateNotificationStatus">
+        update notification_status
+        set notification_status = true
+        where asset_id = #{assetId} and warning_id = #{warningId}
+    </update>
+
+    <select id="selectUserInboxMessagesByUserId" resultMap="ResultMaps.InboxMessage">
+        select *
+        from inboxes
+        where inbox_user_id = #{userId}
+    </select>
+
+    <insert id="insertInboxMessageToUser">
+        insert into inboxes (inbox_user_id,
+                             inbox_has_read,
+                             inbox_issued_date,
+                             inbox_valid_until,
+                             inbox_title,
+                             inbox_message)
+        values (#{userId}, #{hasRead}, #{issuedDate}, #{validUntil}, #{title}, #{message})
+    </insert>
+
+    <update id="updateInboxMessageByUserId">
+        update inboxes
+        <set>
+            <if test="hasRead != null">
+                inbox_has_read = #{hasRead}
+            </if>
+            <if test="issuedDate != null">
+                inbox_issued_date = #{issuedDate}
+            </if>
+            <if test="validUntil != null">
+                inbox_valid_until = #{validUntil}
+            </if>
+            <if test="title != null and title != ''">
+                inbox_title = #{title}
+            </if>
+            <if test="message != null and message != ''">
+                inbox_message = #{message}
+            </if>
+        </set>
+        where inbox_user_id = #{userId}
+    </update>
+
+    <delete id="deleteInboxMessageByFilter">
+        delete from inboxes
+        <include refid="ResultMaps.filtering"/>
+    </delete>
+
+    <delete id="deleteOutDatedInboxMessages">
+        delete from inboxes
+        where now() > inbox_valid_until
+    </delete>
+
+    <delete id="deleteOutDatedInboxMessagesByUserId">
+        delete
+        from inboxes
+        where inbox_user_id = #{userId}
+          and now() > inbox_valid_until
+    </delete>
+</mapper>

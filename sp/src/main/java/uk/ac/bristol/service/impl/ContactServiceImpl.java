@@ -15,6 +15,7 @@ import uk.ac.bristol.controller.Code;
 import uk.ac.bristol.controller.ResponseBody;
 import uk.ac.bristol.dao.AssetHolderMapper;
 import uk.ac.bristol.dao.AssetMapper;
+import uk.ac.bristol.dao.ContactMapper;
 import uk.ac.bristol.dao.WarningMapper;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
@@ -40,25 +41,27 @@ public class ContactServiceImpl implements ContactService {
     @Value("${app.base-url}")
     private String baseURL;
 
-
-    private final JavaMailSender mailSender;
+    @Autowired
+    private JavaMailSender mailSender;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     private final UserService userService;
     private final WarningMapper warningMapper;
     private final AssetMapper assetMapper;
     private final AssetHolderMapper assetHolderMapper;
+    private final ContactMapper contactMapper;
 
-    private final StringRedisTemplate redisTemplate;
+
     private final Duration expireTime = Duration.ofMinutes(5);
     private final String prefix = "email:verify:code:";
 
-    public ContactServiceImpl(JavaMailSender mailSender, UserService userService, WarningMapper warningMapper, AssetMapper assetMapper, AssetHolderMapper assetHolderMapper, StringRedisTemplate redisTemplate) {
-        this.mailSender = mailSender;
+    public ContactServiceImpl(UserService userService, WarningMapper warningMapper, AssetMapper assetMapper, AssetHolderMapper assetHolderMapper, ContactMapper contactMapper) {
         this.userService = userService;
         this.warningMapper = warningMapper;
         this.assetMapper = assetMapper;
         this.assetHolderMapper = assetHolderMapper;
-        this.redisTemplate = redisTemplate;
+        this.contactMapper = contactMapper;
     }
 
     @Override
@@ -77,7 +80,7 @@ public class ContactServiceImpl implements ContactService {
         String warningType = warning.get(0).getWeatherType();
         String severity = warning.get(0).getWarningLevel();
 
-        List<Template> template = warningMapper.selectNotificationTemplateByTypes(new Template(typeId, warningType, severity, "Email"));
+        List<Template> template = contactMapper.selectNotificationTemplateByTypes(new Template(typeId, warningType, severity, "Email"));
         if (template.size() != 1) {
             throw new SpExceptions.SystemException("Get " + template.size() + " templates using id " + warningId);
         }
@@ -85,8 +88,8 @@ public class ContactServiceImpl implements ContactService {
         String title = template.get(0).getTitle();
         String body = template.get(0).getBody();
 
-        title = fillVariablesWithValues(title,assetId);
-        body = fillVariablesWithValues(body,assetId);
+        title = fillVariablesWithValues(title, assetId);
+        body = fillVariablesWithValues(body, assetId);
 
         if (body == null) {
             throw new SpExceptions.GetMethodException("The message type you required does not exist");
