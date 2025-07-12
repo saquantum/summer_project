@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { useUserStore } from '@/stores'
 import type { AssetSearchBody, AssetSearchForm } from '@/types'
 import { assetConverFormToFilter } from '@/utils/DataConversion'
 import { Filter } from '@element-plus/icons-vue'
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 
 const props = defineProps<{
   assetSearchBody: AssetSearchBody
@@ -53,35 +54,30 @@ const handleClickOutside = (e: MouseEvent) => {
 }
 
 interface TableRow {
-  date: string
+  id: string
 }
 
-const tableData: TableRow[] = [
-  { date: '1' },
-  { date: '1' },
-  { date: '1' },
-  { date: '1' },
-  { date: '1' }
-]
+const tableData = computed(() =>
+  userStore.searchHistory.map((item) => ({
+    id: item
+  }))
+)
+
+const userStore = useUserStore()
 
 const handleRowClick = (row: TableRow) => {
-  tags.value.push(row.date)
+  tags.value.push(row.id)
+  fuzzySearch(row.id)
 }
 
 const tags = ref<string[]>([])
 const input = ref<string>('')
 
 const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Enter') {
-    console.log(input.value)
-    fuzzySearch(input.value)
-  }
-  if (
-    (e.key === 'Enter' || e.key === ',' || e.key === ' ') &&
-    input.value.trim()
-  ) {
+  if (e.key === 'Enter' && input.value.trim()) {
     e.preventDefault()
     tags.value.push(input.value.trim())
+    fuzzySearch(input.value)
     input.value = ''
   } else if (e.key === 'Backspace' && !input.value && tags.value.length) {
     tags.value.pop()
@@ -152,13 +148,52 @@ const handleSearch = () => {
   visible.value = false
 }
 
-const fuzzySearch = (input: string) => {
-  console.log(input)
+const clearFilters = () => {
+  form.value = {
+    id: '',
+    name: '',
+    typeId: '',
+    ownerId: '',
+    capacityLitres: [0, 10000],
+    material: '',
+    status: '',
+    installedAt: null,
+    lastInspection: null
+  }
+  handleSearch()
 }
+
+const fuzzySearch = (input: string) => {
+  const fuzzyForm = {
+    id: input,
+    name: '',
+    typeId: '',
+    ownerId: '',
+    capacityLitres: [0, 10000],
+    material: '',
+    status: '',
+    installedAt: null,
+    lastInspection: null
+  }
+  const obj: AssetSearchBody = {
+    ...props.assetSearchBody,
+    filters: assetConverFormToFilter(fuzzyForm)
+  }
+  emit('update:assetSearchBody', obj)
+  const index = userStore.searchHistory.indexOf(input)
+  if (index === -1) {
+    userStore.searchHistory.unshift(input)
+  } else {
+    userStore.searchHistory.splice(index, 1)
+    userStore.searchHistory.unshift(input)
+  }
+  props.fetchTableData()
+  visible.value = false
+}
+
 watch(
   [form],
   () => {
-    console.log(111111111)
     if (!form.value.typeId) {
       if (lastType) {
         const index = tags.value.indexOf(lastType)
@@ -330,17 +365,17 @@ defineExpose({
       <ButtonInput></ButtonInput>
       <div style="margin-top: 20px">
         <el-button @click="handleSearch">Search</el-button>
-        <el-button>Clear filters</el-button>
+        <el-button @click="clearFilters">Clear filters</el-button>
       </div>
     </div>
     <div v-else>
-      <span>Suggestion</span>
+      <span>Search history</span>
       <el-table
         :data="tableData"
         style="width: 100%"
         @row-click="handleRowClick"
       >
-        <el-table-column prop="date" />
+        <el-table-column prop="id" />
       </el-table>
     </div>
   </el-popover>

@@ -11,6 +11,8 @@ export const useUserStore = defineStore(
   () => {
     const user = ref<User | null>(null)
     const proxyId = ref('')
+    const searchHistory = ref<string[]>([])
+
     const getUser = async (form: LoginForm) => {
       try {
         const res = await userLoginService(form)
@@ -47,6 +49,7 @@ export const useUserStore = defineStore(
     }
     return {
       user,
+      searchHistory,
       getUser,
       reset,
       proxyId,
