@@ -57,6 +57,8 @@ public interface AssetMapper {
 
     int insertAsset(Asset asset);
 
+    List<String> insertAssetReturningId(Asset asset);
+
     int insertAssetAutoId(Asset asset);
 
     int updateAssetType(AssetType assetType);
@@ -76,6 +78,4 @@ public interface AssetMapper {
     String selectAssetOwnerIdByAssetId(@Param("id") String id);
 
     List<String> selectAssetIdsWithWarningId(@Param("id") Long id);
-
-    String selectLatestAssetId();
 }

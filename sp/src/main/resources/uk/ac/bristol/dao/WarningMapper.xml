@@ -136,11 +136,11 @@
     </select>
 
     <select id="selectWarningIdsByAssetId" resultType="java.lang.Long">
-        select w.warning_id
-        from weather_warnings w
-                 join assets a
-                           on ST_Intersects(a.asset_location, w.warning_area) and
-                              now() between w.warning_valid_from and w.warning_valid_to
+        select warning_id
+        from weather_warnings
+                 join assets
+                           on ST_Intersects(asset_location, warning_area) and
+                              now() between warning_valid_from and warning_valid_to
         where asset_id = #{id};
     </select>
 </mapper>

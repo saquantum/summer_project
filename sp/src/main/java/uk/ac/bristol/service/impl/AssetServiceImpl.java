@@ -156,19 +156,21 @@ public class AssetServiceImpl implements AssetService {
     public int insertAsset(Asset asset) {
         int n;
         asset.setLastModified(Instant.now());
+        List<String> assetIds;
         if (asset.getId() == null || asset.getId().isEmpty()) {
-            n = assetMapper.insertAssetAutoId(asset);
+            assetIds = assetMapper.insertAssetReturningId(asset);
+            n = assetIds.size();
         } else {
             n = assetMapper.insertAsset(asset);
+            metaDataMapper.increaseTotalCountByTableName("assets", n);
+            return n;
         }
 
         metaDataMapper.increaseTotalCountByTableName("assets", n);
 
-        String assetId = assetMapper.selectLatestAssetId();
-
-        List<Long> warningIds = warningService.selectWarningIdsByAssetId(assetId);
+        List<Long> warningIds = warningService.selectWarningIdsByAssetId(assetIds.get(0));
         for (Long warningId : warningIds) {
-            Map<String, Object> notification = contactService.formatNotification(warningId, asset.getId());
+            Map<String, Object> notification = contactService.formatNotification(warningId, assetIds.get(0));
             contactService.sendEmail(notification);
         }
         return n;

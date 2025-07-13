@@ -46,7 +46,7 @@ public class ScheduledMetOfficeWarningsCrawler {
         this.assetService = assetService;
     }
 
-    @Scheduled(fixedRateString = "${metoffice.crawler.rate:30000}") // default polling rate -- 10 mins per polling
+    @Scheduled(fixedRateString = "${metoffice.crawler.rate:600000}") // default polling rate -- 10 mins per polling
     public void scheduledCrawler() {
         try {
             MockDataInitializer.latch.await();
@@ -92,13 +92,7 @@ public class ScheduledMetOfficeWarningsCrawler {
             return;
         }
 
-        Iterator<Warning> iterator = warnings.iterator();
-        while (iterator.hasNext()) {
-            Warning warning = iterator.next();
-            if (warningService.testWarningIdExists(warning.getId())) {
-                iterator.remove();
-            }
-        }
+        warnings.removeIf(warning -> warningService.testWarningIdExists(warning.getId()));
 
         if(warnings.isEmpty()) {
             System.out.println("Currently no new weather warning is issued, finished.");

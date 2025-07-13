@@ -48,6 +48,10 @@
                w.warning_update_description,
                ST_AsGeoJSON(w.warning_area)   as warning_area
         from assets a
+                  left join weather_warnings w
+                  on ST_Intersects(a.asset_location, w.warning_area) and
+                  now() between w.warning_valid_from and w.warning_valid_to
+
 
         <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
@@ -254,6 +258,25 @@
                 #{installedAt}, #{lastInspection}, #{lastModified});
     </insert>
 
+    <select id="insertAssetReturningId" parameterType="uk.ac.bristol.pojo.Asset" resultType="java.lang.String">
+        insert into assets
+        (asset_id,
+         asset_name,
+         asset_type_id,
+         asset_owner_id,
+         asset_location,
+         asset_capacity_litres,
+         asset_material,
+         asset_status,
+         asset_installed_at,
+         asset_last_inspection,
+         asset_last_modified)
+        values (#{id}, #{name}, #{typeId}, #{ownerId}, ST_Multi(ST_MakeValid(ST_GeomFromGeoJSON(#{locationAsJson}))),
+                #{capacityLitres}, #{material}, #{status},
+                #{installedAt}, #{lastInspection}, #{lastModified})
+        returning asset_id;
+    </select>
+
     <insert id="insertAssetAutoId">
         insert into assets
         (asset_name,
@@ -307,11 +330,11 @@
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 
-    <select id="selectAssetTypeByID" resultType="String">
+    <select id="selectAssetTypeByID" resultType="java.lang.String">
         select asset_type_id from assets where asset_id = #{id}
     </select>
 
-    <select id="selectAssetOwnerIdByAssetId" resultType="String">
+    <select id="selectAssetOwnerIdByAssetId" resultType="java.lang.String">
         select asset_owner_id from assets where asset_id = #{id}
     </select>
 
@@ -322,9 +345,5 @@
                            on ST_Intersects(a.asset_location, w.warning_area) and
                               now() between w.warning_valid_from and w.warning_valid_to
                            where warning_id = #{id};
-    </select>
-
-    <select id="selectLatestAssetId" resultType="String">
-        select asset_id from assets order by asset_row_id desc limit 1;
     </select>
 </mapper>
