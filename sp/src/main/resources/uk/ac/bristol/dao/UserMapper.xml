@@ -79,7 +79,7 @@
                  left join contact_preferences
                            on contact_preferences_id = asset_holder_contact_preferences_id
                  left join permission_configs
-                           on user_id = permission_config_user_id on permission_config_user_id = user_id
+                           on user_id = permission_config_user_id
         <include refid="ResultMaps.filtering"/>
         group by user_id,
             user_is_admin,
@@ -106,7 +106,7 @@
             permission_config_can_update_asset_fields,
             permission_config_can_update_asset_polygon,
             permission_config_can_delete_asset,
-            permission_config_can_update_profile,
+            permission_config_can_update_profile
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
