@@ -62,9 +62,7 @@ public final class QueryTool {
                     throw new IllegalArgumentException("Value of like conditions must not be null");
                 }
                 result.add("lower(" + column + ") like lower(" + formatFilterValue(conditionMap.get("val")) + ")");
-            }
-
-            if ("range".equalsIgnoreCase(operator)) {
+            } else if ("range".equalsIgnoreCase(operator)) {
                 Object min = conditionMap.get("min");
                 Object max = conditionMap.get("max");
 
@@ -78,6 +76,18 @@ public final class QueryTool {
                 } else {
                     throw new IllegalArgumentException("Range conditions must have a min or a max value");
                 }
+            } else if ("in".equalsIgnoreCase(operator)) {
+                if (!conditionMap.containsKey("list") || conditionMap.get("list") == null) {
+                    throw new IllegalArgumentException("In conditions must have a list of values");
+                }
+                List<Object> list = (List<Object>) conditionMap.get("list");
+                List<String> values = new ArrayList<>();
+                for (Object o : list) {
+                    values.add(formatFilterValue(o));
+                }
+                result.add(column + " in (" + String.join(",", values) + ")");
+            } else {
+                throw new IllegalArgumentException("Only 'like', 'range' and 'in' are supported operators");
             }
         }
 
@@ -133,8 +143,9 @@ public final class QueryTool {
     private final static Set<String> registeredTables = QueryToolConfig.metaDataService.getAllRegisteredTableNames();
 
     public static List<Map<String, String>> filterOrderList(List<Map<String, String>> originalList, String... tablesAndColumns) {
-        if (originalList == null || originalList.isEmpty() || tablesAndColumns == null || tablesAndColumns.length == 0){
-            return null;}
+        if (originalList == null || originalList.isEmpty() || tablesAndColumns == null || tablesAndColumns.length == 0) {
+            return null;
+        }
 
         // 1. separate tables and permitted columns from input
         Set<String> tables = new HashSet<>();
@@ -156,7 +167,7 @@ public final class QueryTool {
         List<Map<String, String>> result = new ArrayList<>();
         for (Map<String, String> item : originalList) {
             String column = item.get("column");
-            if(registeredColumns.contains(column) || columns.contains(column)) {
+            if (registeredColumns.contains(column) || columns.contains(column)) {
                 result.add(item);
             }
         }

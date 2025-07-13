@@ -5,7 +5,9 @@
 
 <mapper namespace="uk.ac.bristol.dao.AssetHolderMapper">
     <select id="selectAddressByAssetHolderId" resultMap="ResultMaps.AddressMap">
-        select * from address where address_id = #{assetHolderId};
+        select *
+        from address
+        where address_id = #{assetHolderId};
     </select>
 
     <insert id="insertAddress">
@@ -29,12 +31,16 @@
     </update>
 
     <delete id="deleteAddressByAssetHolderIds">
-        delete from address where address_id in
+        delete
+        from address
+        where address_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 
     <select id="selectContactPreferencesByAssetHolderId" resultMap="ResultMaps.ContactPreferencesMap">
-        select * from contact_preferences where contact_preferences_id = #{assetHolderId};
+        select *
+        from contact_preferences
+        where contact_preferences_id = #{assetHolderId};
     </select>
 
     <insert id="insertContactPreferences">
@@ -62,17 +68,13 @@
     </update>
 
     <delete id="deleteContactPreferencesByAssetHolderIds">
-        delete from contact_preferences where contact_preferences_id in
+        delete
+        from contact_preferences
+        where contact_preferences_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 
-    <select id="selectAllAssetHolders" resultMap="ResultMaps.AssetHolderMap">
-        select * from asset_holders
-        <include refid="ResultMaps.filtering"/>
-        <include refid="ResultMaps.orderAndPage"/>
-    </select>
-
-    <select id="selectAllAssetHoldersAutoAssociation" resultMap="ResultMaps.AssetHolderAssociationMap">
+    <select id="selectAssetHolders" resultMap="ResultMaps.AssetHolderMap">
         select *
         from asset_holders
                  left join address on asset_holder_address_id = address_id
@@ -81,31 +83,15 @@
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
-    <select id="selectAssetHolderByIDs" resultMap="ResultMaps.AssetHolderMap">
+    <select id="selectAssetHoldersWithoutAssociations" resultMap="ResultMaps.AssetHolderMap">
         select *
         from asset_holders
-        where asset_holder_id in
-        <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
-    </select>
-
-    <select id="selectByAssetHolder" resultMap="ResultMaps.AssetHolderMap">
-        select * from asset_holders
-        <where>
-            <if test="id != null">and asset_holder_id = #{id}</if>
-            <if test="name != null and name != ''">and asset_holder_name like #{name}</if>
-            <if test="email != null and email != ''">and asset_holder_email like #{email}</if>
-            <if test="phone != null and phone != ''">and asset_holder_phone like #{phone}</if>
-        </where>
+        <include refid="ResultMaps.filtering"/>
+        <include refid="ResultMaps.orderAndPage"/>
     </select>
 
     <select id="testEmailAddressExistence" resultType="java.lang.Boolean">
         select count(*) > 0
-        from asset_holders
-        where asset_holder_email = #{email};
-    </select>
-
-    <select id="selectAssetHolderIdByEmail" resultType="String">
-        select asset_holder_id
         from asset_holders
         where asset_holder_email = #{email};
     </select>
@@ -155,7 +141,9 @@
     </update>
 
     <delete id="deleteAssetHolderByAssetHolderIDs">
-        delete from asset_holders where asset_holder_id in
+        delete
+        from asset_holders
+        where asset_holder_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 </mapper>

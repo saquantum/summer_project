@@ -50,6 +50,10 @@ public interface UserService {
 
     boolean testEmailExistence(String email);
 
+    Long countUsersWithFilter(Map<String, Object> filters);
+
+    Long countAssetHoldersWithFilter(Map<String, Object> filters);
+
     int insertUser(User user);
 
     int registerNewUser(User user);

@@ -11,40 +11,29 @@ import java.util.Map;
 @Mapper
 public interface UserMapper {
 
-    List<User> selectAllUsers(@Param("filterString") String filterString,
-                              @Param("orderList") List<Map<String, String>> orderList,
-                              @Param("limit") Integer limit,
-                              @Param("offset") Integer offset);
+    List<User> selectUsers(@Param("filterString") String filterString,
+                           @Param("orderList") List<Map<String, String>> orderList,
+                           @Param("limit") Integer limit,
+                           @Param("offset") Integer offset);
 
-    List<User> selectUserById(@Param("id") String id);
+    List<User> selectUsersPuttingAssetHoldersTableMain(@Param("filterString") String filterString,
+                                                       @Param("orderList") List<Map<String, String>> orderList,
+                                                       @Param("limit") Integer limit,
+                                                       @Param("offset") Integer offset);
 
-    List<User> loginQuery(User user);
+    List<User> selectUsersWithoutAssociation(@Param("filterString") String filterString,
+                                             @Param("orderList") List<Map<String, String>> orderList,
+                                             @Param("limit") Integer limit,
+                                             @Param("offset") Integer offset);
 
-    List<User> selectUserByAssetHolderId(@Param("assetHolderId") String assetHolderId);
+    List<UserWithAssetHolder> selectUsersWithAccumulator(@Param("function") String function,
+                                                         @Param("column") String column,
+                                                         @Param("filterString") String filterString,
+                                                         @Param("orderList") List<Map<String, String>> orderList,
+                                                         @Param("limit") Integer limit,
+                                                         @Param("offset") Integer offset);
 
-    List<UserWithAssetHolder> selectAllUsersWithAssetHolder(@Param("filterString") String filterString,
-                                                            @Param("orderList") List<Map<String, String>> orderList,
-                                                            @Param("limit") Integer limit,
-                                                            @Param("offset") Integer offset);
-
-    List<User> selectAllUsersWithAssetHolderAutoAssociation(@Param("filterString") String filterString,
-                                                                           @Param("orderList") List<Map<String, String>> orderList,
-                                                                           @Param("limit") Integer limit,
-                                                                           @Param("offset") Integer offset);
-
-    List<UserWithAssetHolder> selectAllUnauthorisedUsersWithAssetHolder(@Param("filterString") String filterString,
-                                                                        @Param("orderList") List<Map<String, String>> orderList,
-                                                                        @Param("limit") Integer limit,
-                                                                        @Param("offset") Integer offset);
-
-    List<UserWithAssetHolder> selectAllUsersWithAccumulator(@Param("function") String function,
-                                                            @Param("column") String column,
-                                                            @Param("filterString") String filterString,
-                                                            @Param("orderList") List<Map<String, String>> orderList,
-                                                            @Param("limit") Integer limit,
-                                                            @Param("offset") Integer offset);
-
-    List<User> selectUserByEmailAddress(@Param("email") String email);
+    String selectPasswordByUserId(@Param("id") String id);
 
     int insertUser(User user);
 
@@ -59,6 +48,4 @@ public interface UserMapper {
     int deleteUserByIds(@Param("ids") String[] ids);
 
     int deleteUserByIds(@Param("ids") List<String> ids);
-
-    String selectPasswordById(@Param("id") String id);
 }

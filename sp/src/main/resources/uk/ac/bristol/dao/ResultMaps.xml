@@ -36,16 +36,6 @@
         <result property="addressId" column="asset_holder_address_id"/>
         <result property="contactPreferencesId" column="asset_holder_contact_preferences_id"/>
         <result property="lastModified" column="asset_holder_last_modified"/>
-    </resultMap>
-
-    <resultMap id="AssetHolderAssociationMap" type="uk.ac.bristol.pojo.AssetHolder">
-        <id property="id" column="asset_holder_id"/>
-        <result property="name" column="asset_holder_name"/>
-        <result property="email" column="asset_holder_email"/>
-        <result property="phone" column="asset_holder_phone"/>
-        <result property="addressId" column="asset_holder_address_id"/>
-        <result property="contactPreferencesId" column="asset_holder_contact_preferences_id"/>
-        <result property="lastModified" column="asset_holder_last_modified"/>
 
         <association property="address" javaType="java.util.Map" resultMap="AddressMap"/>
         <association property="contactPreferences" javaType="java.util.Map" resultMap="ContactPreferencesMap"/>
@@ -55,27 +45,13 @@
         <id property="id" column="user_id"/>
         <result property="assetHolderId" column="user_asset_holder_id"/>
         <result property="admin" column="user_is_admin"/>
+        <association property="assetHolder" javaType="uk.ac.bristol.pojo.AssetHolder" resultMap="AssetHolderAssociationMap"/>
     </resultMap>
 
-    <resultMap id="UserWithPasswordMap" type="uk.ac.bristol.pojo.User">
-        <id property="id" column="user_id"/>
-        <result property="assetHolderId" column="user_asset_holder_id"/>
-        <result property="password" column="user_password"/>
-        <result property="admin" column="user_is_admin"/>
-    </resultMap>
-
-    <resultMap id="UserWithAssetHolderMap" type="uk.ac.bristol.pojo.UserWithAssetHolder">
+    <resultMap id="UserWithExtraColumnsMap" type="java.util.Map">
         <id property="user.id" column="user_id"/>
         <result property="accumulation" column="accumulation"/>
         <association property="user" javaType="uk.ac.bristol.pojo.User" resultMap="UserMap"/>
-        <association property="assetHolder" javaType="uk.ac.bristol.pojo.AssetHolder" resultMap="AssetHolderMap"/>
-    </resultMap>
-
-    <resultMap id="UserWithAssetHolderAutoAssociationMap" type="uk.ac.bristol.pojo.User">
-        <id property="id" column="user_id"/>
-        <result property="assetHolderId" column="user_asset_holder_id"/>
-        <result property="admin" column="user_is_admin"/>
-        <association property="assetHolder" javaType="uk.ac.bristol.pojo.AssetHolder" resultMap="AssetHolderAssociationMap"/>
     </resultMap>
 
     <resultMap id="AssetMap" type="uk.ac.bristol.pojo.Asset">

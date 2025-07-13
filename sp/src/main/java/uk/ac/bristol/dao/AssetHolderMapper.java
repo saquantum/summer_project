@@ -30,23 +30,17 @@ public interface AssetHolderMapper {
 
     int deleteContactPreferencesByAssetHolderIds(@Param("ids") List<String> ids);
 
-    List<AssetHolder> selectAllAssetHolders(@Param("filterString") String filterString,
-                                            @Param("orderList") List<Map<String, String>> orderList,
-                                            @Param("limit") Integer limit,
-                                            @Param("offset") Integer offset);
+    List<AssetHolder> selectAssetHolders(@Param("filterString") String filterString,
+                                         @Param("orderList") List<Map<String, String>> orderList,
+                                         @Param("limit") Integer limit,
+                                         @Param("offset") Integer offset);
 
-    List<AssetHolder> selectAllAssetHoldersAutoAssociation(@Param("filterString") String filterString,
-                                                           @Param("orderList") List<Map<String, String>> orderList,
-                                                           @Param("limit") Integer limit,
-                                                           @Param("offset") Integer offset);
-
-    List<AssetHolder> selectAssetHolderByIDs(@Param("ids") List<String> ids);
-
-    List<AssetHolder> selectByAssetHolder(AssetHolder assetHolder);
+    List<AssetHolder> selectAssetHoldersWithoutAssociations(@Param("filterString") String filterString,
+                                                            @Param("orderList") List<Map<String, String>> orderList,
+                                                            @Param("limit") Integer limit,
+                                                            @Param("offset") Integer offset);
 
     Boolean testEmailAddressExistence(@Param("email") String email);
-
-    List<String> selectAssetHolderIdByEmail(@Param("email") String email);
 
     int insertAssetHolder(AssetHolder assetHolder);
 

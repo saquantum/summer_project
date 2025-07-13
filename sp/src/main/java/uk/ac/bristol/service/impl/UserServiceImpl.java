@@ -246,6 +246,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Long countUsersWithFilter(Map<String, Object> filters) {
+        return 0L;
+    }
+
+    @Override
+    public Long countAssetHoldersWithFilter(Map<String, Object> filters) {
+        return 0L;
+    }
+
+    @Override
     public int insertUser(User user) {
         if (user.getAssetHolder() != null) {
             AssetHolder emptyAH = new AssetHolder();

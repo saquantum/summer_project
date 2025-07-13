@@ -4,27 +4,11 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="uk.ac.bristol.dao.UserMapper">
-    <select id="selectAllUsers" resultMap="ResultMaps.UserMap">
-        select *
-        from users
-        <include refid="ResultMaps.filtering"/>
-        <include refid="ResultMaps.orderAndPage"/>
-    </select>
-
-    <select id="selectAllUsersWithAssetHolder" resultMap="ResultMaps.UserWithAssetHolderMap">
-        select *
-        from users
-            left join asset_holders
-                on users.user_asset_holder_id = asset_holders.asset_holder_id
-        <include refid="ResultMaps.filtering"/>
-        <include refid="ResultMaps.orderAndPage"/>
-    </select>
-
-    <select id="selectAllUsersWithAssetHolderAutoAssociation" resultMap="ResultMaps.UserWithAssetHolderAutoAssociationMap">
+    <select id="selectUsers" resultMap="ResultMaps.UserMap">
         select *
         from users
                  left join asset_holders
-                           on users.user_asset_holder_id = asset_holders.asset_holder_id
+                           on user_asset_holder_id = asset_holder_id
                  left join address
                            on asset_holder_address_id = address_id
                  left join contact_preferences
@@ -33,87 +17,105 @@
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
-    <select id="selectAllUnauthorisedUsersWithAssetHolder" resultMap="ResultMaps.UserWithAssetHolderMap">
+    <select id="selectUsersPuttingAssetHoldersTableMain" resultMap="ResultMaps.UserMap">
         select *
-        from users
-        left join asset_holders
-        on users.user_asset_holder_id = asset_holders.asset_holder_id
-        where user_is_admin = false
-        <include refid="ResultMaps.combinedFiltering"/>
-        <include refid="ResultMaps.orderAndPage"/>
-    </select>
-
-    <select id="selectAllUsersWithAccumulator" resultMap="ResultMaps.UserWithAssetHolderMap">
-        select
-        user_id,
-        user_password,
-        user_is_admin,
-        user_asset_holder_id,
-        asset_holder_id,
-        asset_holder_name,
-        asset_holder_email,
-        asset_holder_phone,
-        asset_holder_address_id,
-        asset_holder_contact_preferences_id,
-        asset_holder_last_modified,
-        ${function}(asset_id) as accumulation
-        from users
-        left join asset_holders
-        on users.user_asset_holder_id = asset_holders.asset_holder_id
-        left join assets on asset_holder_id = asset_owner_id
+        from asset_holders
+                 left join users
+                           on user_asset_holder_id = asset_holder_id
+                 left join address
+                           on asset_holder_address_id = address_id
+                 left join contact_preferences
+                           on asset_holder_contact_preferences_id = contact_preferences_id
         <include refid="ResultMaps.filtering"/>
-        group by
-        user_id,
-        user_password,
-        user_is_admin,
-        user_asset_holder_id,
-        asset_holder_id,
-        asset_holder_name,
-        asset_holder_email,
-        asset_holder_phone,
-        asset_holder_address_id,
-        asset_holder_contact_preferences_id,
-        asset_holder_last_modified
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
-    <select id="selectUserById" resultMap="ResultMaps.UserMap">
+    <select id="selectUsersWithoutAssociation" resultMap="ResultMaps.UserMap">
         select *
+        from users
+        <include refid="ResultMaps.filtering"/>
+        <include refid="ResultMaps.orderAndPage"/>
+    </select>
+
+    <select id="selectUsersWithAccumulator" resultMap="ResultMaps.UserWithExtraColumnsMap">
+        select user_id,
+               user_is_admin,
+               user_asset_holder_id,
+               asset_holder_id,
+               asset_holder_name,
+               asset_holder_email,
+               asset_holder_phone,
+               asset_holder_address_id,
+               address_street,
+               address_city,
+               address_postcode,
+               address_country,
+               asset_holder_contact_preferences_id,
+               contact_preferences_email,
+               contact_preferences_phone,
+               contact_preferences_post,
+               contact_preferences_discord,
+               contact_preferences_telegram,
+               contact_preferences_whatsapp,
+               asset_holder_last_modified,
+               ${function}(${column}) as accumulation
+        from users
+                 left join asset_holders
+                           on user_asset_holder_id = asset_holder_id
+                 left join assets
+                           on asset_holder_id = asset_owner_id
+                 left join address
+                           on address_id = asset_holder_address_id
+                 left join contact_preferences
+                           on contact_preferences_id = asset_holder_contact_preferences_id
+        <include refid="ResultMaps.filtering"/>
+        group by user_id,
+                 user_is_admin,
+                 user_asset_holder_id,
+                 asset_holder_id,
+                 asset_holder_name,
+                 asset_holder_email,
+                 asset_holder_phone,
+                 asset_holder_address_id,
+                 address_street,
+                 address_city,
+                 address_postcode,
+                 address_country,
+                 asset_holder_contact_preferences_id,
+                 contact_preferences_email,
+                 contact_preferences_phone,
+                 contact_preferences_post,
+                 contact_preferences_discord,
+                 contact_preferences_telegram,
+                 contact_preferences_whatsapp,
+                 asset_holder_last_modified
+        <include refid="ResultMaps.orderAndPage"/>
+    </select>
+
+    <select id="selectPasswordByUserId" resultType="Java.lang.String">
+        select user_password
         from users
         where user_id = #{id};
     </select>
 
-    <select id="loginQuery" resultMap="ResultMaps.UserWithPasswordMap">
-        select *
-        from users
-        where user_id = #{id}
-          and user_password = #{password};
-    </select>
-
-    <select id="selectUserByAssetHolderId" resultMap="ResultMaps.UserMap">
-        select *
-        from users
-        where user_asset_holder_id = #{assetHolderId};
-    </select>
-
-    <select id="selectUserByEmailAddress" resultMap="ResultMaps.UserMap">
-        select u.*
-        from users u
-                 join asset_holders ah
-                      on user_asset_holder_id = asset_holder_id
-        where asset_holder_email = #{email}
-    </select>
-
     <insert id="insertUser">
-        insert into users (user_id, user_password, user_password_plaintext, user_asset_holder_id, user_is_admin)
+        insert into users (user_id,
+                           user_password,
+                           user_password_plaintext,
+                           user_asset_holder_id,
+                           user_is_admin)
         values (#{id}, #{password}, #{passwordPlainText}, #{assetHolderId}, #{admin});
     </insert>
 
     <update id="updateUserByUserId">
         update users
         <set>
-            <if test="assetHolderId != null and assetHolderId != ''">user_asset_holder_id = #{assetHolderId},</if>
-            <if test="admin != null">user_is_admin = #{admin},</if>
+            <if test="assetHolderId != null and assetHolderId != ''">
+                user_asset_holder_id = #{assetHolderId},
+            </if>
+            <if test="admin != null">
+                user_is_admin = #{admin},
+            </if>
         </set>
         where user_id = #{id};
     </update>
@@ -121,25 +123,27 @@
     <update id="updateUserPasswordByUserId">
         update users
         <set>
-            <if test="password != null and password != ''">user_password = #{password},</if>
-            <if test="passwordPlainText != null and passwordPlainText != ''">user_password_plaintext = #{passwordPlainText},</if>
+            <if test="password != null and password != ''">
+                user_password = #{password},
+            </if>
+            <if test="passwordPlainText != null and passwordPlainText != ''">
+                user_password_plaintext =#{passwordPlainText},
+            </if>
         </set>
         where user_id = #{id};
     </update>
 
     <delete id="deleteUserByAssetHolderIDs">
-        delete from users where user_asset_holder_id in
+        delete
+        from users
+        where user_asset_holder_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 
     <delete id="deleteUserByIds">
-        delete from users where user_id in
+        delete
+        from users
+        where user_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
-
-    <select id="selectPasswordById" resultType="String">
-        select user_password
-        from users
-        where user_id = #{id};
-    </select>
 </mapper>

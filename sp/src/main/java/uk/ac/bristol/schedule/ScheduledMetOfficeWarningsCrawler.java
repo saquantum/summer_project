@@ -87,10 +87,6 @@ public class ScheduledMetOfficeWarningsCrawler {
                             + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
                             + ". " + e.getMessage());
         }
-        if (warnings.isEmpty()) {
-            System.out.println("Currently no weather warning is issued, finished.");
-            return;
-        }
 
         warnings.removeIf(warning -> warningService.testWarningIdExists(warning.getId()));
 
@@ -106,9 +102,8 @@ public class ScheduledMetOfficeWarningsCrawler {
         for (Warning warning : warnings) {
             List<String> assetIds = assetService.selectAssetIdsByWarningId(warning.getId());
             contactService.sendAllEmails(warning, assetIds);
-            System.out.println("Successfully send all email about weather warning " + warning.getId());
         }
-        System.out.println("Successfully send all email in one crawl!!!");
+        System.out.println("Successfully sent emails after crawling.");
     }
 
     private String getBaseUrl(String url) {
