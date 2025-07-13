@@ -334,7 +334,7 @@
             "country": "UK"
         },
         "contact_preferences": {
-            "email": true,
+            "email": false,
             "phone": true,
             "post": false
         }

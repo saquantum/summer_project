@@ -76,7 +76,7 @@ public class ContactServiceImpl implements ContactService {
 
         String typeId = assetMapper.selectAssets(
                 QueryTool.formatFilters(Map.of("asset_id", assetId)),
-                null, null, null).get(0).getId();
+                null, null, null).get(0).getTypeId();
         String warningType = warning.get(0).getWeatherType();
         String severity = warning.get(0).getWarningLevel();
 
@@ -294,7 +294,9 @@ public class ContactServiceImpl implements ContactService {
                 QueryTool.formatFilters(Map.of("asset_id", assetId)),
                 null, null, null);
         String assetName = assetList.get(0).getName();
-        List<AssetHolder> assetHolderList = assetHolderMapper.selectAssetHolders("asset_holder_id = " + assetList.get(0).getOwnerId(), null, null, null);
+        List<AssetHolder> assetHolderList = assetHolderMapper.selectAssetHolders(
+                QueryTool.formatFilters(Map.of("asset_holder_id", assetList.get(0).getOwnerId())),
+                null, null, null);
         String contactName = assetHolderList.get(0).getName();
 
         String postTown = assetHolderMapper.selectAddressByAssetHolderId(assetHolderList.get(0).getAddressId()).get(0).get("city");

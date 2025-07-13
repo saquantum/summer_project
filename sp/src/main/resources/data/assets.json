@@ -1998,5 +1998,45 @@
     "status": "maintenance",
     "installed_at": "2007-12-05",
     "last_inspection": "1974-07-10"
+  },
+  {
+    "id": "asset_051",
+    "name": "Test Asset",
+    "type_id": "type_005",
+    "owner_id": "user_053",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -2.041143,
+              50.336510000000004
+            ],
+            [
+              -1.941143,
+              50.336510000000004
+            ],
+            [
+              -1.941143,
+              50.43651
+            ],
+            [
+              -2.041143,
+              50.43651
+            ],
+            [
+              -2.041143,
+              50.336510000000004
+            ]
+          ]
+        ]
+      ]
+    },
+    "capacity_litres": 5000,
+    "material": "Steel",
+    "status": "inactive",
+    "installed_at": "1975-04-04",
+    "last_inspection": "1998-06-15"
   }
 ]

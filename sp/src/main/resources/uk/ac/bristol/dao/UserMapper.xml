@@ -13,6 +13,8 @@
                            on asset_holder_address_id = address_id
                  left join contact_preferences
                            on asset_holder_contact_preferences_id = contact_preferences_id
+                 left join permission_configs
+                           on permission_config_user_id = user_id
         <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
@@ -26,7 +28,8 @@
                            on asset_holder_contact_preferences_id = contact_preferences_id
                  right join users
                             on user_asset_holder_id = asset_holder_id
-
+                 left join permission_configs
+                           on permission_config_user_id = user_id
         <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
@@ -59,6 +62,12 @@
                contact_preferences_telegram,
                contact_preferences_whatsapp,
                asset_holder_last_modified,
+               permission_config_can_create_asset,
+               permission_config_can_set_polygon_on_create,
+               permission_config_can_update_asset_fields,
+               permission_config_can_update_asset_polygon,
+               permission_config_can_delete_asset,
+               permission_config_can_update_profile,
                ${function}(${column}) as accumulation
         from users
                  left join asset_holders
@@ -69,27 +78,35 @@
                            on address_id = asset_holder_address_id
                  left join contact_preferences
                            on contact_preferences_id = asset_holder_contact_preferences_id
+                 left join permission_configs
+                           on user_id = permission_config_user_id on permission_config_user_id = user_id
         <include refid="ResultMaps.filtering"/>
         group by user_id,
-                 user_is_admin,
-                 user_asset_holder_id,
-                 asset_holder_id,
-                 asset_holder_name,
-                 asset_holder_email,
-                 asset_holder_phone,
-                 asset_holder_address_id,
-                 address_street,
-                 address_city,
-                 address_postcode,
-                 address_country,
-                 asset_holder_contact_preferences_id,
-                 contact_preferences_email,
-                 contact_preferences_phone,
-                 contact_preferences_post,
-                 contact_preferences_discord,
-                 contact_preferences_telegram,
-                 contact_preferences_whatsapp,
-                 asset_holder_last_modified
+            user_is_admin,
+            user_asset_holder_id,
+            asset_holder_id,
+            asset_holder_name,
+            asset_holder_email,
+            asset_holder_phone,
+            asset_holder_address_id,
+            address_street,
+            address_city,
+            address_postcode,
+            address_country,
+            asset_holder_contact_preferences_id,
+            contact_preferences_email,
+            contact_preferences_phone,
+            contact_preferences_post,
+            contact_preferences_discord,
+            contact_preferences_telegram,
+            contact_preferences_whatsapp,
+            asset_holder_last_modified,
+            permission_config_can_create_asset,
+            permission_config_can_set_polygon_on_create,
+            permission_config_can_update_asset_fields,
+            permission_config_can_update_asset_polygon,
+            permission_config_can_delete_asset,
+            permission_config_can_update_profile,
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 

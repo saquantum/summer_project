@@ -46,6 +46,7 @@
         <result property="assetHolderId" column="user_asset_holder_id"/>
         <result property="admin" column="user_is_admin"/>
         <association property="assetHolder" javaType="uk.ac.bristol.pojo.AssetHolder" resultMap="AssetHolderMap"/>
+        <association property="permissionConfig" javaType="uk.ac.bristol.pojo.PermissionConfig" resultMap="PermissionConfigMap"/>
     </resultMap>
 
     <resultMap id="UserWithExtraColumnsMap" type="uk.ac.bristol.pojo.UserWithExtraColumns">
