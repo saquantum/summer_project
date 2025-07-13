@@ -31,15 +31,6 @@ public interface ContactMapper {
 
     int deleteNotificationTemplateByType(Template template);
 
-    int insertNotificationStatus(@Param("assetId") String assetId, @Param("warningId") String warningId);
-
-    int deleteNotificationStatusByWarningId(@Param("warningId") String warningId);
-
-    int deleteNotificationStatusByStatus();
-
-    int updateNotificationStatus(@Param("assetId") String assetId, @Param("warningId") String warningId);
-
-
     Map<String, Object> selectUserInboxMessagesByUserId(@Param("userId") String userId);
 
     int insertInboxMessageToUser(Map<String, Object> message);

@@ -16,7 +16,6 @@
         drop table if exists weather_warnings cascade;
         drop table if exists templates cascade;
         drop table if exists permission_configs cascade;
-        drop table if exists notification_status cascade;
         drop table if exists inboxes cascade;
     </update>
 
@@ -259,24 +258,6 @@
             permission_config_can_update_asset_polygon  boolean default false,
             permission_config_can_delete_asset          boolean default false,
             permission_config_can_update_profile        boolean default true
-        );
-
-        <include refid="initTableMetaData"/>
-    </update>
-
-    <update id="createNotificationStatus">
-        create table if not exists notification_status
-        (
-            status_id                   bigserial primary key,
-            asset_id                    varchar(100) references assets(asset_id) on update cascade on delete cascade,
-            warning_id                  bigint references weather_warnings(warning_id) on update cascade on delete cascade,
-            notification_status         boolean default false
-        );
-
-        CREATE UNIQUE INDEX joint_unique_identifier_two
-        ON notification_status (
-                    lower(asset_id),
-                    warning_id
         );
 
         <include refid="initTableMetaData"/>

@@ -494,7 +494,7 @@ public class UserServiceImpl implements UserService {
     private String hashPassword(String password) {
         Argon2Function argon2 = Argon2Function.getInstance(
                 19456,
-                2,
+                1,
                 1,
                 256,
                 Argon2.ID
@@ -510,7 +510,7 @@ public class UserServiceImpl implements UserService {
     private boolean verifyPassword(String plainPassword, String hashedPassword) {
         Argon2Function argon2 = Argon2Function.getInstance(
                 19456,
-                2,
+                1,
                 1,
                 256,
                 Argon2.ID

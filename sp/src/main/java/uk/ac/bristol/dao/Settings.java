@@ -31,7 +31,5 @@ public interface Settings {
 
     void createPermissionConfigs(@Param("tableName") String tableName);
 
-    void createNotificationStatus(@Param("tableName") String tableName);
-
     void createUserInboxes(@Param("tableName") String tableName);
 }
