@@ -1,16 +1,15 @@
 package uk.ac.bristol.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.bristol.service.SmsService;
 
 @RestController
-@RequestMapping("/test")
+@RequestMapping("/api/test")
+@CrossOrigin
 public class TestControllerSms {
 
     private final SmsService smsService;
 
-    @Autowired
     public TestControllerSms(SmsService smsService) {
         this.smsService = smsService;
     }
