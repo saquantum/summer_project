@@ -1,6 +1,5 @@
 package uk.ac.bristol.service;
 
-import org.apache.ibatis.annotations.Param;
 import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
 

@@ -72,6 +72,15 @@
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
+    <select id="selectAllAssetHoldersAutoAssociation" resultMap="ResultMaps.AssetHolderAssociationMap">
+        select *
+        from asset_holders
+                 left join address on asset_holder_address_id = address_id
+                 left join contact_preferences on asset_holder_contact_preferences_id = contact_preferences_id
+        <include refid="ResultMaps.filtering"/>
+        <include refid="ResultMaps.orderAndPage"/>
+    </select>
+
     <select id="selectAssetHolderByIDs" resultMap="ResultMaps.AssetHolderMap">
         select *
         from asset_holders

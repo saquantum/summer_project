@@ -20,6 +20,19 @@
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
+    <select id="selectAllUsersWithAssetHolderAutoAssociation" resultMap="ResultMaps.UserWithAssetHolderAutoAssociationMap">
+        select *
+        from users
+                 left join asset_holders
+                           on users.user_asset_holder_id = asset_holders.asset_holder_id
+                 left join address
+                           on asset_holder_address_id = address_id
+                 left join contact_preferences
+                           on asset_holder_contact_preferences_id = contact_preferences_id
+        <include refid="ResultMaps.filtering"/>
+        <include refid="ResultMaps.orderAndPage"/>
+    </select>
+
     <select id="selectAllUnauthorisedUsersWithAssetHolder" resultMap="ResultMaps.UserWithAssetHolderMap">
         select *
         from users

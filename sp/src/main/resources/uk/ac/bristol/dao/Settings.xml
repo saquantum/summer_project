@@ -17,6 +17,7 @@
         drop table if exists templates cascade;
         drop table if exists permission_configs cascade;
         drop table if exists notification_status cascade;
+        drop table if exists inboxes cascade;
     </update>
 
     <update id="createTableMetaData">

@@ -103,17 +103,22 @@ public class UserServiceImpl implements UserService {
                                                  List<Map<String, String>> orderList,
                                                  Integer limit,
                                                  Integer offset) {
-        List<UserWithAssetHolder> list = userMapper.selectAllUsersWithAssetHolder(
+//        List<UserWithAssetHolder> list = userMapper.selectAllUsersWithAssetHolder(
+//                QueryTool.formatFilters(filters),
+//                QueryTool.filterOrderList(orderList, "users", "asset_holders"),
+//                limit, offset);
+//        List<User> result = new ArrayList<>();
+//        for (UserWithAssetHolder uwa : list) {
+//            User user = uwa.getUser();
+//            user.setAssetHolder(this.prepareAssetHolder(uwa.getAssetHolder()));
+//            result.add(this.prepareUser(user));
+//        }
+//        return result;
+
+        return userMapper.selectAllUsersWithAssetHolderAutoAssociation(
                 QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList(orderList, "users", "asset_holders"),
-                limit, offset);
-        List<User> result = new ArrayList<>();
-        for (UserWithAssetHolder uwa : list) {
-            User user = uwa.getUser();
-            user.setAssetHolder(this.prepareAssetHolder(uwa.getAssetHolder()));
-            result.add(this.prepareUser(user));
-        }
-        return result;
+               QueryTool.filterOrderList(orderList, "users", "asset_holders"),
+               limit, offset);
     }
 
     // This method only returns users with asset holder info (i.e. excluding admins)
