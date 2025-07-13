@@ -63,4 +63,8 @@ public interface WarningService {
     int deleteOutDatedInboxMessages();
 
     int deleteOutDatedInboxMessagesByUserId(String userId);
+
+    boolean testWarningIdExists(Long warningId);
+
+    List<Long> selectWarningIdsByAssetId(String id);
 }

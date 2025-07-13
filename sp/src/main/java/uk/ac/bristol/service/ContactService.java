@@ -1,7 +1,9 @@
 package uk.ac.bristol.service;
 
 import uk.ac.bristol.controller.ResponseBody;
+import uk.ac.bristol.pojo.Warning;
 
+import java.util.List;
 import java.util.Map;
 
 public interface ContactService {
@@ -9,6 +11,8 @@ public interface ContactService {
     Map<String, Object> formatNotificationWithIds(Long warningId, String assetId, String ownerId);
 
     Map<String, Object> formatNotification(Long warningId, String assetId);
+
+    void sendAllEmails(Warning warning, List<String> assetIds);
 
     ResponseBody sendEmail(Map<String, Object> notification);
 

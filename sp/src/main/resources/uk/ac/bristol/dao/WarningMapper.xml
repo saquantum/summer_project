@@ -130,4 +130,17 @@
             #{id}
         </foreach>
     </delete>
+
+    <select id="testWarningExists" resultType="java.lang.Boolean">
+        select count(*) > 0 from weather_warnings where warning_id = #{id};
+    </select>
+
+    <select id="selectWarningIdsByAssetId" resultType="java.lang.Long">
+        select w.warning_id
+        from weather_warnings w
+                 join assets a
+                           on ST_Intersects(a.asset_location, w.warning_area) and
+                              now() between w.warning_valid_from and w.warning_valid_to
+        where asset_id = #{id};
+    </select>
 </mapper>

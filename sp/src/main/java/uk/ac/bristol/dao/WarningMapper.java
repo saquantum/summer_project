@@ -34,4 +34,8 @@ public interface WarningMapper {
     int deleteWarningByIDs(@Param("ids") Long[] ids);
 
     int deleteWarningByIDs(@Param("ids") List<Long> ids);
+
+    boolean testWarningExists(@Param("id") Long id);
+
+    List<Long> selectWarningIdsByAssetId(@Param("id") String id);
 }

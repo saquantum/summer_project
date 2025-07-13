@@ -64,4 +64,6 @@ public interface AssetService {
     int deleteAssetByIDs(@Param("ids") String[] ids);
 
     int deleteAssetByIDs(@Param("ids") List<String> ids);
+
+    List<String> selectAssetIdsByWarningId(@Param("id") Long id);
 }

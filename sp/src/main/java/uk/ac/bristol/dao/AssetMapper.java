@@ -74,4 +74,8 @@ public interface AssetMapper {
     String selectAssetTypeByID(@Param("id") String id);
 
     String selectAssetOwnerIdByAssetId(@Param("id") String id);
+
+    List<String> selectAssetIdsWithWarningId(@Param("id") Long id);
+
+    String selectLatestAssetId();
 }

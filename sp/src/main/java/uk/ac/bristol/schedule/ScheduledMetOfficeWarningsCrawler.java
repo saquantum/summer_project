@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 import uk.ac.bristol.MockDataInitializer;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.Warning;
+import uk.ac.bristol.service.AssetService;
+import uk.ac.bristol.service.ContactService;
 import uk.ac.bristol.service.WarningService;
 
 import java.io.IOException;
@@ -22,6 +24,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -34,12 +37,16 @@ public class ScheduledMetOfficeWarningsCrawler {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private final WarningService warningService;
+    private final ContactService contactService;
+    private final AssetService assetService;
 
-    public ScheduledMetOfficeWarningsCrawler(WarningService warningService) {
+    public ScheduledMetOfficeWarningsCrawler(WarningService warningService, ContactService contactService, AssetService assetService) {
         this.warningService = warningService;
+        this.contactService = contactService;
+        this.assetService = assetService;
     }
 
-    @Scheduled(fixedRateString = "${metoffice.crawler.rate:600000}") // default polling rate -- 10 mins per polling
+    @Scheduled(fixedRateString = "${metoffice.crawler.rate:30000}") // default polling rate -- 10 mins per polling
     public void scheduledCrawler() {
         try {
             MockDataInitializer.latch.await();
@@ -84,9 +91,30 @@ public class ScheduledMetOfficeWarningsCrawler {
             System.out.println("Currently no weather warning is issued, finished.");
             return;
         }
+
+        Iterator<Warning> iterator = warnings.iterator();
+        while (iterator.hasNext()) {
+            Warning warning = iterator.next();
+            if (warningService.testWarningIdExists(warning.getId())) {
+                iterator.remove();
+            }
+        }
+
+        if(warnings.isEmpty()) {
+            System.out.println("Currently no new weather warning is issued, finished.");
+            return;
+        }
+
         int s = warningService.insertWarningsList(warnings);
         System.out.println("Successfully inserted or updated " + s + " weather warning records at "
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+
+        for (Warning warning : warnings) {
+            List<String> assetIds = assetService.selectAssetIdsByWarningId(warning.getId());
+            contactService.sendAllEmails(warning, assetIds);
+            System.out.println("Successfully send all email about weather warning " + warning.getId());
+        }
+        System.out.println("Successfully send all email in one crawl!!!");
     }
 
     private String getBaseUrl(String url) {

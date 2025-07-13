@@ -187,4 +187,13 @@ public class WarningServiceImpl implements WarningService {
         return contactMapper.deleteOutDatedInboxMessagesByUserId(userId);
     }
 
+    @Override
+    public boolean testWarningIdExists(Long warningId) {
+        return warningMapper.testWarningExists(warningId);
+    }
+
+    @Override
+    public List<Long> selectWarningIdsByAssetId(String id){
+        return warningMapper.selectWarningIdsByAssetId(id);
+    }
 }

@@ -1,5 +1,6 @@
 package uk.ac.bristol.service.impl;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,8 @@ import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.AssetType;
 import uk.ac.bristol.pojo.AssetWithWeatherWarnings;
 import uk.ac.bristol.service.AssetService;
+import uk.ac.bristol.service.ContactService;
+import uk.ac.bristol.service.WarningService;
 import uk.ac.bristol.util.QueryTool;
 
 import java.time.Instant;
@@ -26,11 +29,15 @@ public class AssetServiceImpl implements AssetService {
     private final MetaDataMapper metaDataMapper;
     private final AssetMapper assetMapper;
     private final AssetHolderMapper assetHolderMapper;
+    private final WarningService warningService;
+    private final ContactService contactService;
 
-    public AssetServiceImpl(MetaDataMapper metaDataMapper, AssetMapper assetMapper, AssetHolderMapper assetHolderMapper) {
+    public AssetServiceImpl(MetaDataMapper metaDataMapper, AssetMapper assetMapper, AssetHolderMapper assetHolderMapper, WarningService warningService, ContactService contactService) {
         this.metaDataMapper = metaDataMapper;
         this.assetMapper = assetMapper;
         this.assetHolderMapper = assetHolderMapper;
+        this.warningService = warningService;
+        this.contactService = contactService;
     }
 
     private Map<String, AssetType> getTypeMap() {
@@ -154,7 +161,16 @@ public class AssetServiceImpl implements AssetService {
         } else {
             n = assetMapper.insertAsset(asset);
         }
+
         metaDataMapper.increaseTotalCountByTableName("assets", n);
+
+        String assetId = assetMapper.selectLatestAssetId();
+
+        List<Long> warningIds = warningService.selectWarningIdsByAssetId(assetId);
+        for (Long warningId : warningIds) {
+            Map<String, Object> notification = contactService.formatNotification(warningId, asset.getId());
+            contactService.sendEmail(notification);
+        }
         return n;
     }
 
@@ -180,7 +196,21 @@ public class AssetServiceImpl implements AssetService {
         Instant now = Instant.now();
         list.get(0).setLastModified(now);
         asset.setLastModified(now);
-        return assetMapper.updateAsset(asset);
+
+        int value = assetMapper.updateAsset(asset);
+        if (asset.getLocationAsJson() == null || asset.getLocationAsJson().isBlank()) {
+            return value;
+        }
+        List<Long> warningIds = warningService.selectWarningIdsByAssetId(asset.getId());
+        if (warningIds.isEmpty()) {
+            return value;
+        }
+        for (Long warningId : warningIds) {
+            Map<String, Object> notification = contactService.formatNotification(warningId, asset.getId());
+            contactService.sendEmail(notification);
+        }
+        return value;
+
     }
 
     @Override
@@ -209,5 +239,10 @@ public class AssetServiceImpl implements AssetService {
         int n = assetMapper.deleteAssetByIDs(ids);
         metaDataMapper.increaseTotalCountByTableName("assets", -n);
         return n;
+    }
+
+    @Override
+    public List<String> selectAssetIdsByWarningId(@Param("id") Long id){
+        return assetMapper.selectAssetIdsWithWarningId(id);
     }
 }

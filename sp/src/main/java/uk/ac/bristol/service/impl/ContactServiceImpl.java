@@ -16,6 +16,7 @@ import uk.ac.bristol.controller.ResponseBody;
 import uk.ac.bristol.dao.*;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
+import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.ContactService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
@@ -111,6 +112,15 @@ public class ContactServiceImpl implements ContactService {
     public Map<String, Object> formatNotification(Long warningId, String assetId) {
         String assetOwnerId = assetMapper.selectAssetOwnerIdByAssetId(assetId);
         return formatNotificationWithIds(warningId, assetId, assetOwnerId);
+    }
+
+    @Override
+    public void sendAllEmails(Warning warning, List<String> assetIds) {
+        for (String assetId : assetIds) {
+            Map<String, Object> notification = formatNotification(warning.getId(), assetId);
+            sendEmail(notification);
+            System.out.println("Successfully sent weather warning notification to " + assetId);
+        }
     }
 
     @Override

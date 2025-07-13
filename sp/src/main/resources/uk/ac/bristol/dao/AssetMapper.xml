@@ -48,9 +48,7 @@
                w.warning_update_description,
                ST_AsGeoJSON(w.warning_area)   as warning_area
         from assets a
-                 left join weather_warnings w
-                           on ST_Intersects(a.asset_location, w.warning_area) and
-                              now() between w.warning_valid_from and w.warning_valid_to
+
         <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
@@ -315,5 +313,18 @@
 
     <select id="selectAssetOwnerIdByAssetId" resultType="String">
         select asset_owner_id from assets where asset_id = #{id}
+    </select>
+
+    <select id="selectAssetIdsWithWarningId" resultType="java.lang.String">
+        select a.asset_id
+        from assets a
+                        join weather_warnings w
+                           on ST_Intersects(a.asset_location, w.warning_area) and
+                              now() between w.warning_valid_from and w.warning_valid_to
+                           where warning_id = #{id};
+    </select>
+
+    <select id="selectLatestAssetId" resultType="String">
+        select asset_id from assets order by asset_row_id desc limit 1;
     </select>
 </mapper>
