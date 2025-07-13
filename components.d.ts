@@ -10,7 +10,9 @@ declare module 'vue' {
   export interface GlobalComponents {
     AssetCard: typeof import('./src/components/AssetCard.vue')['default']
     ButtonInput: typeof import('./src/components/ButtonInput.vue')['default']
+    ConfirmDialog: typeof import('./src/components/ConfirmDialog.vue')['default']
     CustomerService: typeof import('./src/components/CustomerService.vue')['default']
+    DeleteDialog: typeof import('./src/components/DeleteDialog.vue')['default']
     ElAside: typeof import('element-plus/es')['ElAside']
     ElAutocomplete: typeof import('element-plus/es')['ElAutocomplete']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']

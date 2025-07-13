@@ -23,8 +23,7 @@ const proxyUser = () => {
   const id = route.query.id
   if (typeof id === 'string') {
     userStore.setProxyId(id)
-    router.push({ path: '/myassets/manage', query: { id: id } })
-    // router.push('/myassets/manage')
+    router.push('/assets')
   }
 }
 

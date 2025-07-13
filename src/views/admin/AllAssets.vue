@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAssetStore } from '@/stores/index'
 import { adminDeleteAssetService } from '@/api/admin'
@@ -29,23 +29,8 @@ const handleShowDetail = (row: AssetTableItem) => {
 
 // delete dialog
 const dialogVisible = ref(false)
-const confirmDisabled = ref(true)
-const countdown = ref(5)
-let timer: ReturnType<typeof setInterval> | null = null
-const deleteId = ref<string[]>([])
 
-const startCountDown = () => {
-  countdown.value = 5
-  confirmDisabled.value = true
-  timer = setInterval(() => {
-    countdown.value--
-    if (countdown.value <= 0 && timer !== null) {
-      clearInterval(timer)
-      timer = null
-      confirmDisabled.value = false
-    }
-  }, 1000)
-}
+const deleteId = ref<string[]>([])
 
 const triggerDelete = (row: AssetTableItem) => {
   dialogVisible.value = true
@@ -195,18 +180,6 @@ onMounted(async () => {
   // resizeBasedOnWidth(screenWidth.value)
   window.addEventListener('resize', handleResize)
 })
-
-watch(dialogVisible, (val) => {
-  if (val) {
-    startCountDown()
-  } else {
-    if (timer !== null) {
-      clearInterval(timer)
-      timer = null
-    }
-    confirmDisabled.value = true
-  }
-})
 </script>
 
 <template>
@@ -247,7 +220,7 @@ watch(dialogVisible, (val) => {
         sortable="custom"
         :width="column.width"
       />
-      <el-table-column label="Actions">
+      <el-table-column label="Actions" fixed="right" min-width="120">
         <template #default="scope">
           <el-button
             text
@@ -279,21 +252,14 @@ watch(dialogVisible, (val) => {
       @size-change="handleSizeChange"
     />
 
-    <el-dialog v-model="dialogVisible" title="Tips" width="500">
-      <span>Notice: This will permanently delete this asset</span>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="dialogVisible = false">Cancel</el-button>
-          <el-button
-            type="primary"
-            :disabled="confirmDisabled"
-            @click="handleDelete"
-          >
-            {{ confirmDisabled ? `Confirm (${countdown})` : 'Confirm' }}
-          </el-button>
-        </div>
-      </template>
-    </el-dialog>
+    <ConfirmDialog
+      v-model="dialogVisible"
+      title="Warning"
+      content="This will permanently delete this asset"
+      :countdown-duration="5"
+      @confirm="handleDelete"
+      @cancel="dialogVisible = false"
+    />
   </div>
 </template>
 

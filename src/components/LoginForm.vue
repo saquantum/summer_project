@@ -7,7 +7,7 @@ import {
   userRegisterService
 } from '@/api/user'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/index.ts'
+import { useAssetStore, useUserStore } from '@/stores/index.ts'
 import CodeUtil from '@/utils/codeUtil'
 import type { FormItemRule } from 'element-plus'
 import { ElMessage } from 'element-plus'
@@ -224,6 +224,7 @@ const register = async () => {
 
 const router = useRouter()
 const userStore = useUserStore()
+const assetStore = useAssetStore()
 const login = async () => {
   try {
     await loginFormRef.value.validate()
@@ -233,6 +234,7 @@ const login = async () => {
 
   try {
     await userStore.getUser(loginForm.value)
+    await assetStore.getAssetTypes()
     router.push('/')
   } catch {
     loginForm.value.password = ''

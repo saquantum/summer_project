@@ -33,7 +33,7 @@ const handleEdit = (row: TableRow) => {
 const handleDelete = async (row: TableRow) => {
   console.log(row)
   try {
-    await adminDeleteUserService({ ids: [row.uid] })
+    await adminDeleteUserService(deleteId.value)
     fetchTableData()
   } catch (e) {
     console.error(e)
@@ -91,6 +91,15 @@ const handleSortChange = (sort: { prop: string; order: string | null }) => {
   fetchTableData()
 }
 
+// delete confirm
+const dialogVisible = ref(false)
+const deleteId = ref<string[]>([])
+
+const triggerDelete = (row: TableRow) => {
+  dialogVisible.value = true
+  deleteId.value.push(row.uid)
+}
+
 const permissionFields = [
   'canCreateAsset',
   'canSetPolygonOnCreate',
@@ -102,6 +111,17 @@ const permissionFields = [
 
 function getPermission(uid: string) {
   const user = users.value.find((user) => user.uid === uid)
+  if (user?.role === 'admin') {
+    return {
+      userId: user?.uid,
+      canCreateAsset: true,
+      canSetPolygonOnCreate: true,
+      canUpdateAssetFields: true,
+      canUpdateAssetPolygon: true,
+      canDeleteAsset: true,
+      canUpdateProfile: true
+    }
+  }
   return user?.permission
 }
 
@@ -180,7 +200,7 @@ onMounted(() => {
           text
           type="danger"
           size="small"
-          @click="handleDelete(scope.row)"
+          @click="triggerDelete(scope.row)"
           >Delete</el-button
         >
       </template>
@@ -195,6 +215,15 @@ onMounted(() => {
     :total="total"
     @current-change="handlePageChange"
     @size-change="handleSizeChange"
+  />
+
+  <ConfirmDialog
+    v-model="dialogVisible"
+    title="Warning"
+    content="This will permanently delete this user"
+    :countdown-duration="5"
+    @confirm="handleDelete"
+    @cancel="dialogVisible = false"
   />
 </template>
 

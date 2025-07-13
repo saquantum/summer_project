@@ -1,10 +1,5 @@
 import type { Warning } from './warning'
 import type { MultiPolygon } from 'geojson'
-interface AssetType {
-  id: string
-  name: string
-  description: string
-}
 
 export interface Asset {
   id: string
@@ -118,4 +113,10 @@ export interface AssetSearchBody {
   orderList: string
   limit: number
   offset: number
+}
+
+export interface AssetType {
+  id?: string
+  name: string
+  description: string
 }

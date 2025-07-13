@@ -20,8 +20,8 @@ const router = createRouter({
       component: () => import('@/views/layout/LayoutContainer.vue'),
       children: [
         {
-          path: 'myassets/manage',
-          component: () => import('@/views/myassets/AssetsManage.vue')
+          path: 'assets',
+          component: () => import('@/views/myassets/AssetBoard.vue')
         },
         {
           path: 'user/profile',
@@ -64,8 +64,16 @@ const router = createRouter({
           component: () => import('@/views/admin/AddUser.vue')
         },
         {
-          path: 'admin/asset/add',
+          path: 'admin/assets/add',
           component: () => import('@/views/myassets/AddAsset.vue')
+        },
+        {
+          path: 'admin/assets',
+          component: () => import('@/views/admin/AllAssets.vue')
+        },
+        {
+          path: 'admin/assets/types',
+          component: () => import('@/views/admin/AssetTypes.vue')
         },
         {
           path: 'admin/message',
@@ -108,15 +116,15 @@ router.beforeEach((to) => {
 
   if (to.path === '/') {
     if (!isLoggedIn) return '/login'
-    return isAdmin ? '/admin/dashboard' : '/myassets/manage'
+    return isAdmin ? '/admin/dashboard' : '/assets'
   }
 
   if (isLoggedIn && to.path === '/login') {
-    return isAdmin ? '/admin/dashboard' : '/myassets/manage'
+    return isAdmin ? '/admin/dashboard' : '/assets'
   }
 
   if (!isAdmin && to.path.startsWith('/admin')) {
-    return '/myassets/manage'
+    return '/assets'
   }
 })
 

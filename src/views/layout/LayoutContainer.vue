@@ -97,19 +97,23 @@ watch(
             <el-icon><LocationInformation /></el-icon>
             <span>Asset</span>
           </template>
-          <el-menu-item index="/myassets/manage">
+          <el-menu-item index="/assets">
             <span>My assets</span>
           </el-menu-item>
+
+          <el-menu-item index="/asset/add">
+            <span>Add asset</span>
+          </el-menu-item>
+
           <el-menu-item
             v-if="
-              activeIndex.startsWith('/asset') && activeIndex !== '/asset/add'
+              activeIndex.startsWith('/asset') &&
+              activeIndex !== '/asset/add' &&
+              activeIndex !== '/assets'
             "
             :index="activeIndex"
           >
             <span>Asset detail</span>
-          </el-menu-item>
-          <el-menu-item index="/asset/add">
-            <span>Add asset</span>
           </el-menu-item>
         </el-sub-menu>
 
@@ -159,8 +163,11 @@ watch(
           <el-menu-item index="/admin/assets">
             <span>All Assets</span>
           </el-menu-item>
-          <el-menu-item index="/admin/asset/add">
-            <span>Add Asset</span>
+          <el-menu-item index="/admin/assets/add">
+            <span>Add Assets</span>
+          </el-menu-item>
+          <el-menu-item index="/admin/assets/types">
+            <span>Asset Types</span>
           </el-menu-item>
         </el-sub-menu>
 

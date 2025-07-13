@@ -5,6 +5,7 @@ import request from '@/utils/request'
 import type { ApiResponse } from '@/types/api'
 import type {
   AssetSearchBody,
+  AssetType,
   AssetWithWarnings,
   Template,
   User,
@@ -50,9 +51,9 @@ export const adminInsertUserService = (
   users: UserInfoForm[]
 ): Promise<ApiResponse> => request.post('/admin/user', users)
 
-export const adminDeleteUserService = (params: { ids: string[] }) =>
+export const adminDeleteUserService = (users: string[]) =>
   request.delete('/admin/user', {
-    data: params
+    data: { ids: users }
   })
 
 /**
@@ -106,6 +107,13 @@ export const adminDeleteAssetService = (
 export const adminInsertAssetService = (obj: object): Promise<ApiResponse> =>
   request.post('/admin/asset', obj)
 
+export const adminInsetAssetTypeService = (obj: AssetType) =>
+  request.post('/admin/asset/type', obj)
+
+export const adminDeleteAssetTypeService = (types: string[]) =>
+  request.delete('/admin/asset/type', {
+    data: { ids: types }
+  })
 /**
  * warning
  */

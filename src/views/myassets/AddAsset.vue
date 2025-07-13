@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import request from '@/utils/request'
-import { useUserStore } from '@/stores/index.ts'
+import { useAssetStore, useUserStore } from '@/stores/index.ts'
 import CodeUtil from '@/utils/codeUtil'
 import { userCheckUIDService } from '@/api/user'
 import { adminGetUserInfoByUIDService } from '@/api/admin'
@@ -15,6 +15,7 @@ import type { AssetForm, NominatimResult } from '@/types'
 
 // user store
 const userStore = useUserStore()
+const assetStore = useAssetStore()
 
 const convertToGeoJSON = (
   data: NominatimResult,
@@ -186,16 +187,6 @@ const searchLocation = async (address: string) => {
   console.log(form.value.locations)
 }
 
-const typeOptions = [
-  { label: 'Water Tank', value: 'type_001' },
-  { label: 'Soakaway', value: 'type_002' },
-  { label: 'Green Roof', value: 'type_003' },
-  { label: 'Permeable Pavement', value: 'type_004' },
-  { label: 'Swale', value: 'type_005' },
-  { label: 'Retention Pond', value: 'type_006' },
-  { label: 'Rain Garden', value: 'type_007' }
-]
-
 const disabledAfterToday = (time: Date) => {
   return time.getTime() > Date.now()
 }
@@ -336,7 +327,7 @@ onMounted(() => {
         <el-form-item label="Asset type">
           <el-select v-model="form.typeId" placeholder="Select type">
             <el-option
-              v-for="item in typeOptions"
+              v-for="item in assetStore.typeOptions"
               :key="item.value"
               :label="item.label"
               :value="item.value"
