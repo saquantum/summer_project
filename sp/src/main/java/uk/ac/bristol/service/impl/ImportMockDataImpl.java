@@ -109,7 +109,7 @@ public class ImportMockDataImpl implements ImportMockData {
         YZH.setEmail("kj24716@bristol.ac.uk");
         YZH.setPhone("0123456789");
         YZH.setAddress(Map.of());
-        YZH.setContactPreferences(Map.of("email", true));
+        YZH.setContactPreferences(Map.of("email", false));
         User user_YZH = new User();
         user_YZH.setId(YZH.getName());
         user_YZH.setPassword("123456");
