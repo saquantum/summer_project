@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import uk.ac.bristol.MockDataInitializer;
+import uk.ac.bristol.dao.WarningMapper;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.Warning;
 import uk.ac.bristol.service.AssetService;
@@ -31,6 +32,7 @@ import java.util.Map;
 @Component
 public class ScheduledMetOfficeWarningsCrawler {
 
+    private final WarningMapper warningMapper;
     @Value("${metoffice.url}")
     private String DEFAULT_URL;
 
@@ -40,10 +42,11 @@ public class ScheduledMetOfficeWarningsCrawler {
     private final ContactService contactService;
     private final AssetService assetService;
 
-    public ScheduledMetOfficeWarningsCrawler(WarningService warningService, ContactService contactService, AssetService assetService) {
+    public ScheduledMetOfficeWarningsCrawler(WarningService warningService, ContactService contactService, AssetService assetService, WarningMapper warningMapper) {
         this.warningService = warningService;
         this.contactService = contactService;
         this.assetService = assetService;
+        this.warningMapper = warningMapper;
     }
 
     @Scheduled(fixedRateString = "${metoffice.crawler.rate:600000}") // default polling rate -- 10 mins per polling
@@ -92,18 +95,20 @@ public class ScheduledMetOfficeWarningsCrawler {
             return;
         }
 
-        warnings.removeIf(warning -> warningService.testWarningIdExists(warning.getId()));
+        List<Warning> warningsToNotify = new ArrayList<>();
 
-        if(warnings.isEmpty()) {
-            System.out.println("Currently no new weather warning is issued, finished.");
-            return;
+        for(Warning warning : warnings) {
+            if (!warningMapper.testWarningExists(warning.getId())) {
+                warningsToNotify.add(warning);
+            }
         }
 
         int s = warningService.insertWarningsList(warnings);
+
         System.out.println("Successfully inserted or updated " + s + " weather warning records at "
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 
-        for (Warning warning : warnings) {
+        for (Warning warning : warningsToNotify) {
             List<String> assetIds = assetService.selectAssetIdsByWarningId(warning.getId());
             contactService.sendAllEmails(warning, assetIds);
             System.out.println("Successfully send all email about weather warning " + warning.getId());

@@ -104,7 +104,7 @@
         where asset_holder_email = #{email};
     </select>
 
-    <select id="selectAssetHolderIdByEmail" resultType="String">
+    <select id="selectAssetHolderIdByEmail" resultType="java.lang.String">
         select asset_holder_id
         from asset_holders
         where asset_holder_email = #{email};

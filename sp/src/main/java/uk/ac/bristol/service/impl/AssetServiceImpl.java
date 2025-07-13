@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.AssetHolderMapper;
 import uk.ac.bristol.dao.AssetMapper;
 import uk.ac.bristol.dao.MetaDataMapper;
+import uk.ac.bristol.dao.WarningMapper;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.AssetHolder;
@@ -29,14 +30,14 @@ public class AssetServiceImpl implements AssetService {
     private final MetaDataMapper metaDataMapper;
     private final AssetMapper assetMapper;
     private final AssetHolderMapper assetHolderMapper;
-    private final WarningService warningService;
+    private final WarningMapper warningMapper;
     private final ContactService contactService;
 
-    public AssetServiceImpl(MetaDataMapper metaDataMapper, AssetMapper assetMapper, AssetHolderMapper assetHolderMapper, WarningService warningService, ContactService contactService) {
+    public AssetServiceImpl(MetaDataMapper metaDataMapper, AssetMapper assetMapper, AssetHolderMapper assetHolderMapper, WarningMapper warningMapper, ContactService contactService) {
         this.metaDataMapper = metaDataMapper;
         this.assetMapper = assetMapper;
         this.assetHolderMapper = assetHolderMapper;
-        this.warningService = warningService;
+        this.warningMapper = warningMapper;
         this.contactService = contactService;
     }
 
@@ -153,6 +154,7 @@ public class AssetServiceImpl implements AssetService {
     }
 
     @Override
+    @Transactional
     public int insertAsset(Asset asset) {
         int n;
         asset.setLastModified(Instant.now());
@@ -168,9 +170,9 @@ public class AssetServiceImpl implements AssetService {
 
         metaDataMapper.increaseTotalCountByTableName("assets", n);
 
-        List<Long> warningIds = warningService.selectWarningIdsByAssetId(assetIds.get(0));
+        List<Long> warningIds = warningMapper.selectWarningIdsByAssetId(assetIds.get(0));
         for (Long warningId : warningIds) {
-            Map<String, Object> notification = contactService.formatNotification(warningId, assetIds.get(0));
+            Map<String, Object> notification = contactService.formatNotification(warningId, assetIds.get(0));  //异步处理问题，数据库未同步
             contactService.sendEmail(notification);
         }
         return n;
@@ -203,7 +205,7 @@ public class AssetServiceImpl implements AssetService {
         if (asset.getLocationAsJson() == null || asset.getLocationAsJson().isBlank()) {
             return value;
         }
-        List<Long> warningIds = warningService.selectWarningIdsByAssetId(asset.getId());
+        List<Long> warningIds = warningMapper.selectWarningIdsByAssetId(asset.getId());
         if (warningIds.isEmpty()) {
             return value;
         }
