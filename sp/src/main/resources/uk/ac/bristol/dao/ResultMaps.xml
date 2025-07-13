@@ -56,7 +56,7 @@
     </resultMap>
 
     <resultMap id="AssetTypeMap" type="uk.ac.bristol.pojo.AssetType">
-        <id property="id" column="asset_type_id"/>
+        <id property="id" column="asset_type_type_id"/>
         <result property="name" column="asset_type_name"/>
         <result property="description" column="asset_type_description"/>
     </resultMap>
