@@ -2,6 +2,7 @@ package uk.ac.bristol.service;
 
 import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
+import uk.ac.bristol.pojo.UserWithExtraColumns;
 
 import java.util.List;
 import java.util.Map;
@@ -25,26 +26,21 @@ public interface UserService {
                                                       Integer limit,
                                                       Integer offset);
 
-    List<AssetHolder> getAllAssetHolders(Map<String, Object> filters,
-                                         List<Map<String, String>> orderList,
-                                         Integer limit,
-                                         Integer offset);
-
     List<Map<String, Object>> getAllAssetHoldersWithAssetIds(Map<String, Object> filters,
                                                              List<Map<String, String>> orderList,
                                                              Integer limit,
                                                              Integer offset);
 
-    List<Map<String, Object>> getAllUsersWithAccumulator(String function,
-                                                         String column,
-                                                         Map<String, Object> filters,
-                                                         List<Map<String, String>> orderList,
-                                                         Integer limit,
-                                                         Integer offset);
+    List<UserWithExtraColumns> getAllUsersWithAccumulator(String function,
+                                                          String column,
+                                                          Map<String, Object> filters,
+                                                          List<Map<String, String>> orderList,
+                                                          Integer limit,
+                                                          Integer offset);
 
-    User getUserByAssetHolderId(String assetHolderId);
+    User getUserByAssetHolderId(String aid);
 
-    User getUserByUserId(String id);
+    User getUserByUserId(String uid);
 
     boolean testUIDExistence(String id);
 

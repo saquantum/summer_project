@@ -20,12 +20,13 @@
     <select id="selectUsersPuttingAssetHoldersTableMain" resultMap="ResultMaps.UserMap">
         select *
         from asset_holders
-                 left join users
-                           on user_asset_holder_id = asset_holder_id
                  left join address
                            on asset_holder_address_id = address_id
                  left join contact_preferences
                            on asset_holder_contact_preferences_id = contact_preferences_id
+                 right join users
+                            on user_asset_holder_id = asset_holder_id
+
         <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
@@ -92,7 +93,7 @@
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
-    <select id="selectPasswordByUserId" resultType="Java.lang.String">
+    <select id="selectPasswordByUserId" resultType="java.lang.String">
         select user_password
         from users
         where user_id = #{id};

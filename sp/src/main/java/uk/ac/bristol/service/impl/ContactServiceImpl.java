@@ -13,22 +13,22 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.controller.Code;
 import uk.ac.bristol.controller.ResponseBody;
-import uk.ac.bristol.dao.*;
+import uk.ac.bristol.dao.AssetHolderMapper;
+import uk.ac.bristol.dao.AssetMapper;
+import uk.ac.bristol.dao.ContactMapper;
+import uk.ac.bristol.dao.WarningMapper;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
-import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.ContactService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
+import uk.ac.bristol.util.QueryTool;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
 @Service
@@ -74,7 +74,9 @@ public class ContactServiceImpl implements ContactService {
             throw new SpExceptions.GetMethodException("Get " + warning.size() + " warnings using id " + warningId);
         }
 
-        String typeId = assetMapper.selectAssetTypeByID(assetId);
+        String typeId = assetMapper.selectAssets(
+                QueryTool.formatFilters(Map.of("asset_id", assetId)),
+                null, null, null).get(0).getId();
         String warningType = warning.get(0).getWeatherType();
         String severity = warning.get(0).getWarningLevel();
 
@@ -86,8 +88,8 @@ public class ContactServiceImpl implements ContactService {
         String title = template.get(0).getTitle();
         String body = template.get(0).getBody();
 
-        title = fillVariablesWithValues(title, assetId);
-        body = fillVariablesWithValues(body, assetId);
+        title = fillInVariablesWithValues(title, assetId);
+        body = fillInVariablesWithValues(body, assetId);
 
         if (body == null) {
             throw new SpExceptions.GetMethodException("The message type you required does not exist");
@@ -110,7 +112,9 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     public Map<String, Object> formatNotification(Long warningId, String assetId) {
-        String assetOwnerId = assetMapper.selectAssetOwnerIdByAssetId(assetId);
+        String assetOwnerId = assetMapper.selectAssets(
+                QueryTool.formatFilters(Map.of("asset_id", assetId)),
+                null, null, null).get(0).getOwnerId();
         return formatNotificationWithIds(warningId, assetId, assetOwnerId);
     }
 
@@ -137,7 +141,9 @@ public class ContactServiceImpl implements ContactService {
             return new ResponseBody(Code.SUCCESS, null, "The asset holder prefers not to receive by email");
         }
 
-        List<AssetHolder> holder = assetHolderMapper.selectAssetHolderByIDs(List.of(notification.get("toOwnerId").toString()));
+        List<AssetHolder> holder = assetHolderMapper.selectAssetHolders(
+                QueryTool.formatFilters(Map.of("asset_holder_id", notification.get("toOwnerId").toString())),
+                null, null, null);
         if (holder.size() != 1) {
             throw new SpExceptions.SystemException("The database might be modified by another transaction");
         }
@@ -283,12 +289,12 @@ public class ContactServiceImpl implements ContactService {
         return new ResponseBody(Code.SUCCESS, code, "Verification code has been sent to " + email);
     }
 
-    private String fillVariablesWithValues(String emailContent, String assetId) {
-        List<Asset> assetList = assetMapper.selectAssetByID(assetId);
+    private String fillInVariablesWithValues(String emailContent, String assetId) {
+        List<Asset> assetList = assetMapper.selectAssets(
+                QueryTool.formatFilters(Map.of("asset_id", assetId)),
+                null, null, null);
         String assetName = assetList.get(0).getName();
-
-        List<String> assetHolderIdList = Collections.singletonList(assetList.get(0).getOwnerId());
-        List<AssetHolder> assetHolderList = assetHolderMapper.selectAssetHolderByIDs(assetHolderIdList);
+        List<AssetHolder> assetHolderList = assetHolderMapper.selectAssetHolders("asset_holder_id = " + assetList.get(0).getOwnerId(), null, null, null);
         String contactName = assetHolderList.get(0).getName();
 
         String postTown = assetHolderMapper.selectAddressByAssetHolderId(assetHolderList.get(0).getAddressId()).get(0).get("city");

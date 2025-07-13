@@ -3,7 +3,6 @@ package uk.ac.bristol.controller;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.User;
-import uk.ac.bristol.service.PermissionConfigService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.QueryTool;
 
@@ -16,11 +15,9 @@ import javax.servlet.http.HttpServletResponse;
 public class UserController {
 
     private final UserService userService;
-    private final PermissionConfigService permissionConfigService;
 
-    public UserController(UserService userService, PermissionConfigService permissionConfigService) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.permissionConfigService = permissionConfigService;
     }
 
     /* --------- for users and admin proxy --------- */
@@ -61,7 +58,7 @@ public class UserController {
         if (!QueryTool.userIdentityVerification(response, request, uid, null)) {
             throw new SpExceptions.ForbiddenException("User identification failed");
         }
-        if(!QueryTool.getUserPermissions(uid, null).getCanUpdateProfile()){
+        if (!QueryTool.getUserPermissions(uid, null).getCanUpdateProfile()) {
             throw new SpExceptions.ForbiddenException("The user is not allowed to update profile");
         }
         userService.updateUser(user);
@@ -76,7 +73,7 @@ public class UserController {
         if (!QueryTool.userIdentityVerification(response, request, null, aid)) {
             throw new SpExceptions.ForbiddenException("User identification failed");
         }
-        if(!QueryTool.getUserPermissions(null, aid).getCanUpdateProfile()){
+        if (!QueryTool.getUserPermissions(null, aid).getCanUpdateProfile()) {
             throw new SpExceptions.ForbiddenException("The user is not allowed to update profile");
         }
         userService.updateUser(user);

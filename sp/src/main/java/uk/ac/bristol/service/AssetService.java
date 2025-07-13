@@ -24,16 +24,6 @@ public interface AssetService {
 
     List<AssetWithWeatherWarnings> getAssetWithWarningsById(String id);
 
-    List<Asset> getAssetByAsset(Asset asset,
-                                List<Map<String, String>> orderList,
-                                Integer limit,
-                                Integer offset);
-
-    List<AssetWithWeatherWarnings> getAssetWithWarningsByAsset(Asset asset,
-                                                               List<Map<String, String>> orderList,
-                                                               Integer limit,
-                                                               Integer offset);
-
     List<Asset> getAllAssetsByAssetHolderId(String ownerId,
                                             List<Map<String, String>> orderList,
                                             Integer limit,

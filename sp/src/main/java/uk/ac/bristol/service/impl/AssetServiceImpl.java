@@ -15,13 +15,11 @@ import uk.ac.bristol.pojo.AssetType;
 import uk.ac.bristol.pojo.AssetWithWeatherWarnings;
 import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.ContactService;
-import uk.ac.bristol.service.WarningService;
 import uk.ac.bristol.util.QueryTool;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
 @Service
@@ -41,35 +39,15 @@ public class AssetServiceImpl implements AssetService {
         this.contactService = contactService;
     }
 
-    private Map<String, AssetType> getTypeMap() {
-        return assetMapper.selectAllAssetTypes(null,null, null, null).stream()
-                .collect(Collectors.toMap(AssetType::getId, type -> type));
-    }
-
-    private Asset prepareAsset(Asset asset, Map<String, AssetType> typeMap) {
-        asset.setType(typeMap.get(asset.getTypeId()));
-        return asset;
-    }
-
-    private List<Asset> prepareAssetList(List<Asset> list, Map<String, AssetType> typeMap) {
-        list.forEach(asset -> this.prepareAsset(asset, typeMap));
-        return list;
-    }
-
-    private List<AssetWithWeatherWarnings> prepareAWList(List<AssetWithWeatherWarnings> list, Map<String, AssetType> typeMap) {
-        list.forEach(aw -> aw.setAsset(this.prepareAsset(aw.getAsset(), typeMap)));
-        return list;
-    }
-
     @Override
     public List<Asset> getAllAssets(Map<String, Object> filters,
                                     List<Map<String, String>> orderList,
                                     Integer limit,
                                     Integer offset) {
-        return this.prepareAssetList(assetMapper.selectAllAssets(
+        return assetMapper.selectAssets(
                 QueryTool.formatFilters(filters),
                 QueryTool.filterOrderList(orderList, "assets"),
-                limit, offset), this.getTypeMap());
+                limit, offset);
     }
 
     @Override
@@ -77,39 +55,32 @@ public class AssetServiceImpl implements AssetService {
                                                                    List<Map<String, String>> orderList,
                                                                    Integer limit,
                                                                    Integer offset) {
-        return this.prepareAWList(assetMapper.selectAllAssetsWithWarnings(
+        List<Map<String, String>> list = QueryTool.filterOrderList(orderList, "assets", "weather_warnings");
+
+        if (list.isEmpty() || metaDataMapper.filterRegisteredColumnsInTables(List.of("weather_warnings"), List.of(list.get(0).get("column"))).isEmpty()) {
+            return assetMapper.selectAssetsWithWarnings(
+                    QueryTool.formatFilters(filters),
+                    list,
+                    limit, offset);
+        }
+        return assetMapper.selectAssetsWithWarningsPuttingWarningsTableMain(
                 QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList(orderList, "assets", "weather_warnings"),
-                limit, offset), this.getTypeMap());
+                list,
+                limit, offset);
     }
 
     @Override
     public List<Asset> getAssetById(String id) {
-        return this.prepareAssetList(assetMapper.selectAssetByID(id), this.getTypeMap());
+        return assetMapper.selectAssets(
+                QueryTool.formatFilters(Map.of("asset_id", id)),
+                null, null, null);
     }
 
     @Override
     public List<AssetWithWeatherWarnings> getAssetWithWarningsById(String id) {
-        return this.prepareAWList(assetMapper.selectAssetWithWarningsByID(id), this.getTypeMap());
-    }
-
-    @Override
-    public List<Asset> getAssetByAsset(Asset asset,
-                                       List<Map<String, String>> orderList,
-                                       Integer limit,
-                                       Integer offset) {
-        return this.prepareAssetList(assetMapper.selectByAsset(asset, QueryTool.filterOrderList(orderList, "assets"), limit, offset), this.getTypeMap());
-    }
-
-    @Override
-    public List<AssetWithWeatherWarnings> getAssetWithWarningsByAsset(Asset asset,
-                                                                      List<Map<String, String>> orderList,
-                                                                      Integer limit,
-                                                                      Integer offset) {
-
-        return this.prepareAWList(assetMapper.selectByAssetWithWarnings(asset,
-                QueryTool.filterOrderList(orderList, "assets", "weather_warnings"),
-                limit, offset), this.getTypeMap());
+        return assetMapper.selectAssetsWithWarnings(
+                QueryTool.formatFilters(Map.of("asset_id", id)),
+                null, null, null);
     }
 
     @Override
@@ -117,7 +88,10 @@ public class AssetServiceImpl implements AssetService {
                                                    List<Map<String, String>> orderList,
                                                    Integer limit,
                                                    Integer offset) {
-        return this.prepareAssetList(assetMapper.selectAllAssetsOfHolder(ownerId, QueryTool.filterOrderList(orderList, "assets"), limit, offset), this.getTypeMap());
+        return assetMapper.selectAssets(
+                QueryTool.formatFilters(Map.of("asset_owner_id", ownerId)),
+                QueryTool.filterOrderList(orderList, "assets"),
+                limit, offset);
     }
 
     @Override
@@ -125,9 +99,10 @@ public class AssetServiceImpl implements AssetService {
                                                                                   List<Map<String, String>> orderList,
                                                                                   Integer limit,
                                                                                   Integer offset) {
-        return this.prepareAWList(assetMapper.selectAllAssetsWithWarningsOfHolder(ownerId,
+        return assetMapper.selectAssetsWithWarnings(
+                QueryTool.formatFilters(Map.of("asset_owner_id", ownerId)),
                 QueryTool.filterOrderList(orderList, "assets", "asset_types", "weather_warnings"),
-                limit, offset), this.getTypeMap());
+                limit, offset);
     }
 
     @Override
@@ -135,7 +110,7 @@ public class AssetServiceImpl implements AssetService {
                                             List<Map<String, String>> orderList,
                                             Integer limit,
                                             Integer offset) {
-        return assetMapper.selectAllAssetTypes(
+        return assetMapper.selectAssetTypes(
                 QueryTool.formatFilters(filters),
                 QueryTool.filterOrderList(orderList, "asset_types"),
                 limit, offset);
@@ -187,19 +162,25 @@ public class AssetServiceImpl implements AssetService {
     public int updateAsset(Asset asset) {
         String ownerId = asset.getOwnerId();
         if (asset.getOwnerId() == null || asset.getOwnerId().isBlank()) {
-            List<Asset> tmp = assetMapper.selectAssetByID(asset.getId());
+            List<Asset> tmp = assetMapper.selectAssets(
+                    QueryTool.formatFilters(Map.of("asset_id", asset.getId())),
+                    null, null, null);
             if (tmp.size() != 1) {
                 throw new SpExceptions.GetMethodException("Found " + tmp.size() + " assets for asset id " + asset.getId() + " when updating asset");
             }
             ownerId = tmp.get(0).getOwnerId();
         }
-        List<AssetHolder> list = assetHolderMapper.selectAssetHolderByIDs(List.of(ownerId));
-        if (list.size() != 1) {
-            throw new SpExceptions.GetMethodException(list.size() + " asset holders found for asset id " + asset.getId() + " when updating asset");
+        List<AssetHolder> owner = assetHolderMapper.selectAssetHolders(
+                QueryTool.formatFilters(Map.of("asset_holder_id", ownerId)),
+                null, null, null);
+        if (owner.size() != 1) {
+            throw new SpExceptions.GetMethodException(owner.size() + " asset holders found for asset id " + asset.getId() + " when updating asset");
         }
         Instant now = Instant.now();
-        list.get(0).setLastModified(now);
+        owner.get(0).setLastModified(now);
         asset.setLastModified(now);
+
+        assetHolderMapper.updateAssetHolder(owner.get(0));
 
         int value = assetMapper.updateAsset(asset);
         if (asset.getLocationAsJson() == null || asset.getLocationAsJson().isBlank()) {
@@ -246,7 +227,12 @@ public class AssetServiceImpl implements AssetService {
     }
 
     @Override
-    public List<String> selectAssetIdsByWarningId(@Param("id") Long id){
-        return assetMapper.selectAssetIdsWithWarningId(id);
+    public List<String> selectAssetIdsByWarningId(@Param("id") Long id) {
+        return assetMapper.selectAssetsWithWarnings(
+                        QueryTool.formatFilters(Map.of("warning_id", id)),
+                        null, null, null)
+                .stream()
+                .map(aww -> aww.getAsset().getId())
+                .toList();
     }
 }

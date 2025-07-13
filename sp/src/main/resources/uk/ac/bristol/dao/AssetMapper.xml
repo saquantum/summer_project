@@ -15,8 +15,11 @@
                asset_status,
                asset_installed_at,
                asset_last_inspection,
-               asset_last_modified
+               asset_last_modified,
+               asset_types.*
         from assets
+                 left join asset_types
+                           on asset_type_type_id = asset_type_id
         <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
@@ -46,12 +49,15 @@
                warning_what_to_expect,
                warning_further_details,
                warning_update_description,
-               ST_AsGeoJSON(warning_area)   as warning_area
+               ST_AsGeoJSON(warning_area)   as warning_area,
+
+               asset_types.*
         from assets
                  left join weather_warnings
                            on ST_Intersects(asset_location, warning_area) and
                               now() between warning_valid_from and warning_valid_to
-
+                 left join asset_types
+                           on asset_type_type_id = asset_type_id
         <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
@@ -81,12 +87,15 @@
                warning_what_to_expect,
                warning_further_details,
                warning_update_description,
-               ST_AsGeoJSON(warning_area)   as warning_area
+               ST_AsGeoJSON(warning_area)   as warning_area,
+
+               asset_types.*
         from weather_warnings
-                 left join assets
+                 right join assets
                            on ST_Intersects(asset_location, warning_area) and
                               now() between warning_valid_from and warning_valid_to
-
+                 left join asset_types
+                           on asset_type_type_id = asset_type_id
         <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
@@ -99,7 +108,7 @@
     </select>
 
     <insert id="insertAssetType">
-        insert into asset_types (asset_type_id,
+        insert into asset_types (asset_type_type_id,
                                  asset_type_name,
                                  asset_type_description)
         values (#{id}, #{name}, #{description});
@@ -167,7 +176,7 @@
             <if test="name != null and name != ''">asset_type_name = #{name},</if>
             <if test="description != null and description != ''">asset_type_description = #{description},</if>
         </set>
-        where asset_type_id = #{id};
+        where asset_type_type_id = #{id};
     </update>
 
     <update id="updateAsset">
@@ -190,7 +199,7 @@
     <delete id="deleteAssetTypeByIDs">
         delete
         from asset_types
-        where asset_type_id in
+        where asset_type_type_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 

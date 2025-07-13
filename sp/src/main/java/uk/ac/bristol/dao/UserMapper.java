@@ -3,7 +3,7 @@ package uk.ac.bristol.dao;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import uk.ac.bristol.pojo.User;
-import uk.ac.bristol.pojo.UserWithAssetHolder;
+import uk.ac.bristol.pojo.UserWithExtraColumns;
 
 import java.util.List;
 import java.util.Map;
@@ -26,12 +26,12 @@ public interface UserMapper {
                                              @Param("limit") Integer limit,
                                              @Param("offset") Integer offset);
 
-    List<UserWithAssetHolder> selectUsersWithAccumulator(@Param("function") String function,
-                                                         @Param("column") String column,
-                                                         @Param("filterString") String filterString,
-                                                         @Param("orderList") List<Map<String, String>> orderList,
-                                                         @Param("limit") Integer limit,
-                                                         @Param("offset") Integer offset);
+    List<UserWithExtraColumns> selectUsersWithAccumulator(@Param("function") String function,
+                                                          @Param("column") String column,
+                                                          @Param("filterString") String filterString,
+                                                          @Param("orderList") List<Map<String, String>> orderList,
+                                                          @Param("limit") Integer limit,
+                                                          @Param("offset") Integer offset);
 
     String selectPasswordByUserId(@Param("id") String id);
 

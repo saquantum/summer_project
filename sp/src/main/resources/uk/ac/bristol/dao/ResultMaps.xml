@@ -45,13 +45,19 @@
         <id property="id" column="user_id"/>
         <result property="assetHolderId" column="user_asset_holder_id"/>
         <result property="admin" column="user_is_admin"/>
-        <association property="assetHolder" javaType="uk.ac.bristol.pojo.AssetHolder" resultMap="AssetHolderAssociationMap"/>
+        <association property="assetHolder" javaType="uk.ac.bristol.pojo.AssetHolder" resultMap="AssetHolderMap"/>
     </resultMap>
 
-    <resultMap id="UserWithExtraColumnsMap" type="java.util.Map">
+    <resultMap id="UserWithExtraColumnsMap" type="uk.ac.bristol.pojo.UserWithExtraColumns">
         <id property="user.id" column="user_id"/>
         <result property="accumulation" column="accumulation"/>
         <association property="user" javaType="uk.ac.bristol.pojo.User" resultMap="UserMap"/>
+    </resultMap>
+
+    <resultMap id="AssetTypeMap" type="uk.ac.bristol.pojo.AssetType">
+        <id property="id" column="asset_type_id"/>
+        <result property="name" column="asset_type_name"/>
+        <result property="description" column="asset_type_description"/>
     </resultMap>
 
     <resultMap id="AssetMap" type="uk.ac.bristol.pojo.Asset">
@@ -66,12 +72,8 @@
         <result property="installedAt" column="asset_installed_at"/>
         <result property="lastInspection" column="asset_last_inspection"/>
         <result property="lastModified" column="asset_last_modified"/>
-    </resultMap>
 
-    <resultMap id="AssetTypeMap" type="uk.ac.bristol.pojo.AssetType">
-        <id property="id" column="asset_type_id"/>
-        <result property="name" column="asset_type_name"/>
-        <result property="description" column="asset_type_description"/>
+        <association property="type" javaType="uk.ac.bristol.pojo.AssetType" resultMap="AssetTypeMap"/>
     </resultMap>
 
     <resultMap id="WarningMap" type="uk.ac.bristol.pojo.Warning">

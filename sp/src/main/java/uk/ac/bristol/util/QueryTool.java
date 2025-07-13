@@ -45,6 +45,7 @@ public final class QueryTool {
 
             if (!(condition instanceof Map)) {
                 result.add(column + " = " + formatFilterValue(condition));
+                continue;
             }
 
             Map<String, Object> conditionMap = (Map<String, Object>) condition;
