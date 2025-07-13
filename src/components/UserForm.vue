@@ -9,11 +9,13 @@ import {
 import { ElMessage } from 'element-plus'
 import type { User, UserInfoForm } from '@/types'
 import type { InternalRuleItem } from 'async-validator'
+import { useRoute } from 'vue-router'
 
 interface Props {
   isEdit: boolean
 }
 
+const route = useRoute()
 const props = defineProps<Props>()
 
 const emit = defineEmits(['update:isEdit'])
@@ -251,7 +253,7 @@ const loadUserData = async () => {
       currentUser.value = userStore.user
       console.log(userStore.user)
     } else {
-      const id = userStore.proxyId as string
+      const id = (userStore.proxyId || route.query.id) as string
       const res = await adminGetUserInfoService(id)
       console.log(res)
       currentUser.value = res.data

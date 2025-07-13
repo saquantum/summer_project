@@ -9,7 +9,7 @@ const assets = computed<AssetTableItem[]>(() =>
   assetStore.allAssets.map((item) => ({
     id: item.asset.id,
     name: item.asset.name,
-    type: item.asset.type.name,
+    type: item.asset.type?.name ?? 'none',
     capacityLitres: item.asset.capacityLitres,
     material: item.asset.material,
     status: item.asset.status,

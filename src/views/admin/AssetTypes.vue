@@ -20,6 +20,7 @@ const form = ref<AssetType>({
 const submit = async () => {
   await adminInsetAssetTypeService(form.value)
   assetStore.getAssetTypes()
+  dialogVisible.value = false
 }
 
 // delete confirm

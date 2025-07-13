@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { adminDeleteUserService, adminGetUsersService } from '@/api/admin'
+import { ref, onMounted, computed } from 'vue'
+import { adminDeleteUserService } from '@/api/admin'
 import { useRouter } from 'vue-router'
 import type { Permission, UserItem } from '@/types'
+import { useUserStore } from '@/stores'
 
 interface TableRow {
   uid: string
@@ -16,7 +17,19 @@ interface TableRow {
 
 const router = useRouter()
 
-const users = ref<TableRow[]>([])
+const userStore = useUserStore()
+
+const userTable = computed(() =>
+  userStore.users.map((item: UserItem) => ({
+    uid: item.user.id,
+    username: item.user.id,
+    assetHolderId: item.user.assetHolderId ?? 'none',
+    assets: item.user.id,
+    count: item.count,
+    role: item.user.admin ? 'admin' : 'user',
+    permission: item.user.permissionConfig
+  }))
+)
 
 const multiSort = ref<{ prop: string; order: string }[]>([])
 const columns = ref([
@@ -57,22 +70,12 @@ const fetchTableData = async () => {
   const sortStr =
     propOrderList.length > 0 ? propOrderList.join(',') : 'user_id,asc'
 
-  const res = await adminGetUsersService(
+  userStore.getUsers(
     'count',
     (currentPage.value - 1) * pageSize.value,
     pageSize.value,
     sortStr
   )
-
-  users.value = res.data.map((item: UserItem) => ({
-    uid: item.user.id,
-    username: item.user.id,
-    assetHolderId: item.user.assetHolderId ?? 'none',
-    assets: item.user.id,
-    count: item.count,
-    role: item.user.admin ? 'admin' : 'user',
-    permission: item.user.permissionConfig
-  }))
 }
 
 const handleSortChange = (sort: { prop: string; order: string | null }) => {
@@ -110,7 +113,7 @@ const permissionFields = [
 ] as const
 
 function getPermission(uid: string) {
-  const user = users.value.find((user) => user.uid === uid)
+  const user = userTable.value.find((user) => user.uid === uid)
   if (user?.role === 'admin') {
     return {
       userId: user?.uid,
@@ -156,10 +159,10 @@ onMounted(() => {
   </div>
 
   <div class="collapse-wrapper">
-    <UserCollapse :users="users"></UserCollapse>
+    <UserCollapse :users="userTable"></UserCollapse>
   </div>
   <el-table
-    :data="users"
+    :data="userTable"
     stripe
     style="width: 100%"
     @sort-change="handleSortChange"

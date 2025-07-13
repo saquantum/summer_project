@@ -2,15 +2,18 @@ import { userGetInfoService, userLoginService } from '@/api/user'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-import type { LoginForm, User } from '@/types'
+import type { LoginForm, User, UserItem } from '@/types'
 import CodeUtil from '@/utils/codeUtil'
 import { ElMessage } from 'element-plus'
+import { adminGetUsersService } from '@/api/admin'
 
 export const useUserStore = defineStore(
   'rain-user',
   () => {
     const user = ref<User | null>(null)
     const proxyId = ref('')
+    const users = ref<UserItem[]>([])
+
     const searchHistory = ref<string[]>([])
 
     const getUser = async (form: LoginForm) => {
@@ -27,6 +30,16 @@ export const useUserStore = defineStore(
       } catch (e) {
         throw new Error(String(e))
       }
+    }
+
+    const getUsers = async (
+      func: string,
+      offset: number,
+      limit: number,
+      sortStr: string
+    ) => {
+      const res = await adminGetUsersService(func, offset, limit, sortStr)
+      users.value = res.data
     }
 
     const getUserInfo = async () => {
@@ -46,16 +59,19 @@ export const useUserStore = defineStore(
     const reset = () => {
       user.value = null
       proxyId.value = ''
+      searchHistory.value = []
     }
     return {
       user,
+      users,
       searchHistory,
       getUser,
       reset,
       proxyId,
       setProxyId,
       updateUser,
-      getUserInfo
+      getUserInfo,
+      getUsers
     }
   },
   {

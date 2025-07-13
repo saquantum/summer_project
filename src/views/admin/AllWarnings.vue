@@ -38,10 +38,6 @@ const handleDelete = (row: TableRow) => {
   console.log('Delete warning:', row.id)
 }
 
-const handleDisplay = (row: TableRow) => {
-  console.log('display', row)
-}
-
 const processWarnings = () => {
   warningPolygon.value = []
   liveWarnings.value = warningStore.liveWarnings.map((item) => {
@@ -181,13 +177,6 @@ watch(
                     size="small"
                     @click="handleShowDetail(scope.row)"
                     >Show Detail
-                  </el-button>
-                  <el-button
-                    text
-                    type="primary"
-                    size="small"
-                    @click="handleDisplay(scope.row)"
-                    >Display
                   </el-button>
                   <el-button
                     text
