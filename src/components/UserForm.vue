@@ -27,11 +27,35 @@ const user = computed(() => {
 })
 
 const currentUser = ref<User | null>(null)
-type DescriptionItem = {
-  label: string
-  value: string
-}
-const descriptionsItem = ref<DescriptionItem[]>([])
+
+const descriptionsItem = computed(() => {
+  if (!currentUser.value || !currentUser.value.assetHolder) return []
+  const arr = currentUser.value.assetHolder.name.split(' ')
+  return [
+    { label: 'User id', value: currentUser.value.id },
+    { label: 'First name', value: arr[0] },
+    { label: 'Last name', value: arr[1] },
+    { label: 'Email', value: currentUser.value.assetHolder.email ?? '' },
+    { label: 'Phone', value: currentUser.value.assetHolder.phone ?? '' },
+    {
+      label: 'Street',
+      value: currentUser.value.assetHolder.address?.street ?? ''
+    },
+    {
+      label: 'Postcode',
+      value: currentUser.value.assetHolder.address?.postcode ?? ''
+    },
+    {
+      label: 'City',
+      value: currentUser.value.assetHolder.address?.city ?? ''
+    },
+    {
+      label: 'Country',
+      value: currentUser.value.assetHolder.address?.country ?? ''
+    }
+  ]
+})
+
 const form = ref<UserInfoForm>({
   id: '',
   password: '',
@@ -238,30 +262,6 @@ const loadUserData = async () => {
     form.value = userToForm(currentUser.value)
     form.value.firstName = arr[0]
     form.value.lastName = arr[1]
-
-    descriptionsItem.value = [
-      { label: 'User id', value: currentUser.value.id },
-      { label: 'First name', value: arr[0] },
-      { label: 'Last name', value: arr[1] },
-      { label: 'Email', value: currentUser.value.assetHolder.email ?? '' },
-      { label: 'Phone', value: currentUser.value.assetHolder.phone ?? '' },
-      {
-        label: 'Street',
-        value: currentUser.value.assetHolder.address?.street ?? ''
-      },
-      {
-        label: 'Postcode',
-        value: currentUser.value.assetHolder.address?.postcode ?? ''
-      },
-      {
-        label: 'City',
-        value: currentUser.value.assetHolder.address?.city ?? ''
-      },
-      {
-        label: 'Country',
-        value: currentUser.value.assetHolder.address?.country ?? ''
-      }
-    ]
   } catch (error) {
     console.error('Failed to load user data:', error)
     ElMessage.error('Failed to load user data')

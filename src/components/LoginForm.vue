@@ -300,7 +300,7 @@ watch(isRegister, () => {
         <el-checkbox>Remember me</el-checkbox>
         <el-link
           type="primary"
-          :underline="false"
+          underline="always"
           @click="router.push('/recover')"
           >Forget password?
         </el-link>
@@ -485,7 +485,7 @@ watch(isRegister, () => {
 
     <el-form-item class="fixed-bottom-tip">
       <span>Already have an account?&nbsp;&nbsp;</span>
-      <el-link type="primary" :underline="false" @click="isRegister = false">
+      <el-link type="primary" underline="always" @click="isRegister = false">
         Sign in
       </el-link>
     </el-form-item>
