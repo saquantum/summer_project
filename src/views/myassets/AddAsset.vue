@@ -4,7 +4,7 @@ import request from '@/utils/request'
 import { useAssetStore, useUserStore } from '@/stores/index.ts'
 import CodeUtil from '@/utils/codeUtil'
 import { userCheckUIDService } from '@/api/user'
-import { adminGetUserInfoByUIDService } from '@/api/admin'
+import { adminGetUserInfoService } from '@/api/admin'
 import { userInsertAssetService } from '@/api/user'
 import { adminInsertAssetService } from '@/api/admin'
 import type { Feature, MultiPolygon } from 'geojson'
@@ -142,7 +142,7 @@ const rules = {
         const res = await userCheckUIDService(value)
         if (CodeUtil.isSuccess(res.code)) {
           if (userStore.user?.admin) {
-            const res = await adminGetUserInfoByUIDService(value)
+            const res = await adminGetUserInfoService(value)
             if (res.data.admin) {
               callback(new Error('Can not add asset to admin'))
               return
@@ -227,7 +227,7 @@ const userSubmit = async () => {
 
   try {
     if (userStore.user?.assetHolderId) {
-      await userInsertAssetService(userStore.user?.assetHolderId, form.value)
+      await userInsertAssetService(userStore.user?.id, form.value)
       ElMessage.success('Successfully add an asset')
     }
   } catch {
@@ -243,7 +243,7 @@ const adminSubmit = async () => {
   }
   form.value.location = form.value.locations[0] ?? ''
 
-  const res = await adminGetUserInfoByUIDService(form.value.username)
+  const res = await adminGetUserInfoService(form.value.username)
   if (res.data.assetHolderId) {
     form.value.ownerId = res.data.assetHolderId
   }

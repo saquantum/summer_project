@@ -25,7 +25,7 @@ const userTable = computed(() =>
     username: item.user.id,
     assetHolderId: item.user.assetHolderId ?? 'none',
     assets: item.user.id,
-    count: item.count,
+    count: item.accumulation,
     role: item.user.admin ? 'admin' : 'user',
     permission: item.user.permissionConfig
   }))
@@ -40,7 +40,7 @@ const columns = ref([
 ])
 
 const handleEdit = (row: TableRow) => {
-  router.push({ path: '/admin/user/detail', query: { id: row.assetHolderId } })
+  router.push({ path: '/admin/user/detail', query: { id: row.uid } })
 }
 
 const handleDelete = async (row: TableRow) => {

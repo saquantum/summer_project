@@ -81,7 +81,7 @@ onMounted(async () => {
   currentAssets.value = []
   let id
   if (!userStore.user?.admin) {
-    id = userStore.user?.assetHolderId
+    id = userStore.user?.id
   } else {
     id = userStore.proxyId
   }

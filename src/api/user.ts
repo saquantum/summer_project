@@ -33,9 +33,9 @@ export const userCheckEmailService = (email: string): Promise<ApiResponse> =>
   request.get(`exists/email/${email}`)
 
 export const userInsertAssetService = (
-  assetHolderId: string,
+  id: string,
   obj: object
-): Promise<ApiResponse> => request.post(`/user/aid/${assetHolderId}/asset`, obj)
+): Promise<ApiResponse> => request.post(`/user/uid/${id}/asset`, obj)
 
 export const userGetEmailService = (email: string): Promise<ApiResponse> =>
   request.post('/email/code', { email })

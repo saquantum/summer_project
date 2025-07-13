@@ -38,12 +38,6 @@ export const adminGetUsersService = (
 export const adminGetUserInfoService = (
   id: string
 ): Promise<ApiResponse<User>> => {
-  return request.get(`/admin/user/aid/${id}`)
-}
-
-export const adminGetUserInfoByUIDService = (
-  id: string
-): Promise<ApiResponse<User>> => {
   return request.get(`/admin/user/uid/${id}`)
 }
 
@@ -92,7 +86,7 @@ export const adminSearchAssetService = (obj: AssetSearchBody) => {
 export const adminGetUserAssetsService = (
   id: string
 ): Promise<ApiResponse<AssetWithWarnings[]>> => {
-  return request.get(`/admin/user/aid/${id}/asset`)
+  return request.get(`/admin/user/uid/${id}/asset`)
 }
 
 export const adminDeleteAssetService = (

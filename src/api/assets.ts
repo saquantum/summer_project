@@ -5,7 +5,7 @@ import type { MultiPolygon } from 'geojson'
 export const assetsGetInfoService = (
   userId: string
 ): Promise<ApiResponse<AssetWithWarnings[]>> =>
-  request.get(`/user/aid/${userId}/asset`)
+  request.get(`/user/uid/${userId}/asset`)
 
 export const assetUpdateInfoService = (
   id: string,

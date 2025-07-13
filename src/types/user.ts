@@ -58,7 +58,7 @@ export interface UserInfoForm {
 
 export interface UserItem {
   user: User
-  count: number
+  accumulation: number
 }
 
 export interface RegisterForm {

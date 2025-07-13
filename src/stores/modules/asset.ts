@@ -53,6 +53,7 @@ export const useAssetStore = defineStore(
     const reset = () => {
       userAssets.value = []
       allAssets.value = []
+      assetTypes.value = []
     }
 
     return {
