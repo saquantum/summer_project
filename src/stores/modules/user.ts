@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 import type { LoginForm, User, UserItem } from '@/types'
-import CodeUtil from '@/utils/codeUtil'
+
 import { ElMessage } from 'element-plus'
 import { adminGetUsersService } from '@/api/admin'
 
@@ -19,15 +19,11 @@ export const useUserStore = defineStore(
     const getUser = async (form: LoginForm) => {
       try {
         const res = await userLoginService(form)
-        if (CodeUtil.isSuccess(res.code)) {
-          user.value = res.data
-          if (!user.value?.admin) getUserInfo()
-          ElMessage.success('Success')
-        } else {
-          ElMessage.error('Username or password is incorrect.')
-          throw new Error('Username or password is incorrect.')
-        }
+        user.value = res.data
+        if (!user.value?.admin) getUserInfo()
+        ElMessage.success('Success')
       } catch (e) {
+        ElMessage.error('Username or password is incorrect.')
         throw new Error(String(e))
       }
     }

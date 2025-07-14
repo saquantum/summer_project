@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { useAssetStore, useUserStore } from '@/stores/index.ts'
 import { useRoute, useRouter } from 'vue-router'
-import { ref, computed } from 'vue'
+import { ref, computed, type ComponentPublicInstance } from 'vue'
 import type { Asset, AssetWithWarnings } from '@/types/asset'
 import type { Warning } from '@/types/warning'
 import type { MultiPolygon } from 'geojson'
+import type MapCard from '@/components/MapCard.vue'
 
 interface WarningTableRow {
   id: number
@@ -36,12 +37,7 @@ const tableData = computed<Warning[]>(() => {
   return item.value?.warnings ?? []
 })
 
-const mapCardRef = ref<{
-  beginDrawing: () => void
-  endDrawing: () => void
-  finishOneShape: () => void
-  cancelDrawing: () => void
-} | null>(null)
+const mapCardRef = ref<ComponentPublicInstance<typeof MapCard> | null>(null)
 
 const mode = ref<'convex' | 'polygon'>('convex')
 
@@ -68,6 +64,9 @@ const endDrawing = () => {
 }
 const finishOneShape = () => {
   mapCardRef.value?.finishOneShape()
+}
+const finishOnePolygon = () => {
+  mapCardRef.value?.finishOnePolygon()
 }
 const cancelDrawing = () => {
   mapCardRef.value?.cancelDrawing()
@@ -162,7 +161,12 @@ const handleDelete = (row: WarningTableRow) => {
     </el-table>
   </div>
 
-  <div v-if="userStore.user?.admin">
+  <div
+    v-if="
+      userStore.user?.admin ||
+      userStore.user?.permissionConfig.canUpdateAssetPolygon
+    "
+  >
     <h3>action</h3>
     <el-select v-model="mode">
       <el-option label="convex" value="convex"></el-option>
@@ -170,6 +174,7 @@ const handleDelete = (row: WarningTableRow) => {
     </el-select>
     <el-button @click="beginDrawing">Draw new asset</el-button>
     <el-button @click="finishOneShape">Finish one shape</el-button>
+    <el-button @click="finishOnePolygon">Finish one polygon</el-button>
     <el-button @click="endDrawing">End drawing</el-button>
     <el-button @click="cancelDrawing">Cancel drawing</el-button>
   </div>

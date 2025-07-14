@@ -69,6 +69,7 @@ declare module 'vue' {
     TiptapEditor: typeof import('./src/components/TiptapEditor.vue')['default']
     UserCollapse: typeof import('./src/components/UserCollapse.vue')['default']
     UserForm: typeof import('./src/components/UserForm.vue')['default']
+    UserSearch: typeof import('./src/components/UserSearch.vue')['default']
     WarningCard: typeof import('./src/components/WarningCard.vue')['default']
   }
 }

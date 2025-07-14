@@ -151,7 +151,7 @@ onMounted(() => {
 
 <template>
   <div class="search-wrapper">
-    <FilterSearch></FilterSearch>
+    <UserSearch></UserSearch>
     <SortTool
       v-model:multiSort="multiSort"
       :columns="columns"

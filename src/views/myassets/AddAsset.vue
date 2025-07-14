@@ -309,6 +309,9 @@ onMounted(() => {
 <template>
   <div class="container">
     <div>
+      <h3 v-if="!userStore.user?.permissionConfig.canCreateAsset">
+        You can not add asset right now
+      </h3>
       <el-form
         :model="form"
         ref="formRef"
@@ -317,6 +320,7 @@ onMounted(() => {
         :rules="rules"
         style="max-width: 600px"
         hide-required-asterisk
+        :disabled="!userStore.user?.permissionConfig.canCreateAsset"
       >
         <el-form-item label="Username" prop="username">
           <el-input v-model="form.username" :disabled="disableForUser" />
@@ -388,48 +392,87 @@ onMounted(() => {
             placeholder="Please input address"
           /><el-button @click="searchLocation(form.address)">Search</el-button>
         </el-form-item>
+
+        <el-form-item>
+          <div v-if="form.locations.length > 0">
+            <div><h3>Customise polygon</h3></div>
+            <div v-if="tipVisible">Your are now drawing new polygon</div>
+            <div
+              style="height: 400px; max-width: 600px; border: black 1px solid"
+            >
+              <MapCard
+                ref="mapCardRef"
+                :map-id="'AddAsset'"
+                v-model:locations="form.locations"
+                v-model:mode="mode"
+              ></MapCard>
+            </div>
+            <el-select
+              :disabled="
+                tipVisible ||
+                !userStore.user?.permissionConfig.canSetPolygonOnCreate
+              "
+              v-model="mode"
+              style="margin-top: 10px"
+            >
+              <el-option label="convex" value="convex"></el-option>
+              <el-option label="sequence" value="sequence"></el-option>
+            </el-select>
+            <div class="map-button">
+              <el-button
+                @click="beginDrawing"
+                :disabled="
+                  !userStore.user?.permissionConfig.canSetPolygonOnCreate
+                "
+                >Draw new asset</el-button
+              >
+              <el-button
+                @click="finishOneShape"
+                :disabled="
+                  !userStore.user?.permissionConfig.canSetPolygonOnCreate
+                "
+                >Finish one shape</el-button
+              >
+              <el-button
+                @click="finishOnePolygon"
+                :disabled="
+                  !userStore.user?.permissionConfig.canSetPolygonOnCreate
+                "
+                >Finish one polygon</el-button
+              >
+              <el-button
+                @click="endDrawing"
+                :disabled="
+                  !userStore.user?.permissionConfig.canSetPolygonOnCreate
+                "
+                >End drawing</el-button
+              >
+              <el-button
+                @click="cancelDrawing"
+                :disabled="
+                  !userStore.user?.permissionConfig.canSetPolygonOnCreate
+                "
+                >Cancel drawing</el-button
+              >
+            </div>
+          </div>
+        </el-form-item>
+
+        <el-form-item>
+          <div class="form-button">
+            <el-button
+              type="primary"
+              @click="adminSubmit"
+              v-if="userStore.user?.admin"
+              >Submit</el-button
+            >
+            <el-button type="primary" v-else @click="userSubmit"
+              >Submit</el-button
+            >
+            <el-button @click="reset">Reset</el-button>
+          </div>
+        </el-form-item>
       </el-form>
-
-      <div v-if="form.locations.length > 0">
-        <div><h3>Customise polygon</h3></div>
-        <div v-if="tipVisible">Your are now drawing new polygon</div>
-        <div style="height: 400px; max-width: 600px; border: black 1px solid">
-          <MapCard
-            ref="mapCardRef"
-            :map-id="'AddAsset'"
-            v-model:locations="form.locations"
-            v-model:mode="mode"
-          ></MapCard>
-        </div>
-        <el-select
-          :disabled="tipVisible"
-          v-model="mode"
-          style="margin-top: 10px"
-        >
-          <el-option label="convex" value="convex"></el-option>
-          <el-option label="sequence" value="sequence"></el-option>
-        </el-select>
-        <div class="map-button">
-          <el-button @click="beginDrawing">Draw new asset</el-button>
-          <el-button @click="finishOneShape">Finish one shape</el-button>
-          <el-button @click="finishOnePolygon">Finish one polygon</el-button>
-          <el-button @click="endDrawing">End drawing</el-button>
-          <el-button @click="cancelDrawing">Cancel drawing</el-button>
-        </div>
-
-        <div class="form-button">
-          <el-button
-            type="primary"
-            @click="adminSubmit"
-            v-if="userStore.user?.admin"
-            >Submit</el-button
-          >
-          <el-button type="primary" v-else @click="userSubmit"
-            >Submit</el-button
-          >
-          <el-button @click="reset">Reset</el-button>
-        </div>
-      </div>
     </div>
   </div>
 </template>

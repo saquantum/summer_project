@@ -1,36 +1,22 @@
 <script setup lang="ts">
-import { useUserStore } from '@/stores'
+import { useAssetStore, useUserStore } from '@/stores'
 import type { AssetSearchBody, AssetSearchForm } from '@/types'
 import { assetConverFormToFilter } from '@/utils/DataConversion'
 import { Filter } from '@element-plus/icons-vue'
-import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 
 const props = defineProps<{
   assetSearchBody: AssetSearchBody
   fetchTableData: () => void
 }>()
 
+const assetStore = useAssetStore()
 const emit = defineEmits(['update:assetSearchBody'])
-
-interface AssetTypeOption {
-  value: string
-  label: string
-}
-
-const assetTypeOptions: AssetTypeOption[] = [
-  { value: 'type_001', label: 'Water Tank' },
-  { value: 'type_002', label: 'Soakaway' },
-  { value: 'type_003', label: 'Green Roof' },
-  { value: 'type_004', label: 'Permeable Pavement' },
-  { value: 'type_005', label: 'Swale' },
-  { value: 'type_006', label: 'Retention Pond' },
-  { value: 'type_007', label: 'Rain Garden' }
-]
 
 const visible = ref<boolean>(false)
 const detail = ref<boolean>(false)
-const assetId = ref<string | null>(null)
-let lastType: string | null = null
+// const assetId = ref<string | null>(null)
+// const lastType: string | null = null
 
 const popoverRef = ref<{ popperRef?: { contentRef: HTMLElement } } | null>(null)
 const referenceRef = ref<{ $el: HTMLElement } | null>(null)
@@ -53,21 +39,11 @@ const handleClickOutside = (e: MouseEvent) => {
   }
 }
 
-interface TableRow {
-  id: string
-}
-
-const tableData = computed(() =>
-  userStore.searchHistory.map((item) => ({
-    id: item
-  }))
-)
-
 const userStore = useUserStore()
 
-const handleRowClick = (row: TableRow) => {
-  tags.value.push(row.id)
-  fuzzySearch(row.id)
+const handleRowClick = (id: string) => {
+  tags.value.push(id)
+  fuzzySearch(id)
 }
 
 const tags = ref<string[]>([])
@@ -92,17 +68,6 @@ const focusInput = () => {
   inputRef.value?.focus()
   visible.value = true
   detail.value = false
-}
-
-const querySearch = (
-  queryString: string,
-  cb: (_results: { value: string }[]) => void
-) => {
-  const list = ['1', '2', '3', '4', '5']
-  const result = list.map((item) => ({
-    value: item
-  }))
-  cb(result)
 }
 
 const handleFilterClick = () => {
@@ -191,31 +156,31 @@ const fuzzySearch = (input: string) => {
   visible.value = false
 }
 
-watch(
-  [form],
-  () => {
-    if (!form.value.typeId) {
-      if (lastType) {
-        const index = tags.value.indexOf(lastType)
-        if (index !== -1) tags.value.splice(index, 1)
-      }
-      return
-    }
-    const obj = assetTypeOptions.find(
-      (item) => item.value === form.value.typeId
-    )
-    if (!obj) return
-    if (lastType) {
-      const index = tags.value.indexOf(lastType)
-      if (index !== -1) tags.value.splice(index, 1)
-    }
-    tags.value.push(obj.label)
-    lastType = obj.label
-  },
-  {
-    deep: true
-  }
-)
+// watch(
+//   [form],
+//   () => {
+//     if (!form.value.typeId) {
+//       if (lastType) {
+//         const index = tags.value.indexOf(lastType)
+//         if (index !== -1) tags.value.splice(index, 1)
+//       }
+//       return
+//     }
+//     const obj = assetTypeOptions.find(
+//       (item) => item.value === form.value.typeId
+//     )
+//     if (!obj) return
+//     if (lastType) {
+//       const index = tags.value.indexOf(lastType)
+//       if (index !== -1) tags.value.splice(index, 1)
+//     }
+//     tags.value.push(obj.label)
+//     lastType = obj.label
+//   },
+//   {
+//     deep: true
+//   }
+// )
 
 onMounted(() => {
   document.addEventListener('mousedown', handleClickOutside)
@@ -263,7 +228,7 @@ defineExpose({
         </el-button></div
     ></template>
     <div v-if="detail">
-      <el-form :model="form" label-width="auto">
+      <el-form :model="form" label-width="auto" label-position="left">
         <el-form-item label="Id">
           <el-input v-model="form.id"></el-input>
         </el-form-item>
@@ -279,7 +244,7 @@ defineExpose({
             class="select-style"
           >
             <el-option
-              v-for="item in assetTypeOptions"
+              v-for="item in assetStore.typeOptions"
               :key="item.value"
               :label="item.label"
               :value="item.value"
@@ -353,7 +318,7 @@ defineExpose({
       </el-form>
 
       <!-- do this later -->
-      <div class="label">Id</div>
+      <!-- <div class="label">Id</div>
       <el-autocomplete
         v-model="assetId"
         :fetch-suggestions="querySearch"
@@ -362,21 +327,23 @@ defineExpose({
         :teleported="false"
       />
       <div class="label">test prop</div>
-      <ButtonInput></ButtonInput>
+      <ButtonInput></ButtonInput> -->
       <div style="margin-top: 20px">
         <el-button @click="handleSearch">Search</el-button>
         <el-button @click="clearFilters">Clear filters</el-button>
       </div>
     </div>
-    <div v-else>
+    <div v-else class="search-history">
       <span>Search history</span>
-      <el-table
-        :data="tableData"
-        style="width: 100%"
-        @row-click="handleRowClick"
-      >
-        <el-table-column prop="id" />
-      </el-table>
+      <ul>
+        <li
+          v-for="(item, index) in userStore.searchHistory.slice(0, 5)"
+          :key="index"
+          @click="handleRowClick(item)"
+        >
+          {{ item }}
+        </li>
+      </ul>
     </div>
   </el-popover>
 </template>
@@ -428,5 +395,28 @@ defineExpose({
 .label {
   margin-top: 5px;
   margin-bottom: 5px;
+}
+
+.search-history {
+  margin-top: 10px;
+  padding: 0;
+}
+.search-history ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.search-history li {
+  padding: 6px 12px;
+  margin-bottom: 4px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.search-history li:hover {
+  background: #e0e7ef;
+  color: #409eff;
 }
 </style>
