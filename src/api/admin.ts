@@ -50,6 +50,9 @@ export const adminDeleteUserService = (users: string[]) =>
     data: { ids: users }
   })
 
+export const adminUpdateUserInfoService = (userInforArr: UserInfoForm[]) =>
+  request.put('/admin/user', userInforArr)
+
 /**
  * template
  */
@@ -62,8 +65,28 @@ export const adminGetTemplateSerive = (
     params: { offset: offset, limit: limit, orderList: orderList }
   })
 
-export const adminUpdateUserInfoService = (userInforArr: UserInfoForm[]) =>
-  request.put('/admin/user', userInforArr)
+export const adminGetTemplateByTypesService = (
+  assetTypeId: string,
+  warningType: string,
+  severity: string,
+  channel: string
+) =>
+  request.get('/admin/template/type', {
+    params: {
+      assetTypeId: assetTypeId,
+      warningType: warningType,
+      severity: severity,
+      channel: channel
+    }
+  })
+
+export const adminUpdateTemplateByIdService = (template: Template) =>
+  request.put('/admin/template/id', template)
+
+export const adminDeleteTemplateByIdService = (ids: number[]) =>
+  request.delete('/admin/template', {
+    data: { ids: ids }
+  })
 
 /**
  * asset
@@ -135,18 +158,3 @@ export const adminUpdatePermissionService = (
   permission: Permission
 ): Promise<ApiResponse<Permission[]>> =>
   request.put(`/admin/permission/`, permission)
-
-export const adminGetTemplateByTypes = (
-  assetTypeId: string,
-  warningType: string,
-  severity: string,
-  channel: string
-) =>
-  request.get('/admin/template/type', {
-    params: {
-      assetTypeId: assetTypeId,
-      warningType: warningType,
-      severity: severity,
-      channel: channel
-    }
-  })

@@ -1,47 +1,29 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { adminDeleteUserService } from '@/api/admin'
 import { useRouter } from 'vue-router'
-import type { Permission, UserItem } from '@/types'
-import { useUserStore } from '@/stores'
+import { useTemplateStore } from '@/stores'
 
 interface TableRow {
-  uid: string
-  username: string
-  assetHolderId: string
-  assets: string
-  count: number
-  role: 'admin' | 'user'
-  permission: Permission
+  id: number
+  title: string
 }
 
 const router = useRouter()
 
-const userStore = useUserStore()
-
-const userTable = computed(() => {
-  if (!userStore.users || userStore.users.length <= 0) return []
-  return userStore.users.map((item: UserItem) => ({
-    uid: item.user.id,
-    username: item.user.id,
-    assetHolderId: item.user.assetHolderId ?? 'none',
-    assets: item.user.id,
-    count: item.accumulation,
-    role: item.user.admin ? 'admin' : 'user',
-    permission: item.user.permissionConfig
-  }))
-})
+const templateStore = useTemplateStore()
 
 const multiSort = ref<{ prop: string; order: string }[]>([])
 const columns = ref([
-  { prop: 'uid', label: 'UID' },
-  { prop: 'assetHolderId', label: 'Asset Holder Id' },
-  { prop: 'role', label: 'Role' },
-  { prop: 'count', label: 'Asset' }
+  { prop: 'id', label: 'id' },
+  { prop: 'assetTypeId', label: 'Asset type' },
+  { prop: 'warningType', label: 'Warning type' },
+  { prop: 'severity', label: 'Severity' },
+  { prop: 'contactChannel', label: 'Channel' }
 ])
 
 const handleEdit = (row: TableRow) => {
-  router.push({ path: '/admin/user/detail', query: { id: row.uid } })
+  router.push({ path: '/admin/templates/detail', query: { id: row.id } })
 }
 
 const handleDelete = async (row: TableRow) => {
@@ -59,7 +41,7 @@ const fetchTableData = async () => {
 
   for (const { prop, order } of multiSort.value) {
     let dbField = ''
-    if (prop === 'uid') dbField = 'user_id'
+    if (prop === 'id') dbField = 'user_id'
     else if (prop === 'assetHolderId') dbField = 'asset_holder_id'
     else if (prop === 'count') dbField = 'accumulation'
     else continue
@@ -71,8 +53,7 @@ const fetchTableData = async () => {
   const sortStr =
     propOrderList.length > 0 ? propOrderList.join(',') : 'user_id,asc'
 
-  userStore.getUsers(
-    'count',
+  templateStore.getTemplates(
     (currentPage.value - 1) * pageSize.value,
     pageSize.value,
     sortStr
@@ -102,31 +83,6 @@ const deleteId = ref<string[]>([])
 const triggerDelete = (row: TableRow) => {
   dialogVisible.value = true
   deleteId.value.push(row.uid)
-}
-
-const permissionFields = [
-  'canCreateAsset',
-  'canSetPolygonOnCreate',
-  'canUpdateAssetFields',
-  'canUpdateAssetPolygon',
-  'canDeleteAsset',
-  'canUpdateProfile'
-] as const
-
-function getPermission(uid: string) {
-  const user = userTable.value.find((user) => user.uid === uid)
-  if (user?.role === 'admin') {
-    return {
-      userId: user?.uid,
-      canCreateAsset: true,
-      canSetPolygonOnCreate: true,
-      canUpdateAssetFields: true,
-      canUpdateAssetPolygon: true,
-      canDeleteAsset: true,
-      canUpdateProfile: true
-    }
-  }
-  return user?.permission
 }
 
 const currentPage = ref(1)
@@ -159,11 +115,8 @@ onMounted(() => {
     ></SortTool>
   </div>
 
-  <div class="collapse-wrapper">
-    <UserCollapse :users="userTable"></UserCollapse>
-  </div>
   <el-table
-    :data="userTable"
+    :data="templateStore.templates"
     stripe
     style="width: 100%"
     @sort-change="handleSortChange"
@@ -178,18 +131,7 @@ onMounted(() => {
       width="auto"
       sortable="custom"
     ></el-table-column>
-    <el-table-column label="Permission">
-      <template #default="scope">
-        <div style="display: flex; gap: 3px">
-          <PermissionIndicator
-            v-for="(field, index) in permissionFields"
-            :key="index"
-            :status="getPermission(scope.row.uid)?.[field] || false"
-            :field="field"
-          />
-        </div>
-      </template>
-    </el-table-column>
+
     <el-table-column label="Actions">
       <template #default="scope">
         <el-button

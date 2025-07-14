@@ -119,9 +119,10 @@ const editor = useEditor({
 const fileList = ref<File[]>([])
 
 const setLink = () => {
+  if (!editor.value) return
   const previousUrl = editor.value.getAttributes('link').href
   const url = window.prompt('URL', previousUrl)
-
+  console.log(url)
   // cancelled
   if (url === null) {
     return
@@ -129,13 +130,18 @@ const setLink = () => {
 
   // empty
   if (url === '') {
-    editor.chain().focus().extendMarkRange('link').unsetLink().run()
+    editor.value.chain().focus().extendMarkRange('link').unsetLink().run()
 
     return
   }
 
   // update link
-  editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+  editor.value
+    .chain()
+    .focus()
+    .extendMarkRange('link')
+    .setLink({ href: url })
+    .run()
 }
 
 watch(content, (newValue) => {

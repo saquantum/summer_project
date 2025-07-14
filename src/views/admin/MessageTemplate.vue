@@ -1,11 +1,18 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
 
-import { userTemplateStore } from '@/stores/modules/template'
-import { adminGetTemplateByTypes } from '@/api/admin'
+import {
+  adminDeleteTemplateByIdService,
+  adminGetTemplateByTypesService,
+  adminUpdateTemplateByIdService
+} from '@/api/admin'
 import Handlebars from 'handlebars'
+import { useAssetStore } from '@/stores'
+import type { Template } from '@/types'
 
-const templateStore = userTemplateStore()
+const assetStore = useAssetStore()
+
+const template = ref<Template | null>(null)
 const warningTypeOption = [
   { label: 'Rain', value: 'Rain' },
   { label: 'Thunderstorm', value: 'Thunderstorm' },
@@ -15,16 +22,6 @@ const warningTypeOption = [
   { label: 'Fog', value: 'Fog' },
   { label: 'Wind', value: 'Wind' },
   { label: 'Extreme Heat', value: 'Heat' }
-]
-
-const typeOptions = [
-  { label: 'Water Tank', value: 'type_001' },
-  { label: 'Soakaway', value: 'type_002' },
-  { label: 'Green Roof', value: 'type_003' },
-  { label: 'Permeable Pavement', value: 'type_004' },
-  { label: 'Swale', value: 'type_005' },
-  { label: 'Retention Pond', value: 'type_006' },
-  { label: 'Rain Garden', value: 'type_007' }
 ]
 
 const warningLevelOptions = [
@@ -58,8 +55,8 @@ const warningLevel = ref('YELLOW')
 const assetType = ref('type_001')
 const contactChannel = ref('Email')
 
-const isEdit = ref(false)
 const content = ref(`You haven't set message for this.`)
+const title = ref('')
 const allowedVariables = ['asset-model', 'contact_name', 'post_town']
 
 const mockData = {
@@ -67,8 +64,28 @@ const mockData = {
   contact_name: 'Alice',
   post_town: 'London'
 }
-const finish = () => {
-  isEdit.value = false
+
+const submit = async () => {
+  if (!template.value) return
+  template.value.body = content.value
+  template.value.title = title.value
+  const res = await adminUpdateTemplateByIdService(template.value)
+  console.log(res)
+}
+
+// delete confirm
+const dialogVisible = ref(false)
+const deleteId = ref<number[]>([])
+
+const triggerDelete = () => {
+  if (!template.value) return
+  dialogVisible.value = true
+  deleteId.value.push(template.value.id)
+}
+
+const handleDelete = async () => {
+  await adminDeleteTemplateByIdService(deleteId.value)
+  dialogVisible.value = false
 }
 
 const renderedHTML = computed(() => {
@@ -81,13 +98,7 @@ const renderedHTML = computed(() => {
   }
 })
 
-const cancel = () => {
-  isEdit.value = false
-}
-
-onMounted(async () => {
-  await templateStore.getTemplates()
-})
+onMounted(async () => {})
 
 watch(
   [warningType, warningLevel, assetType, contactChannel],
@@ -97,15 +108,17 @@ watch(
     newAssetType,
     newContactChannel
   ]) => {
-    const res = await adminGetTemplateByTypes(
+    const res = await adminGetTemplateByTypesService(
       newAssetType,
       newWarningType,
       newWarningLevel,
       newContactChannel
     )
-    console.log(res.data)
-
-    content.value = res.data[0].body ?? `You haven't set message for this.`
+    template.value = res.data[0]
+    if (template.value) {
+      title.value = template.value.title
+      content.value = template.value.body ?? `You haven't set message for this.`
+    }
   },
   {
     immediate: true
@@ -139,7 +152,7 @@ watch(
 
   <el-select v-model="assetType" placeholder="Please choose asset type">
     <el-option
-      v-for="item in typeOptions"
+      v-for="item in assetStore.typeOptions"
       :key="item.value"
       :label="item.label"
       :value="item.value"
@@ -155,12 +168,10 @@ watch(
     ></el-option>
   </el-select>
 
+  <div>Title</div>
+  <el-input v-model="title"></el-input>
+
   <TiptapEditor v-model:content="content"></TiptapEditor>
-
-  <el-button @click="isEdit = true">Edit</el-button>
-
-  <el-button v-if="isEdit" @click="finish">Finish</el-button>
-  <el-button v-if="isEdit" @click="cancel">Cancel</el-button>
 
   <div
     class="preview"
@@ -168,6 +179,20 @@ watch(
   >
     <div v-html="renderedHTML"></div>
   </div>
+
+  <div>
+    <el-button @click="submit">Submit</el-button>
+    <el-button @click="triggerDelete">Delete</el-button>
+  </div>
+
+  <ConfirmDialog
+    v-model="dialogVisible"
+    title="Warning"
+    content="This will permanently delete this template"
+    :countdown-duration="1"
+    @confirm="handleDelete"
+    @cancel="dialogVisible = false"
+  />
 </template>
 
 <style scoped>
