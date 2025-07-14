@@ -39,6 +39,7 @@ export const useUserStore = defineStore(
       sortStr: string
     ) => {
       const res = await adminGetUsersService(func, offset, limit, sortStr)
+      console.log(res)
       users.value = res.data
     }
 

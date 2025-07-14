@@ -48,11 +48,40 @@ describe('LoginForm.vue', () => {
     expect(pushMock).toHaveBeenCalled() // router.push should be called
   })
 
+  it('shows error if username is empty', async () => {
+    const wrapper = mount(LoginForm)
+    await wrapper.find('input[placeholder*="password" i]').setValue('testpass')
+    await wrapper.find('button.button').trigger('click')
+    // Should not call router.push
+    expect(pushMock).not.toHaveBeenCalled()
+  })
+
   it('shows error if password is empty', async () => {
     const wrapper = mount(LoginForm)
     await wrapper.find('input[placeholder*="username" i]').setValue('testuser')
     await wrapper.find('button.button').trigger('click')
     // Should not call router.push
     expect(pushMock).not.toHaveBeenCalled()
+  })
+})
+
+// Basic tests
+describe('Register', () => {
+  beforeEach(() => {
+    pushMock.mockClear()
+  })
+
+  it('shows register form when clicking Register', async () => {
+    const wrapper = mount(LoginForm)
+    await wrapper.find('.fixed-bottom-tip .el-link').trigger('click')
+    expect(wrapper.find('.form-title').text()).toBe('SIGN UP')
+  })
+
+  it('cannot goto step 2 if email is empty', async () => {
+    const wrapper = mount(LoginForm)
+    await wrapper.find('.fixed-bottom-tip .el-link').trigger('click')
+    await wrapper.find('[data-test="register-button1"]').trigger('click')
+    await flushPromises()
+    expect(wrapper.vm.currentStep).toBe(1)
   })
 })

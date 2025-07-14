@@ -41,13 +41,16 @@ const stepStatus = ref({
 const editingStep = ref<number | null>(null)
 
 const confirmEmail = async () => {
-  const valid = await registerFormRef.value.validateField('email')
-  if (valid) {
-    stepStatus.value[1] = true
-    currentStep.value = 2
-    editingStep.value = null
-    if (!openSteps.value.includes('2')) openSteps.value.push('2')
+  try {
+    await registerFormRef.value.validateField('email')
+    console.log('Email valid:', registerForm.value.email)
+  } catch {
+    return
   }
+  stepStatus.value[1] = true
+  currentStep.value = 2
+  editingStep.value = null
+  if (!openSteps.value.includes('2')) openSteps.value.push('2')
 }
 
 const goToStep3 = async () => {
@@ -248,6 +251,8 @@ watch(isRegister, () => {
     email: ''
   }
 })
+
+defineExpose({ currentStep })
 </script>
 
 <template>
@@ -351,6 +356,7 @@ watch(isRegister, () => {
         <template v-else>
           <el-form-item prop="email">
             <el-input
+              data-test="register-email-input"
               v-model="registerForm.email"
               :prefix-icon="Message"
               placeholder="Please input your email"
@@ -359,7 +365,11 @@ watch(isRegister, () => {
             />
           </el-form-item>
           <el-form-item>
-            <el-button @click="confirmEmail" class="step-button">
+            <el-button
+              @click="confirmEmail"
+              data-test="register-button1"
+              class="step-button"
+            >
               Continue
             </el-button>
           </el-form-item>
