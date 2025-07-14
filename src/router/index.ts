@@ -84,10 +84,6 @@ const router = createRouter({
           component: () => import('@/views/admin/MessageTemplate.vue')
         },
         {
-          path: 'admin/templates',
-          component: () => import('@/views/admin/AllTemplates.vue')
-        },
-        {
           path: 'admin/user/detail/',
           component: () => import('@/views/admin/UserDetail.vue')
         },

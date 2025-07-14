@@ -35,6 +35,8 @@ const handleCommand = (command: string) => {
     logout()
   } else if (command === 'profile') {
     router.push('/user/profile')
+  } else if (command === 'password') {
+    router.push('/security/verify-mail')
   }
 }
 

@@ -75,12 +75,12 @@ const rules = ref<FormRules<typeof form>>({
       required: true,
       message: 'Please input password',
       trigger: 'blur'
+    },
+    {
+      pattern: /^\S{0,15}$/,
+      message: 'password must between 6 to 15 characters',
+      trigger: 'blur'
     }
-    // {
-    //   pattern: /^\S{6,15}$/,
-    //   message: 'password must between 6 to 15 characters',
-    //   trigger: 'blur'
-    // }
   ],
   repassword: [
     { required: true, message: 'Please input password', trigger: 'blur' },
