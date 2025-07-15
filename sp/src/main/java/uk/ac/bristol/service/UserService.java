@@ -52,7 +52,7 @@ public interface UserService {
 
     int insertUser(User user);
 
-    int registerNewUser(User user);
+    void registerNewUser(User user);
 
     int updateUser(User user);
 

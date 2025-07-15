@@ -13,6 +13,7 @@ import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.ContactService;
 import uk.ac.bristol.service.WarningService;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -24,6 +25,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.*;
 
 @Component
@@ -46,7 +50,19 @@ public class ScheduledMetOfficeWarningsCrawler {
         this.warningMapper = warningMapper;
     }
 
-    @Scheduled(fixedRateString = "${metoffice.crawler.rate:30000}") // default polling rate -- 10 mins per polling
+    static class FeatureCollection {
+        public String type;
+        public List<Feature> features;
+    }
+
+    static class Feature {
+        public String type;
+        public Long id;
+        public Map<String, Object> properties;
+        public Map<String, Object> geometry;
+    }
+
+    @Scheduled(fixedRateString = "${metoffice.crawler.rate:600000}") // default polling rate -- 10 mins per polling
     public void scheduledCrawler() {
         try {
             MockDataInitializer.latch.await();
@@ -63,10 +79,10 @@ public class ScheduledMetOfficeWarningsCrawler {
         try {
             httpResponse = getResponse();
         } catch (Exception e) {
-            throw new SpExceptions.SystemException("Failed to crawl weather warning data. " + e.getMessage());
+            throw new SpExceptions.SystemException("Failed to fetch weather warning data. " + e.getMessage());
         }
-        if (httpResponse.statusCode() != 200) {
-            throw new SpExceptions.SystemException("Failed to crawl weather warning data due to HTTP error with code "
+        if (httpResponse.statusCode() != HttpServletResponse.SC_OK) {
+            throw new SpExceptions.SystemException("Failed to fetch weather warning data due to HTTP error with code "
                     + httpResponse.statusCode());
         }
         response = httpResponse.body();
@@ -75,7 +91,7 @@ public class ScheduledMetOfficeWarningsCrawler {
             System.out.println("Successfully stored weather warning data at "
                     + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         } catch (IOException e) {
-            throw new SpExceptions.SystemException("Failed to save crawled weather warning data. " + e.getMessage());
+            throw new SpExceptions.SystemException("Failed to save fetched weather warning data. " + e.getMessage());
         }
         List<Warning> warnings;
         try {
@@ -83,7 +99,7 @@ public class ScheduledMetOfficeWarningsCrawler {
             warnings = parseWarningFromGeoJSON(features);
         } catch (Exception e) {
             throw new SpExceptions.SystemException(
-                    "Failed to parse crawled weather warning data at "
+                    "Failed to parse fetched weather warning data at "
                             + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
                             + ". " + e.getMessage());
         }
@@ -91,7 +107,7 @@ public class ScheduledMetOfficeWarningsCrawler {
         List<Warning> warningsToNotify = new ArrayList<>();
 
         int s = 0;
-        for(Warning warning : warnings) {
+        for (Warning warning : warnings) {
             if (!warningMapper.testWarningExists(warning.getId())) {
                 warningsToNotify.add(warning);
                 s++;
@@ -174,16 +190,4 @@ public class ScheduledMetOfficeWarningsCrawler {
         }
         return warnings;
     }
-}
-
-class FeatureCollection {
-    public String type;
-    public List<Feature> features;
-}
-
-class Feature {
-    public String type;
-    public Long id;
-    public Map<String, Object> properties;
-    public Map<String, Object> geometry;
 }
