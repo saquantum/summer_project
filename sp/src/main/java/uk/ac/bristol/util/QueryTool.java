@@ -135,6 +135,9 @@ public final class QueryTool {
         if (isAdmin == null) {
             return false;
         }
+        if (isAdmin) {
+            return true;
+        }
         String id = (String) claims.get("id");
         String assetHolderId = (String) claims.get("assetHolderId");
 

@@ -70,9 +70,6 @@ public class UserIdentificationAdvice {
     @Before("identityUID()")
     public void userIdentityVerificationByUID(JoinPoint jp) {
         Map<String, Object> parameters = getParametersFromJoinPoint(jp);
-        System.out.println(parameters.get("uid"));
-        System.out.println(parameters.get("response"));
-        System.out.println(parameters.get("request"));
 
         if (parameters.get("uid") == null || parameters.get("request") == null || parameters.get("response") == null) {
             throw new IllegalStateException("Missing required parameters for user identity validation with uid.");

@@ -90,7 +90,10 @@ public class ScheduledMetOfficeWarningsCrawler {
             System.out.println("Successfully stored weather warning data at "
                     + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         } catch (IOException e) {
-            throw new SpExceptions.SystemException("Failed to save fetched weather warning data. " + e.getMessage());
+            throw new SpExceptions.SystemException("Failed to save fetched weather warning data at "
+                    + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                    +". "
+                    + e.getMessage());
         }
         List<Warning> warnings;
         try {
@@ -141,7 +144,19 @@ public class ScheduledMetOfficeWarningsCrawler {
                 .header("Accept", "application/json")
                 .build();
 
-        return client.send(request, HttpResponse.BodyHandlers.ofString());
+        // retry at most 3 more times
+        int maxRetries = 3;
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                return client.send(request, HttpResponse.BodyHandlers.ofString());
+            } catch (Exception e) {
+                if (attempt == maxRetries) throw e;
+                System.err.println("Attempt " + attempt + " failed: " + e.getMessage());
+                Thread.sleep(100);
+            }
+        }
+        throw new IOException("All retries failed.");
     }
 
     private void saveWarningData(String GeoJSON) throws IOException {
