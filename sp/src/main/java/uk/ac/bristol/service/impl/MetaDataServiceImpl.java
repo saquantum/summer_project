@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
 @Service
 public class MetaDataServiceImpl implements MetaDataService {
 
@@ -20,21 +19,25 @@ public class MetaDataServiceImpl implements MetaDataService {
         this.metaDataMapper = metaDataMapper;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<Map<String, Object>> getAllMetaData() {
         return metaDataMapper.selectAllMetaData();
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<Map<String, Object>> getMetaDataByTableName(String tableName) {
         return metaDataMapper.selectMetaDataByTableName(tableName);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public Set<String> getAllRegisteredTableNames() {
         return metaDataMapper.selectAllRegisteredTableNames();
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public Set<String> filterRegisteredColumnsInTables(List<String> tableNames, List<String> columnNames) {
         return metaDataMapper.filterRegisteredColumnsInTables(tableNames, columnNames);

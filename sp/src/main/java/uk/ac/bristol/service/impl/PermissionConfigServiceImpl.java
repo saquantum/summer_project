@@ -11,7 +11,6 @@ import uk.ac.bristol.util.QueryTool;
 import java.util.List;
 import java.util.Map;
 
-@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
 @Service
 public class PermissionConfigServiceImpl implements PermissionConfigService {
 
@@ -21,6 +20,7 @@ public class PermissionConfigServiceImpl implements PermissionConfigService {
         this.permissionConfigMapper = permissionConfigMapper;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<PermissionConfig> getAllPermissionConfigs(Map<String, Object> filters,
                                                           List<Map<String, String>> orderList,
@@ -32,6 +32,7 @@ public class PermissionConfigServiceImpl implements PermissionConfigService {
                 limit, offset);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<PermissionConfig> getPermissionConfigByUserId(String userId) {
         List<PermissionConfig> configs = permissionConfigMapper.selectPermissionConfigByUserId(userId);
@@ -41,16 +42,19 @@ public class PermissionConfigServiceImpl implements PermissionConfigService {
         return permissionConfigMapper.selectPermissionConfigByUserId(userId);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<PermissionConfig> getPermissionConfigByAssetHolderId(String assetHolderId) {
-        return  permissionConfigMapper.selectPermissionConfigByAssetHolderId(assetHolderId);
+        return permissionConfigMapper.selectPermissionConfigByAssetHolderId(assetHolderId);
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int insertPermissionConfig(PermissionConfig permissionConfig) {
         return permissionConfigMapper.insertPermissionConfig(permissionConfig);
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int updatePermissionConfigByUserId(PermissionConfig permissionConfig) {
         return permissionConfigMapper.updatePermissionConfigByUserId(permissionConfig);

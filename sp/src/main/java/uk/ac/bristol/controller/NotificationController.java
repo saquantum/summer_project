@@ -21,31 +21,31 @@ public class NotificationController {
         this.userService = userService;
     }
 
-    @PostMapping("/admin/notify/email")
-    public ResponseBody sendEmail(@RequestParam(required = true) Long warningId,
-                                  @RequestParam(required = true) String assetId) {
-        Map<String, Object> notification = contactService.formatNotification(warningId, assetId);
-        if (notification == null) {
-            return new ResponseBody(Code.SUCCESS, null, "Notification is null, skipped sending email");
-        }
-        return contactService.sendEmail(notification);
-    }
+//    @PostMapping("/admin/notify/email")
+//    public ResponseBody sendEmail(@RequestParam(required = true) Long warningId,
+//                                  @RequestParam(required = true) String assetId) {
+//        Map<String, Object> notification = contactService.formatNotification(warningId, assetId);
+//        if (notification == null) {
+//            return new ResponseBody(Code.SUCCESS, null, "Notification is null, skipped sending email");
+//        }
+//        return contactService.sendEmail(notification);
+//    }
 
     @GetMapping("/user/notify/email/unsubscribe")
     public ResponseBody unsubscribe(@RequestParam(required = true) String token) {
         return contactService.unsubscribeEmail(token);
     }
 
-    @PostMapping("/admin/notify/email/test")
-    public ResponseBody test__sendEmailToGivenUser(@RequestParam(required = true) String userId,
-                                                   @RequestParam(required = true) Long warningId,
-                                                   @RequestParam(required = true) String assetId) {
-        User user = userService.getUserByUserId(userId);
-        if(user == null || user.getAssetHolderId() == null || user.getAssetHolderId().isBlank()){
-            return new ResponseBody(Code.BUSINESS_ERR, null, "The user is null or assetHolderId is null");
-        }
-        return contactService.sendEmail(contactService.formatNotificationWithIds(warningId, assetId, user.getAssetHolderId()));
-    }
+//    @PostMapping("/admin/notify/email/test")
+//    public ResponseBody test__sendEmailToGivenUser(@RequestParam(required = true) String userId,
+//                                                   @RequestParam(required = true) Long warningId,
+//                                                   @RequestParam(required = true) String assetId) {
+//        User user = userService.getUserByUserId(userId);
+//        if(user == null || user.getAssetHolderId() == null || user.getAssetHolderId().isBlank()){
+//            return new ResponseBody(Code.BUSINESS_ERR, null, "The user is null or assetHolderId is null");
+//        }
+//        return contactService.sendEmail(contactService.formatNotificationWithIds(warningId, assetId, user.getAssetHolderId()));
+//    }
 
     @PostMapping("/admin/notify/sms")
     public ResponseBody test__sendTestSms(@RequestParam(value = "to") String toPhoneNumber) {

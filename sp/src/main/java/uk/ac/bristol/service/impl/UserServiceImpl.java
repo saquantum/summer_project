@@ -23,7 +23,6 @@ import uk.ac.bristol.util.QueryTool;
 import java.time.Instant;
 import java.util.*;
 
-@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -40,6 +39,7 @@ public class UserServiceImpl implements UserService {
     }
 
     // checks uid and password, returns a jwt token
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public User login(User user) {
         List<User> list = userMapper.selectUsers(
@@ -64,7 +64,7 @@ public class UserServiceImpl implements UserService {
         return u;
     }
 
-    // get all users without asset holder part
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<User> getAllUsers(Map<String, Object> filters,
                                   List<Map<String, String>> orderList,
@@ -76,7 +76,7 @@ public class UserServiceImpl implements UserService {
                 limit, offset);
     }
 
-    // This method returns all users, with asset holder info if possible
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<User> getAllUsersWithAssetHolder(Map<String, Object> filters,
                                                  List<Map<String, String>> orderList,
@@ -88,13 +88,13 @@ public class UserServiceImpl implements UserService {
                 limit, offset);
     }
 
-    // This method only returns users with asset holder info (i.e. excluding admins)
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<User> getAllUnauthorisedUsersWithAssetHolder(Map<String, Object> filters,
                                                              List<Map<String, String>> orderList,
                                                              Integer limit,
                                                              Integer offset) {
-        if(filters == null){
+        if (filters == null) {
             filters = new HashMap<>();
         }
         filters.put("user_is_admin", false);
@@ -104,6 +104,7 @@ public class UserServiceImpl implements UserService {
                 limit, offset);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<Map<String, Object>> getAllAssetHoldersWithAssetIds(Map<String, Object> filters,
                                                                     List<Map<String, String>> orderList,
@@ -129,6 +130,7 @@ public class UserServiceImpl implements UserService {
         return result;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<UserWithExtraColumns> getAllUsersWithAccumulator(String function,
                                                                  String column,
@@ -146,6 +148,7 @@ public class UserServiceImpl implements UserService {
         throw new SpExceptions.GetMethodException("function " + function + " is not supported at current stage");
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public User getUserByAssetHolderId(String aid) {
         List<User> user = userMapper.selectUsers(
@@ -157,6 +160,7 @@ public class UserServiceImpl implements UserService {
         return user.get(0);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public User getUserByUserId(String uid) {
         List<User> user = userMapper.selectUsers(
@@ -168,6 +172,7 @@ public class UserServiceImpl implements UserService {
         return user.get(0);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public boolean testUIDExistence(String id) {
         List<User> list = userMapper.selectUsers(
@@ -176,22 +181,26 @@ public class UserServiceImpl implements UserService {
         return !list.isEmpty();
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public boolean testEmailExistence(String email) {
         Boolean b = assetHolderMapper.testEmailAddressExistence(email);
         return b != null && b;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public Long countUsersWithFilter(Map<String, Object> filters) {
-        return 0L;
+    public int countUsersWithFilter(Map<String, Object> filters) {
+        return userMapper.selectUsers(QueryTool.formatFilters(filters), null, null, null).size();
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public Long countAssetHoldersWithFilter(Map<String, Object> filters) {
-        return 0L;
+    public int countAssetHoldersWithFilter(Map<String, Object> filters) {
+        return assetHolderMapper.selectAssetHolders(QueryTool.formatFilters(filters), null, null, null).size();
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int insertUser(User user) {
         if (user.getAssetHolder() != null) {
@@ -240,6 +249,7 @@ public class UserServiceImpl implements UserService {
         return n4;
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int registerNewUser(User user) {
         if (user.getId() == null) {
@@ -320,6 +330,7 @@ public class UserServiceImpl implements UserService {
         return n4;
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int updateUser(User user) {
 
@@ -336,6 +347,7 @@ public class UserServiceImpl implements UserService {
         return n1;
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int updateAssetHolder(AssetHolder ah) {
         String aid = ah.getId();
@@ -361,11 +373,31 @@ public class UserServiceImpl implements UserService {
         return n3;
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public int updatePasswordByEmail(String email, String password) {
+        List<User> list = userMapper.selectUsersPuttingAssetHoldersTableMain(
+                QueryTool.formatFilters(Map.of("asset_holder_email", email)),
+                null, null, null);
+        if (list.size() != 1) {
+            throw new SpExceptions.GetMethodException("Found" + list.size() + " users by email");
+        }
+
+        User user = list.get(0);
+
+        user.setPasswordPlainText(password);
+        user.setPassword(hashPassword(password));
+
+        return userMapper.updateUserPasswordByUserId(user);
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public int deleteUserByUserIds(String[] ids) {
         return this.deleteUserByUserIds(Arrays.asList(ids));
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public int deleteUserByUserIds(List<String> ids) {
         int sum = 0;
@@ -385,11 +417,13 @@ public class UserServiceImpl implements UserService {
         return sum;
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public int deleteUserByAssetHolderIds(String[] ids) {
         return this.deleteUserByAssetHolderIds(Arrays.asList(ids));
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public int deleteUserByAssetHolderIds(List<String> ids) {
         int sum = 0;
@@ -408,11 +442,13 @@ public class UserServiceImpl implements UserService {
         return sum;
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public int deleteAssetHolderByAssetHolderIds(String[] ids) {
         return this.deleteAssetHolderByAssetHolderIds(Arrays.asList(ids));
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public int deleteAssetHolderByAssetHolderIds(List<String> ids) {
         int n1 = assetHolderMapper.deleteAddressByAssetHolderIds(ids);
@@ -423,23 +459,6 @@ public class UserServiceImpl implements UserService {
         }
         metaDataMapper.increaseTotalCountByTableName("asset_holders", -n1);
         return n1;
-    }
-
-    @Override
-    public int updatePasswordByEmail(String email, String password) {
-        List<User> list = userMapper.selectUsersPuttingAssetHoldersTableMain(
-                QueryTool.formatFilters(Map.of("asset_holder_email", email)),
-                null, null, null);
-        if (list.size() != 1) {
-            throw new SpExceptions.GetMethodException("Found" + list.size() + " users by email");
-        }
-
-        User user = list.get(0);
-
-        user.setPasswordPlainText(password);
-        user.setPassword(hashPassword(password));
-
-        return userMapper.updateUserPasswordByUserId(user);
     }
 
     private String hashPassword(String password) {

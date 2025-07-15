@@ -39,6 +39,8 @@ public interface AssetService {
                                      Integer limit,
                                      Integer offset);
 
+    List<String> selectAssetIdsByWarningId(@Param("id") Long id);
+
     int insertAssetType(AssetType assetType);
 
     int insertAsset(Asset asset);
@@ -54,6 +56,4 @@ public interface AssetService {
     int deleteAssetByIDs(@Param("ids") String[] ids);
 
     int deleteAssetByIDs(@Param("ids") List<String> ids);
-
-    List<String> selectAssetIdsByWarningId(@Param("id") Long id);
 }

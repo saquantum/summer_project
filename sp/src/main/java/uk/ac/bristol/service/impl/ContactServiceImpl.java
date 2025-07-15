@@ -63,7 +63,7 @@ public class ContactServiceImpl implements ContactService {
         this.contactMapper = contactMapper;
     }
 
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public Map<String, Object> formatNotificationWithIds(Long warningId, String assetId, String ownerId) {
         Boolean test = warningMapper.testIfGivenAssetIntersectsWithWarning(assetId, warningId);
@@ -112,7 +112,7 @@ public class ContactServiceImpl implements ContactService {
                 "channel", ""));
     }
 
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public Map<String, Object> formatNotification(Long warningId, String assetId) {
         String assetOwnerId = assetMapper.selectAssets(
@@ -121,7 +121,7 @@ public class ContactServiceImpl implements ContactService {
         return formatNotificationWithIds(warningId, assetId, assetOwnerId);
     }
 
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public void sendAllEmails(Warning warning, List<String> assetIds) {
         for (String assetId : assetIds) {
@@ -131,7 +131,6 @@ public class ContactServiceImpl implements ContactService {
         }
     }
 
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public ResponseBody sendEmail(Map<String, Object> notification) {
         if (notification == null) {
@@ -205,7 +204,7 @@ public class ContactServiceImpl implements ContactService {
         }
     }
 
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public ResponseBody unsubscribeEmail(String token) {
         Claims claims = JwtUtil.parseJWT(token);
@@ -221,6 +220,7 @@ public class ContactServiceImpl implements ContactService {
         }
 
         ah.getContactPreferences().put("email", false);
+        userService.updateAssetHolder(ah);
         return new ResponseBody(Code.DELETE_OK, null, "Successfully unsubscribed email for user " + uid);
     }
 
@@ -231,6 +231,7 @@ public class ContactServiceImpl implements ContactService {
     @Value("${twilio.from-number}")
     private String fromPhoneNumber;
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public void sendSms(String toPhoneNumber, String messageBody) {
         Twilio.init(twilioAccountSid, twilioAuthToken);
@@ -242,7 +243,7 @@ public class ContactServiceImpl implements ContactService {
         System.out.println("Message has been sent，SID: " + message.getSid());
     }
 
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public ResponseBody generateCode(String email) {
         if (email == null) {
@@ -274,7 +275,7 @@ public class ContactServiceImpl implements ContactService {
         mailSender.send(message);
     }
 
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public ResponseBody validateCode(String email, String code) {
         String key = prefix + email;
@@ -296,7 +297,7 @@ public class ContactServiceImpl implements ContactService {
         return new ResponseBody(Code.SUCCESS, null, "Verification code has been validated!");
     }
 
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public ResponseBody registerGenerateCode(String email) {
         if (email == null) {

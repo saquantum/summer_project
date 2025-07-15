@@ -21,7 +21,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
 @Service
 public class AssetServiceImpl implements AssetService {
 
@@ -39,6 +38,7 @@ public class AssetServiceImpl implements AssetService {
         this.contactService = contactService;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<Asset> getAllAssets(Map<String, Object> filters,
                                     List<Map<String, String>> orderList,
@@ -50,6 +50,7 @@ public class AssetServiceImpl implements AssetService {
                 limit, offset);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<AssetWithWeatherWarnings> getAllAssetsWithWarnings(Map<String, Object> filters,
                                                                    List<Map<String, String>> orderList,
@@ -69,6 +70,7 @@ public class AssetServiceImpl implements AssetService {
                 limit, offset);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<Asset> getAssetById(String id) {
         return assetMapper.selectAssets(
@@ -76,6 +78,7 @@ public class AssetServiceImpl implements AssetService {
                 null, null, null);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<AssetWithWeatherWarnings> getAssetWithWarningsById(String id) {
         return assetMapper.selectAssetsWithWarnings(
@@ -83,6 +86,7 @@ public class AssetServiceImpl implements AssetService {
                 null, null, null);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<Asset> getAllAssetsByAssetHolderId(String ownerId,
                                                    List<Map<String, String>> orderList,
@@ -94,6 +98,7 @@ public class AssetServiceImpl implements AssetService {
                 limit, offset);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<AssetWithWeatherWarnings> getAllAssetsWithWarningsByAssetHolderId(String ownerId,
                                                                                   List<Map<String, String>> orderList,
@@ -105,6 +110,7 @@ public class AssetServiceImpl implements AssetService {
                 limit, offset);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<AssetType> getAllAssetTypes(Map<String, Object> filters,
                                             List<Map<String, String>> orderList,
@@ -116,6 +122,18 @@ public class AssetServiceImpl implements AssetService {
                 limit, offset);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public List<String> selectAssetIdsByWarningId(@Param("id") Long id) {
+        return assetMapper.selectAssetsWithWarnings(
+                        QueryTool.formatFilters(Map.of("warning_id", id)),
+                        null, null, null)
+                .stream()
+                .map(aww -> aww.getAsset().getId())
+                .toList();
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int insertAssetType(AssetType assetType) {
         int n;
@@ -128,8 +146,8 @@ public class AssetServiceImpl implements AssetService {
         return n;
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
-    @Transactional
     public int insertAsset(Asset asset) {
         int n;
         asset.setLastModified(Instant.now());
@@ -153,11 +171,13 @@ public class AssetServiceImpl implements AssetService {
         return n;
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int updateAssetType(AssetType assetType) {
         return assetMapper.updateAssetType(assetType);
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int updateAsset(Asset asset) {
         String ownerId = asset.getOwnerId();
@@ -198,6 +218,7 @@ public class AssetServiceImpl implements AssetService {
 
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public int deleteAssetTypeByIDs(String[] ids) {
         int n = assetMapper.deleteAssetTypeByIDs(ids);
@@ -205,6 +226,7 @@ public class AssetServiceImpl implements AssetService {
         return n;
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public int deleteAssetTypeByIDs(List<String> ids) {
         int n = assetMapper.deleteAssetTypeByIDs(ids);
@@ -212,6 +234,7 @@ public class AssetServiceImpl implements AssetService {
         return n;
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public int deleteAssetByIDs(String[] ids) {
         int n = assetMapper.deleteAssetByIDs(ids);
@@ -219,20 +242,11 @@ public class AssetServiceImpl implements AssetService {
         return n;
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public int deleteAssetByIDs(List<String> ids) {
         int n = assetMapper.deleteAssetByIDs(ids);
         metaDataMapper.increaseTotalCountByTableName("assets", -n);
         return n;
-    }
-
-    @Override
-    public List<String> selectAssetIdsByWarningId(@Param("id") Long id) {
-        return assetMapper.selectAssetsWithWarnings(
-                        QueryTool.formatFilters(Map.of("warning_id", id)),
-                        null, null, null)
-                .stream()
-                .map(aww -> aww.getAsset().getId())
-                .toList();
     }
 }

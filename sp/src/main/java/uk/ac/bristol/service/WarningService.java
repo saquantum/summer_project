@@ -20,6 +20,10 @@ public interface WarningService {
 
     List<Warning> getWarningById(Long id);
 
+    boolean testWarningIdExists(Long warningId);
+
+    List<Long> selectWarningIdsByAssetId(String id);
+
     int insertWarning(Warning warning);
 
     int insertWarningsList(List<Warning> warnings);
@@ -63,8 +67,4 @@ public interface WarningService {
     int deleteOutDatedInboxMessages();
 
     int deleteOutDatedInboxMessagesByUserId(String userId);
-
-    boolean testWarningIdExists(Long warningId);
-
-    List<Long> selectWarningIdsByAssetId(String id);
 }

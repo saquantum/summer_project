@@ -3,7 +3,9 @@ package uk.ac.bristol.service.impl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import uk.ac.bristol.dao.*;
+import uk.ac.bristol.dao.ContactMapper;
+import uk.ac.bristol.dao.MetaDataMapper;
+import uk.ac.bristol.dao.WarningMapper;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.Template;
 import uk.ac.bristol.pojo.Warning;
@@ -13,7 +15,6 @@ import uk.ac.bristol.util.QueryTool;
 import java.util.List;
 import java.util.Map;
 
-@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
 @Service
 public class WarningServiceImpl implements WarningService {
 
@@ -27,6 +28,7 @@ public class WarningServiceImpl implements WarningService {
         this.contactMapper = contactMapper;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<Warning> getAllWarnings(Map<String, Object> filters,
                                         List<Map<String, String>> orderList,
@@ -38,6 +40,7 @@ public class WarningServiceImpl implements WarningService {
                 limit, offset);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<Warning> getAllWarningsIncludingOutdated(Map<String, Object> filters,
                                                          List<Map<String, String>> orderList,
@@ -49,11 +52,25 @@ public class WarningServiceImpl implements WarningService {
                 limit, offset);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<Warning> getWarningById(Long id) {
         return warningMapper.selectWarningById(id);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public boolean testWarningIdExists(Long warningId) {
+        return warningMapper.testWarningExists(warningId);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public List<Long> selectWarningIdsByAssetId(String id) {
+        return warningMapper.selectWarningIdsByAssetId(id);
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int insertWarning(Warning warning) {
         int n = warningMapper.insertWarning(warning);
@@ -61,6 +78,7 @@ public class WarningServiceImpl implements WarningService {
         return n;
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int insertWarningsList(List<Warning> warnings) {
         if (warnings.isEmpty()) return 0;
@@ -81,16 +99,19 @@ public class WarningServiceImpl implements WarningService {
         return sum;
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int updateWarning(Warning warning) {
         return warningMapper.updateWarning(warning);
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public int deleteWarningByIDs(Long[] ids) {
         return warningMapper.deleteWarningByIDs(ids);
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public int deleteWarningByIDs(List<Long> ids) {
         int n = warningMapper.deleteWarningByIDs(ids);
@@ -98,6 +119,7 @@ public class WarningServiceImpl implements WarningService {
         return n;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<Template> getAllNotificationTemplates(Map<String, Object> filters,
                                                       List<Map<String, String>> orderList,
@@ -109,16 +131,19 @@ public class WarningServiceImpl implements WarningService {
                 limit, offset);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<Template> getNotificationTemplateByTypes(Template template) {
         return contactMapper.selectNotificationTemplateByTypes(template);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<Template> getNotificationTemplateById(Long id) {
         return contactMapper.selectNotificationTemplateById(id);
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int insertNotificationTemplate(Template templates) {
         int n = contactMapper.insertNotificationTemplate(templates);
@@ -126,16 +151,19 @@ public class WarningServiceImpl implements WarningService {
         return n;
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int updateNotificationTemplateMessageById(Template template) {
         return contactMapper.updateNotificationTemplateMessageById(template);
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int updateNotificationTemplateMessageByTypes(Template template) {
         return contactMapper.updateNotificationTemplateMessageByTypes(template);
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public int deleteNotificationTemplateByIds(Long[] ids) {
         int n = contactMapper.deleteNotificationTemplateByIds(ids);
@@ -143,6 +171,7 @@ public class WarningServiceImpl implements WarningService {
         return n;
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public int deleteNotificationTemplateByIds(List<Long> ids) {
         int n = contactMapper.deleteNotificationTemplateByIds(ids);
@@ -150,6 +179,7 @@ public class WarningServiceImpl implements WarningService {
         return n;
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public int deleteNotificationTemplateByType(Template template) {
         int n = contactMapper.deleteNotificationTemplateByType(template);
@@ -157,43 +187,39 @@ public class WarningServiceImpl implements WarningService {
         return n;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public Map<String, Object> getUserInboxMessagesByUserId(String userId) {
         return contactMapper.selectUserInboxMessagesByUserId(userId);
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int insertInboxMessageToUser(Map<String, Object> message) {
         return contactMapper.insertInboxMessageToUser(message);
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int updateInboxMessageByUserId(Map<String, Object> message) {
         return contactMapper.updateInboxMessageByUserId(message);
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public int deleteInboxMessageByFilter(Map<String, Object> filters) {
         return contactMapper.deleteInboxMessageByFilter(QueryTool.formatFilters(filters));
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public int deleteOutDatedInboxMessages() {
         return contactMapper.deleteOutDatedInboxMessages();
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public int deleteOutDatedInboxMessagesByUserId(String userId) {
         return contactMapper.deleteOutDatedInboxMessagesByUserId(userId);
-    }
-
-    @Override
-    public boolean testWarningIdExists(Long warningId) {
-        return warningMapper.testWarningExists(warningId);
-    }
-
-    @Override
-    public List<Long> selectWarningIdsByAssetId(String id){
-        return warningMapper.selectWarningIdsByAssetId(id);
     }
 }

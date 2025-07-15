@@ -46,9 +46,9 @@ public interface UserService {
 
     boolean testEmailExistence(String email);
 
-    Long countUsersWithFilter(Map<String, Object> filters);
+    int countUsersWithFilter(Map<String, Object> filters);
 
-    Long countAssetHoldersWithFilter(Map<String, Object> filters);
+    int countAssetHoldersWithFilter(Map<String, Object> filters);
 
     int insertUser(User user);
 
@@ -57,6 +57,8 @@ public interface UserService {
     int updateUser(User user);
 
     int updateAssetHolder(AssetHolder assetHolder);
+
+    int updatePasswordByEmail(String email, String password);
 
     int deleteUserByUserIds(String[] ids);
 
@@ -69,6 +71,4 @@ public interface UserService {
     int deleteAssetHolderByAssetHolderIds(String[] ids);
 
     int deleteAssetHolderByAssetHolderIds(List<String> ids);
-
-    int updatePasswordByEmail(String email, String password);
 }
