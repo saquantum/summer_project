@@ -1,5 +1,7 @@
 package uk.ac.bristol.service.impl;
 
+import com.twilio.Twilio;
+import com.twilio.rest.api.v2010.account.Message;
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -218,10 +220,23 @@ public class ContactServiceImpl implements ContactService {
         return new ResponseBody(Code.DELETE_OK, null, "Successfully unsubscribed email for user " + uid);
     }
 
-//    @Override
-//    public ResponseBody sendDiscordToAddress(String whatsappMessage, String url) {
-//
-//    }
+    @Value("${twilio.account-sid}")
+    private String twilioAccountSid;
+    @Value("${twilio.auth-token}")
+    private String twilioAuthToken;
+    @Value("${twilio.from-number}")
+    private String fromPhoneNumber;
+
+    @Override
+    public void sendSms(String toPhoneNumber, String messageBody) {
+        Twilio.init(twilioAccountSid, twilioAuthToken);
+        Message message = Message.creator(
+                new com.twilio.type.PhoneNumber(toPhoneNumber),
+                new com.twilio.type.PhoneNumber(fromPhoneNumber),
+                messageBody
+        ).create();
+        System.out.println("Message has been sent，SID: " + message.getSid());
+    }
 
     @Override
     public ResponseBody generateCode(String email) {

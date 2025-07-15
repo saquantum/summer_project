@@ -12,6 +12,7 @@ import java.util.Map;
 @CrossOrigin
 public class NotificationController {
 
+
     private final ContactService contactService;
     private final UserService userService;
 
@@ -44,6 +45,12 @@ public class NotificationController {
             return new ResponseBody(Code.BUSINESS_ERR, null, "The user is null or assetHolderId is null");
         }
         return contactService.sendEmail(contactService.formatNotificationWithIds(warningId, assetId, user.getAssetHolderId()));
+    }
+
+    @PostMapping("/admin/notify/sms")
+    public ResponseBody test__sendTestSms(@RequestParam(value = "to") String toPhoneNumber) {
+        contactService.sendSms(toPhoneNumber, "[System Notice] Your verification code is 123456. Please do not share it with others.");
+        return new ResponseBody(Code.SUCCESS, null, "The SMS has been sent.");
     }
 
     /**

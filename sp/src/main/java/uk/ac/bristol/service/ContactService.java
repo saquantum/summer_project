@@ -18,7 +18,7 @@ public interface ContactService {
 
     ResponseBody unsubscribeEmail(String token);
 
-//    ResponseBody sendDiscordToAddress(String whatsappMessage, String url);
+    void sendSms(String toPhoneNumber, String messageBody);
 
     ResponseBody generateCode(String email);
 
