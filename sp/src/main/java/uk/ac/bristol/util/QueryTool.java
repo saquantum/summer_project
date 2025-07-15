@@ -91,6 +91,10 @@ public final class QueryTool {
                     values.add(formatFilterValue(o));
                 }
                 result.add(column + " in (" + String.join(",", values) + ")");
+            } else if ("notNull".equalsIgnoreCase(operator)) {
+                result.add(column + " is not null");
+            } else if ("isNull".equalsIgnoreCase(operator)) {
+                result.add(column + " is null");
             } else {
                 throw new IllegalArgumentException("Only 'like', 'range' and 'in' are supported operators");
             }

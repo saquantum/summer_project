@@ -41,6 +41,8 @@ public interface AssetService {
 
     List<String> selectAssetIdsByWarningId(@Param("id") Long id);
 
+    int countAssetsWithFilter(Map<String, Object> filters);
+
     int insertAssetType(AssetType assetType);
 
     int insertAsset(Asset asset);

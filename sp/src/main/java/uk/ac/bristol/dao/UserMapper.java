@@ -35,6 +35,8 @@ public interface UserMapper {
 
     String selectPasswordByUserId(@Param("id") String id);
 
+    int countUsers(@Param("filterString") String filterString);
+
     int insertUser(User user);
 
     int updateUserByUserId(User user);

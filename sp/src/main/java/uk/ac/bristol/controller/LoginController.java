@@ -34,6 +34,11 @@ public class LoginController {
         return new ResponseBody(Code.SUCCESS, u);
     }
 
+    @PostMapping("/register/email/code")
+    public ResponseBody registerSendEmailWithCode(@RequestBody Map<String, String> body) {
+        return contactService.registerGenerateCode(body.get("email"));
+    }
+
     @PostMapping("/register")
     public ResponseBody register(@RequestBody Map<String, String> body) {
         String id = body.get("id");
@@ -107,10 +112,5 @@ public class LoginController {
             return new ResponseBody(Code.SELECT_OK, null, "The email address already exists.");
         }
         return new ResponseBody(Code.SELECT_ERR, null, "The email address does not exist.");
-    }
-
-    @PostMapping("/register/email/code")
-    public ResponseBody registerSendEmailWithCode(@RequestBody Map<String, String> body) {
-        return contactService.registerGenerateCode(body.get("email"));
     }
 }

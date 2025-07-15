@@ -121,7 +121,7 @@
                 inbox_message = #{message}
             </if>
         </set>
-        where inbox_user_id = #{userId}
+        where inbox_row_id = #{rowId}
     </update>
 
     <delete id="deleteInboxMessageByFilter">

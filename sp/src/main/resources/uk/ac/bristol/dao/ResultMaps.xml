@@ -120,7 +120,8 @@
     </resultMap>
 
     <resultMap id="InboxMessage" type="java.util.Map">
-        <id property="userId" column="inbox_user_id"/>
+        <id property="rowId" column="inbox_row_id"/>
+        <result property="userId" column="inbox_user_id"/>
         <result property="hasRead" column="inbox_has_read"/>
         <result property="issuedDate" column="inbox_issued_date"/>
         <result property="validUntil" column="inbox_valid_until"/>

@@ -48,8 +48,6 @@ public interface UserService {
 
     int countUsersWithFilter(Map<String, Object> filters);
 
-    int countAssetHoldersWithFilter(Map<String, Object> filters);
-
     int insertUser(User user);
 
     void registerNewUser(User user);

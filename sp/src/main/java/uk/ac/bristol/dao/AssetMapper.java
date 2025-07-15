@@ -27,6 +27,8 @@ public interface AssetMapper {
                                                                                     @Param("limit") Integer limit,
                                                                                     @Param("offset") Integer offset);
 
+    int countAssetsWithWarnings(@Param("filterString") String filterString);
+
     List<AssetType> selectAssetTypes(@Param("filterString") String filterString,
                                      @Param("orderList") List<Map<String, String>> orderList,
                                      @Param("limit") Integer limit,

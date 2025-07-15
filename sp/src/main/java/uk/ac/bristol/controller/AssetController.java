@@ -9,14 +9,12 @@ import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
 import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.UserService;
-import uk.ac.bristol.service.WarningService;
 import uk.ac.bristol.util.QueryTool;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api")
@@ -24,12 +22,10 @@ import java.util.Objects;
 public class AssetController {
     private final UserService userService;
     private final AssetService assetService;
-    private final WarningService warningService;
 
-    public AssetController(UserService userService, AssetService assetService, WarningService warningService) {
+    public AssetController(UserService userService, AssetService assetService) {
         this.userService = userService;
         this.assetService = assetService;
-        this.warningService = warningService;
     }
 
     @GetMapping("/user/uid/{uid}/asset")
@@ -80,16 +76,16 @@ public class AssetController {
      */
     @GetMapping("/user/uid/{uid}/asset/{assetId}")
     public ResponseBody userGetAssetByAssetWithUID(HttpServletResponse response,
-                                                     HttpServletRequest request,
-                                                     @UserUID @PathVariable String uid,
-                                                     @UserAssetId @PathVariable String assetId) {
+                                                   HttpServletRequest request,
+                                                   @UserUID @PathVariable String uid,
+                                                   @UserAssetId @PathVariable String assetId) {
         return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
     }
 
     @GetMapping("/user/aid/{aid}/asset/{assetId}")
     public ResponseBody userGetAssetByAssetWithAID(HttpServletResponse response,
-                                                     HttpServletRequest request,
-                                                     @UserAID @PathVariable String aid,
+                                                   HttpServletRequest request,
+                                                   @UserAID @PathVariable String aid,
                                                    @UserAssetId @PathVariable String assetId) {
         return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
     }
@@ -124,6 +120,37 @@ public class AssetController {
             return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset), "The asset is successfully inserted but without polygon since the user is not allowed to do so.");
         }
         return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset));
+    }
+
+    @GetMapping("/admin/asset")
+    public ResponseBody getAllAssetsWithWarnings(@RequestParam(required = false) List<String> orderList,
+                                                 @RequestParam(required = false) Integer limit,
+                                                 @RequestParam(required = false) Integer offset) {
+        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetsWithWarnings(null, QueryTool.getOrderList(orderList), limit, offset));
+    }
+
+    @PostMapping("/admin/asset/search")
+    public ResponseBody getAllAssetsWithWarnings(@RequestBody FilterDTO filter) {
+        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
+            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
+        }
+
+        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetsWithWarnings(
+                filter.getFilters(),
+                QueryTool.getOrderList(filter.getOrderList()),
+                filter.getLimit(),
+                filter.getOffset()
+        ));
+    }
+
+    @GetMapping("/admin/asset/{assetId}")
+    public ResponseBody getAssetById(@PathVariable String assetId) {
+        return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
+    }
+
+    @GetMapping("/admin/asset/count")
+    public ResponseBody countAssetByFilter(@RequestBody FilterDTO filter) {
+        return new ResponseBody(Code.SELECT_OK, assetService.countAssetsWithFilter(filter.getFilters()));
     }
 
     @PostMapping("/admin/asset")
@@ -212,14 +239,14 @@ public class AssetController {
     /* ---------------- Asset Types ---------------- */
 
     @GetMapping("/asset/type")
-    public ResponseBody getAllAssetsTypes(@RequestParam(required = false) List<String> orderList,
-                                          @RequestParam(required = false) Integer limit,
-                                          @RequestParam(required = false) Integer offset) {
+    public ResponseBody getAllAssetTypes(@RequestParam(required = false) List<String> orderList,
+                                         @RequestParam(required = false) Integer limit,
+                                         @RequestParam(required = false) Integer offset) {
         return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetTypes(null, QueryTool.getOrderList(orderList), limit, offset));
     }
 
     @PostMapping("/asset/type/search")
-    public ResponseBody getAllAssetsTypes(@RequestBody FilterDTO filter) {
+    public ResponseBody getAllAssetTypes(@RequestBody FilterDTO filter) {
         if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
             throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
         }
@@ -247,62 +274,5 @@ public class AssetController {
     public ResponseBody deleteAssetTypesByIds(@RequestBody Map<String, Object> body) {
         List<String> ids = (List<String>) body.get("ids");
         return new ResponseBody(Code.DELETE_OK, assetService.deleteAssetTypeByIDs(ids));
-    }
-
-    /* ---------------- Warnings ---------------- */
-
-    @GetMapping("/warning")
-    public ResponseBody getAllLiveWarnings(@RequestParam(required = false) List<String> orderList,
-                                           @RequestParam(required = false) Integer limit,
-                                           @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarnings(null, QueryTool.getOrderList(orderList), limit, offset));
-    }
-
-    @PostMapping("/warning/search")
-    public ResponseBody getAllLiveWarnings(@RequestBody FilterDTO filter) {
-        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
-            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
-        }
-
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarnings(
-                filter.getFilters(),
-                QueryTool.getOrderList(filter.getOrderList()),
-                filter.getLimit(),
-                filter.getOffset()
-        ));
-    }
-
-    @GetMapping("/admin/warning/all")
-    public ResponseBody getAllWarningsIncludingOutdated(@RequestParam(required = false) List<String> orderList,
-                                                        @RequestParam(required = false) Integer limit,
-                                                        @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarningsIncludingOutdated(null, QueryTool.getOrderList(orderList), limit, offset));
-    }
-
-    @PostMapping("/admin/warning/all/search")
-    public ResponseBody getAllWarningsIncludingOutdated(@RequestBody FilterDTO filter) {
-        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
-            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
-        }
-
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarningsIncludingOutdated(
-                filter.getFilters(),
-                QueryTool.getOrderList(filter.getOrderList()),
-                filter.getLimit(),
-                filter.getOffset()
-        ));
-    }
-
-    @GetMapping("/warning/{id}")
-    public ResponseBody getWarningById(@PathVariable Long id) {
-        return new ResponseBody(Code.SELECT_OK, warningService.getWarningById(id));
-    }
-
-    // NOTICE: no post or put mapping for warnings, since they should be handled by the crawler.
-
-    @DeleteMapping("/admin/warning")
-    public ResponseBody deleteWarningsByIds(@RequestBody Map<String, Object> body) {
-        List<Long> ids = (List<Long>) body.get("ids");
-        return new ResponseBody(Code.DELETE_OK, warningService.deleteWarningByIDs(ids));
     }
 }

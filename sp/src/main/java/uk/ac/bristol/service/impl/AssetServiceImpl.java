@@ -133,6 +133,12 @@ public class AssetServiceImpl implements AssetService {
                 .toList();
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public int countAssetsWithFilter(Map<String, Object> filters) {
+        return assetMapper.countAssetsWithWarnings(QueryTool.formatFilters(filters));
+    }
+
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int insertAssetType(AssetType assetType) {
