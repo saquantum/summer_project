@@ -9,7 +9,6 @@ import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
 import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.UserService;
-import uk.ac.bristol.service.WarningService;
 import uk.ac.bristol.util.QueryTool;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,12 +22,10 @@ import java.util.Map;
 public class AssetController {
     private final UserService userService;
     private final AssetService assetService;
-    private final WarningService warningService;
 
-    public AssetController(UserService userService, AssetService assetService, WarningService warningService) {
+    public AssetController(UserService userService, AssetService assetService) {
         this.userService = userService;
         this.assetService = assetService;
-        this.warningService = warningService;
     }
 
     @GetMapping("/user/uid/{uid}/asset")
@@ -123,6 +120,32 @@ public class AssetController {
             return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset), "The asset is successfully inserted but without polygon since the user is not allowed to do so.");
         }
         return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset));
+    }
+
+    @GetMapping("/admin/asset")
+    public ResponseBody getAllAssetsWithWarnings(@RequestParam(required = false) List<String> orderList,
+                                                 @RequestParam(required = false) Integer limit,
+                                                 @RequestParam(required = false) Integer offset) {
+        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetsWithWarnings(null, QueryTool.getOrderList(orderList), limit, offset));
+    }
+
+    @PostMapping("/admin/asset/search")
+    public ResponseBody getAllAssetsWithWarnings(@RequestBody FilterDTO filter) {
+        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
+            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
+        }
+
+        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetsWithWarnings(
+                filter.getFilters(),
+                QueryTool.getOrderList(filter.getOrderList()),
+                filter.getLimit(),
+                filter.getOffset()
+        ));
+    }
+
+    @GetMapping("/admin/asset/{assetId}")
+    public ResponseBody getAssetById(@PathVariable String assetId) {
+        return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
     }
 
     @GetMapping("/admin/asset/count")
@@ -251,62 +274,5 @@ public class AssetController {
     public ResponseBody deleteAssetTypesByIds(@RequestBody Map<String, Object> body) {
         List<String> ids = (List<String>) body.get("ids");
         return new ResponseBody(Code.DELETE_OK, assetService.deleteAssetTypeByIDs(ids));
-    }
-
-    /* ---------------- Warnings ---------------- */
-
-    @GetMapping("/warning")
-    public ResponseBody getAllLiveWarnings(@RequestParam(required = false) List<String> orderList,
-                                           @RequestParam(required = false) Integer limit,
-                                           @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarnings(null, QueryTool.getOrderList(orderList), limit, offset));
-    }
-
-    @PostMapping("/warning/search")
-    public ResponseBody getAllLiveWarnings(@RequestBody FilterDTO filter) {
-        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
-            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
-        }
-
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarnings(
-                filter.getFilters(),
-                QueryTool.getOrderList(filter.getOrderList()),
-                filter.getLimit(),
-                filter.getOffset()
-        ));
-    }
-
-    @GetMapping("/admin/warning/all")
-    public ResponseBody getAllWarningsIncludingOutdated(@RequestParam(required = false) List<String> orderList,
-                                                        @RequestParam(required = false) Integer limit,
-                                                        @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarningsIncludingOutdated(null, QueryTool.getOrderList(orderList), limit, offset));
-    }
-
-    @PostMapping("/admin/warning/all/search")
-    public ResponseBody getAllWarningsIncludingOutdated(@RequestBody FilterDTO filter) {
-        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
-            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
-        }
-
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarningsIncludingOutdated(
-                filter.getFilters(),
-                QueryTool.getOrderList(filter.getOrderList()),
-                filter.getLimit(),
-                filter.getOffset()
-        ));
-    }
-
-    @GetMapping("/warning/{id}")
-    public ResponseBody getWarningById(@PathVariable Long id) {
-        return new ResponseBody(Code.SELECT_OK, warningService.getWarningById(id));
-    }
-
-    // NOTICE: no post or put mapping for warnings, since they should be handled by the crawler.
-
-    @DeleteMapping("/admin/warning")
-    public ResponseBody deleteWarningsByIds(@RequestBody Map<String, Object> body) {
-        List<Long> ids = (List<Long>) body.get("ids");
-        return new ResponseBody(Code.DELETE_OK, warningService.deleteWarningByIDs(ids));
     }
 }
