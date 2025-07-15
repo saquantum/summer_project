@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { adminDeleteUserService } from '@/api/admin'
+import { adminDeleteTemplateByIdService } from '@/api/admin'
 import { useRouter } from 'vue-router'
 import { useTemplateStore } from '@/stores'
 
@@ -29,7 +29,7 @@ const handleEdit = (row: TableRow) => {
 const handleDelete = async (row: TableRow) => {
   console.log(row)
   try {
-    await adminDeleteUserService(deleteId.value)
+    await adminDeleteTemplateByIdService(deleteId.value)
     fetchTableData()
   } catch (e) {
     console.error(e)
@@ -78,11 +78,11 @@ const handleSortChange = (sort: { prop: string; order: string | null }) => {
 
 // delete confirm
 const dialogVisible = ref(false)
-const deleteId = ref<string[]>([])
+const deleteId = ref<number[]>([])
 
 const triggerDelete = (row: TableRow) => {
   dialogVisible.value = true
-  deleteId.value.push(row.uid)
+  deleteId.value.push(row.id)
 }
 
 const currentPage = ref(1)

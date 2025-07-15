@@ -21,7 +21,7 @@ const router = createRouter({
       children: [
         {
           path: 'assets',
-          component: () => import('@/views/myassets/AssetBoard.vue')
+          component: () => import('@/views/myassets/AssetPanel.vue')
         },
         {
           path: 'user/profile',

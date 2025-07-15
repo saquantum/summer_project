@@ -58,6 +58,7 @@ declare module 'vue' {
     LoginForm: typeof import('./src/components/LoginForm.vue')['default']
     MapCard: typeof import('./src/components/MapCard.vue')['default']
     MobileMenu: typeof import('./src/components/MobileMenu.vue')['default']
+    MonacoEditor: typeof import('./src/components/MonacoEditor.vue')['default']
     PermissionIndicator: typeof import('./src/components/PermissionIndicator.vue')['default']
     RecoverForm: typeof import('./src/components/RecoverForm.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
