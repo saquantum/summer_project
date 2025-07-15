@@ -100,6 +100,17 @@
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
+    <select id="countAssetsWithWarnings" resultType="int">
+        select count(*)
+        from assets
+                 left join weather_warnings
+                           on ST_Intersects(asset_location, warning_area) and
+                              now() between warning_valid_from and warning_valid_to
+                 left join asset_types
+                           on asset_type_type_id = asset_type_id
+        <include refid="ResultMaps.filtering"/>
+    </select>
+
     <select id="selectAssetTypes" resultMap="ResultMaps.AssetTypeMap">
         select *
         from asset_types

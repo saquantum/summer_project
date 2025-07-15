@@ -266,6 +266,7 @@
     <update id="createUserInboxes">
         create table if not exists inboxes
         (
+            inbox_row_id      bigserial primary key,
             inbox_user_id     varchar(100) not null references users (user_id) on delete cascade,
             inbox_has_read    boolean      not null,
             inbox_issued_date timestamptz  not null,

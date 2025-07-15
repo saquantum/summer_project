@@ -35,11 +35,29 @@ public class NotificationController {
         return new ResponseBody(Code.SELECT_OK, warningService.getUserInboxMessagesByUserId(uid));
     }
 
-    @GetMapping("/user/uid/{aid}/inbox")
+    @GetMapping("/user/aid/{aid}/inbox")
     public ResponseBody userGetMyInboxMessagesByAID(HttpServletResponse response,
                                                     HttpServletRequest request,
                                                     @UserAID @PathVariable String aid) {
         return new ResponseBody(Code.SELECT_OK, warningService.getUserInboxMessagesByUserId(aid));
+    }
+
+    @PutMapping("/user/uid/{uid}/inbox/{rowId}")
+    public ResponseBody userSetInboxMessageReadByRowIdWithUID(HttpServletResponse response,
+                                                              HttpServletRequest request,
+                                                              @UserUID @PathVariable String uid,
+                                                              @PathVariable long rowId) {
+        warningService.updateInboxMessageByUserId(Map.of("rowId", rowId, "hasRead", true));
+        return new ResponseBody(Code.UPDATE_OK, null);
+    }
+
+    @PutMapping("/user/aid/{aid}/inbox/{rowId}")
+    public ResponseBody userSetInboxMessageReadByRowIdWithAID(HttpServletResponse response,
+                                                              HttpServletRequest request,
+                                                              @UserAID @PathVariable String aid,
+                                                              @PathVariable long rowId) {
+        warningService.updateInboxMessageByUserId(Map.of("rowId", rowId, "hasRead", true));
+        return new ResponseBody(Code.UPDATE_OK, null);
     }
 
     @PostMapping("/admin/notify/inbox")

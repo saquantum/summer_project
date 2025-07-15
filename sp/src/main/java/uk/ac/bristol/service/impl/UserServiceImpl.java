@@ -187,13 +187,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public int countUsersWithFilter(Map<String, Object> filters) {
-        return userMapper.selectUsers(QueryTool.formatFilters(filters), null, null, null).size();
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-    @Override
-    public int countAssetHoldersWithFilter(Map<String, Object> filters) {
-        return assetHolderMapper.selectAssetHolders(QueryTool.formatFilters(filters), null, null, null).size();
+        return userMapper.countUsers(QueryTool.formatFilters(filters));
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)

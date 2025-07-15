@@ -129,6 +129,11 @@ public class AdminController {
         ));
     }
 
+    @GetMapping("/user/count")
+    public ResponseBody countUsersByFilter(@RequestBody FilterDTO filter) {
+        return new ResponseBody(Code.SELECT_OK, userService.countUsersWithFilter(filter.getFilters()));
+    }
+
     @GetMapping("/user/uid/{id}")
     public ResponseBody getUserByUserId(@PathVariable String id) {
         User user = userService.getUserByUserId(id);

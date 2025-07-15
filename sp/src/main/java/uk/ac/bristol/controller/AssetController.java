@@ -16,7 +16,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api")
@@ -80,16 +79,16 @@ public class AssetController {
      */
     @GetMapping("/user/uid/{uid}/asset/{assetId}")
     public ResponseBody userGetAssetByAssetWithUID(HttpServletResponse response,
-                                                     HttpServletRequest request,
-                                                     @UserUID @PathVariable String uid,
-                                                     @UserAssetId @PathVariable String assetId) {
+                                                   HttpServletRequest request,
+                                                   @UserUID @PathVariable String uid,
+                                                   @UserAssetId @PathVariable String assetId) {
         return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
     }
 
     @GetMapping("/user/aid/{aid}/asset/{assetId}")
     public ResponseBody userGetAssetByAssetWithAID(HttpServletResponse response,
-                                                     HttpServletRequest request,
-                                                     @UserAID @PathVariable String aid,
+                                                   HttpServletRequest request,
+                                                   @UserAID @PathVariable String aid,
                                                    @UserAssetId @PathVariable String assetId) {
         return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
     }
@@ -124,6 +123,11 @@ public class AssetController {
             return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset), "The asset is successfully inserted but without polygon since the user is not allowed to do so.");
         }
         return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset));
+    }
+
+    @GetMapping("/admin/asset/count")
+    public ResponseBody countAssetByFilter(@RequestBody FilterDTO filter) {
+        return new ResponseBody(Code.SELECT_OK, assetService.countAssetsWithFilter(filter.getFilters()));
     }
 
     @PostMapping("/admin/asset")
@@ -212,14 +216,14 @@ public class AssetController {
     /* ---------------- Asset Types ---------------- */
 
     @GetMapping("/asset/type")
-    public ResponseBody getAllAssetsTypes(@RequestParam(required = false) List<String> orderList,
-                                          @RequestParam(required = false) Integer limit,
-                                          @RequestParam(required = false) Integer offset) {
+    public ResponseBody getAllAssetTypes(@RequestParam(required = false) List<String> orderList,
+                                         @RequestParam(required = false) Integer limit,
+                                         @RequestParam(required = false) Integer offset) {
         return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetTypes(null, QueryTool.getOrderList(orderList), limit, offset));
     }
 
     @PostMapping("/asset/type/search")
-    public ResponseBody getAllAssetsTypes(@RequestBody FilterDTO filter) {
+    public ResponseBody getAllAssetTypes(@RequestBody FilterDTO filter) {
         if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
             throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
         }
