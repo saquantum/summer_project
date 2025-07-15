@@ -7,15 +7,9 @@ import com.password4j.types.Argon2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import uk.ac.bristol.dao.AssetHolderMapper;
-import uk.ac.bristol.dao.AssetMapper;
-import uk.ac.bristol.dao.MetaDataMapper;
-import uk.ac.bristol.dao.UserMapper;
+import uk.ac.bristol.dao.*;
 import uk.ac.bristol.exception.SpExceptions;
-import uk.ac.bristol.pojo.Asset;
-import uk.ac.bristol.pojo.AssetHolder;
-import uk.ac.bristol.pojo.User;
-import uk.ac.bristol.pojo.UserWithExtraColumns;
+import uk.ac.bristol.pojo.*;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
 import uk.ac.bristol.util.QueryTool;
@@ -30,12 +24,14 @@ public class UserServiceImpl implements UserService {
     private final AssetHolderMapper assetHolderMapper;
     private final UserMapper userMapper;
     private final AssetMapper assetMapper;
+    private final PermissionConfigMapper permissionConfigMapper;
 
-    public UserServiceImpl(MetaDataMapper metaDataMapper, AssetHolderMapper assetHolderMapper, UserMapper userMapper, AssetMapper assetMapper) {
+    public UserServiceImpl(MetaDataMapper metaDataMapper, AssetHolderMapper assetHolderMapper, UserMapper userMapper, AssetMapper assetMapper, PermissionConfigMapper permissionConfigMapper) {
         this.metaDataMapper = metaDataMapper;
         this.assetHolderMapper = assetHolderMapper;
         this.userMapper = userMapper;
         this.assetMapper = assetMapper;
+        this.permissionConfigMapper = permissionConfigMapper;
     }
 
     // checks uid and password, returns a jwt token
@@ -251,7 +247,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
-    public int registerNewUser(User user) {
+    public void registerNewUser(User user) {
         if (user.getId() == null) {
             throw new SpExceptions.PostMethodException("No valid user id is provided.");
         }
@@ -323,11 +319,16 @@ public class UserServiceImpl implements UserService {
         if (n4 != 1) {
             throw new SpExceptions.PostMethodException("Failed to insert user " + user.getId());
         }
+
+        int n5 = permissionConfigMapper.insertPermissionConfig(new PermissionConfig(user.getId()));
+        if (n5 != 1) {
+            throw new SpExceptions.PostMethodException("Failed to insert permission config for user " + user.getId());
+        }
+
         metaDataMapper.increaseTotalCountByTableName("asset_holders", 1);
         metaDataMapper.increaseTotalCountByTableName("address", 1);
         metaDataMapper.increaseTotalCountByTableName("contact_preferences", 1);
         metaDataMapper.increaseTotalCountByTableName("users", 1);
-        return n4;
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
