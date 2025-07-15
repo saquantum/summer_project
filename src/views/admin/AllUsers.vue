@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { adminDeleteUserService } from '@/api/admin'
+import {
+  adminDeleteUserService,
+  adminGetPermissionByUIDService,
+  adminUpdatePermissionService
+} from '@/api/admin'
 import { useRouter } from 'vue-router'
-import type { Permission, UserItem } from '@/types'
+import type { Permission, UserItem, UserSearchBody } from '@/types'
 import { useUserStore } from '@/stores'
 
 interface TableRow {
@@ -69,12 +73,10 @@ const fetchTableData = async () => {
   const sortStr =
     propOrderList.length > 0 ? propOrderList.join(',') : 'user_id,asc'
 
-  userStore.getUsers(
-    'count',
-    (currentPage.value - 1) * pageSize.value,
-    pageSize.value,
-    sortStr
-  )
+  userSearchBody.value.offset = (currentPage.value - 1) * pageSize.value
+  userSearchBody.value.limit = pageSize.value
+  userSearchBody.value.orderList = sortStr
+  userStore.getUsers('count', userSearchBody.value)
 }
 
 const handleSortChange = (sort: { prop: string; order: string | null }) => {
@@ -127,9 +129,33 @@ function getPermission(uid: string) {
   return user?.permission
 }
 
+const permission = ref<Permission[] | null>(null)
+const checkboxOptions = ref<{ label: string; value: boolean }[]>([])
+
+const submit = async () => {
+  if (permission.value && permission.value.length > 0) {
+    const p = permission.value[0]
+    p.canCreateAsset = checkboxOptions.value[0].value
+    p.canSetPolygonOnCreate = checkboxOptions.value[1].value
+    p.canUpdateAssetPolygon = checkboxOptions.value[2].value
+    p.canUpdateAssetFields = checkboxOptions.value[3].value
+    p.canDeleteAsset = checkboxOptions.value[4].value
+    p.canUpdateProfile = checkboxOptions.value[5].value
+    console.log(p)
+    await adminUpdatePermissionService(p)
+  }
+}
+
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(50)
+
+const userSearchBody = ref<UserSearchBody>({
+  filters: {},
+  orderList: '',
+  limit: pageSize.value,
+  offset: 0
+})
 
 const handlePageChange = (page: number) => {
   currentPage.value = page
@@ -142,19 +168,52 @@ const handleSizeChange = (size: number) => {
   fetchTableData()
 }
 
-onMounted(() => {
+onMounted(async () => {
+  if (userStore.user) {
+    const res = await adminGetPermissionByUIDService(userStore.user.id)
+    permission.value = res.data
+  }
+
+  if (permission.value && permission.value.length > 0) {
+    const p = permission.value[0]
+    checkboxOptions.value = [
+      { label: 'Add new asset', value: p.canCreateAsset },
+      { label: 'Add polygon', value: p.canSetPolygonOnCreate },
+      { label: 'Update polygon', value: p.canUpdateAssetPolygon },
+      { label: 'Update basic information', value: p.canUpdateAssetFields },
+      { label: 'Delete asset', value: p.canDeleteAsset },
+      { label: 'Update profile', value: p.canUpdateProfile }
+    ]
+  }
   fetchTableData()
 })
 </script>
 
 <template>
   <div class="search-wrapper">
-    <UserSearch></UserSearch>
+    <UserSearch
+      :fetch-table-data="fetchTableData"
+      v-model:user-search-body="userSearchBody"
+    ></UserSearch>
+
     <SortTool
       v-model:multiSort="multiSort"
       :columns="columns"
       :fetch-table-data="fetchTableData"
     ></SortTool>
+  </div>
+
+  <div>
+    <h3>Access control</h3>
+    <el-checkbox
+      v-for="(item, index) in checkboxOptions"
+      :key="index"
+      :label="item.label"
+      v-model="item.value"
+    />
+    <div>
+      <el-button @click="submit">Submit</el-button>
+    </div>
   </div>
 
   <div class="collapse-wrapper">

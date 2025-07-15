@@ -1,4 +1,9 @@
-import type { AssetFilter, AssetSearchForm } from '@/types'
+import type {
+  AssetFilter,
+  AssetSearchForm,
+  UserFilter,
+  UserSearchForm
+} from '@/types'
 
 export const assetConverFormToFilter = (form: AssetSearchForm): AssetFilter => {
   const body: AssetFilter = {}
@@ -52,6 +57,16 @@ export const assetConverFormToFilter = (form: AssetSearchForm): AssetFilter => {
       min: start.toISOString().slice(0, 10),
       max: end.toISOString().slice(0, 10)
     }
+  }
+
+  return body
+}
+
+export const userConverFormToFilter = (form: UserSearchForm): UserFilter => {
+  const body: UserFilter = {}
+
+  if (form.id) {
+    body.user_id = { op: 'like', val: `%${form.id}%` }
   }
 
   return body

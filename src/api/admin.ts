@@ -11,6 +11,7 @@ import type {
   User,
   UserInfoForm,
   UserItem,
+  UserSearchBody,
   Warning
 } from '@/types'
 import type { Permission } from '@/types/permission'
@@ -33,6 +34,14 @@ export const adminGetUsersService = (
       limit: limit,
       orderList: orderList
     }
+  })
+
+export const adminSearchUsersService = (
+  functionName: string,
+  obj: UserSearchBody
+): Promise<ApiResponse<UserItem[]>> =>
+  request.post('/admin/user/accumulate/search', obj, {
+    params: { function: functionName, column: '1' }
   })
 
 export const adminGetUserInfoService = (

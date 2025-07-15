@@ -71,3 +71,21 @@ export interface RegisterForm {
   password: string
   repassword: string
 }
+
+export interface UserSearchForm {
+  id: string
+}
+
+export interface UserSearchBody {
+  filters: UserFilter
+  orderList: string
+  limit: number
+  offset: number
+}
+
+export interface UserFilter {
+  user_id?: {
+    op: string
+    val: string
+  }
+}

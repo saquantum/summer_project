@@ -1,27 +1,15 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref, computed } from 'vue'
+import { onMounted, onBeforeUnmount } from 'vue'
 import * as echarts from 'echarts'
 import type { ECharts } from 'echarts'
 import ukmap from '@/assets/ukmap.json'
 import type { GeoJSONSourceInput } from 'echarts/types/src/coord/geo/geoTypes.js'
-import type { Permission } from '@/types'
-import {
-  adminGetPermissionByUIDService,
-  adminUpdatePermissionService
-} from '@/api/admin'
-import { useUserStore } from '@/stores'
+
 let mapChart: ECharts | null = null
 let barChart: ECharts | null = null
 let lineChart: ECharts | null = null
 let nightingaleChart: ECharts | null = null
 
-const userStore = useUserStore()
-const user = computed(() => {
-  if (!userStore.user) {
-    throw new Error('User no logged in')
-  }
-  return userStore.user
-})
 const handleResize = () => {
   if (mapChart && barChart && lineChart && nightingaleChart) {
     mapChart.resize()
@@ -31,40 +19,7 @@ const handleResize = () => {
   }
 }
 
-const permission = ref<Permission[] | null>(null)
-const checkboxOptions = ref<{ label: string; value: boolean }[]>([])
-
-const submit = async () => {
-  if (permission.value && permission.value.length > 0) {
-    const p = permission.value[0]
-    p.canCreateAsset = checkboxOptions.value[0].value
-    p.canSetPolygonOnCreate = checkboxOptions.value[1].value
-    p.canUpdateAssetPolygon = checkboxOptions.value[2].value
-    p.canUpdateAssetFields = checkboxOptions.value[3].value
-    p.canDeleteAsset = checkboxOptions.value[4].value
-    p.canUpdateProfile = checkboxOptions.value[5].value
-    console.log(p)
-    await adminUpdatePermissionService(p)
-  }
-}
 onMounted(async () => {
-  const res = await adminGetPermissionByUIDService(user.value.id)
-  permission.value = res.data
-
-  if (permission.value && permission.value.length > 0) {
-    const p = permission.value[0]
-    checkboxOptions.value = [
-      { label: 'Add new asset', value: p.canCreateAsset },
-      { label: 'Add polygon', value: p.canSetPolygonOnCreate },
-      { label: 'Update polygon', value: p.canUpdateAssetPolygon },
-      { label: 'Update basic information', value: p.canUpdateAssetFields },
-      { label: 'Delete asset', value: p.canDeleteAsset },
-      { label: 'Update profile', value: p.canUpdateProfile }
-    ]
-  }
-
-  console.log(checkboxOptions.value)
-
   mapChart = echarts.init(document.getElementById('main'))
   mapChart.showLoading()
   echarts.registerMap('UK', ukmap as GeoJSONSourceInput)
@@ -247,17 +202,6 @@ onBeforeUnmount(() => {
   <el-row style="height: 100%">
     <el-col :span="6">
       <div class="middle-container">
-        <div>
-          <h3>Access control</h3>
-          <el-checkbox
-            v-for="(item, index) in checkboxOptions"
-            :key="index"
-            :label="item.label"
-            v-model="item.value"
-          />
-          <el-button @click="submit">Submit</el-button>
-        </div>
-
         <div id="barChart" class="map-container"></div>
         <div id="lineChart" class="map-container"></div>
         <div id="nightingaleChart" class="map-container"></div>

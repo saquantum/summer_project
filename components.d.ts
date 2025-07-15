@@ -64,6 +64,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SearchDialog: typeof import('./src/components/SearchDialog.vue')['default']
+    SearchPopover: typeof import('./src/components/SearchPopover.vue')['default']
     SortTool: typeof import('./src/components/SortTool.vue')['default']
     StatusIndicator: typeof import('./src/components/StatusIndicator.vue')['default']
     TabBar: typeof import('./src/components/TabBar.vue')['default']
