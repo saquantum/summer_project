@@ -7,6 +7,7 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 import uk.ac.bristol.exception.SpExceptions;
+import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.util.QueryTool;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,6 +29,14 @@ public class UserIdentificationAdvice {
     public void identityAID() {
     }
 
+    @Pointcut("execution(* *..controller..*Controller.user*ByAssetWithUID(..))")
+    public void assetOwnershipUID() {
+    }
+
+    @Pointcut("execution(* *..controller..*Controller.user*ByAssetWithAID(..))")
+    public void assetOwnershipAID() {
+    }
+
     private Map<String, Object> getParametersFromJoinPoint(JoinPoint jp) {
         Map<String, Object> result = new HashMap<>();
 
@@ -43,6 +52,10 @@ public class UserIdentificationAdvice {
                     result.put("uid", arg);
                 } else if (annotation instanceof UserAID) {
                     result.put("aid", arg);
+                } else if (annotation instanceof UserAsset) {
+                    result.put("assetId", ((Asset) arg).getId());
+                } else if (annotation instanceof UserAssetId) {
+                    result.put("assetId", arg);
                 }
             }
             if (arg instanceof HttpServletRequest) {
@@ -62,7 +75,7 @@ public class UserIdentificationAdvice {
         System.out.println(parameters.get("request"));
 
         if (parameters.get("uid") == null || parameters.get("request") == null || parameters.get("response") == null) {
-            throw new IllegalStateException("Missing required parameters for UID validation.");
+            throw new IllegalStateException("Missing required parameters for user identity validation with uid.");
         }
 
         if (!QueryTool.userIdentityVerification(
@@ -79,7 +92,7 @@ public class UserIdentificationAdvice {
         Map<String, Object> parameters = getParametersFromJoinPoint(jp);
 
         if (parameters.get("aid") == null || parameters.get("request") == null || parameters.get("response") == null) {
-            throw new IllegalStateException("Missing required parameters for AID validation.");
+            throw new IllegalStateException("Missing required parameters for user identity validation with aid.");
         }
 
         if (!QueryTool.userIdentityVerification(
@@ -88,6 +101,38 @@ public class UserIdentificationAdvice {
                 null,
                 (String) parameters.get("aid"))) {
             throw new SpExceptions.ForbiddenException("User identification failed");
+        }
+    }
+
+    @Before("assetOwnershipUID()")
+    public void userAssetOwnershipByUID(JoinPoint jp) {
+        Map<String, Object> parameters = getParametersFromJoinPoint(jp);
+
+        if (parameters.get("uid") == null || parameters.get("assetId") == null) {
+            throw new IllegalStateException("Missing required parameters for asset ownership validation by uid.");
+        }
+
+        if (!QueryTool.verifyAssetOwnership(
+                (String) parameters.get("assetId"),
+                (String) parameters.get("uid"),
+                null)) {
+            throw new SpExceptions.ForbiddenException("Asset owner identification failed");
+        }
+    }
+
+    @Before("assetOwnershipAID()")
+    public void userAssetOwnershipByAID(JoinPoint jp) {
+        Map<String, Object> parameters = getParametersFromJoinPoint(jp);
+
+        if (parameters.get("aid") == null || parameters.get("assetId") == null) {
+            throw new IllegalStateException("Missing required parameters for asset ownership validation by aid.");
+        }
+
+        if (!QueryTool.verifyAssetOwnership(
+                (String) parameters.get("assetId"),
+                null,
+                (String) parameters.get("aid"))) {
+            throw new SpExceptions.ForbiddenException("Asset owner identification failed");
         }
     }
 }

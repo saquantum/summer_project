@@ -4,9 +4,13 @@ import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.ac.bristol.exception.SpExceptions;
+import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.PermissionConfig;
+import uk.ac.bristol.pojo.User;
+import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.MetaDataService;
 import uk.ac.bristol.service.PermissionConfigService;
+import uk.ac.bristol.service.UserService;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -141,6 +145,28 @@ public final class QueryTool {
         return false;
     }
 
+    public static boolean verifyAssetOwnership(String assetId, String uid, String aid) {
+        if (assetId == null) {
+            return false;
+        }
+        if (uid == null && aid == null) {
+            return false;
+        }
+        List<Asset> asset = QueryToolConfig.assetService.getAssetById(assetId);
+        if (asset.size() != 1) return false;
+        if (uid != null) {
+            User user = QueryToolConfig.userService.getUserByUserId(uid);
+            if (user.getAssetHolder() == null) return false;
+            if (!Objects.equals(user.getAssetHolder().getId(), asset.get(0).getOwnerId())) return false;
+        }
+        if (aid != null) {
+            User user = QueryToolConfig.userService.getUserByAssetHolderId(aid);
+            if (user.getAssetHolder() == null) return false;
+            if (!Objects.equals(user.getAssetHolder().getId(), asset.get(0).getOwnerId())) return false;
+        }
+        return true;
+    }
+
     private final static Set<String> registeredTables = QueryToolConfig.metaDataService.getAllRegisteredTableNames();
 
     public static List<Map<String, String>> filterOrderList(List<Map<String, String>> originalList, String... tablesAndColumns) {
@@ -212,13 +238,21 @@ class QueryToolConfig {
     public MetaDataService metaDataService0;
     @Autowired
     public PermissionConfigService permissionConfigService0;
+    @Autowired
+    public AssetService assetService0;
+    @Autowired
+    public UserService userService0;
 
     public static MetaDataService metaDataService;
     public static PermissionConfigService permissionConfigService;
+    public static AssetService assetService;
+    public static UserService userService;
 
     @PostConstruct
     public void init() {
         metaDataService = this.metaDataService0;
         permissionConfigService = this.permissionConfigService0;
+        assetService = this.assetService0;
+        userService = this.userService0;
     }
 }
