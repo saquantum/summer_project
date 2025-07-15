@@ -38,4 +38,8 @@ public interface WarningMapper {
     boolean testWarningExists(@Param("id") Long id);
 
     List<Long> selectWarningIdsByAssetId(@Param("id") String id);
+
+    boolean testWarningDetailDiff(Warning warning);
+
+    boolean testWarningAreaDiff(@Param("id") Long id, @Param("geojson") String geojson);
 }

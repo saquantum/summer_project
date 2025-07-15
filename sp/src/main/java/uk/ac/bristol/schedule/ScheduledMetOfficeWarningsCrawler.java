@@ -28,6 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.*;
 
 @Component
 public class ScheduledMetOfficeWarningsCrawler {
@@ -108,13 +109,36 @@ public class ScheduledMetOfficeWarningsCrawler {
 
         List<Warning> warningsToNotify = new ArrayList<>();
 
+        int s = 0;
         for (Warning warning : warnings) {
             if (!warningMapper.testWarningExists(warning.getId())) {
                 warningsToNotify.add(warning);
+                s++;
+                warningService.insertWarningsList(Collections.singletonList(warning));
+                System.out.println("New warningID");
+            } else if (warningMapper.testWarningDetailDiff(warning)) {
+                warningsToNotify.add(warning);
+                s++;
+                warningService.insertWarningsList(Collections.singletonList(warning));
+                System.out.println("New updated warning(Detail Diff!)");
+            } else if (warningMapper.testWarningAreaDiff(warning.getId(), warning.getAreaAsJson())) {
+                List<String> oldAssetIds = assetService.selectAssetIdsByWarningId(warning.getId());
+                s++;
+                warningService.insertWarningsList(Collections.singletonList(warning));
+                List<String> assetIds = assetService.selectAssetIdsByWarningId(warning.getId());
+                for (String assetId : assetIds) {
+                    if (!oldAssetIds.contains(assetId)) {
+                        Map<String, Object> notification = contactService.formatNotification(warning.getId(), assetId);
+                        contactService.sendEmail(notification);
+                    }
+                }
+                System.out.println("New updated warning(Area Diff!)");
+            } else {
+                s++;
+                warningService.insertWarningsList(Collections.singletonList(warning));
+                System.out.println("New updated warning(No diff!)");
             }
         }
-
-        int s = warningService.insertWarningsList(warnings);
 
         System.out.println("Successfully inserted or updated " + s + " weather warning records at "
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));

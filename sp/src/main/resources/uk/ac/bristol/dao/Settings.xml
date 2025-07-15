@@ -6,6 +6,7 @@
 <mapper namespace="uk.ac.bristol.dao.Settings">
     <update id="resetSchema">
         create extension if not exists postgis;
+        create extension if not exists hstore;
         drop table if exists table_meta_data cascade;
         drop table if exists asset_holders cascade;
         drop table if exists address cascade;

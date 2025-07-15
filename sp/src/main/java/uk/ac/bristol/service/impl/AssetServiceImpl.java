@@ -208,17 +208,22 @@ public class AssetServiceImpl implements AssetService {
 
         assetHolderMapper.updateAssetHolder(owner.get(0));
 
+        List<Long> OldWarningIds = warningMapper.selectWarningIdsByAssetId(asset.getId());
+
         int value = assetMapper.updateAsset(asset);
         if (asset.getLocationAsJson() == null || asset.getLocationAsJson().isBlank()) {
             return value;
         }
+
         List<Long> warningIds = warningMapper.selectWarningIdsByAssetId(asset.getId());
         if (warningIds.isEmpty()) {
             return value;
         }
         for (Long warningId : warningIds) {
-            Map<String, Object> notification = contactService.formatNotification(warningId, asset.getId());
-            contactService.sendEmail(notification);
+            if (!OldWarningIds.contains(warningId)) {
+                Map<String, Object> notification = contactService.formatNotification(warningId, asset.getId());
+                contactService.sendEmail(notification);
+            }
         }
         return value;
 
