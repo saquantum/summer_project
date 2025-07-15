@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import request from '@/utils/request'
 import { useAssetStore, useUserStore } from '@/stores/index.ts'
 import CodeUtil from '@/utils/codeUtil'
@@ -96,34 +96,55 @@ const convertToGeoJSON = (
 
 const disableForUser = ref(false)
 
+const disableAddAsset = computed(() => {
+  if (
+    !userStore.user?.admin &&
+    !userStore.user?.permissionConfig.canCreateAsset
+  )
+    return true
+  return false
+})
+
+const disableSetPolygon = computed(() => {
+  if (
+    !userStore.user?.admin &&
+    !userStore.user?.permissionConfig.canSetPolygonOnCreate
+  )
+    return true
+  return false
+})
+
+const DEFAULT_MULTIPOLYGON = {
+  type: 'MultiPolygon',
+  coordinates: [
+    [
+      [
+        [-0.5103751, 51.2867601],
+        [0.3340155, 51.2867601],
+        [0.3340155, 51.6918741],
+        [-0.5103751, 51.6918741],
+        [-0.5103751, 51.2867601]
+      ]
+    ]
+  ]
+}
+
 const form = ref<AssetForm>({
   username: '',
   name: '',
   typeId: '',
   ownerId: '',
   address: '',
-  locations: [
-    {
-      type: 'MultiPolygon',
-      coordinates: [
-        [
-          [
-            [-0.5103751, 51.2867601],
-            [0.3340155, 51.2867601],
-            [0.3340155, 51.6918741],
-            [-0.5103751, 51.6918741],
-            [-0.5103751, 51.2867601]
-          ]
-        ]
-      ]
-    }
-  ],
-  capacityLitres: '',
+  locations: [JSON.parse(JSON.stringify(DEFAULT_MULTIPOLYGON))],
+  capacityLitres: 0,
   material: '',
   status: '',
   installedAt: '',
   lastInspection: '',
-  location: ''
+  location: {
+    type: 'MultiPolygon',
+    coordinates: []
+  }
 })
 
 const formRef = ref<InstanceType<
@@ -155,6 +176,31 @@ const rules = {
       },
       trigger: 'blur'
     }
+  ],
+  name: [
+    { required: true, message: 'Please input asset name', trigger: 'blur' }
+  ],
+  typeId: [
+    { required: true, message: 'Please input asset type', trigger: 'blur' }
+  ],
+  material: [
+    { required: true, message: 'Please input asset material', trigger: 'blur' }
+  ],
+  status: [
+    { required: true, message: 'Please input asset status', trigger: 'blur' }
+  ],
+  capacityLitres: [
+    {
+      required: true,
+      message: 'Please input asset capacity litres',
+      trigger: 'blur'
+    }
+  ],
+  installedAt: [
+    { required: true, message: 'Please input time', trigger: 'blur' }
+  ],
+  lastInspection: [
+    { required: true, message: 'Please input time', trigger: 'blur' }
   ]
 }
 
@@ -215,16 +261,31 @@ const cancelDrawing = () => {
 }
 
 const userSubmit = async () => {
+  if (!formRef.value) return
   try {
-    await formRef.value?.validate()
-  } catch {
-    return
+    await formRef.value.validate()
+  } catch (fields) {
+    if (fields) {
+      const firstErrorField = Object.keys(fields)[0]
+      formRef.value.scrollToField(firstErrorField)
+      return
+    }
   }
   form.value.location = form.value.locations[0] ?? ''
   if (userStore.user?.assetHolderId) {
     form.value.ownerId = userStore.user.assetHolderId
   }
+  form.value.capacityLitres = Number(form.value.capacityLitres)
 
+  // if user did not set polygon, clear
+  if (
+    JSON.stringify(form.value.location) === JSON.stringify(DEFAULT_MULTIPOLYGON)
+  ) {
+    form.value.location = {
+      type: 'MultiPolygon',
+      coordinates: []
+    }
+  }
   try {
     if (userStore.user?.assetHolderId) {
       await userInsertAssetService(userStore.user?.id, form.value)
@@ -236,10 +297,15 @@ const userSubmit = async () => {
 }
 
 const adminSubmit = async () => {
+  if (!formRef.value) return
   try {
-    await formRef.value?.validate()
-  } catch {
-    return
+    await formRef.value.validate()
+  } catch (fields) {
+    if (fields) {
+      const firstErrorField = Object.keys(fields)[0]
+      formRef.value.scrollToField(firstErrorField)
+      return
+    }
   }
   form.value.location = form.value.locations[0] ?? ''
 
@@ -248,6 +314,16 @@ const adminSubmit = async () => {
     form.value.ownerId = res.data.assetHolderId
   }
 
+  form.value.capacityLitres = Number(form.value.capacityLitres)
+  // if user did not set polygon, clear
+  if (
+    JSON.stringify(form.value.location) === JSON.stringify(DEFAULT_MULTIPOLYGON)
+  ) {
+    form.value.location = {
+      type: 'MultiPolygon',
+      coordinates: []
+    }
+  }
   try {
     await adminInsertAssetService(form.value)
     ElMessage.success('Successfully add an asset')
@@ -263,28 +339,16 @@ const reset = () => {
     typeId: '',
     ownerId: '',
     address: '',
-    locations: [
-      {
-        type: 'MultiPolygon',
-        coordinates: [
-          [
-            [
-              [-0.5103751, 51.2867601],
-              [0.3340155, 51.2867601],
-              [0.3340155, 51.6918741],
-              [-0.5103751, 51.6918741],
-              [-0.5103751, 51.2867601]
-            ]
-          ]
-        ]
-      }
-    ],
-    capacityLitres: '',
+    locations: [JSON.parse(JSON.stringify(DEFAULT_MULTIPOLYGON))],
+    capacityLitres: 0,
     material: '',
     status: '',
     installedAt: '',
     lastInspection: '',
-    location: ''
+    location: {
+      type: 'MultiPolygon',
+      coordinates: []
+    }
   }
 }
 
@@ -309,9 +373,7 @@ onMounted(() => {
 <template>
   <div class="container">
     <div>
-      <h3 v-if="!userStore.user?.permissionConfig.canCreateAsset">
-        You can not add asset right now
-      </h3>
+      <h3 v-if="disableAddAsset">You can not add asset right now</h3>
       <el-form
         :model="form"
         ref="formRef"
@@ -319,16 +381,15 @@ onMounted(() => {
         label-position="left"
         :rules="rules"
         style="max-width: 600px"
-        hide-required-asterisk
-        :disabled="!userStore.user?.permissionConfig.canCreateAsset"
+        :disabled="disableAddAsset"
       >
         <el-form-item label="Username" prop="username">
           <el-input v-model="form.username" :disabled="disableForUser" />
         </el-form-item>
-        <el-form-item label="Asset name">
+        <el-form-item label="Asset name" prop="name">
           <el-input v-model="form.name" />
         </el-form-item>
-        <el-form-item label="Asset type">
+        <el-form-item label="Asset type" prop="typeId">
           <el-select v-model="form.typeId" placeholder="Select type">
             <el-option
               v-for="item in assetStore.typeOptions"
@@ -339,7 +400,7 @@ onMounted(() => {
           </el-select>
         </el-form-item>
 
-        <el-form-item label="Asset material">
+        <el-form-item label="Asset material" prop="material">
           <el-select v-model="form.material" placeholder="Select material">
             <el-option
               v-for="item in materialOption"
@@ -350,7 +411,7 @@ onMounted(() => {
           </el-select>
         </el-form-item>
 
-        <el-form-item label="Asset status">
+        <el-form-item label="Asset status" prop="status">
           <el-select v-model="form.status" placeholder="Select status">
             <el-option
               v-for="item in statusOption"
@@ -361,11 +422,11 @@ onMounted(() => {
           </el-select>
         </el-form-item>
 
-        <el-form-item label="Capacity litres">
+        <el-form-item label="Capacity litres" prop="capacityLitres">
           <el-input v-model="form.capacityLitres" type="number"></el-input>
         </el-form-item>
 
-        <el-form-item label="Installed at">
+        <el-form-item label="Installed at" prop="installedAt">
           <el-date-picker
             v-model="form.installedAt"
             type="date"
@@ -375,7 +436,7 @@ onMounted(() => {
           />
         </el-form-item>
 
-        <el-form-item label="Last inspection">
+        <el-form-item label="Last inspection" prop="lastInspection">
           <el-date-picker
             v-model="form.lastInspection"
             type="date"
@@ -408,10 +469,7 @@ onMounted(() => {
               ></MapCard>
             </div>
             <el-select
-              :disabled="
-                tipVisible ||
-                !userStore.user?.permissionConfig.canSetPolygonOnCreate
-              "
+              :disabled="tipVisible || disableSetPolygon"
               v-model="mode"
               style="margin-top: 10px"
             >
@@ -419,39 +477,19 @@ onMounted(() => {
               <el-option label="sequence" value="sequence"></el-option>
             </el-select>
             <div class="map-button">
-              <el-button
-                @click="beginDrawing"
-                :disabled="
-                  !userStore.user?.permissionConfig.canSetPolygonOnCreate
-                "
+              <el-button @click="beginDrawing" :disabled="disableSetPolygon"
                 >Draw new asset</el-button
               >
-              <el-button
-                @click="finishOneShape"
-                :disabled="
-                  !userStore.user?.permissionConfig.canSetPolygonOnCreate
-                "
+              <el-button @click="finishOneShape" :disabled="disableSetPolygon"
                 >Finish one shape</el-button
               >
-              <el-button
-                @click="finishOnePolygon"
-                :disabled="
-                  !userStore.user?.permissionConfig.canSetPolygonOnCreate
-                "
+              <el-button @click="finishOnePolygon" :disabled="disableSetPolygon"
                 >Finish one polygon</el-button
               >
-              <el-button
-                @click="endDrawing"
-                :disabled="
-                  !userStore.user?.permissionConfig.canSetPolygonOnCreate
-                "
+              <el-button @click="endDrawing" :disabled="disableSetPolygon"
                 >End drawing</el-button
               >
-              <el-button
-                @click="cancelDrawing"
-                :disabled="
-                  !userStore.user?.permissionConfig.canSetPolygonOnCreate
-                "
+              <el-button @click="cancelDrawing" :disabled="disableSetPolygon"
                 >Cancel drawing</el-button
               >
             </div>

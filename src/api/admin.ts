@@ -4,6 +4,9 @@
 import request from '@/utils/request'
 import type { ApiResponse } from '@/types/api'
 import type {
+  Asset,
+  AssetForm,
+  AssetInfoForm,
   AssetSearchBody,
   AssetType,
   AssetWithWarnings,
@@ -130,11 +133,22 @@ export const adminDeleteAssetService = (
   })
 }
 
-export const adminInsertAssetService = (obj: object): Promise<ApiResponse> =>
+export const adminGetAssetByIdService = (
+  id: string
+): Promise<ApiResponse<AssetWithWarnings[]>> =>
+  request.get(`/admin/asset/${id}`)
+
+export const adminInsertAssetService = (obj: AssetForm): Promise<ApiResponse> =>
   request.post('/admin/asset', obj)
+
+export const adminUpdateAssetService = (obj: AssetInfoForm | Asset) =>
+  request.put('/admin/asset', obj)
 
 export const adminInsetAssetTypeService = (obj: AssetType) =>
   request.post('/admin/asset/type', obj)
+
+export const adminUpdateAssetTypeService = (obj: AssetType) =>
+  request.put('/admin/asset/type', obj)
 
 export const adminDeleteAssetTypeService = (types: string[]) =>
   request.delete('/admin/asset/type', {

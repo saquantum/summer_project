@@ -45,9 +45,9 @@ const rules = ref<FormRules<typeof form>>({
   id: [
     { required: true, message: 'Please input username', trigger: 'blur' },
     {
-      min: 5,
-      max: 10,
-      message: 'username must between 5 to 10 characters',
+      pattern: /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]+$/,
+      message:
+        'Username can only contain letters, numbers, and special characters (no spaces allowed).',
       trigger: 'blur'
     },
     {
@@ -77,16 +77,16 @@ const rules = ref<FormRules<typeof form>>({
       trigger: 'blur'
     },
     {
-      pattern: /^\S{0,15}$/,
-      message: 'password must between 6 to 15 characters',
+      pattern: /^\S{5,15}$/,
+      message: 'password must between 5 to 15 characters',
       trigger: 'blur'
     }
   ],
   repassword: [
     { required: true, message: 'Please input password', trigger: 'blur' },
     {
-      pattern: /^\S{6,15}$/,
-      message: 'password must between 6 to 15 characters',
+      pattern: /^\S{5,15}$/,
+      message: 'password must between 5 to 15 characters',
       trigger: 'blur'
     },
     {
@@ -158,41 +158,25 @@ const rules = ref<FormRules<typeof form>>({
       trigger: 'blur'
     }
   ],
-  'assetHolder.address.street': [
-    { required: true, message: 'Street is required', trigger: 'blur' }
-  ],
+
   'assetHolder.address.postcode': [
-    { required: true, message: 'Post code is required', trigger: 'blur' },
     {
-      validator: (
-        rule: InternalRuleItem,
-        value: string,
-        callback: (error?: Error) => void
-      ) => {
-        const ukPostcodeRegex = /^[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}$/i
-        if (!ukPostcodeRegex.test(value)) {
-          callback(new Error('Invalid UK postcode (e.g. SW1A 1AA)'))
-        } else {
-          callback()
-        }
-      },
+      pattern: /^[a-zA-Z0-9\-\s]{3,16}$/,
+      message: 'Post code must be 3-16 letters, numbers, spaces or hyphens.',
       trigger: 'blur'
     }
-  ],
-  'assetHolder.address.city': [
-    { required: true, message: 'City is required', trigger: 'blur' }
-  ],
-  'assetHolder.address.country': [
-    { required: true, message: 'Country is required', trigger: 'blur' }
   ]
 })
 
 const submit = async () => {
   try {
     await formRef.value.validate()
-  } catch (e) {
-    console.log(e)
-    return
+  } catch (fields) {
+    if (fields) {
+      const firstErrorField = Object.keys(fields)[0]
+      formRef.value.scrollToField(firstErrorField)
+      return
+    }
   }
   try {
     form.value.assetHolder.name = `${form.value.firstName} ${form.value.lastName}`
@@ -246,7 +230,6 @@ onMounted(async () => {})
       label-position="left"
       style="max-width: 600px"
       :rules="rules"
-      hide-required-asterisk
     >
       <el-form-item label="Username" prop="id">
         <el-input v-model="form.id" />

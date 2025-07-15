@@ -4,7 +4,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
-import { assetUpdateInfoService } from '@/api/assets'
+import { updateAssetByIdService } from '@/api/assets'
 import * as turf from '@turf/turf'
 import type { LeafletMouseEvent } from 'leaflet'
 import { ElMessage } from 'element-plus'
@@ -15,8 +15,10 @@ import type {
   Polygon,
   Position
 } from 'geojson'
-import type { Style } from '@/types'
+import type { Asset, Style } from '@/types'
 import { rewind } from '@turf/turf'
+import { useUserStore } from '@/stores'
+import { adminUpdateAssetService } from '@/api/admin'
 
 const customIcon = new L.Icon({
   iconUrl: markerIcon,
@@ -30,11 +32,12 @@ const customIcon = new L.Icon({
 const props = defineProps<{
   mapId: string
   locations: MultiPolygon[]
-  id: string
   mode: string
-  ownerId: string
   style: Style
+  asset: Asset
 }>()
+
+const userStore = useUserStore()
 
 const emit = defineEmits(['update:locations'])
 
@@ -156,9 +159,26 @@ const endDrawing = async () => {
   const multiPolygon = turf.multiPolygon(polygonCoorArr)
   console.log(multiPolygon)
   emit('update:locations', [multiPolygon.geometry])
-  if (props.id) {
-    // update asset
-    await assetUpdateInfoService(props.id, props.ownerId, multiPolygon.geometry)
+  if (props.asset) {
+    const newAsset: Asset = {
+      ...props.asset,
+      location: multiPolygon.geometry,
+      lastModified: Date.now()
+    }
+    try {
+      if (userStore.user?.admin) {
+        await adminUpdateAssetService(newAsset)
+        ElMessage.success('Asset updated')
+      } else {
+        if (userStore.user?.id) {
+          await updateAssetByIdService(userStore.user.id, newAsset)
+          ElMessage.success('Asset updated')
+        }
+      }
+    } catch (e) {
+      console.error(e)
+      ElMessage.error('Failed to update asset')
+    }
   }
 
   // clear points, turn off click

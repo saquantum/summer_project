@@ -220,6 +220,16 @@ const register = async () => {
     console.log(res)
     ElMessage.success('success')
     isRegister.value = false
+    registerForm.value = {
+      id: '',
+      firstName: '',
+      lastName: '',
+      name: '',
+      email: '',
+      phone: '',
+      password: '',
+      repassword: ''
+    }
   } catch (e) {
     console.error(e)
   }

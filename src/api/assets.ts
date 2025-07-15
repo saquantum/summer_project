@@ -1,26 +1,16 @@
 import request from '@/utils/request'
 import type { ApiResponse } from '@/types/api'
-import type { AssetWithWarnings } from '@/types'
-import type { MultiPolygon } from 'geojson'
+import type { Asset, AssetInfoForm, AssetWithWarnings } from '@/types'
+
 export const assetsGetInfoService = (
   userId: string
 ): Promise<ApiResponse<AssetWithWarnings[]>> =>
   request.get(`/user/uid/${userId}/asset`)
 
-export const assetUpdateInfoService = (
-  id: string,
-  ownerId: string,
-  location: MultiPolygon
-): Promise<ApiResponse> => {
-  const obj = {
-    id: id,
-    ownerId: ownerId,
-    location: location
-  }
-  console.log(obj)
-  return request.put('/admin/asset', obj)
-}
+export const getAssetByIdService = (uid: string, id: string) =>
+  request.get(`user/uid/${uid}/asset/${id}`)
 
-export const assetInsertService = (obj: object): Promise<ApiResponse> => {
-  return request.post('/admin/asset', obj)
-}
+export const updateAssetByIdService = (
+  uid: string,
+  obj: AssetInfoForm | Asset
+) => request.put(`/user/uid/${uid}/asset`, obj)

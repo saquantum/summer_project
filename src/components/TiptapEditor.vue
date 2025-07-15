@@ -212,8 +212,6 @@ watch(fileList, (newVal) => {
   <div class="editor">
     <editor-content :editor="editor" />
   </div>
-
-  <div>{{ content }}</div>
 </template>
 
 <style lang="scss">

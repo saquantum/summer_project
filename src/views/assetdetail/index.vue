@@ -31,6 +31,13 @@ const item = computed<AssetWithWarnings>(() => {
   else return item
 })
 
+const isEdit = ref(false)
+const assetFormRef = ref()
+const submit = () => {
+  assetFormRef.value.submit()
+  isEdit.value = false
+}
+
 const asset = computed<Asset>(() => item.value.asset)
 
 const tableData = computed<Warning[]>(() => {
@@ -39,22 +46,17 @@ const tableData = computed<Warning[]>(() => {
 
 const mapCardRef = ref<ComponentPublicInstance<typeof MapCard> | null>(null)
 
-const mode = ref<'convex' | 'polygon'>('convex')
+const mode = ref<'convex' | 'sequence'>('convex')
 
-const locations = computed<MultiPolygon[]>(() => {
-  return [asset.value.location]
+/**
+ * The reason for using an array is to be compatible with warnings.
+ */
+const locations = computed({
+  get: () => [asset.value.location],
+  set: (val: MultiPolygon[]) => {
+    asset.value.location = val[0]
+  }
 })
-
-const displayData = computed(() => [
-  { label: 'ID', value: asset.value?.id },
-  { label: 'Name', value: asset.value?.name },
-  { label: 'Type', value: asset.value?.type?.name },
-  { label: 'Capacity litres', value: asset.value?.capacityLitres },
-  { label: 'Material', value: asset.value?.material },
-  { label: 'Status', value: asset.value?.status },
-  { label: 'Installed at', value: asset.value?.installedAt },
-  { label: 'Last inspection', value: asset.value?.lastInspection }
-])
 
 const beginDrawing = () => {
   mapCardRef.value?.beginDrawing()
@@ -95,8 +97,7 @@ const handleDelete = (row: WarningTableRow) => {
             ref="mapCardRef"
             :map-id="'mapdetail'"
             v-model:locations="locations"
-            :id="id"
-            :ownerId="item?.asset.ownerId"
+            :asset="asset"
             v-model:mode="mode"
           ></MapCard>
         </div>
@@ -104,22 +105,14 @@ const handleDelete = (row: WarningTableRow) => {
     </el-col>
 
     <el-col :span="12">
-      <el-descriptions
-        title="Asset Detail"
-        :column="1"
-        direction="vertical"
-        border
-      >
-        <el-descriptions-item
-          v-for="(item, index) in displayData"
-          :key="index"
-          :label="item.label"
-          class-name="custom-item"
-          label-class-name="custom-label"
-        >
-          <span class="multiline-text">{{ item.value }}</span>
-        </el-descriptions-item>
-      </el-descriptions>
+      <AssetForm
+        ref="assetFormRef"
+        v-model:isEdit="isEdit"
+        :item="item"
+      ></AssetForm>
+      <el-button v-if="!isEdit" @click="isEdit = true">Edit</el-button>
+      <el-button v-else @click="isEdit = false">Cancel</el-button>
+      <el-button @click="submit">Submit</el-button>
     </el-col>
   </el-row>
 

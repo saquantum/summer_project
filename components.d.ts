@@ -10,6 +10,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AllTemplates: typeof import('./src/components/AllTemplates.vue')['default']
     AssetCard: typeof import('./src/components/AssetCard.vue')['default']
+    AssetForm: typeof import('./src/components/AssetForm.vue')['default']
     ButtonInput: typeof import('./src/components/ButtonInput.vue')['default']
     ConfirmDialog: typeof import('./src/components/ConfirmDialog.vue')['default']
     CustomerService: typeof import('./src/components/CustomerService.vue')['default']
@@ -38,6 +39,7 @@ declare module 'vue' {
     ElHeader: typeof import('element-plus/es')['ElHeader']
     ElIcon: typeof import('element-plus/es')['ElIcon']
     ElInput: typeof import('element-plus/es')['ElInput']
+    ElInputNumber: typeof import('element-plus/es')['ElInputNumber']
     ElLink: typeof import('element-plus/es')['ElLink']
     ElMain: typeof import('element-plus/es')['ElMain']
     ElMenu: typeof import('element-plus/es')['ElMenu']

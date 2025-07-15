@@ -11,12 +11,8 @@ import type { User, UserInfoForm } from '@/types'
 import type { InternalRuleItem } from 'async-validator'
 import { useRoute } from 'vue-router'
 
-interface Props {
-  isEdit: boolean
-}
-
 const route = useRoute()
-const props = defineProps<Props>()
+const props = defineProps<{ isEdit: boolean }>()
 
 const emit = defineEmits(['update:isEdit'])
 const userStore = useUserStore()
@@ -254,6 +250,7 @@ const loadUserData = async () => {
       console.log(userStore.user)
     } else {
       const id = (userStore.proxyId || route.query.id) as string
+      console.log(id)
       const res = await adminGetUserInfoService(id)
       console.log(res)
       currentUser.value = res.data

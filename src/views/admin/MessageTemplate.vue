@@ -175,10 +175,12 @@ watch(
 
   <div
     class="preview"
-    style="width: 50%; border: 1px solid #ccc; padding: 1rem"
+    style="width: 50%; border: 1px solid #ccc; padding: 1rem; margin-top: 20px"
   >
     <div v-html="renderedHTML"></div>
   </div>
+
+  <div>{{ content }}</div>
 
   <div>
     <el-button @click="submit">Submit</el-button>
