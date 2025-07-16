@@ -26,6 +26,19 @@ const formRef = ref()
 
 const rules = ref()
 
+const materialOption = [
+  { label: 'Steel', value: 'Steel' },
+  { label: 'Concrete', value: 'Concrete' },
+  { label: 'Plastic', value: 'Plastic' },
+  { label: 'Composite', value: 'Composite' }
+]
+
+const statusOption = [
+  { label: 'inactive', value: 'inactive' },
+  { label: 'active', value: 'active' },
+  { label: 'maintenance', value: 'maintenance' }
+]
+
 const descriptionsItem = computed(() => {
   if (!props.item) return []
   return [
@@ -50,6 +63,10 @@ const assetToForm = (item: AssetWithWarnings): AssetInfoForm => {
     installedAt: item.asset.installedAt ?? '',
     lastInspection: item.asset.lastInspection ?? ''
   }
+}
+
+const disabledAfterToday = (time: Date) => {
+  return time.getTime() > Date.now()
 }
 
 const submit = async () => {
@@ -97,31 +114,48 @@ defineExpose({
       <el-input v-model="form.name" />
     </el-form-item>
 
-    <el-form-item label="Material" prop="material">
-      <el-input v-model="form.material" />
+    <el-form-item label="Asset material" prop="material">
+      <el-select v-model="form.material" placeholder="Select material">
+        <el-option
+          v-for="item in materialOption"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        ></el-option>
+      </el-select>
     </el-form-item>
 
+    <el-form-item label="Asset status" prop="status">
+      <el-select v-model="form.status" placeholder="Select status">
+        <el-option
+          v-for="item in statusOption"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        ></el-option>
+      </el-select>
+    </el-form-item>
     <el-form-item label="Capacity Litres">
       <el-input-number v-model="form.capacityLitres" :min="0" />
     </el-form-item>
 
-    <el-form-item label="Status">
-      <el-input v-model="form.status" />
-    </el-form-item>
-
-    <el-form-item label="Installed At">
+    <el-form-item label="Installed at" prop="installedAt">
       <el-date-picker
         v-model="form.installedAt"
-        type="datetime"
-        placeholder="Select date and time"
+        type="date"
+        placeholder="Pick a day"
+        :disabled-date="disabledAfterToday"
+        value-format="YYYY-MM-DD"
       />
     </el-form-item>
 
-    <el-form-item label="Last Inspection">
+    <el-form-item label="Last inspection" prop="lastInspection">
       <el-date-picker
         v-model="form.lastInspection"
-        type="datetime"
-        placeholder="Select date and time"
+        type="date"
+        placeholder="Pick a day"
+        :disabled-date="disabledAfterToday"
+        value-format="YYYY-MM-DD"
       />
     </el-form-item>
   </el-form>

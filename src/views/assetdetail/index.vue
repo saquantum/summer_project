@@ -112,7 +112,7 @@ const handleDelete = (row: WarningTableRow) => {
       ></AssetForm>
       <el-button v-if="!isEdit" @click="isEdit = true">Edit</el-button>
       <el-button v-else @click="isEdit = false">Cancel</el-button>
-      <el-button @click="submit">Submit</el-button>
+      <el-button v-if="isEdit" @click="submit">Submit</el-button>
     </el-col>
   </el-row>
 

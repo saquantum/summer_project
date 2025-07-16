@@ -7,13 +7,34 @@ import {
 } from '@/api/admin'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { AssetType, AssetSearchBody, AssetWithWarnings } from '@/types'
+import type {
+  AssetType,
+  AssetSearchBody,
+  AssetWithWarnings,
+  Warning
+} from '@/types'
 import { userGetAssetTypesService } from '@/api/user'
 import { useUserStore } from './user'
 
 export const useAssetStore = defineStore(
   'rain-assets',
   () => {
+    // watch filter condition
+    const warningOrder: Record<string, number> = {
+      RED: 3,
+      AMBER: 2,
+      YELLOW: 1,
+      '': 0
+    }
+    const getMaxWarningLevel = (warnings: Warning[]): Warning | null => {
+      if (!warnings.length) return null
+      return warnings.reduce((max, cur) => {
+        const maxLevel = max.warningLevel || ''
+        const curLevel = cur.warningLevel || ''
+        return warningOrder[curLevel] > warningOrder[maxLevel] ? cur : max
+      }, warnings[0])
+    }
+
     const userAssets = ref<AssetWithWarnings[]>([])
     const allAssets = ref<AssetWithWarnings[]>([])
 
@@ -38,6 +59,9 @@ export const useAssetStore = defineStore(
           : await assetsGetInfoService(id)
         if (res.data) {
           userAssets.value = res.data
+          userAssets.value.forEach(
+            (item) => (item.maxWarning = getMaxWarningLevel(item.warnings))
+          )
         } else {
           userAssets.value = []
         }
@@ -51,6 +75,7 @@ export const useAssetStore = defineStore(
         const res = await adminSearchAssetService(obj)
         console.log(obj, res)
         allAssets.value = res.data
+        allAssets.value.forEach((item) => getMaxWarningLevel(item.warnings))
       } catch (e) {
         console.error('fail to get all asset', e)
       }

@@ -233,7 +233,11 @@ watch(
       style: props.style
     }).addTo(m)
 
-    m.fitBounds(geoLayer.getBounds())
+    try {
+      m.fitBounds(geoLayer.getBounds())
+    } catch (e) {
+      console.error(e)
+    }
   },
   {
     deep: true
@@ -260,7 +264,11 @@ onMounted(async () => {
     style: props.style
   }).addTo(map)
   if (saveLayer) {
-    map.fitBounds(saveLayer.getBounds())
+    try {
+      map.fitBounds(saveLayer.getBounds())
+    } catch (e) {
+      console.error(e)
+    }
   }
 })
 

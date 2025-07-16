@@ -4,7 +4,7 @@ import { computed } from 'vue'
 const props = defineProps({
   status: {
     type: String,
-    default: 'off' // possible value：success, yellow, amber, red
+    default: 'OFF' // possible value：success, YELLOW, AMBER, RED
   }
 })
 
@@ -25,31 +25,31 @@ const statusClass = computed(() => {
   border: 1px solid #ccc;
 }
 
-.indicator--success {
+.indicator--SUCCESS {
   background-color: #4caf50;
   box-shadow: 0 0 4px rgba(76, 175, 80, 0.4);
   border-color: #c8e6c9;
 }
 
-.indicator--yellow {
+.indicator--YELLOW {
   background-color: #ffc107;
   box-shadow: 0 0 4px rgba(255, 193, 7, 0.4);
   border-color: #fff3cd;
 }
 
-.indicator--amber {
+.indicator--AMBER {
   background-color: #ff9800;
   box-shadow: 0 0 4px rgba(255, 152, 0, 0.4);
   border-color: #ffe0b2;
 }
 
-.indicator--red {
+.indicator--RED {
   background-color: #f44336;
   box-shadow: 0 0 4px rgba(244, 67, 54, 0.4);
   border-color: #ffcdd2;
 }
 
-.indicator--off {
+.indicator--OFF {
   background-color: #bdbdbd;
   box-shadow: none;
   border-color: #e0e0e0;

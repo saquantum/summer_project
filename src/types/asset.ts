@@ -31,7 +31,7 @@ export interface AssetSearchForm {
 export interface AssetWithWarnings {
   asset: Asset
   warnings: Warning[]
-  status?: string
+  maxWarning?: Warning | null
 }
 
 export interface AssetForm {

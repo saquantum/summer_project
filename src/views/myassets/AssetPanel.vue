@@ -19,7 +19,7 @@ const currentAssets = ref<AssetWithWarnings[] | []>([])
 // select value
 const warningLevelOptions = [
   {
-    value: 'No',
+    value: 'NO',
     label: 'No Warning'
   },
   {
@@ -36,15 +36,6 @@ const warningLevelOptions = [
   }
 ]
 
-const assetTypeOptions = [
-  { value: 'type_001', label: 'Water Tank' },
-  { value: 'type_002', label: 'Soakaway' },
-  { value: 'type_003', label: 'Green Roof' },
-  { value: 'type_004', label: 'Permeable Pavement' },
-  { value: 'type_005', label: 'Swale' },
-  { value: 'type_006', label: 'Retention Pond' },
-  { value: 'type_007', label: 'Rain Garden' }
-]
 // page change
 const currentPage = ref(1)
 const pageSize = 8
@@ -59,23 +50,16 @@ const currentPageAssets = computed(() => {
   const end = start + pageSize
   const arr = currentAssets.value.slice(start, end)
 
-  // set indicator color
-  arr.forEach((item) => {
-    if (item.warnings[0]?.warningLevel.toLowerCase().includes('red')) {
-      item.status = 'red'
-    } else if (item.warnings[0]?.warningLevel.toLowerCase().includes('amber')) {
-      item.status = 'amber'
-    } else if (
-      item.warnings[0]?.warningLevel.toLowerCase().includes('yellow')
-    ) {
-      item.status = 'yellow'
-    } else {
-      item.status = 'success'
-    }
-  })
-
   return arr
 })
+
+// watch filter condition
+const warningOrder: Record<string, number> = {
+  RED: 3,
+  AMBER: 2,
+  YELLOW: 1,
+  '': 0
+}
 
 onMounted(async () => {
   currentAssets.value = []
@@ -88,42 +72,53 @@ onMounted(async () => {
   if (userStore.user && id) {
     await assetStore.getUserAssets(userStore.user.admin, id)
   }
+
   if (assetStore.userAssets) {
-    currentAssets.value = assetStore.userAssets
+    currentAssets.value = assetStore.userAssets.sort((a, b) => {
+      const aLevel = a.maxWarning?.warningLevel || ''
+      const bLevel = b.maxWarning?.warningLevel || ''
+      return warningOrder[bLevel] - warningOrder[aLevel]
+    })
   }
 })
 
-// watch filter condition
 watch(
   [assetName, assetWarningLevel, assetType],
   async () => {
     if (!assetStore.userAssets || assetStore.userAssets.length === 0) return
-    currentAssets.value = assetStore.userAssets.filter((item) => {
-      let matchLevel = false
-      if (
-        assetWarningLevel.value &&
-        item.warnings[0] &&
-        item.warnings[0].warningLevel &&
-        item.warnings[0].warningLevel === assetWarningLevel.value
-      ) {
-        matchLevel = true
-      } else if (
-        assetWarningLevel.value &&
-        assetWarningLevel.value.includes('No') &&
-        !item.warnings[0]
-      ) {
-        matchLevel = true
-      } else if (!assetWarningLevel.value) {
-        matchLevel = true
-      }
-      const matchName = assetName.value
-        ? item.asset.name?.toLowerCase().includes(assetName.value.toLowerCase())
-        : true
-      const matchType = assetType.value
-        ? item.asset.typeId === assetType.value
-        : true
-      return matchName && matchLevel && matchType
-    })
+    currentAssets.value = assetStore.userAssets
+      .filter((item) => {
+        let matchLevel = false
+        if (
+          assetWarningLevel.value &&
+          item.maxWarning &&
+          item.maxWarning.warningLevel === assetWarningLevel.value
+        ) {
+          matchLevel = true
+        } else if (
+          assetWarningLevel.value &&
+          assetWarningLevel.value.includes('NO') &&
+          !item.maxWarning
+        ) {
+          matchLevel = true
+        } else if (!assetWarningLevel.value) {
+          matchLevel = true
+        }
+        const matchName = assetName.value
+          ? item.asset.name
+              ?.toLowerCase()
+              .includes(assetName.value.toLowerCase())
+          : true
+        const matchType = assetType.value
+          ? item.asset.typeId === assetType.value
+          : true
+        return matchName && matchLevel && matchType
+      })
+      .sort((a, b) => {
+        const aLevel = a.maxWarning?.warningLevel || ''
+        const bLevel = b.maxWarning?.warningLevel || ''
+        return warningOrder[bLevel] - warningOrder[aLevel]
+      })
     currentPage.value = 1
   },
   {
@@ -163,7 +158,7 @@ watch(
       class="select-style"
     >
       <el-option
-        v-for="item in assetTypeOptions"
+        v-for="item in assetStore.typeOptions"
         :key="item.value"
         :label="item.label"
         :value="item.value"
@@ -171,6 +166,29 @@ watch(
     </el-select>
   </div>
 
+  <!-- warning legend -->
+  <div class="legend">
+    <span
+      class="legend-item warning-low"
+      title="No meteorological warning for this asset."
+      >● No Warning</span
+    >
+    <span
+      class="legend-item warning-medium"
+      title="Yellow: Be aware. Severe weather is possible. Plan ahead and check for updates."
+      >● Yellow Warning</span
+    >
+    <span
+      class="legend-item warning-high"
+      title="Amber: Be prepared. There is an increased likelihood of impacts from severe weather, which could potentially disrupt your plans."
+      >● Amber Warning</span
+    >
+    <span
+      class="legend-item warning-severe"
+      title="Red: Take action. Dangerous weather is expected. Avoid dangerous areas and follow official advice."
+      >● Red Warning</span
+    >
+  </div>
   <!-- cards for assets -->
   <div class="assets-container">
     <h3 v-if="assetStore.userAssets?.length === 0">You don't have any asset</h3>
@@ -186,7 +204,7 @@ watch(
             <h3
               class="asset-title"
               :class="{
-                'warning-low': !item.warnings[0],
+                'warning-low': !item.maxWarning,
                 'warning-medium': item.warnings[0]?.warningLevel === 'YELLOW',
                 'warning-high': item.warnings[0]?.warningLevel === 'AMBER',
                 'warning-severe': item.warnings[0]?.warningLevel === 'RED'
@@ -194,7 +212,9 @@ watch(
             >
               {{ item.asset.name || 'Asset Name' }}
             </h3>
-            <StatusIndicator :status="item.status" />
+            <StatusIndicator
+              :status="item.maxWarning?.warningLevel || 'SUCCESS'"
+            />
           </div>
         </template>
 
@@ -342,11 +362,25 @@ watch(
   width: 240px;
 }
 
+.legend {
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  gap: 4px;
+}
 .warning-low {
   color: green;
 }
 .warning-medium {
-  color: yellow;
+  color: #e6a23c;
 }
 .warning-high {
   color: orange;
