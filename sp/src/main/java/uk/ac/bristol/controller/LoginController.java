@@ -57,6 +57,10 @@ public class LoginController {
             throw new SpExceptions.BadRequestException("Key fields missing during registration.");
         }
 
+        if (!password.matches("^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?~`]+$")) {
+            throw new SpExceptions.BusinessException("Invalid password: empty or contains improper characters");
+        }
+
         if (!password.equals(repassword)) {
             throw new SpExceptions.BadRequestException("Two passwords don't match.");
         }

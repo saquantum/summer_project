@@ -113,7 +113,14 @@ public class UserController {
     public ResponseBody getAllUsers(@RequestParam(required = false) List<String> orderList,
                                     @RequestParam(required = false) Integer limit,
                                     @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAssetHolder(null, QueryTool.getOrderList(orderList), limit, offset));
+        FilterDTO filter = new FilterDTO(limit);
+        String message = QueryTool.formatPaginationLimit(filter);
+        return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAssetHolder(
+                null,
+                QueryTool.getOrderList(orderList),
+                filter.getLimit(),
+                offset
+        ), message);
     }
 
     @PostMapping("/admin/user/all/search")
@@ -121,20 +128,26 @@ public class UserController {
         if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
             throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
         }
-
+        String message = QueryTool.formatPaginationLimit(filter);
         return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAssetHolder(
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),
                 filter.getOffset()
-        ));
+        ), message);
     }
 
     @GetMapping("/admin/user/unauthorised")
     public ResponseBody getAllUnauthorisedUsersWithAssetHolder(@RequestParam(required = false) List<String> orderList,
                                                                @RequestParam(required = false) Integer limit,
                                                                @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, userService.getAllUnauthorisedUsersWithAssetHolder(null, QueryTool.getOrderList(orderList), limit, offset));
+        FilterDTO filter = new FilterDTO(limit);
+        String message = QueryTool.formatPaginationLimit(filter);
+        return new ResponseBody(Code.SELECT_OK, userService.getAllUnauthorisedUsersWithAssetHolder(
+                null,
+                QueryTool.getOrderList(orderList),
+                filter.getLimit(), offset
+        ), message);
     }
 
     @PostMapping("/admin/user/unauthorised/search")
@@ -142,20 +155,27 @@ public class UserController {
         if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
             throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
         }
-
+        String message = QueryTool.formatPaginationLimit(filter);
         return new ResponseBody(Code.SELECT_OK, userService.getAllUnauthorisedUsersWithAssetHolder(
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),
                 filter.getOffset()
-        ));
+        ), message);
     }
 
     @GetMapping("/admin/user/with-asset-ids")
     public ResponseBody getAllAssetHoldersWithAssetIds(@RequestParam(required = false) List<String> orderList,
                                                        @RequestParam(required = false) Integer limit,
                                                        @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, userService.getAllAssetHoldersWithAssetIds(null, QueryTool.getOrderList(orderList), limit, offset));
+        FilterDTO filter = new FilterDTO(limit);
+        String message = QueryTool.formatPaginationLimit(filter);
+        return new ResponseBody(Code.SELECT_OK, userService.getAllAssetHoldersWithAssetIds(
+                null,
+                QueryTool.getOrderList(orderList),
+                filter.getLimit(),
+                offset
+        ), message);
     }
 
     @PostMapping("/admin/user/with-asset-ids/search")
@@ -163,13 +183,13 @@ public class UserController {
         if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
             throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
         }
-
+        String message = QueryTool.formatPaginationLimit(filter);
         return new ResponseBody(Code.SELECT_OK, userService.getAllAssetHoldersWithAssetIds(
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),
                 filter.getOffset()
-        ));
+        ), message);
     }
 
     /**
@@ -183,7 +203,15 @@ public class UserController {
                                                    @RequestParam(required = false) List<String> orderList,
                                                    @RequestParam(required = false) Integer limit,
                                                    @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAccumulator(function, column, null, QueryTool.getOrderList(orderList), limit, offset));
+        FilterDTO filter = new FilterDTO(limit);
+        String message = QueryTool.formatPaginationLimit(filter);
+        return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAccumulator(
+                function, column,
+                null,
+                QueryTool.getOrderList(orderList),
+                filter.getLimit(),
+                offset
+        ), message);
     }
 
     @PostMapping("/admin/user/accumulate/search")
@@ -193,13 +221,13 @@ public class UserController {
         if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
             throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
         }
-
+        String message = QueryTool.formatPaginationLimit(filter);
         return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAccumulator(function, column,
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),
                 filter.getOffset()
-        ));
+        ), message);
     }
 
     @GetMapping("/admin/user/count")

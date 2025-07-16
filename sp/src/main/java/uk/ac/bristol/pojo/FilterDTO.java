@@ -8,6 +8,13 @@ public class FilterDTO {
     private Integer limit;
     private Integer offset;
 
+    public FilterDTO() {
+    }
+
+    public FilterDTO(Integer limit) {
+        this.limit = limit;
+    }
+
     public Map<String, Object> getFilters() {
         return filters;
     }

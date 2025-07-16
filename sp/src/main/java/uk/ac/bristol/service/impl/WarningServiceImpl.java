@@ -9,9 +9,14 @@ import uk.ac.bristol.dao.WarningMapper;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.Template;
 import uk.ac.bristol.pojo.Warning;
+import uk.ac.bristol.service.AssetService;
+import uk.ac.bristol.service.ContactService;
 import uk.ac.bristol.service.WarningService;
 import uk.ac.bristol.util.QueryTool;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -21,11 +26,15 @@ public class WarningServiceImpl implements WarningService {
     private final MetaDataMapper metaDataMapper;
     private final WarningMapper warningMapper;
     private final ContactMapper contactMapper;
+    private final AssetService assetService;
+    private final ContactService contactService;
 
-    public WarningServiceImpl(MetaDataMapper metaDataMapper, WarningMapper warningMapper, ContactMapper contactMapper) {
+    public WarningServiceImpl(MetaDataMapper metaDataMapper, WarningMapper warningMapper, ContactMapper contactMapper, AssetService assetService, ContactService contactService) {
         this.metaDataMapper = metaDataMapper;
         this.warningMapper = warningMapper;
         this.contactMapper = contactMapper;
+        this.assetService = assetService;
+        this.contactService = contactService;
     }
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
@@ -72,6 +81,52 @@ public class WarningServiceImpl implements WarningService {
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
+    public void storeWarningsAndSendNotifications(List<Warning> parsedWarnings) {
+        List<Warning> warningsToNotify = new ArrayList<>();
+
+        int s = 0;
+        for (Warning warning : parsedWarnings) {
+            s++;
+            // 1. new warning: send notifications
+            if (!warningMapper.testWarningExists(warning.getId())) {
+                warningsToNotify.add(warning);
+                warningMapper.insertWarning(warning);
+                metaDataMapper.increaseTotalCountByTableName("weather_warnings", 1);
+            }
+            // 2. warning details updated: send notifications
+            else if (warningMapper.testWarningDetailDiff(warning)) {
+                warningsToNotify.add(warning);
+                warningMapper.updateWarning(warning);
+            }
+            // 3. warning area updated: send notifications to assets not intersecting with it beforehand
+            else if (warningMapper.testWarningAreaDiff(warning.getId(), warning.getAreaAsJson())) {
+                List<String> oldAssetIds = assetService.selectAssetIdsByWarningId(warning.getId());
+                warningMapper.updateWarning(warning);
+                List<String> assetIds = assetService.selectAssetIdsByWarningId(warning.getId());
+                for (String assetId : assetIds) {
+                    if (!oldAssetIds.contains(assetId)) {
+                        Map<String, Object> notification = contactService.formatNotification(warning.getId(), assetId);
+                        contactService.sendEmail(notification);
+                    }
+                }
+            } else {
+                s--;
+            }
+        }
+
+        System.out.println("Successfully inserted or updated " + s + " weather warning records at "
+                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+
+        for (Warning warning : warningsToNotify) {
+            List<String> assetIds = assetService.selectAssetIdsByWarningId(warning.getId());
+            contactService.sendAllEmails(warning, assetIds);
+        }
+        System.out.println("Successfully sent emails after crawling.");
+    }
+
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
     public int insertWarning(Warning warning) {
         int n = warningMapper.insertWarning(warning);
         metaDataMapper.increaseTotalCountByTableName("weather_warnings", n);
@@ -89,7 +144,6 @@ public class WarningServiceImpl implements WarningService {
                 throw new SpExceptions.SystemException("Found" + search.size() + " weather warning data stored in database for id " + warning.getId());
             } else if (search.size() == 1) {
                 warningMapper.updateWarning(warning);
-                sum++;
             } else {
                 warningMapper.insertWarning(warning);
                 sum++;

@@ -42,7 +42,14 @@ public class AdminController {
     public ResponseBody getAllTemplates(@RequestParam(required = false) List<String> orderList,
                                         @RequestParam(required = false) Integer limit,
                                         @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllNotificationTemplates(null, QueryTool.getOrderList(orderList), limit, offset));
+        FilterDTO filter = new FilterDTO(limit);
+        String message = QueryTool.formatPaginationLimit(filter);
+        return new ResponseBody(Code.SELECT_OK, warningService.getAllNotificationTemplates(
+                null,
+                QueryTool.getOrderList(orderList),
+                filter.getLimit(),
+                offset
+        ), message);
     }
 
     @PostMapping("/template/search")
@@ -50,13 +57,13 @@ public class AdminController {
         if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
             throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
         }
-
+        String message = QueryTool.formatPaginationLimit(filter);
         return new ResponseBody(Code.SELECT_OK, warningService.getAllNotificationTemplates(
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),
                 filter.getOffset()
-        ));
+        ), message);
     }
 
     @GetMapping("/template/type")
@@ -103,7 +110,14 @@ public class AdminController {
     public ResponseBody getAllPermissions(@RequestParam(required = false) List<String> orderList,
                                           @RequestParam(required = false) Integer limit,
                                           @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, permissionConfigService.getAllPermissionConfigs(null, QueryTool.getOrderList(orderList), limit, offset));
+        FilterDTO filter = new FilterDTO(limit);
+        String message = QueryTool.formatPaginationLimit(filter);
+        return new ResponseBody(Code.SELECT_OK, permissionConfigService.getAllPermissionConfigs(
+                null,
+                QueryTool.getOrderList(orderList),
+                filter.getLimit(),
+                offset
+        ), message);
     }
 
     @PostMapping("/permission/search")
@@ -111,13 +125,13 @@ public class AdminController {
         if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
             throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
         }
-
+        String message = QueryTool.formatPaginationLimit(filter);
         return new ResponseBody(Code.SELECT_OK, permissionConfigService.getAllPermissionConfigs(
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),
                 filter.getOffset()
-        ));
+        ), message);
     }
 
     @GetMapping("/permission/{uid}")

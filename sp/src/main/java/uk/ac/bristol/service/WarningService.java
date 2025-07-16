@@ -24,6 +24,8 @@ public interface WarningService {
 
     List<Long> selectWarningIdsByAssetId(String id);
 
+    void storeWarningsAndSendNotifications(List<Warning> parsedWarnings);
+
     int insertWarning(Warning warning);
 
     int insertWarningsList(List<Warning> warnings);

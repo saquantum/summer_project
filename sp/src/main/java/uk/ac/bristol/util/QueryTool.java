@@ -3,8 +3,10 @@ package uk.ac.bristol.util;
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import uk.ac.bristol.controller.Code;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.Asset;
+import uk.ac.bristol.pojo.FilterDTO;
 import uk.ac.bristol.pojo.PermissionConfig;
 import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.service.AssetService;
@@ -135,6 +137,9 @@ public final class QueryTool {
         if (isAdmin == null) {
             return false;
         }
+        if (isAdmin) {
+            return true;
+        }
         String id = (String) claims.get("id");
         String assetHolderId = (String) claims.get("assetHolderId");
 
@@ -225,7 +230,7 @@ public final class QueryTool {
             throw new SpExceptions.SystemException("Found " + list.size() + " permission configs for user " + uid);
         }
         config = list.get(0);
-        return new PermissionConfig(null,
+        return new PermissionConfig(uid,
                 adminConfig.get(0).getCanCreateAsset() && config.getCanCreateAsset(),
                 adminConfig.get(0).getCanSetPolygonOnCreate() && config.getCanSetPolygonOnCreate(),
                 adminConfig.get(0).getCanUpdateAssetFields() && config.getCanUpdateAssetFields(),
@@ -233,6 +238,18 @@ public final class QueryTool {
                 adminConfig.get(0).getCanDeleteAsset() && config.getCanDeleteAsset(),
                 adminConfig.get(0).getCanUpdateProfile() && config.getCanUpdateProfile()
         );
+    }
+
+    public static String formatPaginationLimit(FilterDTO filter) {
+        if (filter != null && filter.hasLimit()) {
+            if (filter.getLimit() > Code.PAGINATION_MAX_LIMIT) {
+                filter.setLimit(Code.PAGINATION_MAX_LIMIT);
+                return "The pagination limit you provided is too large and has been replaced by" + Code.PAGINATION_MAX_LIMIT;
+            } else {
+                return null;
+            }
+        }
+        return null;
     }
 }
 

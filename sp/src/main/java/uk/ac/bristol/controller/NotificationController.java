@@ -97,7 +97,14 @@ public class NotificationController {
     public ResponseBody getAllLiveWarnings(@RequestParam(required = false) List<String> orderList,
                                            @RequestParam(required = false) Integer limit,
                                            @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarnings(null, QueryTool.getOrderList(orderList), limit, offset));
+        FilterDTO filter = new FilterDTO(limit);
+        String message = QueryTool.formatPaginationLimit(filter);
+        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarnings(
+                null,
+                QueryTool.getOrderList(orderList),
+                filter.getLimit(),
+                offset
+        ), message);
     }
 
     @PostMapping("/warning/search")
@@ -105,20 +112,27 @@ public class NotificationController {
         if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
             throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
         }
-
+        String message = QueryTool.formatPaginationLimit(filter);
         return new ResponseBody(Code.SELECT_OK, warningService.getAllWarnings(
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),
                 filter.getOffset()
-        ));
+        ), message);
     }
 
     @GetMapping("/admin/warning/all")
     public ResponseBody getAllWarningsIncludingOutdated(@RequestParam(required = false) List<String> orderList,
                                                         @RequestParam(required = false) Integer limit,
                                                         @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarningsIncludingOutdated(null, QueryTool.getOrderList(orderList), limit, offset));
+        FilterDTO filter = new FilterDTO(limit);
+        String message = QueryTool.formatPaginationLimit(filter);
+        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarningsIncludingOutdated(
+                null,
+                QueryTool.getOrderList(orderList),
+                filter.getLimit(),
+                offset
+        ), message);
     }
 
     @PostMapping("/admin/warning/all/search")
@@ -126,13 +140,13 @@ public class NotificationController {
         if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
             throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
         }
-
+        String message = QueryTool.formatPaginationLimit(filter);
         return new ResponseBody(Code.SELECT_OK, warningService.getAllWarningsIncludingOutdated(
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),
                 filter.getOffset()
-        ));
+        ), message);
     }
 
     @GetMapping("/warning/{id}")

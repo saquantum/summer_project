@@ -1,6 +1,9 @@
 package uk.ac.bristol.controller;
 
 public class Code {
+    public static final int PAGINATION_MAX_LIMIT = 1000;
+
+
     public static final int SUCCESS = 20000;
     public static final int INSERT_ERR = 20010;
     public static final int INSERT_OK = 20011;
