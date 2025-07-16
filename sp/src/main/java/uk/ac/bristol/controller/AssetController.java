@@ -35,9 +35,15 @@ public class AssetController {
                                              @RequestParam(required = false) List<String> orderList,
                                              @RequestParam(required = false) Integer limit,
                                              @RequestParam(required = false) Integer offset) {
+        FilterDTO filter = new FilterDTO(limit);
+        String message = QueryTool.formatPaginationLimit(filter);
         User user = userService.getUserByUserId(uid);
-        List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(user.getAssetHolderId(), QueryTool.getOrderList(orderList), limit, offset);
-        return new ResponseBody(Code.SELECT_OK, assets);
+        List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(
+                user.getAssetHolderId(),
+                QueryTool.getOrderList(orderList),
+                filter.getLimit(),
+                offset);
+        return new ResponseBody(Code.SELECT_OK, assets, message);
     }
 
     @GetMapping("/user/aid/{aid}/asset")
@@ -47,8 +53,14 @@ public class AssetController {
                                              @RequestParam(required = false) List<String> orderList,
                                              @RequestParam(required = false) Integer limit,
                                              @RequestParam(required = false) Integer offset) {
-        List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(aid, QueryTool.getOrderList(orderList), limit, offset);
-        return new ResponseBody(Code.SELECT_OK, assets);
+        FilterDTO filter = new FilterDTO(limit);
+        String message = QueryTool.formatPaginationLimit(filter);
+        List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(
+                aid,
+                QueryTool.getOrderList(orderList),
+                filter.getLimit(),
+                offset);
+        return new ResponseBody(Code.SELECT_OK, assets, message);
     }
 
     @GetMapping("/admin/user/uid/{uid}/asset")
@@ -56,9 +68,15 @@ public class AssetController {
                                                      @RequestParam(required = false) List<String> orderList,
                                                      @RequestParam(required = false) Integer limit,
                                                      @RequestParam(required = false) Integer offset) {
+        FilterDTO filter = new FilterDTO(limit);
+        String message = QueryTool.formatPaginationLimit(filter);
         User user = userService.getUserByUserId(uid);
-        List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(user.getAssetHolderId(), QueryTool.getOrderList(orderList), limit, offset);
-        return new ResponseBody(Code.SELECT_OK, assets);
+        List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(
+                user.getAssetHolderId(),
+                QueryTool.getOrderList(orderList),
+                filter.getLimit(),
+                offset);
+        return new ResponseBody(Code.SELECT_OK, assets, message);
     }
 
     @GetMapping("/admin/user/aid/{aid}/asset")
@@ -66,8 +84,14 @@ public class AssetController {
                                                             @RequestParam(required = false) List<String> orderList,
                                                             @RequestParam(required = false) Integer limit,
                                                             @RequestParam(required = false) Integer offset) {
-        List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(aid, QueryTool.getOrderList(orderList), limit, offset);
-        return new ResponseBody(Code.SELECT_OK, assets);
+        FilterDTO filter = new FilterDTO(limit);
+        String message = QueryTool.formatPaginationLimit(filter);
+        List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(
+                aid,
+                QueryTool.getOrderList(orderList),
+                filter.getLimit(),
+                offset);
+        return new ResponseBody(Code.SELECT_OK, assets, message);
     }
 
     /**
@@ -126,7 +150,14 @@ public class AssetController {
     public ResponseBody getAllAssetsWithWarnings(@RequestParam(required = false) List<String> orderList,
                                                  @RequestParam(required = false) Integer limit,
                                                  @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetsWithWarnings(null, QueryTool.getOrderList(orderList), limit, offset));
+        FilterDTO filter = new FilterDTO(limit);
+        String message = QueryTool.formatPaginationLimit(filter);
+        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetsWithWarnings(
+                null,
+                QueryTool.getOrderList(orderList),
+                filter.getLimit(),
+                offset
+        ), message);
     }
 
     @PostMapping("/admin/asset/search")
@@ -134,13 +165,13 @@ public class AssetController {
         if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
             throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
         }
-
+        String message = QueryTool.formatPaginationLimit(filter);
         return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetsWithWarnings(
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),
                 filter.getOffset()
-        ));
+        ), message);
     }
 
     @GetMapping("/admin/asset/{assetId}")
@@ -242,7 +273,14 @@ public class AssetController {
     public ResponseBody getAllAssetTypes(@RequestParam(required = false) List<String> orderList,
                                          @RequestParam(required = false) Integer limit,
                                          @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetTypes(null, QueryTool.getOrderList(orderList), limit, offset));
+        FilterDTO filter = new FilterDTO(limit);
+        String message = QueryTool.formatPaginationLimit(filter);
+        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetTypes(
+                null,
+                QueryTool.getOrderList(orderList),
+                filter.getLimit(),
+                offset
+        ), message);
     }
 
     @PostMapping("/asset/type/search")
@@ -250,13 +288,13 @@ public class AssetController {
         if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
             throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
         }
-
+        String message = QueryTool.formatPaginationLimit(filter);
         return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetTypes(
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),
                 filter.getOffset()
-        ));
+        ), message);
     }
 
     @PostMapping("/admin/asset/type")

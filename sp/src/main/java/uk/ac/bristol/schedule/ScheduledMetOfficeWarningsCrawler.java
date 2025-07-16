@@ -6,11 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import uk.ac.bristol.MockDataInitializer;
-import uk.ac.bristol.dao.WarningMapper;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.Warning;
-import uk.ac.bristol.service.AssetService;
-import uk.ac.bristol.service.ContactService;
 import uk.ac.bristol.service.WarningService;
 
 import javax.servlet.http.HttpServletResponse;
@@ -28,26 +25,19 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.*;
 
 @Component
 public class ScheduledMetOfficeWarningsCrawler {
 
-    private final WarningMapper warningMapper;
     @Value("${metoffice.url}")
     private String DEFAULT_URL;
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private final WarningService warningService;
-    private final ContactService contactService;
-    private final AssetService assetService;
 
-    public ScheduledMetOfficeWarningsCrawler(WarningService warningService, ContactService contactService, AssetService assetService, WarningMapper warningMapper) {
+    public ScheduledMetOfficeWarningsCrawler(WarningService warningService) {
         this.warningService = warningService;
-        this.contactService = contactService;
-        this.assetService = assetService;
-        this.warningMapper = warningMapper;
     }
 
     static class FeatureCollection {
@@ -74,6 +64,7 @@ public class ScheduledMetOfficeWarningsCrawler {
     }
 
     private void crawler() {
+        // 1. get http response from met office site
         HttpResponse<String> httpResponse = null;
         String response = null;
         try {
@@ -85,6 +76,8 @@ public class ScheduledMetOfficeWarningsCrawler {
             throw new SpExceptions.SystemException("Failed to fetch weather warning data due to HTTP error with code "
                     + httpResponse.statusCode());
         }
+
+        // 2. get GeoJSON data from http response
         response = httpResponse.body();
         try {
             saveWarningData(response);
@@ -93,9 +86,11 @@ public class ScheduledMetOfficeWarningsCrawler {
         } catch (IOException e) {
             throw new SpExceptions.SystemException("Failed to save fetched weather warning data at "
                     + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                    +". "
+                    + ". "
                     + e.getMessage());
         }
+
+        // 3. parse GeoJSON into Warning DTO, send notifications
         List<Warning> warnings;
         try {
             List<Feature> features = getFeatures(response);
@@ -106,48 +101,11 @@ public class ScheduledMetOfficeWarningsCrawler {
                             + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
                             + ". " + e.getMessage());
         }
-
-        List<Warning> warningsToNotify = new ArrayList<>();
-
-        int s = 0;
-        for (Warning warning : warnings) {
-            if (!warningMapper.testWarningExists(warning.getId())) {
-                warningsToNotify.add(warning);
-                s++;
-                warningService.insertWarningsList(Collections.singletonList(warning));
-                System.out.println("New warningID");
-            } else if (warningMapper.testWarningDetailDiff(warning)) {
-                warningsToNotify.add(warning);
-                s++;
-                warningService.insertWarningsList(Collections.singletonList(warning));
-                System.out.println("New updated warning(Detail Diff!)");
-            } else if (warningMapper.testWarningAreaDiff(warning.getId(), warning.getAreaAsJson())) {
-                List<String> oldAssetIds = assetService.selectAssetIdsByWarningId(warning.getId());
-                s++;
-                warningService.insertWarningsList(Collections.singletonList(warning));
-                List<String> assetIds = assetService.selectAssetIdsByWarningId(warning.getId());
-                for (String assetId : assetIds) {
-                    if (!oldAssetIds.contains(assetId)) {
-                        Map<String, Object> notification = contactService.formatNotification(warning.getId(), assetId);
-                        contactService.sendEmail(notification);
-                    }
-                }
-                System.out.println("New updated warning(Area Diff!)");
-            } else {
-                s++;
-                warningService.insertWarningsList(Collections.singletonList(warning));
-                System.out.println("New updated warning(No diff!)");
-            }
+        if (!warnings.isEmpty()) {
+            warningService.storeWarningsAndSendNotifications(warnings);
+        } else {
+            System.out.println("No recently issued weather warnings.");
         }
-
-        System.out.println("Successfully inserted or updated " + s + " weather warning records at "
-                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-
-        for (Warning warning : warningsToNotify) {
-            List<String> assetIds = assetService.selectAssetIdsByWarningId(warning.getId());
-            contactService.sendAllEmails(warning, assetIds);
-        }
-        System.out.println("Successfully sent emails after crawling.");
     }
 
     private String getBaseUrl(String url) {
