@@ -16,9 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.controller.Code;
 import uk.ac.bristol.controller.ResponseBody;
 import uk.ac.bristol.dao.AssetHolderMapper;
-import uk.ac.bristol.dao.AssetMapper;
 import uk.ac.bristol.dao.ContactMapper;
-import uk.ac.bristol.dao.WarningMapper;
+import uk.ac.bristol.dao.MetaDataMapper;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
 import uk.ac.bristol.service.ContactService;
@@ -46,140 +45,93 @@ public class ContactServiceImpl implements ContactService {
     private StringRedisTemplate redisTemplate;
 
     private final UserService userService;
-    private final WarningMapper warningMapper;
-    private final AssetMapper assetMapper;
+    private final MetaDataMapper metaDataMapper;
     private final AssetHolderMapper assetHolderMapper;
     private final ContactMapper contactMapper;
-
 
     private final Duration expireTime = Duration.ofMinutes(5);
     private final String prefix = "email:verify:code:";
 
-    public ContactServiceImpl(UserService userService, WarningMapper warningMapper, AssetMapper assetMapper, AssetHolderMapper assetHolderMapper, ContactMapper contactMapper) {
+    public ContactServiceImpl(UserService userService, MetaDataMapper metaDataMapper, AssetHolderMapper assetHolderMapper, ContactMapper contactMapper) {
         this.userService = userService;
-        this.warningMapper = warningMapper;
-        this.assetMapper = assetMapper;
+        this.metaDataMapper = metaDataMapper;
         this.assetHolderMapper = assetHolderMapper;
         this.contactMapper = contactMapper;
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
-    public Map<String, Object> formatNotificationWithIds(Long warningId, String assetId, String ownerId) {
-        Boolean test = warningMapper.testIfGivenAssetIntersectsWithWarning(assetId, warningId);
-        if (test == null || !test) {
-            return null;
+    public Map<String, Object> formatNotification(Warning warning, UserWithAssets uwa, String channel) {
+        // 1. get all templates for given warning
+        String warningType = warning.getWeatherType();
+        String severity = warning.getWarningLevel();
+
+        List<Template> allTemplatesOfWarning = contactMapper.selectNotificationTemplateByTypes(new Template(null, warningType, severity, channel));
+        if (allTemplatesOfWarning.isEmpty()) {
+            throw new SpExceptions.SystemException("No templates found for the type of warning " + warning.getId());
+        }
+        Map<String, Template> mapping = new HashMap<>();
+        for (Template template : allTemplatesOfWarning) {
+            mapping.put(template.getAssetTypeId(), template);
         }
 
-        List<Warning> warning = warningMapper.selectWarningById(warningId);
-        if (warning.size() != 1) {
-            throw new SpExceptions.GetMethodException("Get " + warning.size() + " warnings using id " + warningId);
+        // 2. get individual template for each asset and group them together
+        int length = uwa.getAssets().size();
+        StringBuilder title = new StringBuilder();
+        StringBuilder body = new StringBuilder();
+        for (Asset asset : uwa.getAssets()) {
+            String typeId = asset.getTypeId();
+            if (!mapping.containsKey(typeId)) {
+                throw new SpExceptions.SystemException("Template for Asset type " + typeId + " does not exist");
+            }
+            Template template = mapping.get(typeId);
+            if (length == 1) {
+                title.append(fillInVariablesWithValues(template.getTitle(), uwa.getUser(), asset));
+            }
+            body.append(fillInVariablesWithValues(template.getBody(), uwa.getUser(), asset)).append(System.lineSeparator());
         }
-
-        String typeId = assetMapper.selectAssets(
-                QueryTool.formatFilters(Map.of("asset_id", assetId)),
-                null, null, null).get(0).getTypeId();
-        String warningType = warning.get(0).getWeatherType();
-        String severity = warning.get(0).getWarningLevel();
-
-        List<Template> template = contactMapper.selectNotificationTemplateByTypes(new Template(typeId, warningType, severity, "Email"));
-        if (template.size() != 1) {
-            throw new SpExceptions.SystemException("Get " + template.size() + " templates using id " + warningId);
-        }
-
-        String title = template.get(0).getTitle();
-        String body = template.get(0).getBody();
-
-        title = fillInVariablesWithValues(title, assetId);
-        body = fillInVariablesWithValues(body, assetId);
-
-        if (body == null) {
-            throw new SpExceptions.GetMethodException("The message type you required does not exist");
+        if (length > 1) {
+            title.append("Weather warning for multiple assets");
         }
 
         String id = UUID.randomUUID().toString();
         LocalDateTime now = LocalDateTime.now();
         return new HashMap<>(Map.of(
                 "id", id,
-                "assetTypeId", typeId,
-                "toOwnerId", ownerId,
+                "toUserId", uwa.getUser().getId(),
                 "weatherWarningType", warningType,
                 "severity", severity,
-                "title", title,
-                "body", body,
+                "title", title.toString(),
+                "body", body.toString(),
                 "createdAt", now,
-                "validUntil", warning.get(0).getValidTo(),
-                "channel", ""));
+                "validUntil", warning.getValidTo(),
+                "channel", channel));
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-    @Override
-    public Map<String, Object> formatNotification(Long warningId, String assetId) {
-        String assetOwnerId = assetMapper.selectAssets(
-                QueryTool.formatFilters(Map.of("asset_id", assetId)),
-                null, null, null).get(0).getOwnerId();
-        return formatNotificationWithIds(warningId, assetId, assetOwnerId);
+    private String fillInVariablesWithValues(String content, User user, Asset asset) {
+        return content
+                .replace("{{asset-model}}", asset.getName())
+                .replace("{{contact_name}}", user.getAssetHolder().getName())
+                .replace("{{post_town}}", user.getAssetHolder().getAddress().get("city"));
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
-    public void sendAllEmails(Warning warning, List<String> assetIds) {
-        for (String assetId : assetIds) {
-            Map<String, Object> notification = formatNotification(warning.getId(), assetId);
-            sendEmail(notification);
-            System.out.println("Successfully sent weather warning notification to " + assetId);
-        }
-    }
-
-    @Override
-    public ResponseBody sendEmail(Map<String, Object> notification) {
+    public void sendEmailToAddress(String toEmailAddress, Map<String, Object> notification) {
         if (notification == null) {
-            return new ResponseBody(Code.BUSINESS_ERR, null, "Failed to send email because notification is null");
-        }
-        List<Map<String, Object>> contactPreferences = assetHolderMapper.selectContactPreferencesByAssetHolderId(notification.get("toOwnerId").toString());
-        if (contactPreferences.size() != 1) {
-            throw new SpExceptions.SystemException("The database might be modified by another transaction");
+            throw new SpExceptions.SystemException("Failed to send email because notification is null");
         }
 
-        if ((Boolean) contactPreferences.get(0).get("email") == false) {
-            return new ResponseBody(Code.SUCCESS, null, "The asset holder prefers not to receive by email");
-        }
-
-        List<AssetHolder> holder = assetHolderMapper.selectAssetHolders(
-                QueryTool.formatFilters(Map.of("asset_holder_id", notification.get("toOwnerId").toString())),
-                null, null, null);
-        if (holder.size() != 1) {
-            throw new SpExceptions.SystemException("The database might be modified by another transaction");
-        }
-
-        String emailAddress = holder.get(0).getEmail();
-        sendEmailToAddress(emailAddress, (String) notification.get("title"), (String) notification.get("body"));
-
-
-        // tmp test
-        contactMapper.insertInboxMessageToUser(Map.of(
-                "userId", userService.getUserByAssetHolderId(notification.get("toOwnerId").toString()).getId(),
-                "hasRead", false,
-                "issuedDate", notification.get("createdAt"),
-                "validUntil", notification.get("validUntil"),
-                "title", notification.get("title"),
-                "message", notification.get("body")));
-
-
-        return new ResponseBody(Code.SUCCESS, notification.get("body"), "The email has been sent to " + emailAddress);
-    }
-
-    private void sendEmailToAddress(String toEmailAddress, String emailSubject, String emailContent) {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper mmh;
         try {
             mmh = new MimeMessageHelper(message, true, "UTF-8");
             mmh.setFrom(from);
             mmh.setTo(toEmailAddress);
-            mmh.setSubject(emailSubject);
+            mmh.setSubject(notification.get("title").toString());
 
             Map<String, Object> claims = new HashMap<>();
-            claims.put("unsubscribe-email-uid", toEmailAddress);
+            claims.put("unsubscribe-email-uid", notification.get("toUserId").toString());
             claims.put("action", "unsubscribe-email");
             String unsubscribeUrl = baseURL + "/user/notify/email/unsubscribe?token=" + JwtUtil.generateJWT(claims);
             mmh.setText("<!DOCTYPE html>\n" +
@@ -190,7 +142,7 @@ public class ContactServiceImpl implements ContactService {
                     "    <title>Document</title>\n" +
                     "</head>\n" +
                     "<body>\n" +
-                    emailContent
+                    notification.get("body").toString()
                     + "<br>"
                     + "<br>"
                     + "To unsubscribe email notifications, click the link below:"
@@ -312,21 +264,107 @@ public class ContactServiceImpl implements ContactService {
         return new ResponseBody(Code.SUCCESS, code, "Verification code has been sent to " + email);
     }
 
-    private String fillInVariablesWithValues(String emailContent, String assetId) {
-        List<Asset> assetList = assetMapper.selectAssets(
-                QueryTool.formatFilters(Map.of("asset_id", assetId)),
-                null, null, null);
-        String assetName = assetList.get(0).getName();
-        List<AssetHolder> assetHolderList = assetHolderMapper.selectAssetHolders(
-                QueryTool.formatFilters(Map.of("asset_holder_id", assetList.get(0).getOwnerId())),
-                null, null, null);
-        String contactName = assetHolderList.get(0).getName();
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public List<Template> getAllNotificationTemplates(Map<String, Object> filters,
+                                                      List<Map<String, String>> orderList,
+                                                      Integer limit,
+                                                      Integer offset) {
+        return contactMapper.selectAllNotificationTemplates(
+                QueryTool.formatFilters(filters),
+                QueryTool.filterOrderList(orderList, "templates"),
+                limit, offset);
+    }
 
-        String postTown = assetHolderMapper.selectAddressByAssetHolderId(assetHolderList.get(0).getAddressId()).get(0).get("city");
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public List<Template> getNotificationTemplateByTypes(Template template) {
+        return contactMapper.selectNotificationTemplateByTypes(template);
+    }
 
-        emailContent = emailContent.replace("{{asset-model}}", assetName);
-        emailContent = emailContent.replace("{{contact_name}}", contactName);
-        emailContent = emailContent.replace("{{post_town}}", postTown);
-        return emailContent;
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public List<Template> getNotificationTemplateById(Long id) {
+        return contactMapper.selectNotificationTemplateById(id);
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public int insertNotificationTemplate(Template templates) {
+        int n = contactMapper.insertNotificationTemplate(templates);
+        metaDataMapper.increaseTotalCountByTableName("templates", n);
+        return n;
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public int updateNotificationTemplateMessageById(Template template) {
+        return contactMapper.updateNotificationTemplateMessageById(template);
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public int updateNotificationTemplateMessageByTypes(Template template) {
+        return contactMapper.updateNotificationTemplateMessageByTypes(template);
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public int deleteNotificationTemplateByIds(Long[] ids) {
+        int n = contactMapper.deleteNotificationTemplateByIds(ids);
+        metaDataMapper.increaseTotalCountByTableName("templates", -n);
+        return n;
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public int deleteNotificationTemplateByIds(List<Long> ids) {
+        int n = contactMapper.deleteNotificationTemplateByIds(ids);
+        metaDataMapper.increaseTotalCountByTableName("templates", -n);
+        return n;
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public int deleteNotificationTemplateByType(Template template) {
+        int n = contactMapper.deleteNotificationTemplateByType(template);
+        metaDataMapper.increaseTotalCountByTableName("templates", -n);
+        return n;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public Map<String, Object> getUserInboxMessagesByUserId(String userId) {
+        return contactMapper.selectUserInboxMessagesByUserId(userId);
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public int insertInboxMessageToUser(Map<String, Object> message) {
+        return contactMapper.insertInboxMessageToUser(message);
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public int updateInboxMessageByUserId(Map<String, Object> message) {
+        return contactMapper.updateInboxMessageByUserId(message);
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public int deleteInboxMessageByFilter(Map<String, Object> filters) {
+        return contactMapper.deleteInboxMessageByFilter(QueryTool.formatFilters(filters));
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public int deleteOutDatedInboxMessages() {
+        return contactMapper.deleteOutDatedInboxMessages();
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public int deleteOutDatedInboxMessagesByUserId(String userId) {
+        return contactMapper.deleteOutDatedInboxMessagesByUserId(userId);
     }
 }

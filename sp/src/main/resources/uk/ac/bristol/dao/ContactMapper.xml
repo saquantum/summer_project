@@ -18,12 +18,22 @@
     </select>
 
     <select id="selectNotificationTemplateByTypes" resultMap="ResultMaps.TemplateMap">
-        select *
-        from templates
-        where LOWER(template_asset_type_id) = LOWER(#{assetTypeId})
-          and LOWER(template_weather_warning_type) = LOWER(#{warningType})
-          and LOWER(template_severity) = LOWER(#{severity})
-          and LOWER(template_contact_channel) = LOWER(#{contactChannel})
+        SELECT *
+        FROM templates
+        <where>
+            <if test="assetTypeId != null and assetTypeId != ''">
+                LOWER(template_asset_type_id) = LOWER(#{assetTypeId})
+            </if>
+            <if test="warningType != null and warningType != ''">
+                AND LOWER(template_weather_warning_type) like concat('%',LOWER(#{warningType}),'%')
+            </if>
+            <if test="severity != null and severity != ''">
+                AND LOWER(template_severity) = LOWER(#{severity})
+            </if>
+            <if test="contactChannel != null and contactChannel != ''">
+                AND LOWER(template_contact_channel) = LOWER(#{contactChannel})
+            </if>
+        </where>
     </select>
 
     <insert id="insertNotificationTemplate">

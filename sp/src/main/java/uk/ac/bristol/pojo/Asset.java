@@ -112,7 +112,7 @@ public class Asset {
     }
 
     // for back-end persistence
-    public void setLocationAsJson(String geoJson){
+    public void setLocationAsJson(String geoJson) {
         try {
             if (geoJson == null || geoJson.isBlank()) {
                 this.location = Map.ofEntries(Map.entry("type", "MultiPolygon"), Map.entry("coordinates", List.of(List.of(List.of()))));
@@ -123,6 +123,10 @@ public class Asset {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void clearLocation() {
+        this.location = null;
     }
 
     public Long getCapacityLitres() {

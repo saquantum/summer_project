@@ -184,6 +184,11 @@ public class UserServiceImpl implements UserService {
         return b != null && b;
     }
 
+    @Override
+    public List<UserWithAssets> groupUsersWithOwnedAssetsByWarningId(Long waringId) {
+        return userMapper.groupUsersWithOwnedAssetsByWarningId(waringId);
+    }
+
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public int countUsersWithFilter(Map<String, Object> filters) {

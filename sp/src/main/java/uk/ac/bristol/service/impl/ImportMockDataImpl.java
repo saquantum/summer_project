@@ -25,14 +25,21 @@ public class ImportMockDataImpl implements ImportMockData {
     private final UserService userService;
     private final AssetService assetService;
     private final WarningService warningService;
+    private final ContactService contactService;
     private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
-    public ImportMockDataImpl(Settings settings, PermissionConfigService permissionConfigService, UserService userService, AssetService assetService, WarningService warningService) {
+    public ImportMockDataImpl(Settings settings,
+                              PermissionConfigService permissionConfigService,
+                              UserService userService,
+                              AssetService assetService,
+                              WarningService warningService,
+                              ContactService contactService) {
         this.settings = settings;
         this.permissionConfigService = permissionConfigService;
         this.userService = userService;
         this.assetService = assetService;
         this.warningService = warningService;
+        this.contactService = contactService;
     }
 
     @Override
@@ -188,10 +195,10 @@ public class ImportMockDataImpl implements ImportMockData {
                             template.setTitle(warningType + templates.get(idx).get("title").toString());
                             template.setBody(templates.get(idx).get("body").toString());
 
-                            if (!warningService.getNotificationTemplateByTypes(template).isEmpty()) {
-                                warningService.updateNotificationTemplateMessageByTypes(template);
+                            if (!contactService.getNotificationTemplateByTypes(template).isEmpty()) {
+                                contactService.updateNotificationTemplateMessageByTypes(template);
                             } else {
-                                warningService.insertNotificationTemplate(template);
+                                contactService.insertNotificationTemplate(template);
                             }
                         }
                     }

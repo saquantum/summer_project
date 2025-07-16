@@ -5,13 +5,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import uk.ac.bristol.MockDataInitializer;
 import uk.ac.bristol.exception.SpExceptions;
-import uk.ac.bristol.service.WarningService;
+import uk.ac.bristol.service.ContactService;
 
 @Component
 public class ScheduledInboxCleaner {
 
     @Autowired
-    WarningService warningService;
+    ContactService contactService;
 
     @Scheduled(fixedRate = 86400000)
     public void cleanOutdatedInboxMessages() {
@@ -21,7 +21,7 @@ public class ScheduledInboxCleaner {
             e.printStackTrace();
             throw new SpExceptions.SystemException("InterruptedException threw, failed to start the scheduled crawler");
         }
-        int n = warningService.deleteOutDatedInboxMessages();
+        int n = contactService.deleteOutDatedInboxMessages();
         System.out.println(n + " inbox messages deleted.");
     }
 }

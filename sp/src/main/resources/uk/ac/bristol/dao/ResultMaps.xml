@@ -99,6 +99,12 @@
         <collection property="warnings" ofType="uk.ac.bristol.pojo.Warning" resultMap="WarningMap"/>
     </resultMap>
 
+    <resultMap id="UserWithAssetsMap" type="uk.ac.bristol.pojo.UserWithAssets">
+        <id property="user.id" column="user_id"/>
+        <association property="user" javaType="uk.ac.bristol.pojo.User" resultMap="UserMap"/>
+        <collection property="assets" ofType="uk.ac.bristol.pojo.Asset" resultMap="AssetMap"/>
+    </resultMap>
+
     <resultMap id="TemplateMap" type="uk.ac.bristol.pojo.Template">
         <id property="id" column="template_id"/>
         <result property="assetTypeId" column="template_asset_type_id"/>

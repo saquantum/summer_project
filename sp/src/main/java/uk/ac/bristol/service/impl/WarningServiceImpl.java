@@ -8,9 +8,11 @@ import uk.ac.bristol.dao.MetaDataMapper;
 import uk.ac.bristol.dao.WarningMapper;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.Template;
+import uk.ac.bristol.pojo.UserWithAssets;
 import uk.ac.bristol.pojo.Warning;
 import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.ContactService;
+import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.service.WarningService;
 import uk.ac.bristol.util.QueryTool;
 
@@ -26,14 +28,14 @@ public class WarningServiceImpl implements WarningService {
     private final MetaDataMapper metaDataMapper;
     private final WarningMapper warningMapper;
     private final ContactMapper contactMapper;
-    private final AssetService assetService;
+    private final UserService userService;
     private final ContactService contactService;
 
-    public WarningServiceImpl(MetaDataMapper metaDataMapper, WarningMapper warningMapper, ContactMapper contactMapper, AssetService assetService, ContactService contactService) {
+    public WarningServiceImpl(MetaDataMapper metaDataMapper, WarningMapper warningMapper, ContactMapper contactMapper, UserService userService, ContactService contactService) {
         this.metaDataMapper = metaDataMapper;
         this.warningMapper = warningMapper;
         this.contactMapper = contactMapper;
-        this.assetService = assetService;
+        this.userService = userService;
         this.contactService = contactService;
     }
 
@@ -81,7 +83,7 @@ public class WarningServiceImpl implements WarningService {
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
-    public void storeWarningsAndSendNotifications(List<Warning> parsedWarnings) {
+    public boolean storeWarningsAndSendNotifications(List<Warning> parsedWarnings) {
         List<Warning> warningsToNotify = new ArrayList<>();
 
         int s = 0;
@@ -100,15 +102,15 @@ public class WarningServiceImpl implements WarningService {
             }
             // 3. warning area updated: send notifications to assets not intersecting with it beforehand
             else if (warningMapper.testWarningAreaDiff(warning.getId(), warning.getAreaAsJson())) {
-                List<String> oldAssetIds = assetService.selectAssetIdsByWarningId(warning.getId());
-                warningMapper.updateWarning(warning);
-                List<String> assetIds = assetService.selectAssetIdsByWarningId(warning.getId());
-                for (String assetId : assetIds) {
-                    if (!oldAssetIds.contains(assetId)) {
-                        Map<String, Object> notification = contactService.formatNotification(warning.getId(), assetId);
-                        contactService.sendEmail(notification);
-                    }
-                }
+//                List<String> oldAssetIds = assetService.selectAssetIdsByWarningId(warning.getId());
+//                warningMapper.updateWarning(warning);
+//                List<String> assetIds = assetService.selectAssetIdsByWarningId(warning.getId());
+//                for (String assetId : assetIds) {
+//                    if (!oldAssetIds.contains(assetId)) {
+//                        Map<String, Object> notification = contactService.formatNotification(warning.getId(), assetId);
+//                        contactService.sendEmail(notification);
+//                    }
+//                }
             } else {
                 s--;
             }
@@ -117,13 +119,50 @@ public class WarningServiceImpl implements WarningService {
         System.out.println("Successfully inserted or updated " + s + " weather warning records at "
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 
-        for (Warning warning : warningsToNotify) {
-            List<String> assetIds = assetService.selectAssetIdsByWarningId(warning.getId());
-            contactService.sendAllEmails(warning, assetIds);
+        if (!warningsToNotify.isEmpty()) {
+            for (Warning warning : warningsToNotify) {
+                sendNotificationsToAllRelevantUsers(warning);
+            }
+            return true;
         }
-        System.out.println("Successfully sent emails after crawling.");
+        return false;
     }
 
+    private void sendNotificationsToAllRelevantUsers(Warning warning) {
+        List<UserWithAssets> list = userService.groupUsersWithOwnedAssetsByWarningId(warning.getId());
+        if (list.isEmpty()) {
+            System.out.println("No users has asset intersecting with warning " + warning.getId() + ", no notification has been sent.");
+            return;
+        }
+        for (UserWithAssets uwa : list) {
+            Map<String, Object> contactPreferences = uwa.getUser().getAssetHolder().getContactPreferences();
+
+            Map<String, Object> emailNotification = contactService.formatNotification(warning, uwa, "email");
+            if (contactPreferences.get("email").equals(Boolean.TRUE)) {
+                contactService.sendEmailToAddress(
+                        uwa.getUser().getAssetHolder().getEmail(),
+                        emailNotification
+                );
+            }
+            if (contactPreferences.get("phone").equals(Boolean.TRUE)) {
+                Map<String, Object> smsNotification = contactService.formatNotification(warning, uwa, "phone");
+                // send sms
+            }
+            if (contactPreferences.get("post").equals(Boolean.TRUE)) {
+                Map<String, Object> postNotification = contactService.formatNotification(warning, uwa, "post");
+                // send http post
+            }
+
+            // send inbox notification using email message
+            contactMapper.insertInboxMessageToUser(Map.of(
+                    "userId", emailNotification.get("toUserId"),
+                    "hasRead", false,
+                    "issuedDate", emailNotification.get("createdAt"),
+                    "validUntil", emailNotification.get("validUntil"),
+                    "title", emailNotification.get("title"),
+                    "message", emailNotification.get("body")));
+        }
+    }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
@@ -171,109 +210,5 @@ public class WarningServiceImpl implements WarningService {
         int n = warningMapper.deleteWarningByIDs(ids);
         metaDataMapper.increaseTotalCountByTableName("weather_warnings", -n);
         return n;
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-    @Override
-    public List<Template> getAllNotificationTemplates(Map<String, Object> filters,
-                                                      List<Map<String, String>> orderList,
-                                                      Integer limit,
-                                                      Integer offset) {
-        return contactMapper.selectAllNotificationTemplates(
-                QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList(orderList, "templates"),
-                limit, offset);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-    @Override
-    public List<Template> getNotificationTemplateByTypes(Template template) {
-        return contactMapper.selectNotificationTemplateByTypes(template);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-    @Override
-    public List<Template> getNotificationTemplateById(Long id) {
-        return contactMapper.selectNotificationTemplateById(id);
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-    @Override
-    public int insertNotificationTemplate(Template templates) {
-        int n = contactMapper.insertNotificationTemplate(templates);
-        metaDataMapper.increaseTotalCountByTableName("templates", n);
-        return n;
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-    @Override
-    public int updateNotificationTemplateMessageById(Template template) {
-        return contactMapper.updateNotificationTemplateMessageById(template);
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-    @Override
-    public int updateNotificationTemplateMessageByTypes(Template template) {
-        return contactMapper.updateNotificationTemplateMessageByTypes(template);
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    @Override
-    public int deleteNotificationTemplateByIds(Long[] ids) {
-        int n = contactMapper.deleteNotificationTemplateByIds(ids);
-        metaDataMapper.increaseTotalCountByTableName("templates", -n);
-        return n;
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    @Override
-    public int deleteNotificationTemplateByIds(List<Long> ids) {
-        int n = contactMapper.deleteNotificationTemplateByIds(ids);
-        metaDataMapper.increaseTotalCountByTableName("templates", -n);
-        return n;
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    @Override
-    public int deleteNotificationTemplateByType(Template template) {
-        int n = contactMapper.deleteNotificationTemplateByType(template);
-        metaDataMapper.increaseTotalCountByTableName("templates", -n);
-        return n;
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-    @Override
-    public Map<String, Object> getUserInboxMessagesByUserId(String userId) {
-        return contactMapper.selectUserInboxMessagesByUserId(userId);
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-    @Override
-    public int insertInboxMessageToUser(Map<String, Object> message) {
-        return contactMapper.insertInboxMessageToUser(message);
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-    @Override
-    public int updateInboxMessageByUserId(Map<String, Object> message) {
-        return contactMapper.updateInboxMessageByUserId(message);
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    @Override
-    public int deleteInboxMessageByFilter(Map<String, Object> filters) {
-        return contactMapper.deleteInboxMessageByFilter(QueryTool.formatFilters(filters));
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    @Override
-    public int deleteOutDatedInboxMessages() {
-        return contactMapper.deleteOutDatedInboxMessages();
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    @Override
-    public int deleteOutDatedInboxMessagesByUserId(String userId) {
-        return contactMapper.deleteOutDatedInboxMessagesByUserId(userId);
     }
 }

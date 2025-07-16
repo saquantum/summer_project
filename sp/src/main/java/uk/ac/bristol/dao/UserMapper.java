@@ -3,6 +3,7 @@ package uk.ac.bristol.dao;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import uk.ac.bristol.pojo.User;
+import uk.ac.bristol.pojo.UserWithAssets;
 import uk.ac.bristol.pojo.UserWithExtraColumns;
 
 import java.util.List;
@@ -34,6 +35,8 @@ public interface UserMapper {
                                                           @Param("offset") Integer offset);
 
     String selectPasswordByUserId(@Param("id") String id);
+
+    List<UserWithAssets> groupUsersWithOwnedAssetsByWarningId(@Param("warningId") Long warningId);
 
     int countUsers(@Param("filterString") String filterString);
 

@@ -33,14 +33,14 @@ public class NotificationController {
     public ResponseBody userGetMyInboxMessagesByUID(HttpServletResponse response,
                                                     HttpServletRequest request,
                                                     @UserUID @PathVariable String uid) {
-        return new ResponseBody(Code.SELECT_OK, warningService.getUserInboxMessagesByUserId(uid));
+        return new ResponseBody(Code.SELECT_OK, contactService.getUserInboxMessagesByUserId(uid));
     }
 
     @GetMapping("/user/aid/{aid}/inbox")
     public ResponseBody userGetMyInboxMessagesByAID(HttpServletResponse response,
                                                     HttpServletRequest request,
                                                     @UserAID @PathVariable String aid) {
-        return new ResponseBody(Code.SELECT_OK, warningService.getUserInboxMessagesByUserId(aid));
+        return new ResponseBody(Code.SELECT_OK, contactService.getUserInboxMessagesByUserId(aid));
     }
 
     @PutMapping("/user/uid/{uid}/inbox/{rowId}")
@@ -48,7 +48,7 @@ public class NotificationController {
                                                               HttpServletRequest request,
                                                               @UserUID @PathVariable String uid,
                                                               @PathVariable long rowId) {
-        warningService.updateInboxMessageByUserId(Map.of("rowId", rowId, "hasRead", true));
+        contactService.updateInboxMessageByUserId(Map.of("rowId", rowId, "hasRead", true));
         return new ResponseBody(Code.UPDATE_OK, null);
     }
 
@@ -57,7 +57,7 @@ public class NotificationController {
                                                               HttpServletRequest request,
                                                               @UserAID @PathVariable String aid,
                                                               @PathVariable long rowId) {
-        warningService.updateInboxMessageByUserId(Map.of("rowId", rowId, "hasRead", true));
+        contactService.updateInboxMessageByUserId(Map.of("rowId", rowId, "hasRead", true));
         return new ResponseBody(Code.UPDATE_OK, null);
     }
 
@@ -69,7 +69,7 @@ public class NotificationController {
         Long validDuration = (Long) message.get("duration");
 
         LocalDateTime now = LocalDateTime.now();
-        int n = warningService.insertInboxMessageToUser(Map.of(
+        int n = contactService.insertInboxMessageToUser(Map.of(
                 "userId", userId,
                 "hasRead", false,
                 "issuedDate", now,

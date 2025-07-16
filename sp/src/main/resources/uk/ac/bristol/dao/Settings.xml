@@ -65,7 +65,7 @@
             asset_holder_phone                  varchar(50)        not null,
             asset_holder_address_id             varchar(50) unique not null,
             asset_holder_contact_preferences_id varchar(50) unique not null,
-            asset_holder_last_modified          timestamptz default current_timestamp
+            asset_holder_last_modified          timestamp without time zone default current_timestamp
         );
 
         create or replace function set_asset_holder_id()
@@ -173,7 +173,7 @@
             asset_row_id          bigserial primary key,
             asset_id              varchar(50) unique           not null,
             asset_name            varchar(100)                 not null,
-            asset_type_id         varchar(50) references asset_types (asset_type_type_id) on update cascade on delete set null,
+            asset_type_id         varchar(50)                  references asset_types (asset_type_type_id) on update cascade on delete set null,
             asset_owner_id        varchar(50) references asset_holders (asset_holder_id) on update cascade on delete cascade,
             asset_location        geometry(multipolygon, 4326) not null,
             asset_capacity_litres int,
@@ -181,7 +181,7 @@
             asset_status          varchar(50),
             asset_installed_at    date,
             asset_last_inspection date,
-            asset_last_modified   timestamptz default current_timestamp
+            asset_last_modified   timestamp without time zone default current_timestamp
         );
 
         create or replace function set_asset_id()
@@ -212,8 +212,8 @@
             warning_weather_type       varchar,
             warning_level              varchar,
             warning_head_line          text,
-            warning_valid_from         timestamptz,
-            warning_valid_to           timestamptz,
+            warning_valid_from         timestamp without time zone,
+            warning_valid_to           timestamp without time zone,
             warning_impact             varchar,
             warning_likelihood         varchar,
             warning_affected_areas     text,
@@ -268,12 +268,12 @@
         create table if not exists inboxes
         (
             inbox_row_id      bigserial primary key,
-            inbox_user_id     varchar(100) not null references users (user_id) on delete cascade,
-            inbox_has_read    boolean      not null,
-            inbox_issued_date timestamptz  not null,
-            inbox_valid_until timestamptz  not null,
-            inbox_title       text         not null,
-            inbox_message     text         not null
+            inbox_user_id     varchar(100)                not null references users (user_id) on delete cascade,
+            inbox_has_read    boolean                     not null,
+            inbox_issued_date timestamp without time zone not null,
+            inbox_valid_until timestamp without time zone not null,
+            inbox_title       text                        not null,
+            inbox_message     text                        not null
         );
 
         <include refid="initTableMetaData"/>

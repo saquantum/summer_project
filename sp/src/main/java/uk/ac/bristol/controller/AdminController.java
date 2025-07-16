@@ -5,6 +5,7 @@ import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.FilterDTO;
 import uk.ac.bristol.pojo.PermissionConfig;
 import uk.ac.bristol.pojo.Template;
+import uk.ac.bristol.service.ContactService;
 import uk.ac.bristol.service.MetaDataService;
 import uk.ac.bristol.service.PermissionConfigService;
 import uk.ac.bristol.service.WarningService;
@@ -21,11 +22,13 @@ public class AdminController {
     private final WarningService warningService;
     private final MetaDataService metaDataService;
     private final PermissionConfigService permissionConfigService;
+    private final ContactService contactService;
 
-    public AdminController(WarningService warningService, MetaDataService metaDataService, PermissionConfigService permissionConfigService) {
+    public AdminController(WarningService warningService, MetaDataService metaDataService, PermissionConfigService permissionConfigService, ContactService contactService) {
         this.warningService = warningService;
         this.metaDataService = metaDataService;
         this.permissionConfigService = permissionConfigService;
+        this.contactService = contactService;
     }
 
     @GetMapping("/metadata")
@@ -44,7 +47,7 @@ public class AdminController {
                                         @RequestParam(required = false) Integer offset) {
         FilterDTO filter = new FilterDTO(limit);
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllNotificationTemplates(
+        return new ResponseBody(Code.SELECT_OK, contactService.getAllNotificationTemplates(
                 null,
                 QueryTool.getOrderList(orderList),
                 filter.getLimit(),
@@ -58,7 +61,7 @@ public class AdminController {
             throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
         }
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllNotificationTemplates(
+        return new ResponseBody(Code.SELECT_OK, contactService.getAllNotificationTemplates(
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),
@@ -76,34 +79,34 @@ public class AdminController {
         template.setWarningType(warningType);
         template.setSeverity(severity);
         template.setContactChannel(channel);
-        return new ResponseBody(Code.SELECT_OK, warningService.getNotificationTemplateByTypes(template));
+        return new ResponseBody(Code.SELECT_OK, contactService.getNotificationTemplateByTypes(template));
     }
 
     @GetMapping("/template/id/{id}")
     public ResponseBody getTemplateById(@PathVariable Long id) {
-        return new ResponseBody(Code.SELECT_OK, warningService.getNotificationTemplateById(id));
+        return new ResponseBody(Code.SELECT_OK, contactService.getNotificationTemplateById(id));
     }
 
     @PostMapping("/template")
     public ResponseBody insertTemplate(@RequestBody Template template) {
         template.setId(null);
-        return new ResponseBody(Code.INSERT_OK, warningService.insertNotificationTemplate(template));
+        return new ResponseBody(Code.INSERT_OK, contactService.insertNotificationTemplate(template));
     }
 
     @PutMapping("/template/type")
     public ResponseBody updateTemplateByTypes(@RequestBody Template template) {
-        return new ResponseBody(Code.UPDATE_OK, warningService.updateNotificationTemplateMessageByTypes(template));
+        return new ResponseBody(Code.UPDATE_OK, contactService.updateNotificationTemplateMessageByTypes(template));
     }
 
     @PutMapping("/template/id")
     public ResponseBody updateTemplateById(@RequestBody Template template) {
-        return new ResponseBody(Code.UPDATE_OK, warningService.updateNotificationTemplateMessageById(template));
+        return new ResponseBody(Code.UPDATE_OK, contactService.updateNotificationTemplateMessageById(template));
     }
 
     @DeleteMapping("/template")
     public ResponseBody deleteTemplatesByIds(@RequestBody Map<String, Object> body) {
         List<Long> ids = (List<Long>) body.get("ids");
-        return new ResponseBody(Code.DELETE_OK, warningService.deleteNotificationTemplateByIds(ids));
+        return new ResponseBody(Code.DELETE_OK, contactService.deleteNotificationTemplateByIds(ids));
     }
 
     @GetMapping("/permission")

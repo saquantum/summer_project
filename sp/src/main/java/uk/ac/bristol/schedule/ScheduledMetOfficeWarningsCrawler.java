@@ -102,7 +102,9 @@ public class ScheduledMetOfficeWarningsCrawler {
                             + ". " + e.getMessage());
         }
         if (!warnings.isEmpty()) {
-            warningService.storeWarningsAndSendNotifications(warnings);
+            if(warningService.storeWarningsAndSendNotifications(warnings)){
+                System.out.println("Successfully sent emails after crawling.");
+            }
         } else {
             System.out.println("No recently issued weather warnings.");
         }

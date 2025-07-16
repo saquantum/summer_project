@@ -2,6 +2,7 @@ package uk.ac.bristol.service;
 
 import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
+import uk.ac.bristol.pojo.UserWithAssets;
 import uk.ac.bristol.pojo.UserWithExtraColumns;
 
 import java.util.List;
@@ -45,6 +46,8 @@ public interface UserService {
     boolean testUIDExistence(String id);
 
     boolean testEmailExistence(String email);
+
+    List<UserWithAssets> groupUsersWithOwnedAssetsByWarningId(Long waringId);
 
     int countUsersWithFilter(Map<String, Object> filters);
 

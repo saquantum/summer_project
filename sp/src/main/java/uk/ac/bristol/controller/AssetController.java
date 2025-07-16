@@ -124,7 +124,7 @@ public class AssetController {
         }
         asset.setId(null);
         if (!QueryTool.getUserPermissions(uid, null).getCanSetPolygonOnCreate()) {
-            asset.setLocationAsJson(null);
+            asset.clearLocation();
             return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset), "The asset is successfully inserted but without polygon since the user is not allowed to do so.");
         }
         return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset));
@@ -140,7 +140,7 @@ public class AssetController {
         }
         asset.setId(null);
         if (!QueryTool.getUserPermissions(null, aid).getCanSetPolygonOnCreate()) {
-            asset.setLocationAsJson(null);
+            asset.clearLocation();
             return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset), "The asset is successfully inserted but without polygon since the user is not allowed to do so.");
         }
         return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset));
@@ -199,7 +199,7 @@ public class AssetController {
             throw new SpExceptions.ForbiddenException("The user is not allowed to update asset.");
         }
         if (!QueryTool.getUserPermissions(uid, null).getCanUpdateAssetPolygon()) {
-            asset.setLocationAsJson(null);
+            asset.clearLocation();
             return new ResponseBody(Code.UPDATE_OK, assetService.updateAsset(asset), "The asset is successfully updated but without polygon since the user is not allowed to do so.");
         }
         return new ResponseBody(Code.UPDATE_OK, assetService.updateAsset(asset));
@@ -214,7 +214,7 @@ public class AssetController {
             throw new SpExceptions.ForbiddenException("The user is not allowed to update asset.");
         }
         if (!QueryTool.getUserPermissions(null, aid).getCanUpdateAssetPolygon()) {
-            asset.setLocationAsJson(null);
+            asset.clearLocation();
             return new ResponseBody(Code.UPDATE_OK, assetService.updateAsset(asset), "The asset is successfully updated but without polygon since the user is not allowed to do so.");
         }
         return new ResponseBody(Code.UPDATE_OK, assetService.updateAsset(asset));

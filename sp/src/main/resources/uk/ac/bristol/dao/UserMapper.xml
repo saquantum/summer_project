@@ -116,6 +116,40 @@
         where user_id = #{id};
     </select>
 
+    <select id="groupUsersWithOwnedAssetsByWarningId" resultMap="ResultMaps.UserWithAssetsMap">
+        select users.*,
+               asset_holders.*,
+               address.*,
+               contact_preferences.*,
+               asset_id,
+               asset_name,
+               asset_type_id,
+               asset_owner_id,
+               ST_AsGeoJSON(asset_location) as asset_location,
+               asset_capacity_litres,
+               asset_material,
+               asset_status,
+               asset_installed_at,
+               asset_last_inspection,
+               asset_last_modified,
+               asset_types.*
+        from users
+                 left join asset_holders
+                           on user_asset_holder_id = asset_holder_id
+                 left join address
+                           on address_id = asset_holder_address_id
+                 left join contact_preferences
+                           on contact_preferences_id = asset_holder_contact_preferences_id
+                 inner join assets
+                            on asset_holder_id = asset_owner_id
+                 left join asset_types
+                           on asset_type_type_id = asset_type_id
+                 inner join weather_warnings
+                            on warning_id = #{warningId} and
+                               ST_Intersects(asset_location, warning_area) and
+                               now() between warning_valid_from and warning_valid_to
+    </select>
+
     <select id="countUsers" resultType="int">
         select count(*)
         from users
