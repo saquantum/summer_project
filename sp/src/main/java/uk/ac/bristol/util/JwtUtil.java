@@ -97,7 +97,7 @@ public final class JwtUtil {
     public static boolean isDomainResolvable(String email) {
         try {
             String domain = email.substring(email.indexOf("@") + 1);
-            InetAddress.getByName(domain); // 尝试解析域名
+            InetAddress.getByName(domain);
             return true;
         } catch (Exception e) {
             return false;
