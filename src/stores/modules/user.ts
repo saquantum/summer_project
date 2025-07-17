@@ -23,7 +23,13 @@ export const useUserStore = defineStore(
         if (!user.value?.admin) getUserInfo()
         ElMessage.success('Success')
       } catch (e) {
-        ElMessage.error('Username or password is incorrect.')
+        const status = (e as { response?: { status?: number } })?.response
+          ?.status
+        if (status === 403) {
+          ElMessage.error('Username or password is incorrect.')
+        } else {
+          ElMessage.error('Login failed.')
+        }
         throw new Error(String(e))
       }
     }

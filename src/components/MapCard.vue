@@ -43,7 +43,7 @@ const emit = defineEmits(['update:locations'])
 
 let points: Position[] = []
 let polygonCoordinates: Position[][] = []
-const polygonCoorArr: Position[][][] = []
+let polygonCoorArr: Position[][][] = []
 let map: L.Map | null = null
 let saveLayer: L.GeoJSON | null = null
 const handleClick = (e: LeafletMouseEvent) => {
@@ -71,6 +71,7 @@ const finishOneShape = async () => {
   if (points.length < 3) {
     points = []
     polygonCoordinates = []
+    polygonCoorArr = []
     ElMessage.error('You should specify more than 3 points to shape a polygon.')
     // destroy all layers on the map
     m.eachLayer((layer) => {
@@ -151,7 +152,7 @@ const finishOnePolygon = () => {
 }
 
 const endDrawing = async () => {
-  if (polygonCoordinates.length > 0) {
+  if (polygonCoordinates.length > 0 || points.length > 0) {
     finishOnePolygon()
   }
 
@@ -183,6 +184,8 @@ const endDrawing = async () => {
 
   // clear points, turn off click
   points = []
+  polygonCoordinates = []
+  polygonCoorArr = []
   if (map) {
     map.off('click', handleClick)
   }
@@ -202,6 +205,7 @@ const cancelDrawing = () => {
   // clear points, turn off click
   points = []
   polygonCoordinates = []
+  polygonCoorArr = []
   console.log(points)
   m.off('click', handleClick)
 }

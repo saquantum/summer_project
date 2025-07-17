@@ -219,7 +219,7 @@ const statusOption = [
 
 const mode = ref('convex')
 const mapCardRef = ref<ComponentPublicInstance<typeof MapCard> | null>(null)
-const tipVisible = ref(false)
+const isDrawing = ref(false)
 
 const searchLocation = async (address: string) => {
   if (!address) return
@@ -238,7 +238,7 @@ const disabledAfterToday = (time: Date) => {
 }
 
 const beginDrawing = () => {
-  tipVisible.value = true
+  isDrawing.value = true
   mapCardRef.value?.beginDrawing()
 }
 
@@ -251,12 +251,12 @@ const finishOnePolygon = () => {
 }
 
 const endDrawing = () => {
-  tipVisible.value = false
+  isDrawing.value = false
   mapCardRef.value?.endDrawing()
 }
 
 const cancelDrawing = () => {
-  tipVisible.value = false
+  isDrawing.value = false
   mapCardRef.value?.cancelDrawing()
 }
 
@@ -457,10 +457,8 @@ onMounted(() => {
         <el-form-item>
           <div v-if="form.locations.length > 0">
             <div><h3>Customise polygon</h3></div>
-            <div v-if="tipVisible">Your are now drawing new polygon</div>
-            <div
-              style="height: 400px; max-width: 600px; border: black 1px solid"
-            >
+            <div v-if="isDrawing">Your are now drawing new polygon</div>
+            <div style="height: 400px; width: 600px; border: black 1px solid">
               <MapCard
                 ref="mapCardRef"
                 :map-id="'AddAsset'"
@@ -469,7 +467,7 @@ onMounted(() => {
               ></MapCard>
             </div>
             <el-select
-              :disabled="tipVisible || disableSetPolygon"
+              :disabled="isDrawing || disableSetPolygon"
               v-model="mode"
               style="margin-top: 10px"
             >
@@ -477,19 +475,34 @@ onMounted(() => {
               <el-option label="sequence" value="sequence"></el-option>
             </el-select>
             <div class="map-button">
-              <el-button @click="beginDrawing" :disabled="disableSetPolygon"
-                >Draw new asset</el-button
+              <el-button
+                v-if="!isDrawing"
+                @click="beginDrawing"
+                :disabled="disableSetPolygon"
+                >Draw new polygon</el-button
               >
-              <el-button @click="finishOneShape" :disabled="disableSetPolygon"
+              <el-button
+                v-if="isDrawing"
+                @click="finishOneShape"
+                :disabled="disableSetPolygon"
                 >Finish one shape</el-button
               >
-              <el-button @click="finishOnePolygon" :disabled="disableSetPolygon"
+              <el-button
+                v-if="isDrawing"
+                @click="finishOnePolygon"
+                :disabled="disableSetPolygon"
                 >Finish one polygon</el-button
               >
-              <el-button @click="endDrawing" :disabled="disableSetPolygon"
+              <el-button
+                v-if="isDrawing"
+                @click="endDrawing"
+                :disabled="disableSetPolygon"
                 >End drawing</el-button
               >
-              <el-button @click="cancelDrawing" :disabled="disableSetPolygon"
+              <el-button
+                v-if="isDrawing"
+                @click="cancelDrawing"
+                :disabled="disableSetPolygon"
                 >Cancel drawing</el-button
               >
             </div>

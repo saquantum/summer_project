@@ -27,8 +27,8 @@ const route = useRoute()
 
 const logout = () => {
   userStore.reset()
-  router.push('/login')
   assetStore.reset()
+  router.push('/login')
 }
 const handleCommand = (command: string) => {
   if (command === 'logout') {
