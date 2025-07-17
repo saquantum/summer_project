@@ -29,6 +29,8 @@ public class NotificationController {
         this.warningService = warningService;
     }
 
+    /* ---------------- Inbox ---------------- */
+
     @GetMapping("/user/uid/{uid}/inbox")
     public ResponseBody userGetMyInboxMessagesByUID(HttpServletResponse response,
                                                     HttpServletRequest request,
@@ -66,7 +68,7 @@ public class NotificationController {
         String userId = (String) message.get("userId");
         String title = (String) message.get("title");
         String body = (String) message.get("body");
-        Long validDuration = (Long) message.get("duration");
+        Long validDuration = Long.valueOf((Integer) message.get("duration"));
 
         LocalDateTime now = LocalDateTime.now();
         int n = contactService.insertInboxMessageToUser(Map.of(
@@ -79,6 +81,8 @@ public class NotificationController {
         );
         return new ResponseBody(Code.SUCCESS, n, "Successfully sent " + n + " inbox messages.");
     }
+
+    /* ---------------- Notifications ---------------- */
 
     @GetMapping("/user/notify/email/unsubscribe")
     public ResponseBody unsubscribeEmail(@RequestParam(required = true) String token) {

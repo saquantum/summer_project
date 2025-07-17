@@ -326,7 +326,7 @@ public class ContactServiceImpl implements ContactService {
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public Map<String, Object> getUserInboxMessagesByUserId(String userId) {
+    public List<Map<String, Object>> getUserInboxMessagesByUserId(String userId) {
         return contactMapper.selectUserInboxMessagesByUserId(userId);
     }
 

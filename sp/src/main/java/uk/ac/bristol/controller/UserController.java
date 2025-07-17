@@ -230,7 +230,7 @@ public class UserController {
         ), message);
     }
 
-    @GetMapping("/admin/user/count")
+    @PostMapping("/admin/user/count")
     public ResponseBody countUsersByFilter(@RequestBody FilterDTO filter) {
         return new ResponseBody(Code.SELECT_OK, userService.countUsersWithFilter(filter.getFilters()));
     }

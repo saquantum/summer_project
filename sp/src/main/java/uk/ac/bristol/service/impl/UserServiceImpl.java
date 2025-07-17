@@ -140,7 +140,7 @@ public class UserServiceImpl implements UserService {
                                                                  Integer offset) {
         if ("count".equalsIgnoreCase(function)) {
             return userMapper.selectUsersWithAccumulator(
-                    function, "asset_id",
+                    function, column,
                     QueryTool.formatFilters(filters),
                     QueryTool.filterOrderList(orderList, "users", "asset_holders", "accumulation"),
                     limit, offset);
@@ -473,15 +473,15 @@ public class UserServiceImpl implements UserService {
 
     private String hashPassword(String password) {
         Argon2Function argon2 = Argon2Function.getInstance(
-                4096,
+                256,
                 1,
                 1,
-                16,
+                4,
                 Argon2.ID
         );
 
         Hash hash = Password.hash(password)
-                .addRandomSalt(16)
+                .addRandomSalt(4)
                 .with(argon2);
 
         return hash.getResult();
@@ -489,10 +489,10 @@ public class UserServiceImpl implements UserService {
 
     private boolean verifyPassword(String plainPassword, String hashedPassword) {
         Argon2Function argon2 = Argon2Function.getInstance(
-                4096,
+                256,
                 1,
                 1,
-                16,
+                4,
                 Argon2.ID
         );
 

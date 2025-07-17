@@ -45,7 +45,7 @@ public interface ContactService {
 
     int deleteNotificationTemplateByType(Template template);
 
-    Map<String, Object> getUserInboxMessagesByUserId(String userId);
+    List<Map<String, Object>> getUserInboxMessagesByUserId(String userId);
 
     int insertInboxMessageToUser(Map<String, Object> message);
 

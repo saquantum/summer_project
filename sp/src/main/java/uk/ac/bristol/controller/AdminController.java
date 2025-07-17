@@ -8,7 +8,6 @@ import uk.ac.bristol.pojo.Template;
 import uk.ac.bristol.service.ContactService;
 import uk.ac.bristol.service.MetaDataService;
 import uk.ac.bristol.service.PermissionConfigService;
-import uk.ac.bristol.service.WarningService;
 import uk.ac.bristol.util.QueryTool;
 
 import java.util.List;
@@ -19,13 +18,11 @@ import java.util.Map;
 @CrossOrigin
 public class AdminController {
 
-    private final WarningService warningService;
     private final MetaDataService metaDataService;
     private final PermissionConfigService permissionConfigService;
     private final ContactService contactService;
 
-    public AdminController(WarningService warningService, MetaDataService metaDataService, PermissionConfigService permissionConfigService, ContactService contactService) {
-        this.warningService = warningService;
+    public AdminController(MetaDataService metaDataService, PermissionConfigService permissionConfigService, ContactService contactService) {
         this.metaDataService = metaDataService;
         this.permissionConfigService = permissionConfigService;
         this.contactService = contactService;

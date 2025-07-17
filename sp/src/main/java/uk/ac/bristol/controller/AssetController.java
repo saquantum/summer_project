@@ -179,7 +179,7 @@ public class AssetController {
         return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
     }
 
-    @GetMapping("/admin/asset/count")
+    @PostMapping("/admin/asset/count")
     public ResponseBody countAssetByFilter(@RequestBody FilterDTO filter) {
         return new ResponseBody(Code.SELECT_OK, assetService.countAssetsWithFilter(filter.getFilters()));
     }

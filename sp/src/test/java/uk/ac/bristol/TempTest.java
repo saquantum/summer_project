@@ -24,9 +24,5 @@ public class TempTest {
     @Autowired
     private UserMapper userMapper;
 
-    @Test
-    void test1() {
-        System.out.println(userService.groupUsersWithOwnedAssetsByWarningId(1000, 0L, 1111L, false, null));
-    }
 
 }

@@ -31,7 +31,7 @@ public interface ContactMapper {
 
     int deleteNotificationTemplateByType(Template template);
 
-    Map<String, Object> selectUserInboxMessagesByUserId(@Param("userId") String userId);
+    List<Map<String, Object>> selectUserInboxMessagesByUserId(@Param("userId") String userId);
 
     int insertInboxMessageToUser(Map<String, Object> message);
 
