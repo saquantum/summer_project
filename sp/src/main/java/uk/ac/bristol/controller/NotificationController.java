@@ -63,6 +63,24 @@ public class NotificationController {
         return new ResponseBody(Code.UPDATE_OK, null);
     }
 
+    @DeleteMapping("/user/uid/{uid}/inbox/{rowId}")
+    public ResponseBody userDeleteInboxMessageByRowIdWithUID(HttpServletResponse response,
+                                                              HttpServletRequest request,
+                                                              @UserAID @PathVariable String uid,
+                                                              @PathVariable long rowId) {
+        contactService.deleteInboxMessageByFilter(Map.of("inbox_row_id", rowId));
+        return new ResponseBody(Code.DELETE_OK, null);
+    }
+
+    @DeleteMapping("/user/aid/{aid}/inbox/{rowId}")
+    public ResponseBody userDeleteInboxMessageByRowIdWithAID(HttpServletResponse response,
+                                                             HttpServletRequest request,
+                                                             @UserAID @PathVariable String aid,
+                                                             @PathVariable long rowId) {
+        contactService.deleteInboxMessageByFilter(Map.of("inbox_row_id", rowId));
+        return new ResponseBody(Code.DELETE_OK, null);
+    }
+
     @PostMapping("/admin/notify/inbox")
     public ResponseBody sendInboxMessageToUser(@RequestBody Map<String, Object> message) {
         String userId = (String) message.get("userId");

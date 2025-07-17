@@ -12,6 +12,8 @@ import uk.ac.bristol.service.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -76,6 +78,24 @@ public class ImportMockDataImpl implements ImportMockData {
             user.setAvatar("https://cdn-icons-png.flaticon.com/512/149/149071.png");
             userService.insertUser(user);
             permissionConfigService.insertPermissionConfig(new PermissionConfig(user.getId()));
+            // insert template welcome messages
+            LocalDateTime now = LocalDateTime.now();
+            contactService.insertInboxMessageToUser(Map.of(
+                    "userId", user.getId(),
+                    "hasRead", false,
+                    "issuedDate", now,
+                    "validUntil", now.plusYears(100),
+                    "title", user.getAssetHolder().getName() + ", your account has been activated",
+                    "message", "If you encounter any issues using our system, please feel free to contact us.")
+            );
+            contactService.insertInboxMessageToUser(Map.of(
+                    "userId", user.getId(),
+                    "hasRead", false,
+                    "issuedDate", now.plus(Duration.ofMillis(1000L)),
+                    "validUntil", now.plusYears(100),
+                    "title", "Please check and confirm details of your assets",
+                    "message", "The administrator should already have prepared the assets of yours which can be viewed from \"My Assets\" panel. Please do confirm they are accurate to receive correct notifications.")
+            );
         }
         // register admin
         User admin = new User();
