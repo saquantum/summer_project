@@ -27,7 +27,7 @@ const userTable = computed(() => {
   if (!userStore.users || userStore.users.length <= 0) return []
   return userStore.users.map((item: UserItem) => ({
     uid: item.user.id,
-    username: item.user.id,
+    name: item.user.assetHolder?.name ?? 'Null',
     assets: item.user.id,
     count: item.accumulation,
     role: item.user.admin ? 'admin' : 'user',
@@ -38,6 +38,7 @@ const userTable = computed(() => {
 const multiSort = ref<{ prop: string; order: string }[]>([])
 const columns = ref([
   { prop: 'uid', label: 'UID' },
+  { prop: 'name', label: 'Name' },
   { prop: 'role', label: 'Role' },
   { prop: 'count', label: 'Asset' }
 ])

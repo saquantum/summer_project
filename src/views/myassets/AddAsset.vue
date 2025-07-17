@@ -158,7 +158,7 @@ const rules = {
       validator: async (
         rule: FormItemRule,
         value: string,
-        callback: (error?: Error) => void
+        callback: (_error?: Error) => void
       ) => {
         const res = await userCheckUIDService(value)
         if (CodeUtil.isSuccess(res.code)) {

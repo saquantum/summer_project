@@ -9,6 +9,7 @@ import {
 import Handlebars from 'handlebars'
 import { useAssetStore } from '@/stores'
 import type { Template } from '@/types'
+import DOMPurify from 'dompurify'
 
 const assetStore = useAssetStore()
 
@@ -57,10 +58,11 @@ const contactChannel = ref('Email')
 
 const content = ref(`You haven't set message for this.`)
 const title = ref('')
+const editorRef = ref()
 const allowedVariables = ['asset-model', 'contact_name', 'post_town']
 
 const mockData = {
-  asset_model: 'Water tank',
+  'asset-model': 'Water tank',
   contact_name: 'Alice',
   post_town: 'London'
 }
@@ -88,10 +90,33 @@ const handleDelete = async () => {
   dialogVisible.value = false
 }
 
+function addLinkInlineStyle(html: string): string {
+  const htmlWithLinkStyle = html.replace(
+    /<a\b([^>]*)>/g,
+    '<a$1 style="color: #409eff; text-decoration: underline; font-weight: bold;">'
+  )
+  const htmlWithImgStyle = htmlWithLinkStyle.replace(
+    /<img\b([^>]*)>/g,
+    '<img$1 style="display: block; height: auto; margin: 1.5rem 0; max-width: 100%; max-height: 100%;">'
+  )
+  return htmlWithImgStyle
+}
+
+function unwrapCodeBlocks(html: string): string {
+  // 提取 code 内容并替换整个 <pre><code>...</code></pre> 为原始代码
+  return html.replace(/<pre><code[^>]*>([\s\S]*?)<\/code><\/pre>/g, (_, code) =>
+    // 解码 HTML 实体
+    code.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
+  )
+}
+
 const renderedHTML = computed(() => {
   try {
-    const compiled = Handlebars.compile(content.value)
-    return compiled(mockData)
+    const htmlWithStyle = addLinkInlineStyle(unwrapCodeBlocks(content.value))
+    const compiled = Handlebars.compile(htmlWithStyle)
+    const rawHtml = compiled(mockData)
+    return DOMPurify.sanitize(rawHtml)
+    // return rawHtml
   } catch (e) {
     console.error(e)
     return '<p style="color:red">Syntax Error!</p>'
@@ -171,7 +196,7 @@ watch(
   <div>Title</div>
   <el-input v-model="title"></el-input>
 
-  <TiptapEditor v-model:content="content"></TiptapEditor>
+  <TiptapEditor ref="editorRef" v-model:content="content"></TiptapEditor>
 
   <div
     class="preview"
@@ -179,8 +204,6 @@ watch(
   >
     <div v-html="renderedHTML"></div>
   </div>
-
-  <div>{{ content }}</div>
 
   <div>
     <el-button @click="submit">Submit</el-button>

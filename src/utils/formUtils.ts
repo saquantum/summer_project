@@ -35,7 +35,7 @@ export const usernameRules = [
     asyncValidator: async (
       rule: InternalRuleItem,
       value: string,
-      callback: (error?: string | Error) => void
+      callback: (_error?: string | Error) => void
     ) => {
       try {
         const res = await userCheckUIDService(value)
@@ -72,7 +72,7 @@ export const createRepasswordRules = (getPassword: () => string) => [
     validator: (
       rule: InternalRuleItem,
       value: string,
-      callback: (error?: Error) => void
+      callback: (_error?: Error) => void
     ) => {
       if (value !== getPassword()) {
         callback(new Error("Those passwords didn't match. Try again."))
@@ -91,7 +91,7 @@ export const emailRules: FormItemRule[] = [
     asyncValidator: async (
       rule: InternalRuleItem,
       value: string,
-      callback: (error?: Error) => void
+      callback: (_error?: Error) => void
     ) => {
       const res = await userCheckEmailService(value)
       if (CodeUtil.isSuccess(res.code)) {
@@ -109,7 +109,7 @@ export const phoneRules = [
     validator: (
       rule: InternalRuleItem,
       value: string,
-      callback: (error?: Error) => void
+      callback: (_error?: Error) => void
     ) => {
       const phoneRegex = /^[0-9+\-()\s]{7,20}$/
       if (!phoneRegex.test(value)) {

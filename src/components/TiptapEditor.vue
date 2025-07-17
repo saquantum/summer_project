@@ -6,10 +6,12 @@ import Image from '@tiptap/extension-image'
 import imageUrl from '@/assets/default.png'
 import Code from '@tiptap/extension-code'
 import Link from '@tiptap/extension-link'
+import { Color, TextStyle } from '@tiptap/extension-text-style'
+import { FileHandler } from '@tiptap/extension-file-handler'
+// import { Extension } from '@tiptap/core'
+// import { Decoration, DecorationSet } from 'prosemirror-view'
+// import { Plugin, PluginKey } from 'prosemirror-state'
 
-import { Extension } from '@tiptap/core'
-import { Decoration, DecorationSet } from 'prosemirror-view'
-import { Plugin, PluginKey } from 'prosemirror-state'
 const props = defineProps<{ content: string }>()
 
 const emit = defineEmits(['update:content'])
@@ -19,81 +21,115 @@ const content = computed({
   set: (val: string) => emit('update:content', val)
 })
 
-const allowedVariables = ['asset-model', 'contact_name', 'post_town']
+// const allowedVariables = ['asset-model', 'contact_name', 'post_town']
 
-const createDecorations = (doc) => {
-  console.log('Creating decorations for doc:', doc)
-  const decorations = []
-  const regex = /{{\s*([a-zA-Z0-9_]+)\s*}}/g
+// const createDecorations = (doc) => {
+//   console.log('Creating decorations for doc:', doc)
+//   const decorations = []
+//   const regex = /{{\s*([a-zA-Z0-9_]+)\s*}}/g
 
-  doc.descendants((node, pos) => {
-    if (node.isText && node.text) {
-      const text = node.text
-      let match
-      regex.lastIndex = 0
+//   doc.descendants((node, pos) => {
+//     if (node.isText && node.text) {
+//       const text = node.text
+//       let match
+//       regex.lastIndex = 0
 
-      while ((match = regex.exec(text)) !== null) {
-        const variableName = match[1]
-        if (!allowedVariables.includes(variableName)) {
-          const from = pos + match.index
-          const to = pos + match.index + match[0].length
-          console.log(
-            `Found invalid variable "${variableName}" at ${from}-${to}`
-          )
+//       while ((match = regex.exec(text)) !== null) {
+//         const variableName = match[1]
+//         if (!allowedVariables.includes(variableName)) {
+//           const from = pos + match.index
+//           const to = pos + match.index + match[0].length
+//           console.log(
+//             `Found invalid variable "${variableName}" at ${from}-${to}`
+//           )
 
-          decorations.push(
-            Decoration.inline(from, to, {
-              class: 'error-variable',
-              title: `Unknown variable: ${variableName}`,
-              style:
-                'text-decoration: red wavy underline; background-color: rgba(255, 0, 0, 0.2); padding: 0 2px; border-radius: 2px;'
-            })
-          )
+//           decorations.push(
+//             Decoration.inline(from, to, {
+//               class: 'error-variable',
+//               title: `Unknown variable: ${variableName}`,
+//               style:
+//                 'text-decoration: red wavy underline; background-color: rgba(255, 0, 0, 0.2); padding: 0 2px; border-radius: 2px;'
+//             })
+//           )
+//         }
+//       }
+//     }
+//   })
+
+//   console.log('Created decorations:', decorations)
+//   const decorationSet =
+//     decorations.length > 0
+//       ? DecorationSet.create(doc, decorations)
+//       : DecorationSet.empty
+//   console.log('Final decoration set:', decorationSet)
+//   return decorationSet
+// }
+
+// const VariableHighlight = Extension.create({
+//   name: 'variableHighlight',
+
+//   addProseMirrorPlugins() {
+//     return [
+//       new Plugin({
+//         key: new PluginKey('variableHighlight'),
+//         state: {
+//           init(config, state) {
+//             console.log('Extension plugin init called')
+//             return createDecorations(state.doc)
+//           },
+//           apply(tr, oldState) {
+//             console.log(
+//               'Extension plugin apply called, docChanged:',
+//               tr.docChanged
+//             )
+//             if (tr.docChanged) {
+//               return createDecorations(tr.doc)
+//             }
+//             return oldState.map(tr.mapping, tr.doc)
+//           }
+//         },
+//         props: {
+//           decorations(state) {
+//             const decorations = this.getState(state)
+//             console.log('Returning decorations for render:', decorations)
+//             return decorations
+//           }
+//         }
+//       })
+//     ]
+//   }
+// })
+
+const CustomImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      src: {
+        default: null,
+        parseHTML: (element) => {
+          const src = element.getAttribute('src')
+          return src
+        },
+        renderHTML: (attributes) => {
+          if (!attributes.src) return {}
+          return {
+            src: attributes.src,
+            loading: 'lazy'
+          }
         }
       }
     }
-  })
+  },
 
-  console.log('Created decorations:', decorations)
-  const decorationSet =
-    decorations.length > 0
-      ? DecorationSet.create(doc, decorations)
-      : DecorationSet.empty
-  console.log('Final decoration set:', decorationSet)
-  return decorationSet
-}
-
-const VariableHighlight = Extension.create({
-  name: 'variableHighlight',
-
-  addProseMirrorPlugins() {
+  parseHTML() {
     return [
-      new Plugin({
-        key: new PluginKey('variableHighlight'),
-        state: {
-          init(config, state) {
-            console.log('Extension plugin init called')
-            return createDecorations(state.doc)
-          },
-          apply(tr, oldState) {
-            console.log(
-              'Extension plugin apply called, docChanged:',
-              tr.docChanged
-            )
-            if (tr.docChanged) {
-              return createDecorations(tr.doc)
-            }
-            return oldState.map(tr.mapping, tr.doc)
-          }
-        },
-        props: {
-          decorations(state) {
-            const decorations = this.getState(state)
-            console.log('Returning decorations for render:', decorations)
-            return decorations
-          }
+      {
+        tag: 'img[src]',
+        getAttrs: (element) => {
+          const src = element.getAttribute('src')
+          return src ? {} : false
         }
-      })
+      }
     ]
   }
 })
@@ -102,19 +138,80 @@ const editor = useEditor({
   content: content.value,
   extensions: [
     StarterKit,
-    Image,
+    CustomImage,
     Code,
+    TextStyle,
+    Color,
     Link.configure({
       openOnClick: false,
       defaultProtocol: 'https'
     }),
-    VariableHighlight
+    // VariableHighlight,
+    FileHandler.configure({
+      allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'],
+      onDrop: (currentEditor, files, pos) => {
+        files.forEach((file) => {
+          const fileReader = new FileReader()
+
+          fileReader.readAsDataURL(file)
+          fileReader.onload = () => {
+            currentEditor
+              .chain()
+              .insertContentAt(pos, {
+                type: 'image',
+                attrs: {
+                  src: fileReader.result
+                }
+              })
+              .focus()
+              .run()
+          }
+        })
+      },
+      onPaste: (currentEditor, files) => {
+        files.forEach((file) => {
+          const fileReader = new FileReader()
+
+          fileReader.readAsDataURL(file)
+          fileReader.onload = () => {
+            currentEditor
+              .chain()
+              .insertContentAt(currentEditor.state.selection.anchor, {
+                type: 'image',
+                attrs: {
+                  src: fileReader.result
+                }
+              })
+              .focus()
+              .run()
+          }
+        })
+      }
+    })
   ],
   onUpdate: ({ editor }) => {
-    console.log('Editor onUpdate called')
-    content.value = editor.getHTML()
+    updateContent(editor.getHTML())
   }
 })
+
+const updateContent = debounce((html: string) => {
+  content.value = html
+}, 300)
+
+function debounce(fn: (_arg: string) => void, delay = 300) {
+  let timer: ReturnType<typeof setTimeout> | null = null
+  return function (_arg: string) {
+    if (timer) clearTimeout(timer)
+    timer = setTimeout(() => {
+      fn(_arg)
+    }, delay)
+  }
+}
+
+const saveContent = () => {
+  console.log(editor.value?.getJSON())
+  return JSON.stringify(editor.value?.getJSON())
+}
 
 const fileList = ref<File[]>([])
 
@@ -144,7 +241,7 @@ const setLink = () => {
     .run()
 }
 
-watch(content, (newValue) => {
+watch(content, async (newValue) => {
   if (editor.value && newValue !== editor.value.getHTML()) {
     editor.value.commands.setContent(newValue)
   }
@@ -153,10 +250,23 @@ watch(content, (newValue) => {
 watch(fileList, (newVal) => {
   console.log(newVal)
 })
+
+defineExpose({
+  saveContent
+})
 </script>
 
 <template>
   <div class="menu" v-if="editor">
+    <input
+      type="color"
+      @input="editor.chain().focus().setColor($event.target.value).run()"
+      :value="editor.getAttributes('textStyle').color"
+    />
+
+    <button @click="editor.chain().focus().toggleHeading({ level: 1 }).run()">
+      H1
+    </button>
     <button
       @click="editor.chain().focus().undo().run()"
       :disabled="!editor.can().undo()"
@@ -228,6 +338,16 @@ watch(fileList, (newVal) => {
   border: 1px black solid;
   height: 300px;
   padding: 10px;
+  max-width: 800px;
+  overflow: auto;
+}
+
+.ProseMirror img {
+  display: block;
+  height: auto;
+  margin: 1.5rem 0;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .ProseMirror:focus {
@@ -259,5 +379,11 @@ watch(fileList, (newVal) => {
   background-color: rgba(255, 0, 0, 0.2) !important;
   padding: 0 2px !important;
   border-radius: 2px !important;
+}
+
+.ProseMirror a {
+  color: #409eff;
+  text-decoration: underline;
+  font-weight: bold;
 }
 </style>

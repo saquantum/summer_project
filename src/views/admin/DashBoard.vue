@@ -1,15 +1,28 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import * as echarts from 'echarts'
 import type { ECharts } from 'echarts'
 import ukmap from '@/assets/ukmap.json'
 import type { GeoJSONSourceInput } from 'echarts/types/src/coord/geo/geoTypes.js'
+import { adminSearchUsersService } from '@/api/admin'
+import type { UserItem, UserSearchBody } from '@/types'
 
 let mapChart: ECharts | null = null
 let barChart: ECharts | null = null
 let lineChart: ECharts | null = null
 let nightingaleChart: ECharts | null = null
 
+const users = ref<UserItem[]>([])
+
+const userLabels = computed(() => {
+  if (users.value.length <= 0) return []
+  return users.value.map((item) => item.user.id)
+})
+
+const userAssetNumbers = computed(() => {
+  if (users.value.length <= 0) return []
+  return users.value.map((item) => item.accumulation)
+})
 const handleResize = () => {
   if (mapChart && barChart && lineChart && nightingaleChart) {
     mapChart.resize()
@@ -20,6 +33,13 @@ const handleResize = () => {
 }
 
 onMounted(async () => {
+  const res = await adminSearchUsersService('count', {
+    orderList: 'accumulation, desc',
+    limit: 5
+  } as UserSearchBody)
+  users.value = res.data
+  console.log(res)
+
   mapChart = echarts.init(document.getElementById('main'))
   mapChart.showLoading()
   echarts.registerMap('UK', ukmap as GeoJSONSourceInput)
@@ -104,20 +124,13 @@ onMounted(async () => {
     },
     yAxis: {
       type: 'category',
-      data: [
-        'User_001',
-        'User_002',
-        'User_003',
-        'User_004',
-        'User_005',
-        'User_006'
-      ]
+      data: userLabels.value
     },
     series: [
       {
         name: 'Total',
         type: 'bar',
-        data: [10, 50, 40, 80, 100, 200]
+        data: userAssetNumbers.value
       }
     ]
   }
