@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores'
 import type { UserSearchBody, UserSearchForm } from '@/types'
-import { userConverFormToFilter } from '@/utils/DataConversion'
+import { userConverFormToFilter } from '@/utils/dataConversion'
 import { Filter } from '@element-plus/icons-vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 

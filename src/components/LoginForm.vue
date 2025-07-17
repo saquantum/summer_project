@@ -1,17 +1,22 @@
 <script setup lang="ts">
 import { User, Lock, Message, Phone } from '@element-plus/icons-vue'
 import { ref, watch } from 'vue'
-import {
-  userCheckEmailService,
-  userCheckUIDService,
-  userRegisterService
-} from '@/api/user'
+import { userRegisterService } from '@/api/user'
 import { useRouter } from 'vue-router'
 import { useAssetStore, useUserStore } from '@/stores/index.ts'
-import CodeUtil from '@/utils/codeUtil'
-import type { FormItemRule } from 'element-plus'
+
 import { ElMessage } from 'element-plus'
 import type { LoginForm } from '@/types'
+import {
+  createRepasswordRules,
+  emailRules,
+  firstNameRules,
+  lastNameRules,
+  passwordRules,
+  phoneRules,
+  trimForm,
+  usernameRules
+} from '@/utils/formUtils'
 const loginFormRef = ref()
 const registerFormRef = ref()
 
@@ -90,123 +95,19 @@ const registerForm = ref({
 const rules = {
   // customize rules here
   username: [
-    { required: true, message: 'Please input username', trigger: 'blur' },
-    {
-      min: 5,
-      max: 10,
-      message: 'username must between 5 to 10 characters',
-      trigger: 'blur'
-    }
+    { required: true, message: 'Please input username', trigger: 'blur' }
   ],
-  id: [
-    { required: true, message: 'Please input username', trigger: 'blur' },
-    {
-      min: 5,
-      max: 10,
-      message: 'username must between 5 to 10 characters',
-      trigger: 'blur'
-    },
-    {
-      validator: async (
-        rule: FormItemRule,
-        value: string,
-        callback: (error?: Error) => void
-      ) => {
-        const res = await userCheckUIDService(value)
-        // success means find a username called ${value}
-        if (CodeUtil.isSuccess(res.code)) {
-          callback(
-            new Error(`Username ${value} is already exists, try a new one`)
-          )
-        }
-        callback()
-      },
-      trigger: 'blur'
-    }
-  ],
-  password: [
-    {
-      required: true,
-      message: 'Please input password',
-      trigger: 'blur'
-    },
-    {
-      pattern: /^\S{0,15}$/,
-      message: 'password must between 6 to 15 characters',
-      trigger: 'blur'
-    }
-  ],
-  firstName: [
-    { required: true, message: 'Firstname cannot be empty', trigger: 'blur' }
-  ],
-  lastName: [
-    { required: true, message: 'Lastname cannot be empty', trigger: 'blur' }
-  ],
-  repassword: [
-    { required: true, message: 'Please input password', trigger: 'blur' },
-    {
-      pattern: /^\S{6,15}$/,
-      message: 'password must between 6 to 15 characters',
-      trigger: 'blur'
-    },
-    {
-      validator: (
-        rule: FormItemRule,
-        value: string,
-        callback: (error?: Error) => void
-      ) => {
-        if (value !== registerForm.value.password) {
-          callback(new Error("Those passwords didn't match. Try again."))
-        } else {
-          callback()
-        }
-      },
-      trigger: 'blur'
-    }
-  ],
-  email: [
-    { required: true, message: 'Please input email', trigger: 'blur' },
-    {
-      type: 'email',
-      message: 'Please input a valid email address',
-      trigger: ['blur', 'change']
-    },
-    {
-      validator: async (
-        rule: FormItemRule,
-        value: string,
-        callback: (error?: Error) => void
-      ) => {
-        const res = await userCheckEmailService(value)
-        if (CodeUtil.isSuccess(res.code)) {
-          callback(new Error('This email has already been used'))
-        }
-        callback()
-      },
-      trigger: 'blur'
-    }
-  ],
-  phone: [
-    { required: true, message: 'Phone is required', trigger: 'blur' },
-    {
-      validator: (
-        rule: FormItemRule,
-        value: string,
-        callback: (error?: Error) => void
-      ) => {
-        const phoneRegex = /^[0-9+\-()\s]{7,20}$/
-        if (!phoneRegex.test(value)) {
-          callback(new Error('Invalid phone number'))
-        } else {
-          callback()
-        }
-      },
-      trigger: 'blur'
-    }
-  ]
+  id: usernameRules,
+  password: passwordRules,
+  repassword: createRepasswordRules(() => registerForm.value.password || ''),
+  firstName: firstNameRules,
+  lastName: lastNameRules,
+  email: emailRules,
+  phone: phoneRules
 }
 
 const register = async () => {
+  trimForm(registerForm.value)
   try {
     await registerFormRef.value.validate()
   } catch {

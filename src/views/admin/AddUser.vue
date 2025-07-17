@@ -1,12 +1,21 @@
 <script setup lang="ts">
-import { userCheckUIDService, userCheckEmailService } from '@/api/user'
-import CodeUtil from '@/utils/codeUtil'
 import { ElMessage } from 'element-plus'
 import { ref, onMounted } from 'vue'
 import type { FormRules } from 'element-plus'
 import type { UserInfoForm } from '@/types'
-import type { InternalRuleItem } from 'async-validator'
+
 import { adminInsertUserService } from '@/api/admin'
+import {
+  createRepasswordRules,
+  emailRules,
+  firstNameRules,
+  lastNameRules,
+  passwordRules,
+  phoneRules,
+  postcodeRules,
+  trimForm,
+  usernameRules
+} from '@/utils/formUtils'
 
 const form = ref<UserInfoForm>({
   id: '',
@@ -42,133 +51,18 @@ const form = ref<UserInfoForm>({
 const formRef = ref()
 
 const rules = ref<FormRules<typeof form>>({
-  id: [
-    { required: true, message: 'Please input username', trigger: 'blur' },
-    {
-      pattern: /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]+$/,
-      message:
-        'Username can only contain letters, numbers, and special characters (no spaces allowed).',
-      trigger: 'blur'
-    },
-    {
-      asyncValidator: async (
-        rule: InternalRuleItem,
-        value: string,
-        callback: (error?: string | Error) => void
-      ) => {
-        try {
-          const res = await userCheckUIDService(value)
-          if (CodeUtil.isSuccess(res.code)) {
-            callback(new Error(`Username '${value}' already exists`))
-          } else {
-            callback()
-          }
-        } catch {
-          callback('Server error')
-        }
-      },
-      trigger: 'blur'
-    }
-  ],
-  password: [
-    {
-      required: true,
-      message: 'Please input password',
-      trigger: 'blur'
-    },
-    {
-      pattern: /^\S{5,15}$/,
-      message: 'password must between 5 to 15 characters',
-      trigger: 'blur'
-    }
-  ],
-  repassword: [
-    { required: true, message: 'Please input password', trigger: 'blur' },
-    {
-      pattern: /^\S{5,15}$/,
-      message: 'password must between 5 to 15 characters',
-      trigger: 'blur'
-    },
-    {
-      validator: (
-        rule: InternalRuleItem,
-        value: string,
-        callback: (error?: Error) => void
-      ) => {
-        if (value !== form.value.password) {
-          callback(new Error("Those passwords didn't match. Try again."))
-        } else {
-          callback()
-        }
-      },
-      trigger: 'blur'
-    }
-  ],
-  firstName: [
-    { required: true, message: 'First name is required', trigger: 'blur' },
-    {
-      min: 2,
-      max: 30,
-      message: 'First name must be 2–30 characters',
-      trigger: 'blur'
-    }
-  ],
-  lastName: [
-    { required: true, message: 'Last name is required', trigger: 'blur' },
-    {
-      min: 2,
-      max: 30,
-      message: 'Last name must be 2–30 characters',
-      trigger: 'blur'
-    }
-  ],
-  'assetHolder.email': [
-    { required: true, message: 'Email is required', trigger: 'blur' },
-    { type: 'email', message: 'Invalid email format', trigger: 'blur' },
-    {
-      asyncValidator: async (
-        rule: InternalRuleItem,
-        value: string,
-        callback: (error?: Error) => void
-      ) => {
-        const res = await userCheckEmailService(value)
-        if (CodeUtil.isSuccess(res.code)) {
-          callback(new Error('This email has already been used'))
-        }
-        callback()
-      },
-      trigger: 'blur'
-    }
-  ],
-  'assetHolder.phone': [
-    { required: true, message: 'Phone is required', trigger: 'blur' },
-    {
-      validator: (
-        rule: InternalRuleItem,
-        value: string,
-        callback: (error?: Error) => void
-      ) => {
-        const phoneRegex = /^[0-9+\-()\s]{7,20}$/
-        if (!phoneRegex.test(value)) {
-          callback(new Error('Invalid phone number'))
-        } else {
-          callback()
-        }
-      },
-      trigger: 'blur'
-    }
-  ],
-
-  'assetHolder.address.postcode': [
-    {
-      pattern: /^[a-zA-Z0-9\-\s]{3,16}$/,
-      message: 'Post code must be 3-16 letters, numbers, spaces or hyphens.',
-      trigger: 'blur'
-    }
-  ]
+  id: usernameRules,
+  password: passwordRules,
+  repassword: createRepasswordRules(() => form.value.password || ''),
+  firstName: firstNameRules,
+  lastName: lastNameRules,
+  'assetHolder.email': emailRules,
+  'assetHolder.phone': phoneRules,
+  'assetHolder.address.postcode': postcodeRules
 })
 
 const submit = async () => {
+  trimForm(form.value)
   try {
     await formRef.value.validate()
   } catch (fields) {

@@ -8,8 +8,15 @@ import {
 } from '@/api/admin'
 import { ElMessage } from 'element-plus'
 import type { User, UserInfoForm } from '@/types'
-import type { InternalRuleItem } from 'async-validator'
 import { useRoute } from 'vue-router'
+import {
+  emailRules,
+  firstNameRules,
+  lastNameRules,
+  phoneRules,
+  postcodeRules,
+  trimForm
+} from '@/utils/formUtils'
 
 const route = useRoute()
 const props = defineProps<{ isEdit: boolean }>()
@@ -101,73 +108,11 @@ const formRef = ref()
 // }
 
 const rules = {
-  firstName: [
-    { required: true, message: 'First name is required', trigger: 'blur' },
-    {
-      min: 2,
-      max: 30,
-      message: 'First name must be 2–30 characters',
-      trigger: 'blur'
-    }
-  ],
-  lastName: [
-    { required: true, message: 'Last name is required', trigger: 'blur' },
-    {
-      min: 2,
-      max: 30,
-      message: 'Last name must be 2–30 characters',
-      trigger: 'blur'
-    }
-  ],
-  email: [
-    { required: true, message: 'Email is required', trigger: 'blur' },
-    { type: 'email', message: 'Invalid email format', trigger: 'blur' }
-  ],
-  phone: [
-    { required: true, message: 'Phone is required', trigger: 'blur' },
-    {
-      validator: (
-        rule: InternalRuleItem,
-        value: string,
-        callback: (_error?: Error) => void
-      ) => {
-        const phoneRegex = /^[0-9+\-()\s]{7,20}$/
-        if (!phoneRegex.test(value)) {
-          callback(new Error('Invalid phone number'))
-        } else {
-          callback()
-        }
-      },
-      trigger: 'blur'
-    }
-  ],
-  'assetHolder.address.street': [
-    { required: true, message: 'Street is required', trigger: 'blur' }
-  ],
-  'assetHolder.address.postcode': [
-    { required: true, message: 'Post code is required', trigger: 'blur' },
-    {
-      validator: (
-        rule: InternalRuleItem,
-        value: string,
-        callback: (error?: Error) => void
-      ) => {
-        const ukPostcodeRegex = /^[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}$/i
-        if (!ukPostcodeRegex.test(value)) {
-          callback(new Error('Invalid UK postcode (e.g. SW1A 1AA)'))
-        } else {
-          callback()
-        }
-      },
-      trigger: 'blur'
-    }
-  ],
-  'assetHolder.address.city': [
-    { required: true, message: 'City is required', trigger: 'blur' }
-  ],
-  'assetHolder.address.country': [
-    { required: true, message: 'Country is required', trigger: 'blur' }
-  ]
+  firstName: firstNameRules,
+  lastName: lastNameRules,
+  'assetHolder.email': emailRules,
+  'assetHolder.phone': phoneRules,
+  'assetHolder.address.postcode': postcodeRules
 }
 
 const userToForm = (user: User): UserInfoForm => {
@@ -204,6 +149,7 @@ const userToForm = (user: User): UserInfoForm => {
 }
 
 const submit = async () => {
+  trimForm(form.value)
   try {
     await formRef.value.validate()
   } catch {

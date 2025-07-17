@@ -2,16 +2,16 @@
 import { ref, watch, onMounted, computed } from 'vue'
 import request from '@/utils/request'
 import { useAssetStore, useUserStore } from '@/stores/index.ts'
-import CodeUtil from '@/utils/codeUtil'
-import { userCheckUIDService } from '@/api/user'
 import { adminGetUserInfoService } from '@/api/admin'
-import { userInsertAssetService } from '@/api/user'
+import { userCheckUIDService, userInsertAssetService } from '@/api/user'
 import { adminInsertAssetService } from '@/api/admin'
 import type { Feature, MultiPolygon } from 'geojson'
 import { ElMessage, type FormItemRule } from 'element-plus'
 import type { ComponentPublicInstance } from 'vue'
 import type MapCard from '@/components/MapCard.vue'
 import type { AssetForm, NominatimResult } from '@/types'
+import { trimForm } from '@/utils/formUtils'
+import CodeUtil from '@/utils/codeUtil'
 
 // user store
 const userStore = useUserStore()
@@ -261,6 +261,7 @@ const cancelDrawing = () => {
 }
 
 const userSubmit = async () => {
+  trimForm(form.value)
   if (!formRef.value) return
   try {
     await formRef.value.validate()
@@ -297,6 +298,7 @@ const userSubmit = async () => {
 }
 
 const adminSubmit = async () => {
+  trimForm(form.value)
   if (!formRef.value) return
   try {
     await formRef.value.validate()

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAssetStore, useUserStore } from '@/stores'
 import type { AssetSearchBody, AssetSearchForm } from '@/types'
-import { assetConverFormToFilter } from '@/utils/DataConversion'
+import { assetConverFormToFilter } from '@/utils/dataConversion'
 import { Filter } from '@element-plus/icons-vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 
