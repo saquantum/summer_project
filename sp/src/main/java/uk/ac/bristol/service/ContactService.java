@@ -14,8 +14,6 @@ public interface ContactService {
 
     Map<String, Object> formatNotification(Warning warning, UserWithAssets uwa, String channel);
 
-    void sendEmailToAddress(String toEmailAddress, Map<String, Object> notification);
-
     ResponseBody unsubscribeEmail(String token);
 
     void sendSms(String toPhoneNumber, String messageBody);

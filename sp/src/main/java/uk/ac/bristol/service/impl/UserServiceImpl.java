@@ -8,11 +8,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.AssetHolderMapper;
+import uk.ac.bristol.dao.AssetMapper;
 import uk.ac.bristol.dao.MetaDataMapper;
 import uk.ac.bristol.dao.UserMapper;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
-import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.PermissionConfigService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
@@ -27,14 +27,14 @@ public class UserServiceImpl implements UserService {
     private final MetaDataMapper metaDataMapper;
     private final AssetHolderMapper assetHolderMapper;
     private final UserMapper userMapper;
-    private final AssetService assetService;
+    private final AssetMapper assetMapper;
     private final PermissionConfigService permissionConfigService;
 
-    public UserServiceImpl(MetaDataMapper metaDataMapper, AssetHolderMapper assetHolderMapper, UserMapper userMapper, AssetService assetService, PermissionConfigService permissionConfigService) {
+    public UserServiceImpl(MetaDataMapper metaDataMapper, AssetHolderMapper assetHolderMapper, UserMapper userMapper, AssetMapper assetMapper, PermissionConfigService permissionConfigService) {
         this.metaDataMapper = metaDataMapper;
         this.assetHolderMapper = assetHolderMapper;
         this.userMapper = userMapper;
-        this.assetService = assetService;
+        this.assetMapper = assetMapper;
         this.permissionConfigService = permissionConfigService;
     }
 
@@ -114,7 +114,7 @@ public class UserServiceImpl implements UserService {
                 QueryTool.formatFilters(filters),
                 QueryTool.filterOrderList(orderList, "asset_holders"),
                 limit, offset);
-        List<Asset> assets = assetService.getAllAssets(null, null, null, null);
+        List<Asset> assets = assetMapper.selectAssets(null, null, null, null);
         Map<String, List<String>> mapping = new HashMap<>();
         assets.forEach(asset -> {
             if (!mapping.containsKey(asset.getOwnerId())) {
@@ -170,6 +170,11 @@ public class UserServiceImpl implements UserService {
             throw new SpExceptions.GetMethodException("Get " + user.size() + " users using user id " + uid);
         }
         return user.get(0);
+    }
+
+    @Override
+    public Long getUserRowIdByUserId(String uid) {
+        return userMapper.selectUserRowIdByUserId(uid);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)

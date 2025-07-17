@@ -10,6 +10,8 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +45,9 @@ public class ContactServiceImpl implements ContactService {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    @Autowired
+    private AsyncEmailSender asyncEmailSender;
+
     private final UserService userService;
     private final MetaDataMapper metaDataMapper;
     private final ContactMapper contactMapper;
@@ -63,7 +68,7 @@ public class ContactServiceImpl implements ContactService {
 
         Map<String, Object> emailNotification = formatNotification(warning, uwa, "email");
         if (contactPreferences.get("email").equals(Boolean.TRUE)) {
-            sendEmailToAddress(
+            asyncEmailSender.sendEmailToAddress(
                     uwa.getUser().getAssetHolder().getEmail(),
                     emailNotification
             );
@@ -141,47 +146,6 @@ public class ContactServiceImpl implements ContactService {
                 .replace("{{asset-model}}", asset.getName())
                 .replace("{{contact_name}}", user.getAssetHolder().getName())
                 .replace("{{post_town}}", user.getAssetHolder().getAddress().get("city"));
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-    @Override
-    public void sendEmailToAddress(String toEmailAddress, Map<String, Object> notification) {
-        if (notification == null) {
-            throw new SpExceptions.SystemException("Failed to send email because notification is null");
-        }
-
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper mmh;
-        try {
-            mmh = new MimeMessageHelper(message, true, "UTF-8");
-            mmh.setFrom(from);
-            mmh.setTo(toEmailAddress);
-            mmh.setSubject(notification.get("title").toString());
-
-            Map<String, Object> claims = new HashMap<>();
-            claims.put("unsubscribe-email-uid", notification.get("toUserId").toString());
-            claims.put("action", "unsubscribe-email");
-            String unsubscribeUrl = baseURL + "/user/notify/email/unsubscribe?token=" + JwtUtil.generateJWT(claims);
-            mmh.setText("<!DOCTYPE html>\n" +
-                    "<html lang=\"en\">\n" +
-                    "<head>\n" +
-                    "    <meta charset=\"UTF-8\">\n" +
-                    "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-                    "    <title>Document</title>\n" +
-                    "</head>\n" +
-                    "<body>\n" +
-                    notification.get("body").toString()
-                    + "<br>"
-                    + "<br>"
-                    + "To unsubscribe email notifications, click the link below:"
-                    + "<br>"
-                    + "<a href=\"" + unsubscribeUrl + "\">unsubscribe</a>"
-                    + "</body>\n" +
-                    "</html>", true);
-            mailSender.send(message);
-        } catch (MessagingException e) {
-            throw new SpExceptions.SystemException("Failed to send email using mime message helper");
-        }
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -394,5 +358,57 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public int deleteOutDatedInboxMessagesByUserId(String userId) {
         return contactMapper.deleteOutDatedInboxMessagesByUserId(userId);
+    }
+}
+
+@Component
+class AsyncEmailSender {
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Value("${spring.mail.username}")
+    private String from;
+
+    @Value("${app.base-url}")
+    private String baseURL;
+
+    @Async("notificationExecutor")
+    public void sendEmailToAddress(String toEmailAddress, Map<String, Object> notification) {
+        if (notification == null) {
+            throw new SpExceptions.SystemException("Failed to send email because notification is null");
+        }
+
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper mmh;
+        try {
+            mmh = new MimeMessageHelper(message, true, "UTF-8");
+            mmh.setFrom(from);
+            mmh.setTo(toEmailAddress);
+            mmh.setSubject(notification.get("title").toString());
+
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("unsubscribe-email-uid", notification.get("toUserId").toString());
+            claims.put("action", "unsubscribe-email");
+            String unsubscribeUrl = baseURL + "/user/notify/email/unsubscribe?token=" + JwtUtil.generateJWT(claims);
+            mmh.setText("<!DOCTYPE html>\n" +
+                    "<html lang=\"en\">\n" +
+                    "<head>\n" +
+                    "    <meta charset=\"UTF-8\">\n" +
+                    "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+                    "    <title>Document</title>\n" +
+                    "</head>\n" +
+                    "<body>\n" +
+                    notification.get("body").toString()
+                    + "<br>"
+                    + "<br>"
+                    + "To unsubscribe email notifications, click the link below:"
+                    + "<br>"
+                    + "<a href=\"" + unsubscribeUrl + "\">unsubscribe</a>"
+                    + "</body>\n" +
+                    "</html>", true);
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new SpExceptions.SystemException("Failed to send email using mime message helper");
+        }
     }
 }

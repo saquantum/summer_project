@@ -43,6 +43,8 @@ public interface UserService {
 
     User getUserByUserId(String uid);
 
+    Long getUserRowIdByUserId(String uid);
+
     boolean testUIDExistence(String id);
 
     boolean testEmailAddressExistence(String email);

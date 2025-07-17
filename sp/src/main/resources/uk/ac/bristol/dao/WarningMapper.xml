@@ -61,7 +61,7 @@
         where warning_id = #{id}
     </select>
 
-    <select id="selectWarningsIntersectingWithGivenAsset" resultType="ResultMaps.WarningMap">
+    <select id="selectWarningsIntersectingWithGivenAsset" resultMap="ResultMaps.WarningMap">
         select warning_id,
                warning_weather_type,
                warning_level,

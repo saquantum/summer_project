@@ -36,6 +36,8 @@ public interface UserMapper {
 
     String selectPasswordByUserId(@Param("id") String id);
 
+    Long selectUserRowIdByUserId(@Param("id") String id);
+
     List<UserWithAssets> groupUsersWithOwnedAssetsByWarningId(@Param("limit") Integer limit,
                                                               @Param("cursor") Long cursor,
                                                               @Param("warningId") Long warningId,

@@ -116,6 +116,12 @@
         where user_id = #{id};
     </select>
 
+    <select id="selectUserRowIdByUserId" resultType="java.lang.Long">
+        select user_row_id
+        from users
+        where user_id = #{id}
+    </select>
+
     <select id="groupUsersWithOwnedAssetsByWarningId" resultMap="ResultMaps.UserWithAssetsMap">
         select users.*,
                asset_holders.*,
@@ -144,14 +150,14 @@
                             on asset_holder_id = asset_owner_id
                 left join asset_types
                             on asset_type_type_id = asset_type_id
-        <if test="getDiff == null or getDiff = false">
+        <if test="getDiff == null or getDiff == false">
                 inner join weather_warnings
                             on warning_id = #{warningId}
                                 and ST_Intersects(asset_location, warning_area)
                                 and now() between warning_valid_from and warning_valid_to
         </if>
         where 1=1
-        <if test="getDiff != null and getDiff = true">
+        <if test="getDiff != null and getDiff == true">
             and ST_Intersects(asset_location, ST_Multi(ST_GeomFromGeoJSON(#{newArea})))
             and asset_id not in (
                 select a.asset_id

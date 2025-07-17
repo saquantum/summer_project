@@ -117,10 +117,11 @@ public class WarningServiceImpl implements WarningService {
         do {
             List<UserWithAssets> list = userService.groupUsersWithOwnedAssetsByWarningId(limit, cursor, warning.getId(), getDiff, warning.getAreaAsJson());
             length = list.size();
+            if(length == 0) break;
             for (UserWithAssets uwa : list) {
                 contactService.sendNotificationsToUser(warning, uwa);
             }
-            cursor += length;
+            cursor = userService.getUserRowIdByUserId(list.get(list.size() - 1).getUser().getId());
         } while (length > 0);
         if (cursor == 0L) {
             if (getDiff) {

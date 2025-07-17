@@ -139,7 +139,7 @@ public class ImportMockDataImpl implements ImportMockData {
             List<String> warningTypes = List.of("Rain", "Thunderstorm", "Wind", "Snow", "Lightning", "Ice", "Heat", "Fog");
             List<String> severities = List.of("YELLOW", "AMBER", "RED");
             List<String> assetTypeIds = List.of("type_001", "type_002", "type_003", "type_004", "type_005", "type_006", "type_007");
-            List<String> channels = List.of("Email", "SMS");
+            List<String> channels = List.of("email", "phone", "post");
 
             Random r = new Random();
             for (String warningType : warningTypes) {

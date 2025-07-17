@@ -36,5 +36,5 @@ public interface WarningMapper {
 
     boolean testWarningDetailDiff(Warning warning);
 
-    boolean testWarningAreaDiff(@Param("id") Long id, @Param("geojson") String geojson);
+    boolean testWarningAreaDiff(@Param("id") Long warningId, @Param("areaAsJson") String areaAsJson);
 }
