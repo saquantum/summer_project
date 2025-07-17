@@ -2000,8 +2000,85 @@
     "last_inspection": "1974-07-10"
   },
   {
-    "id": "asset_051",
-    "name": "Test Asset",
+    "name": "Test Asset 1",
+    "type_id": "type_006",
+    "owner_id": "user_051",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -2.041143,
+              50.336510000000004
+            ],
+            [
+              -1.941143,
+              50.336510000000004
+            ],
+            [
+              -1.941143,
+              50.43651
+            ],
+            [
+              -2.041143,
+              50.43651
+            ],
+            [
+              -2.041143,
+              50.336510000000004
+            ]
+          ]
+        ]
+      ]
+    },
+    "capacity_litres": 5000,
+    "material": "Steel",
+    "status": "inactive",
+    "installed_at": "1975-04-04",
+    "last_inspection": "1998-06-15"
+  },
+  {
+    "name": "Test Asset 2",
+    "type_id": "type_002",
+    "owner_id": "user_052",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -2.041143,
+              50.336510000000004
+            ],
+            [
+              -1.941143,
+              50.336510000000004
+            ],
+            [
+              -1.941143,
+              50.43651
+            ],
+            [
+              -2.041143,
+              50.43651
+            ],
+            [
+              -2.041143,
+              50.336510000000004
+            ]
+          ]
+        ]
+      ]
+    },
+    "capacity_litres": 5000,
+    "material": "Steel",
+    "status": "inactive",
+    "installed_at": "1975-04-04",
+    "last_inspection": "1998-06-15"
+  },
+  {
+    "name": "Test Asset 3",
     "type_id": "type_005",
     "owner_id": "user_053",
     "location": {

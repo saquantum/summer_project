@@ -166,7 +166,7 @@
         select
             case
                 when
-                    warning_area != ST_Multi(ST_GeomFromGeoJSON(#{geojson}))
+                    warning_area != ST_Multi(ST_GeomFromGeoJSON(#{areaAsJson}))
                 then true
                 else false
         end

@@ -112,7 +112,7 @@ public class LoginController {
 
     @GetMapping("/exists/email/{email}")
     public ResponseBody checkEmailExistence(@PathVariable String email) {
-        if (userService.testEmailExistence(email)) {
+        if (userService.testEmailAddressExistence(email)) {
             return new ResponseBody(Code.SELECT_OK, null, "The email address already exists.");
         }
         return new ResponseBody(Code.SELECT_ERR, null, "The email address does not exist.");

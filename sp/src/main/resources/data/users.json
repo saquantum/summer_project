@@ -848,5 +848,53 @@
             "phone": true,
             "post": false
         }
+    },
+    {
+        "name": "Yi Cheng-Jun",
+        "email": "lw24658@bristol.ac.uk",
+        "phone": "123456",
+        "address": {
+            "street": "Print Hall",
+            "city": "Bristol",
+            "postcode": "BS2 OBY",
+            "country": "UK"
+        },
+        "contact_preferences": {
+            "email": false,
+            "phone": false,
+            "post": false
+        }
+    },
+    {
+        "name": "Zhang Rui",
+        "email": "xs24368@bristol.ac.uk",
+        "phone": "123456",
+        "address": {
+            "street": "Dean Street",
+            "city": "Bristol",
+            "postcode": "BS2 8SF",
+            "country": "UK"
+        },
+        "contact_preferences": {
+            "email": false,
+            "phone": false,
+            "post": false
+        }
+    },
+    {
+        "name": "Yang Zheng-Hao",
+        "email": "kj24716@bristol.ac.uk",
+        "phone": "123456",
+        "address": {
+            "street": "Clifton Down",
+            "city": "Bristol",
+            "postcode": "BS6 6JZ",
+            "country": "UK"
+        },
+        "contact_preferences": {
+            "email": true,
+            "phone": false,
+            "post": false
+        }
     }
 ]

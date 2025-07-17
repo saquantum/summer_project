@@ -83,46 +83,6 @@ public class ImportMockDataImpl implements ImportMockData {
         admin.setAdmin(true);
         userService.insertUser(admin);
         permissionConfigService.insertPermissionConfig(new PermissionConfig("admin"));
-
-        // register two users with actual email address to test
-        AssetHolder YCJ = new AssetHolder();
-        YCJ.setName("Yi Cheng-Jun");
-        YCJ.setPhone("0123456789");
-        YCJ.setEmail("lw24658@bristol.ac.uk");
-        YCJ.setAddress(Map.of());
-        YCJ.setContactPreferences(Map.of("email", true));
-        User user_YCJ = new User();
-        user_YCJ.setId(YCJ.getName());
-        user_YCJ.setPassword("123456");
-        user_YCJ.setAdmin(false);
-        user_YCJ.setAssetHolder(YCJ);
-        userService.insertUser(user_YCJ);
-
-        AssetHolder ZR = new AssetHolder();
-        ZR.setName("Zhang Rui");
-        ZR.setEmail("xs24368@bristol.ac.uk");
-        ZR.setPhone("0123456789");
-        ZR.setAddress(Map.of());
-        ZR.setContactPreferences(Map.of("email", true));
-        User user_ZR = new User();
-        user_ZR.setId(ZR.getName());
-        user_ZR.setPassword("123456");
-        user_ZR.setAdmin(false);
-        user_ZR.setAssetHolder(ZR);
-        userService.insertUser(user_ZR);
-
-        AssetHolder YZH = new AssetHolder();
-        YZH.setName("Yang Zheng-Hao");
-        YZH.setEmail("kj24716@bristol.ac.uk");
-        YZH.setPhone("0123456789");
-        YZH.setAddress(Map.of());
-        YZH.setContactPreferences(Map.of("email", false));
-        User user_YZH = new User();
-        user_YZH.setId(YZH.getName());
-        user_YZH.setPassword("123456");
-        user_YZH.setAdmin(false);
-        user_YZH.setAssetHolder(YZH);
-        userService.insertUser(user_YZH);
     }
 
     @Override
