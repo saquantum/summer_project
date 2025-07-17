@@ -134,20 +134,39 @@
                asset_last_modified,
                asset_types.*
         from users
-                 left join asset_holders
-                           on user_asset_holder_id = asset_holder_id
-                 left join address
-                           on address_id = asset_holder_address_id
-                 left join contact_preferences
-                           on contact_preferences_id = asset_holder_contact_preferences_id
-                 inner join assets
+                left join asset_holders
+                            on user_asset_holder_id = asset_holder_id
+                left join address
+                            on address_id = asset_holder_address_id
+                left join contact_preferences
+                            on contact_preferences_id = asset_holder_contact_preferences_id
+                inner join assets
                             on asset_holder_id = asset_owner_id
-                 left join asset_types
-                           on asset_type_type_id = asset_type_id
-                 inner join weather_warnings
-                            on warning_id = #{warningId} and
-                               ST_Intersects(asset_location, warning_area) and
-                               now() between warning_valid_from and warning_valid_to
+                left join asset_types
+                            on asset_type_type_id = asset_type_id
+        <if test="getDiff == null or getDiff = false">
+                inner join weather_warnings
+                            on warning_id = #{warningId}
+                                and ST_Intersects(asset_location, warning_area)
+                                and now() between warning_valid_from and warning_valid_to
+        </if>
+        where 1=1
+        <if test="getDiff != null and getDiff = true">
+            and ST_Intersects(asset_location, ST_Multi(ST_GeomFromGeoJSON(#{newArea})))
+            and asset_id not in (
+                select a.asset_id
+                from assets a
+                    join weather_warnings w
+                        on w.warning_id = #{warningId}
+                where ST_Intersects(a.asset_location, w.warning_area)
+                    and now() between warning_valid_from and warning_valid_to
+            )
+        </if>
+        <if test="limit != null and cursor != null">
+            and user_row_id > #{cursor}
+            order by user_row_id
+            limit #{limit}
+        </if>
     </select>
 
     <select id="countUsers" resultType="int">

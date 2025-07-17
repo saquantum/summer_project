@@ -176,6 +176,7 @@ public final class QueryTool {
         return true;
     }
 
+    // if any table are inserted or deleted during runtime, should consider modify this setup
     private final static Set<String> registeredTables = QueryToolConfig.metaDataService.getAllRegisteredTableNames();
 
     public static List<Map<String, String>> filterOrderList(List<Map<String, String>> originalList, String... tablesAndColumns) {

@@ -120,19 +120,19 @@
     <update id="createUsers">
         create table if not exists users
         (
-            user_id                  varchar(100) primary key,
-            user_asset_holder_id     varchar(50),
-            user_password            text not null,
-            user_password_plaintext  varchar(50),
-            user_is_admin            boolean      not null
+            user_row_id             bigserial primary key,
+            user_id                 varchar(100) not null unique,
+            user_asset_holder_id    varchar(50),
+            user_password           text         not null,
+            user_password_plaintext varchar(50),
+            user_is_admin           boolean      not null
         );
 
         alter table users
-        add constraint fk_user_asset_holder
-        foreign key (user_asset_holder_id)
-        references asset_holders(asset_holder_id)
-        on delete set null;
-        <!--on delete cascade-->
+            add constraint fk_user_asset_holder
+                foreign key (user_asset_holder_id)
+                    references asset_holders (asset_holder_id)
+                    on delete set null;
 
         <include refid="initTableMetaData"/>
     </update>

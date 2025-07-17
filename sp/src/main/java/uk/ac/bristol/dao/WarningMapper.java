@@ -2,7 +2,6 @@ package uk.ac.bristol.dao;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import uk.ac.bristol.pojo.Template;
 import uk.ac.bristol.pojo.Warning;
 
 import java.util.List;
@@ -23,9 +22,7 @@ public interface WarningMapper {
 
     List<Warning> selectWarningById(@Param("id") Long id);
 
-    List<String> selectOwnerIdOfAllAssetsIntersectingWithGivenWarning(@Param("warningId") Long warningId);
-
-    Boolean testIfGivenAssetIntersectsWithWarning(@Param("assetId") String assetId, @Param("warningId") Long warningId);
+    List<Warning> selectWarningsIntersectingWithGivenAsset(@Param("assetId") String assetId);
 
     int insertWarning(Warning warning);
 
@@ -36,8 +33,6 @@ public interface WarningMapper {
     int deleteWarningByIDs(@Param("ids") List<Long> ids);
 
     boolean testWarningExists(@Param("id") Long id);
-
-    List<Long> selectWarningIdsByAssetId(@Param("id") String id);
 
     boolean testWarningDetailDiff(Warning warning);
 

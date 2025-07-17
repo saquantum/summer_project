@@ -4,37 +4,36 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import uk.ac.bristol.dao.AssetHolderMapper;
 import uk.ac.bristol.dao.AssetMapper;
 import uk.ac.bristol.dao.MetaDataMapper;
-import uk.ac.bristol.dao.WarningMapper;
 import uk.ac.bristol.exception.SpExceptions;
-import uk.ac.bristol.pojo.Asset;
-import uk.ac.bristol.pojo.AssetHolder;
-import uk.ac.bristol.pojo.AssetType;
-import uk.ac.bristol.pojo.AssetWithWeatherWarnings;
+import uk.ac.bristol.pojo.*;
 import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.ContactService;
+import uk.ac.bristol.service.UserService;
+import uk.ac.bristol.service.WarningService;
 import uk.ac.bristol.util.QueryTool;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class AssetServiceImpl implements AssetService {
 
     private final MetaDataMapper metaDataMapper;
     private final AssetMapper assetMapper;
-    private final AssetHolderMapper assetHolderMapper;
-    private final WarningMapper warningMapper;
+    private final UserService userService;
+    private final WarningService warningService;
     private final ContactService contactService;
 
-    public AssetServiceImpl(MetaDataMapper metaDataMapper, AssetMapper assetMapper, AssetHolderMapper assetHolderMapper, WarningMapper warningMapper, ContactService contactService) {
+    public AssetServiceImpl(MetaDataMapper metaDataMapper, AssetMapper assetMapper, UserService userService, WarningService warningService, ContactService contactService) {
         this.metaDataMapper = metaDataMapper;
         this.assetMapper = assetMapper;
-        this.assetHolderMapper = assetHolderMapper;
-        this.warningMapper = warningMapper;
+        this.userService = userService;
+        this.warningService = warningService;
         this.contactService = contactService;
     }
 
@@ -157,23 +156,27 @@ public class AssetServiceImpl implements AssetService {
     public int insertAsset(Asset asset) {
         int n;
         asset.setLastModified(Instant.now());
-        List<String> assetIds;
         if (asset.getId() == null || asset.getId().isEmpty()) {
-            assetIds = assetMapper.insertAssetReturningId(asset);
-            n = assetIds.size();
+            List<String> assetId = assetMapper.insertAssetReturningId(asset);
+            n = assetId.size();
+            if (n != 1) {
+                throw new SpExceptions.GetMethodException("Inserted " + n + " assets with returning auto id mode");
+            }
+
+            // if the new asset intersects with live warnings, send notifications
+            asset.setId(assetId.get(0));
+            List<Warning> warnings = warningService.getWarningsIntersectingWithGivenAsset(asset.getId());
+            if (!warnings.isEmpty()) {
+                User owner = userService.getUserByAssetHolderId(asset.getOwnerId());
+                for (Warning warning : warnings) {
+                    contactService.sendNotificationsToUser(warning, new UserWithAssets(owner, new ArrayList<>(List.of(asset))));
+                }
+            }
         } else {
             n = assetMapper.insertAsset(asset);
-            metaDataMapper.increaseTotalCountByTableName("assets", n);
-            return n;
         }
 
         metaDataMapper.increaseTotalCountByTableName("assets", n);
-
-        List<Long> warningIds = warningMapper.selectWarningIdsByAssetId(assetIds.get(0));
-        for (Long warningId : warningIds) {
-            Map<String, Object> notification = contactService.formatNotification(warningId, assetIds.get(0));  //异步处理问题，数据库未同步
-            contactService.sendEmail(notification);
-        }
         return n;
     }
 
@@ -186,6 +189,7 @@ public class AssetServiceImpl implements AssetService {
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int updateAsset(Asset asset) {
+        // get owner of the asset
         String ownerId = asset.getOwnerId();
         if (asset.getOwnerId() == null || asset.getOwnerId().isBlank()) {
             List<Asset> tmp = assetMapper.selectAssets(
@@ -196,37 +200,43 @@ public class AssetServiceImpl implements AssetService {
             }
             ownerId = tmp.get(0).getOwnerId();
         }
-        List<AssetHolder> owner = assetHolderMapper.selectAssetHolders(
-                QueryTool.formatFilters(Map.of("asset_holder_id", ownerId)),
-                null, null, null);
-        if (owner.size() != 1) {
-            throw new SpExceptions.GetMethodException(owner.size() + " asset holders found for asset id " + asset.getId() + " when updating asset");
-        }
+        User owner = userService.getUserByAssetHolderId(ownerId);
+
+        // update user last modified
         Instant now = Instant.now();
-        owner.get(0).setLastModified(now);
+        owner.getAssetHolder().setLastModified(now);
+        userService.updateAssetHolder(owner.getAssetHolder());
+
+        // if asset area is not touched, update now and return early
         asset.setLastModified(now);
-
-        assetHolderMapper.updateAssetHolder(owner.get(0));
-
-        List<Long> OldWarningIds = warningMapper.selectWarningIdsByAssetId(asset.getId());
-
-        int value = assetMapper.updateAsset(asset);
         if (asset.getLocationAsJson() == null || asset.getLocationAsJson().isBlank()) {
-            return value;
+            return assetMapper.updateAsset(asset);
         }
 
-        List<Long> warningIds = warningMapper.selectWarningIdsByAssetId(asset.getId());
-        if (warningIds.isEmpty()) {
-            return value;
+        // asset area is touched, get old intersecting warnings for the record
+        Map<Long, Warning> oldWarnings = warningService
+                .getWarningsIntersectingWithGivenAsset(asset.getId())
+                .stream()
+                .collect(Collectors.toMap(Warning::getId, warning -> warning));
+
+        int n = assetMapper.updateAsset(asset);
+
+        // if area is touched but no intersecting live warning, return early
+        List<Warning> newWarnings = warningService.getWarningsIntersectingWithGivenAsset(asset.getId());
+        if (newWarnings.isEmpty()) {
+            return n;
         }
-        for (Long warningId : warningIds) {
-            if (!OldWarningIds.contains(warningId)) {
-                Map<String, Object> notification = contactService.formatNotification(warningId, asset.getId());
-                contactService.sendEmail(notification);
+
+        // has intersecting live warnings, compare them with old warnings
+        for (Warning warning : newWarnings) {
+            // if new warning is one of the old warnings, do nothing
+            if (oldWarnings.containsKey(warning.getId())) {
+                continue;
             }
+            // new warning is new, send notifications
+            contactService.sendNotificationsToUser(warning, new UserWithAssets(owner, new ArrayList<>(List.of(asset))));
         }
-        return value;
-
+        return n;
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)

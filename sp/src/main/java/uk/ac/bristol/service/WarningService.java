@@ -1,6 +1,5 @@
 package uk.ac.bristol.service;
 
-import uk.ac.bristol.pojo.Template;
 import uk.ac.bristol.pojo.Warning;
 
 import java.util.List;
@@ -20,9 +19,7 @@ public interface WarningService {
 
     List<Warning> getWarningById(Long id);
 
-    boolean testWarningIdExists(Long warningId);
-
-    List<Long> selectWarningIdsByAssetId(String id);
+    List<Warning> getWarningsIntersectingWithGivenAsset(String assetId);
 
     boolean storeWarningsAndSendNotifications(List<Warning> parsedWarnings);
 

@@ -45,9 +45,13 @@ public interface UserService {
 
     boolean testUIDExistence(String id);
 
-    boolean testEmailExistence(String email);
+    boolean testEmailAddressExistence(String email);
 
-    List<UserWithAssets> groupUsersWithOwnedAssetsByWarningId(Long waringId);
+    List<UserWithAssets> groupUsersWithOwnedAssetsByWarningId(Integer limit,
+                                                              Long cursor,
+                                                              Long waringId,
+                                                              boolean getDiff,
+                                                              String newAreaAsJson);
 
     int countUsersWithFilter(Map<String, Object> filters);
 

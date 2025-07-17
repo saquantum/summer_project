@@ -6,6 +6,14 @@ public class UserWithAssets {
     private User user;
     private List<Asset> assets;
 
+    public UserWithAssets() {
+    }
+
+    public UserWithAssets(User user, List<Asset> assets) {
+        this.user = user;
+        this.assets = assets;
+    }
+
     public User getUser() {
         return user;
     }

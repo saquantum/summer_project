@@ -10,6 +10,8 @@ import java.util.Map;
 
 public interface ContactService {
 
+    void sendNotificationsToUser(Warning warning, UserWithAssets uwa);
+
     Map<String, Object> formatNotification(Warning warning, UserWithAssets uwa, String channel);
 
     void sendEmailToAddress(String toEmailAddress, Map<String, Object> notification);

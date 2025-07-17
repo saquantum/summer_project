@@ -3,14 +3,12 @@ package uk.ac.bristol.service.impl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import uk.ac.bristol.dao.ContactMapper;
+import uk.ac.bristol.controller.Code;
 import uk.ac.bristol.dao.MetaDataMapper;
 import uk.ac.bristol.dao.WarningMapper;
 import uk.ac.bristol.exception.SpExceptions;
-import uk.ac.bristol.pojo.Template;
 import uk.ac.bristol.pojo.UserWithAssets;
 import uk.ac.bristol.pojo.Warning;
-import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.ContactService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.service.WarningService;
@@ -27,14 +25,12 @@ public class WarningServiceImpl implements WarningService {
 
     private final MetaDataMapper metaDataMapper;
     private final WarningMapper warningMapper;
-    private final ContactMapper contactMapper;
     private final UserService userService;
     private final ContactService contactService;
 
-    public WarningServiceImpl(MetaDataMapper metaDataMapper, WarningMapper warningMapper, ContactMapper contactMapper, UserService userService, ContactService contactService) {
+    public WarningServiceImpl(MetaDataMapper metaDataMapper, WarningMapper warningMapper, UserService userService, ContactService contactService) {
         this.metaDataMapper = metaDataMapper;
         this.warningMapper = warningMapper;
-        this.contactMapper = contactMapper;
         this.userService = userService;
         this.contactService = contactService;
     }
@@ -69,16 +65,9 @@ public class WarningServiceImpl implements WarningService {
         return warningMapper.selectWarningById(id);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public boolean testWarningIdExists(Long warningId) {
-        return warningMapper.testWarningExists(warningId);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-    @Override
-    public List<Long> selectWarningIdsByAssetId(String id) {
-        return warningMapper.selectWarningIdsByAssetId(id);
+    public List<Warning> getWarningsIntersectingWithGivenAsset(String assetId) {
+        return warningMapper.selectWarningsIntersectingWithGivenAsset(assetId);
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -102,15 +91,7 @@ public class WarningServiceImpl implements WarningService {
             }
             // 3. warning area updated: send notifications to assets not intersecting with it beforehand
             else if (warningMapper.testWarningAreaDiff(warning.getId(), warning.getAreaAsJson())) {
-//                List<String> oldAssetIds = assetService.selectAssetIdsByWarningId(warning.getId());
-//                warningMapper.updateWarning(warning);
-//                List<String> assetIds = assetService.selectAssetIdsByWarningId(warning.getId());
-//                for (String assetId : assetIds) {
-//                    if (!oldAssetIds.contains(assetId)) {
-//                        Map<String, Object> notification = contactService.formatNotification(warning.getId(), assetId);
-//                        contactService.sendEmail(notification);
-//                    }
-//                }
+                handleGroupedUsersWithRespectToPagination(warning, true);
             } else {
                 s--;
             }
@@ -119,48 +100,34 @@ public class WarningServiceImpl implements WarningService {
         System.out.println("Successfully inserted or updated " + s + " weather warning records at "
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 
+        // send notifications for case 1 and 2 here
         if (!warningsToNotify.isEmpty()) {
             for (Warning warning : warningsToNotify) {
-                sendNotificationsToAllRelevantUsers(warning);
+                handleGroupedUsersWithRespectToPagination(warning, false);
             }
             return true;
         }
         return false;
     }
 
-    private void sendNotificationsToAllRelevantUsers(Warning warning) {
-        List<UserWithAssets> list = userService.groupUsersWithOwnedAssetsByWarningId(warning.getId());
-        if (list.isEmpty()) {
-            System.out.println("No users has asset intersecting with warning " + warning.getId() + ", no notification has been sent.");
-            return;
-        }
-        for (UserWithAssets uwa : list) {
-            Map<String, Object> contactPreferences = uwa.getUser().getAssetHolder().getContactPreferences();
-
-            Map<String, Object> emailNotification = contactService.formatNotification(warning, uwa, "email");
-            if (contactPreferences.get("email").equals(Boolean.TRUE)) {
-                contactService.sendEmailToAddress(
-                        uwa.getUser().getAssetHolder().getEmail(),
-                        emailNotification
-                );
+    private void handleGroupedUsersWithRespectToPagination(Warning warning, boolean getDiff) {
+        int limit = Code.PAGINATION_MAX_LIMIT;
+        long cursor = 0L;
+        int length = 0;
+        do {
+            List<UserWithAssets> list = userService.groupUsersWithOwnedAssetsByWarningId(limit, cursor, warning.getId(), getDiff, warning.getAreaAsJson());
+            length = list.size();
+            for (UserWithAssets uwa : list) {
+                contactService.sendNotificationsToUser(warning, uwa);
             }
-            if (contactPreferences.get("phone").equals(Boolean.TRUE)) {
-                Map<String, Object> smsNotification = contactService.formatNotification(warning, uwa, "phone");
-                // send sms
+            cursor += length;
+        } while (length > 0);
+        if (cursor == 0L) {
+            if (getDiff) {
+                System.out.println("No newly intersecting assets with updated warning " + warning.getId() + ", no notification has been sent.");
+            } else {
+                System.out.println("No users has asset intersecting with new warning " + warning.getId() + ", no notification has been sent.");
             }
-            if (contactPreferences.get("post").equals(Boolean.TRUE)) {
-                Map<String, Object> postNotification = contactService.formatNotification(warning, uwa, "post");
-                // send http post
-            }
-
-            // send inbox notification using email message
-            contactMapper.insertInboxMessageToUser(Map.of(
-                    "userId", emailNotification.get("toUserId"),
-                    "hasRead", false,
-                    "issuedDate", emailNotification.get("createdAt"),
-                    "validUntil", emailNotification.get("validUntil"),
-                    "title", emailNotification.get("title"),
-                    "message", emailNotification.get("body")));
         }
     }
 

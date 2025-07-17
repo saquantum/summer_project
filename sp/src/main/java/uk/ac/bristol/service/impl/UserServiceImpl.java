@@ -7,9 +7,13 @@ import com.password4j.types.Argon2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import uk.ac.bristol.dao.*;
+import uk.ac.bristol.dao.AssetHolderMapper;
+import uk.ac.bristol.dao.MetaDataMapper;
+import uk.ac.bristol.dao.UserMapper;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
+import uk.ac.bristol.service.AssetService;
+import uk.ac.bristol.service.PermissionConfigService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
 import uk.ac.bristol.util.QueryTool;
@@ -23,15 +27,15 @@ public class UserServiceImpl implements UserService {
     private final MetaDataMapper metaDataMapper;
     private final AssetHolderMapper assetHolderMapper;
     private final UserMapper userMapper;
-    private final AssetMapper assetMapper;
-    private final PermissionConfigMapper permissionConfigMapper;
+    private final AssetService assetService;
+    private final PermissionConfigService permissionConfigService;
 
-    public UserServiceImpl(MetaDataMapper metaDataMapper, AssetHolderMapper assetHolderMapper, UserMapper userMapper, AssetMapper assetMapper, PermissionConfigMapper permissionConfigMapper) {
+    public UserServiceImpl(MetaDataMapper metaDataMapper, AssetHolderMapper assetHolderMapper, UserMapper userMapper, AssetService assetService, PermissionConfigService permissionConfigService) {
         this.metaDataMapper = metaDataMapper;
         this.assetHolderMapper = assetHolderMapper;
         this.userMapper = userMapper;
-        this.assetMapper = assetMapper;
-        this.permissionConfigMapper = permissionConfigMapper;
+        this.assetService = assetService;
+        this.permissionConfigService = permissionConfigService;
     }
 
     // checks uid and password, returns a jwt token
@@ -110,7 +114,7 @@ public class UserServiceImpl implements UserService {
                 QueryTool.formatFilters(filters),
                 QueryTool.filterOrderList(orderList, "asset_holders"),
                 limit, offset);
-        List<Asset> assets = assetMapper.selectAssets(null, null, null, null);
+        List<Asset> assets = assetService.getAllAssets(null, null, null, null);
         Map<String, List<String>> mapping = new HashMap<>();
         assets.forEach(asset -> {
             if (!mapping.containsKey(asset.getOwnerId())) {
@@ -179,14 +183,15 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public boolean testEmailExistence(String email) {
+    public boolean testEmailAddressExistence(String email) {
         Boolean b = assetHolderMapper.testEmailAddressExistence(email);
         return b != null && b;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<UserWithAssets> groupUsersWithOwnedAssetsByWarningId(Long waringId) {
-        return userMapper.groupUsersWithOwnedAssetsByWarningId(waringId);
+    public List<UserWithAssets> groupUsersWithOwnedAssetsByWarningId(Integer limit, Long cursor, Long waringId, boolean getDiff, String newAreaAsJson) {
+        return userMapper.groupUsersWithOwnedAssetsByWarningId(limit, cursor, waringId, getDiff, newAreaAsJson);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
@@ -319,7 +324,7 @@ public class UserServiceImpl implements UserService {
             throw new SpExceptions.PostMethodException("Failed to insert user " + user.getId());
         }
 
-        int n5 = permissionConfigMapper.insertPermissionConfig(new PermissionConfig(user.getId()));
+        int n5 = permissionConfigService.insertPermissionConfig(new PermissionConfig(user.getId()));
         if (n5 != 1) {
             throw new SpExceptions.PostMethodException("Failed to insert permission config for user " + user.getId());
         }

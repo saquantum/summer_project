@@ -36,7 +36,11 @@ public interface UserMapper {
 
     String selectPasswordByUserId(@Param("id") String id);
 
-    List<UserWithAssets> groupUsersWithOwnedAssetsByWarningId(@Param("warningId") Long warningId);
+    List<UserWithAssets> groupUsersWithOwnedAssetsByWarningId(@Param("limit") Integer limit,
+                                                              @Param("cursor") Long cursor,
+                                                              @Param("warningId") Long warningId,
+                                                              @Param("getDiff") boolean getDiff,
+                                                              @Param("newArea") String newAreaAsJson);
 
     int countUsers(@Param("filterString") String filterString);
 

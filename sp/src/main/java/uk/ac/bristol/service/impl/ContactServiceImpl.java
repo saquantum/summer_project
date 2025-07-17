@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.controller.Code;
 import uk.ac.bristol.controller.ResponseBody;
-import uk.ac.bristol.dao.AssetHolderMapper;
 import uk.ac.bristol.dao.ContactMapper;
 import uk.ac.bristol.dao.MetaDataMapper;
 import uk.ac.bristol.exception.SpExceptions;
@@ -46,17 +45,46 @@ public class ContactServiceImpl implements ContactService {
 
     private final UserService userService;
     private final MetaDataMapper metaDataMapper;
-    private final AssetHolderMapper assetHolderMapper;
     private final ContactMapper contactMapper;
 
     private final Duration expireTime = Duration.ofMinutes(5);
     private final String prefix = "email:verify:code:";
 
-    public ContactServiceImpl(UserService userService, MetaDataMapper metaDataMapper, AssetHolderMapper assetHolderMapper, ContactMapper contactMapper) {
+    public ContactServiceImpl(UserService userService, MetaDataMapper metaDataMapper, ContactMapper contactMapper) {
         this.userService = userService;
         this.metaDataMapper = metaDataMapper;
-        this.assetHolderMapper = assetHolderMapper;
         this.contactMapper = contactMapper;
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public void sendNotificationsToUser(Warning warning, UserWithAssets uwa) {
+        Map<String, Object> contactPreferences = uwa.getUser().getAssetHolder().getContactPreferences();
+
+        Map<String, Object> emailNotification = formatNotification(warning, uwa, "email");
+        if (contactPreferences.get("email").equals(Boolean.TRUE)) {
+            sendEmailToAddress(
+                    uwa.getUser().getAssetHolder().getEmail(),
+                    emailNotification
+            );
+        }
+        if (contactPreferences.get("phone").equals(Boolean.TRUE)) {
+            Map<String, Object> smsNotification = formatNotification(warning, uwa, "phone");
+            // send sms
+        }
+        if (contactPreferences.get("post").equals(Boolean.TRUE)) {
+            Map<String, Object> postNotification = formatNotification(warning, uwa, "post");
+            // send http post
+        }
+
+        // send inbox notification using email message
+        insertInboxMessageToUser(Map.of(
+                "userId", emailNotification.get("toUserId"),
+                "hasRead", false,
+                "issuedDate", emailNotification.get("createdAt"),
+                "validUntil", emailNotification.get("validUntil"),
+                "title", emailNotification.get("title"),
+                "message", emailNotification.get("body")));
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -201,7 +229,7 @@ public class ContactServiceImpl implements ContactService {
         if (email == null) {
             return new ResponseBody(Code.BUSINESS_ERR, null, "Failed to send email because email address is null");
         }
-        if (!assetHolderMapper.testEmailAddressExistence(email)) {
+        if (!userService.testEmailAddressExistence(email)) {
             return new ResponseBody(Code.BUSINESS_ERR, null, "Failed to send email because email address doesn't exist");
         }
         String code = String.valueOf(new Random().nextInt(899999) + 100000);
@@ -255,7 +283,7 @@ public class ContactServiceImpl implements ContactService {
         if (email == null) {
             return new ResponseBody(Code.BUSINESS_ERR, null, "Failed to send email because email address is null");
         }
-        if (assetHolderMapper.testEmailAddressExistence(email)) {
+        if (userService.testEmailAddressExistence(email)) {
             return new ResponseBody(Code.BUSINESS_ERR, null, "This email already registered! You can use this email to login");
         }
         String code = String.valueOf(new Random().nextInt(899999) + 100000);
