@@ -73,6 +73,7 @@ public class ImportMockDataImpl implements ImportMockData {
             user.setAssetHolder(assetHolder);
             user.setPassword("123456");
             user.setAdmin(false);
+            user.setAvatar("https://cdn-icons-png.flaticon.com/512/149/149071.png");
             userService.insertUser(user);
             permissionConfigService.insertPermissionConfig(new PermissionConfig(user.getId()));
         }

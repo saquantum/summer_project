@@ -44,6 +44,7 @@
     <select id="selectUsersWithAccumulator" resultMap="ResultMaps.UserWithExtraColumnsMap">
         select user_id,
                user_is_admin,
+               user_avatar,
                user_asset_holder_id,
                asset_holder_id,
                asset_holder_name,
@@ -83,6 +84,7 @@
         <include refid="ResultMaps.filtering"/>
         group by user_id,
             user_is_admin,
+            user_avatar,
             user_asset_holder_id,
             asset_holder_id,
             asset_holder_name,
@@ -195,14 +197,18 @@
         insert into users (user_id,
                            user_password,
                            user_password_plaintext,
+                           user_avatar,
                            user_asset_holder_id,
                            user_is_admin)
-        values (#{id}, #{password}, #{passwordPlainText}, #{assetHolderId}, #{admin});
+        values (#{id}, #{password}, #{passwordPlainText}, #{avatar}, #{assetHolderId}, #{admin});
     </insert>
 
     <update id="updateUserByUserId">
         update users
         <set>
+            <if test="avatar != null and avatar != ''">
+                user_avatar = #{avatar},
+            </if>
             <if test="assetHolderId != null and assetHolderId != ''">
                 user_asset_holder_id = #{assetHolderId},
             </if>

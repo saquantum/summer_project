@@ -8,6 +8,7 @@ public class User {
     private AssetHolder assetHolder;
     private PermissionConfig permissionConfig;
     private boolean admin = false;
+    private String avatar;
     private String token;
 
     @Override
@@ -77,6 +78,14 @@ public class User {
 
     public void setAdmin(boolean admin) {
         this.admin = admin;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 
     public String getToken() {

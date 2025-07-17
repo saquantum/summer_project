@@ -125,7 +125,8 @@
             user_asset_holder_id    varchar(50),
             user_password           text         not null,
             user_password_plaintext varchar(50),
-            user_is_admin           boolean      not null
+            user_is_admin           boolean      not null,
+            user_avatar             text
         );
 
         alter table users
