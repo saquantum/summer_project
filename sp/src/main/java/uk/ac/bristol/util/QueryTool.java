@@ -161,17 +161,16 @@ public final class QueryTool {
         if (uid == null && aid == null) {
             return false;
         }
-        List<Asset> asset = QueryToolConfig.assetService.getAssetById(assetId);
-        if (asset.size() != 1) return false;
+        Asset asset = QueryToolConfig.assetService.getAssetById(assetId);
         if (uid != null) {
             User user = QueryToolConfig.userService.getUserByUserId(uid);
             if (user.getAssetHolder() == null) return false;
-            if (!Objects.equals(user.getAssetHolder().getId(), asset.get(0).getOwnerId())) return false;
+            if (!Objects.equals(user.getAssetHolder().getId(), asset.getOwnerId())) return false;
         }
         if (aid != null) {
             User user = QueryToolConfig.userService.getUserByAssetHolderId(aid);
             if (user.getAssetHolder() == null) return false;
-            if (!Objects.equals(user.getAssetHolder().getId(), asset.get(0).getOwnerId())) return false;
+            if (!Objects.equals(user.getAssetHolder().getId(), asset.getOwnerId())) return false;
         }
         return true;
     }

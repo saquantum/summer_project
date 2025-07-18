@@ -71,18 +71,26 @@ public class AssetServiceImpl implements AssetService {
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<Asset> getAssetById(String id) {
-        return assetMapper.selectAssets(
+    public Asset getAssetById(String id) {
+        List<Asset> asset = assetMapper.selectAssets(
                 QueryTool.formatFilters(Map.of("asset_id", id)),
                 null, null, null);
+        if (asset.size() != 1) {
+            throw new SpExceptions.GetMethodException("Get " + asset.size() + " assets for asset id " + id);
+        }
+        return asset.get(0);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<AssetWithWeatherWarnings> getAssetWithWarningsById(String id) {
-        return assetMapper.selectAssetsWithWarnings(
+    public AssetWithWeatherWarnings getAssetWithWarningsById(String id) {
+        List<AssetWithWeatherWarnings> asset = assetMapper.selectAssetsWithWarnings(
                 QueryTool.formatFilters(Map.of("asset_id", id)),
                 null, null, null);
+        if (asset.size() != 1) {
+            throw new SpExceptions.GetMethodException("Get " + asset.size() + " assets for asset id " + id);
+        }
+        return asset.get(0);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
@@ -136,6 +144,13 @@ public class AssetServiceImpl implements AssetService {
     @Override
     public int countAssetsWithFilter(Map<String, Object> filters) {
         return assetMapper.countAssetsWithWarnings(QueryTool.formatFilters(filters));
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public boolean compareAssetLastModified(String assetId, Long timestamp) {
+        Asset asset = getAssetById(assetId);
+        return !asset.getLastModified().isAfter(Instant.ofEpochMilli(timestamp));
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)

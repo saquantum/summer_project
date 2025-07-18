@@ -57,6 +57,8 @@ public interface UserService {
 
     int countUsersWithFilter(Map<String, Object> filters);
 
+    boolean compareUserLastModified(String uid, Long timestamp);
+
     int insertUser(User user);
 
     void registerNewUser(User user);

@@ -1,6 +1,5 @@
 package uk.ac.bristol.service;
 
-import org.apache.ibatis.annotations.Param;
 import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.AssetType;
 import uk.ac.bristol.pojo.AssetWithWeatherWarnings;
@@ -20,9 +19,9 @@ public interface AssetService {
                                                             Integer limit,
                                                             Integer offset);
 
-    List<Asset> getAssetById(String id);
+    Asset getAssetById(String id);
 
-    List<AssetWithWeatherWarnings> getAssetWithWarningsById(String id);
+    AssetWithWeatherWarnings getAssetWithWarningsById(String id);
 
     List<Asset> getAllAssetsByAssetHolderId(String ownerId,
                                             List<Map<String, String>> orderList,
@@ -39,9 +38,11 @@ public interface AssetService {
                                      Integer limit,
                                      Integer offset);
 
-    List<String> selectAssetIdsByWarningId(@Param("id") Long id);
+    List<String> selectAssetIdsByWarningId(Long id);
 
     int countAssetsWithFilter(Map<String, Object> filters);
+
+    boolean compareAssetLastModified(String assetId, Long timestamp);
 
     int insertAssetType(AssetType assetType);
 
@@ -51,11 +52,11 @@ public interface AssetService {
 
     int updateAsset(Asset asset);
 
-    int deleteAssetTypeByIDs(@Param("ids") String[] ids);
+    int deleteAssetTypeByIDs(String[] ids);
 
-    int deleteAssetTypeByIDs(@Param("ids") List<String> ids);
+    int deleteAssetTypeByIDs(List<String> ids);
 
-    int deleteAssetByIDs(@Param("ids") String[] ids);
+    int deleteAssetByIDs(String[] ids);
 
-    int deleteAssetByIDs(@Param("ids") List<String> ids);
+    int deleteAssetByIDs(List<String> ids);
 }

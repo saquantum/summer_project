@@ -56,6 +56,34 @@ public class UserController {
         return new ResponseBody(Code.SELECT_OK, user);
     }
 
+    @RequestMapping(value = "/user/uid/{uid}", method = RequestMethod.HEAD)
+    public void userHeadMyLastModifiedByUID(HttpServletResponse response,
+                                            HttpServletRequest request,
+                                            @UserUID @PathVariable String uid,
+                                            @RequestParam(value = "time", required = true) Long timestamp) {
+        boolean b = userService.compareUserLastModified(uid, timestamp);
+        response.setHeader("last-modified", Boolean.toString(b));
+        if (b) {
+            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+        } else {
+            response.setStatus(HttpServletResponse.SC_OK);
+        }
+    }
+
+    @RequestMapping(value = "/user/aid/{aid}", method = RequestMethod.HEAD)
+    public void userHeadMyLastModifiedByAID(HttpServletResponse response,
+                                            HttpServletRequest request,
+                                            @UserAID @PathVariable String aid,
+                                            @RequestParam(value = "time", required = true) Long timestamp) {
+        boolean b = userService.compareUserLastModified(userService.getUserByAssetHolderId(aid).getId(), timestamp);
+        response.setHeader("last-modified", Boolean.toString(b));
+        if (b) {
+            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+        } else {
+            response.setStatus(HttpServletResponse.SC_OK);
+        }
+    }
+
     // NOTICE: No Post Mapping. A common user cannot insert new users, unless they access login controller to register
 
     @PutMapping("/user/uid/{uid}")
@@ -247,6 +275,34 @@ public class UserController {
         User user = userService.getUserByAssetHolderId(id);
         user.setPassword(null);
         return new ResponseBody(Code.SELECT_OK, user);
+    }
+
+    @RequestMapping(value = "/admin/user/uid/{uid}", method = RequestMethod.HEAD)
+    public void headUserLastModifiedByUID(HttpServletResponse response,
+                                          HttpServletRequest request,
+                                          @UserUID @PathVariable String uid,
+                                          @RequestParam(value = "time", required = true) Long timestamp) {
+        boolean b = userService.compareUserLastModified(uid, timestamp);
+        response.setHeader("last-modified", Boolean.toString(b));
+        if (b) {
+            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+        } else {
+            response.setStatus(HttpServletResponse.SC_OK);
+        }
+    }
+
+    @GetMapping("/admin/user/aid/{aid}")
+    public void headUserMyLastModifiedByAID(HttpServletResponse response,
+                                            HttpServletRequest request,
+                                            @UserAID @PathVariable String aid,
+                                            @RequestParam(value = "time", required = true) Long timestamp) {
+        boolean b = userService.compareUserLastModified(userService.getUserByAssetHolderId(aid).getId(), timestamp);
+        response.setHeader("last-modified", Boolean.toString(b));
+        if (b) {
+            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+        } else {
+            response.setStatus(HttpServletResponse.SC_OK);
+        }
     }
 
     @PostMapping("/admin/user")

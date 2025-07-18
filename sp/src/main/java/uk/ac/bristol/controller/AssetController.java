@@ -103,7 +103,7 @@ public class AssetController {
                                                    HttpServletRequest request,
                                                    @UserUID @PathVariable String uid,
                                                    @UserAssetId @PathVariable String assetId) {
-        return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
+        return new ResponseBody(Code.SELECT_OK, List.of(assetService.getAssetWithWarningsById(assetId)));
     }
 
     @GetMapping("/user/aid/{aid}/asset/{assetId}")
@@ -111,7 +111,51 @@ public class AssetController {
                                                    HttpServletRequest request,
                                                    @UserAID @PathVariable String aid,
                                                    @UserAssetId @PathVariable String assetId) {
-        return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
+        return new ResponseBody(Code.SELECT_OK, List.of(assetService.getAssetWithWarningsById(assetId)));
+    }
+
+    @RequestMapping(value = "/user/uid/{uid}/asset/{assetId}", method = RequestMethod.HEAD)
+    public void userHeadAssetLastModifiedByAssetWithUID(HttpServletResponse response,
+                                                        HttpServletRequest request,
+                                                        @UserUID @PathVariable String uid,
+                                                        @UserAssetId @PathVariable String assetId,
+                                                        @RequestParam(value = "time", required = true) Long timestamp) {
+        boolean b = assetService.compareAssetLastModified(assetId, timestamp);
+        response.setHeader("last-modified", Boolean.toString(b));
+        if (b) {
+            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+        } else {
+            response.setStatus(HttpServletResponse.SC_OK);
+        }
+    }
+
+    @RequestMapping(value = "/user/aid/{aid}/asset/{assetId}", method = RequestMethod.HEAD)
+    public void userHeadAssetLastModifiedByAssetWithAID(HttpServletResponse response,
+                                                        HttpServletRequest request,
+                                                        @UserAID @PathVariable String aid,
+                                                        @UserAssetId @PathVariable String assetId,
+                                                        @RequestParam(value = "time", required = true) Long timestamp) {
+        boolean b = assetService.compareAssetLastModified(assetId, timestamp);
+        response.setHeader("last-modified", Boolean.toString(b));
+        if (b) {
+            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+        } else {
+            response.setStatus(HttpServletResponse.SC_OK);
+        }
+    }
+
+    @RequestMapping(value = "/admin/asset/{assetId}", method = RequestMethod.HEAD)
+    public void headAssetLastModified(HttpServletResponse response,
+                                      HttpServletRequest request,
+                                      @UserAssetId @PathVariable String assetId,
+                                      @RequestParam(value = "time", required = true) Long timestamp) {
+        boolean b = assetService.compareAssetLastModified(assetId, timestamp);
+        response.setHeader("last-modified", Boolean.toString(b));
+        if (b) {
+            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+        } else {
+            response.setStatus(HttpServletResponse.SC_OK);
+        }
     }
 
     @PostMapping("/user/uid/{uid}/asset")
@@ -176,7 +220,7 @@ public class AssetController {
 
     @GetMapping("/admin/asset/{assetId}")
     public ResponseBody getAssetById(@PathVariable String assetId) {
-        return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
+        return new ResponseBody(Code.SELECT_OK, List.of(assetService.getAssetWithWarningsById(assetId)));
     }
 
     @PostMapping("/admin/asset/count")

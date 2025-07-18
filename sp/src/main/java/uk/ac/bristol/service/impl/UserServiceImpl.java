@@ -46,11 +46,11 @@ public class UserServiceImpl implements UserService {
                 QueryTool.formatFilters(Map.of("user_id", user.getId())),
                 null, null, null);
         if (list.size() != 1) {
-            throw new SpExceptions.NotFoundException("There is no such user with id " + user.getId());
+            throw new SpExceptions.UnauthorisedException("User not found or password not correct.");
         }
 
         if (!verifyPassword(user.getPassword(), userMapper.selectPasswordByUserId(user.getId()))) {
-            throw new SpExceptions.ForbiddenException("Password is incorrect.");
+            throw new SpExceptions.UnauthorisedException("User not found or password not correct.");
         }
 
         User u = list.get(0);
@@ -203,6 +203,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public int countUsersWithFilter(Map<String, Object> filters) {
         return userMapper.countUsers(QueryTool.formatFilters(filters));
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public boolean compareUserLastModified(String uid, Long timestamp) {
+        User user = getUserByUserId(uid);
+        if(user.getAssetHolder() == null){
+            throw new SpExceptions.GetMethodException("User with id " + uid + " does not own assets");
+        }
+        System.out.println(user.getAssetHolder().getLastModified());
+        System.out.println(Instant.ofEpochMilli(timestamp));
+        return !user.getAssetHolder().getLastModified().isAfter(Instant.ofEpochMilli(timestamp));
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
