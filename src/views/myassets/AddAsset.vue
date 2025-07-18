@@ -260,6 +260,18 @@ const cancelDrawing = () => {
   mapCardRef.value?.cancelDrawing()
 }
 
+const prevPolygon = () => {
+  mapCardRef.value?.prevPolygon()
+}
+
+const nextPolygon = () => {
+  mapCardRef.value?.nextPolygon()
+}
+
+const quickEscapePolygons = () => {
+  mapCardRef.value?.quickEscapePolygons()
+}
+
 const userSubmit = async () => {
   trimForm(form.value)
   if (!formRef.value) return
@@ -477,6 +489,10 @@ onMounted(() => {
               <el-option label="sequence" value="sequence"></el-option>
             </el-select>
             <div class="map-button">
+              <el-button @click="prevPolygon">⬅</el-button>
+              <el-button @click="nextPolygon">➡</el-button>
+              <el-button @click="quickEscapePolygons">reset display</el-button>
+
               <el-button
                 v-if="!isDrawing"
                 @click="beginDrawing"

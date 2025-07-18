@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, watch } from 'vue'
+import { onMounted, onBeforeUnmount, watch, ref } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
@@ -57,6 +57,64 @@ const handleClick = (e: LeafletMouseEvent) => {
   marker.on('dragend', () => {
     points[index] = [marker.getLatLng().lat, marker.getLatLng().lng]
   })
+}
+
+const focusedIndex = ref(0)
+const polygonLayers: L.Layer[] = []
+const highlightCurrentPolygon = () => {
+  // reset layers
+  if (!map || !props.locations?.[0]) return
+  polygonLayers.forEach((layer) => map!.removeLayer(layer))
+  polygonLayers.length = 0
+
+  const polygons = props.locations[0].coordinates
+  if (polygons.length === 0) return
+
+  if (focusedIndex.value === polygons.length) {
+    // display all polygons
+    polygons.forEach((polygon) => {
+      const layer = L.polygon(
+        polygon.map((ring) => ring.map(([lng, lat]) => [lat, lng]))
+      )
+      layer.addTo(map!)
+      polygonLayers.push(layer)
+    })
+  } else {
+    // highlight focused polygon
+    polygons.forEach((polygon, idx) => {
+      if (idx === focusedIndex.value) {
+        const layer = L.polygon(
+          polygon.map((ring) => ring.map(([lng, lat]) => [lat, lng])),
+          {
+            color: 'red',
+            weight: 3,
+            fillOpacity: 0.4
+          }
+        )
+        layer.addTo(map!)
+        polygonLayers.push(layer)
+      }
+    })
+  }
+}
+
+const prevPolygon = () => {
+  if (!props.locations?.[0]) return
+  const count = props.locations[0].coordinates.length
+  focusedIndex.value = (focusedIndex.value - 1 + count) % count
+  highlightCurrentPolygon()
+}
+
+const nextPolygon = () => {
+  if (!props.locations?.[0]) return
+  const count = props.locations[0].coordinates.length
+  focusedIndex.value = (focusedIndex.value + 1) % count
+  highlightCurrentPolygon()
+}
+
+const quickEscapePolygons = () => {
+  focusedIndex.value = props.locations[0].coordinates.length
+  highlightCurrentPolygon()
 }
 
 const beginDrawing = () => {
@@ -243,6 +301,8 @@ watch(
     } catch (e) {
       console.error(e)
     }
+
+    highlightCurrentPolygon()
   },
   {
     deep: true
@@ -284,6 +344,8 @@ onMounted(async () => {
       console.error(e)
     }
   }
+
+  highlightCurrentPolygon()
 })
 
 onBeforeUnmount(() => {
@@ -294,6 +356,9 @@ onBeforeUnmount(() => {
 })
 
 defineExpose({
+  prevPolygon,
+  nextPolygon,
+  quickEscapePolygons,
   beginDrawing,
   finishOneShape,
   finishOnePolygon,
