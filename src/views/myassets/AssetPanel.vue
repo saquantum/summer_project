@@ -222,6 +222,7 @@ watch(
           <MapCard
             :map-id="'map-' + index"
             :locations="[item.asset.location]"
+            :display="true"
           />
         </div>
 
@@ -229,7 +230,7 @@ watch(
           <div class="card-footer">
             <el-button
               type="primary"
-              @click="router.push(`/asset/${item.asset.id}`)"
+              @click="router.push(`/assets/${item.asset.id}`)"
               class="view-details-btn"
             >
               Show Detail

@@ -35,6 +35,7 @@ const props = defineProps<{
   mode: string
   style: Style
   asset: Asset
+  display: boolean
 }>()
 
 const userStore = useUserStore()
@@ -250,6 +251,15 @@ watch(
 
 onMounted(async () => {
   map = L.map(props.mapId).setView([0, 0], 13)
+  // if in display mode, disable interactive function
+  if (props.display) {
+    map.dragging.disable()
+    map.touchZoom.disable()
+    map.doubleClickZoom.disable()
+    map.scrollWheelZoom.disable()
+    map.boxZoom.disable()
+    map.keyboard.disable()
+  }
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'

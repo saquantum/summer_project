@@ -33,6 +33,8 @@ const user = computed(() => {
 
 const currentUser = ref<User | null>(null)
 
+const column = ref(2)
+
 const descriptionsItem = computed(() => {
   if (!currentUser.value || !currentUser.value.assetHolder) return []
   const arr = currentUser.value.assetHolder.name.split(' ')
@@ -223,7 +225,7 @@ defineExpose({
 </script>
 
 <template>
-  <el-descriptions title="User Info" :column="2" border v-if="!isEdit">
+  <el-descriptions title="User Info" :column="column" border v-if="!isEdit">
     <el-descriptions-item label="Avatar">
       <!-- <el-avatar :size="size" :src="circleUrl" /> -->
     </el-descriptions-item>
