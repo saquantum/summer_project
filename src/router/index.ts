@@ -28,8 +28,12 @@ const router = createRouter({
           component: () => import('@/views/user/UserProfile.vue')
         },
         {
-          path: 'asset/:id',
+          path: 'assets/:id',
           component: () => import('@/views/assetdetail/index.vue')
+        },
+        {
+          path: 'assets/add',
+          component: () => import('@/views/myassets/AddAsset.vue')
         },
         {
           path: 'admin/users',
@@ -44,7 +48,7 @@ const router = createRouter({
           component: () => import('@/views/admin/AllWarnings.vue')
         },
         {
-          path: 'warning/:id',
+          path: 'warnings/:id',
           component: () => import('@/views/warning/index.vue')
         },
         {
@@ -54,10 +58,6 @@ const router = createRouter({
         {
           path: 'message',
           component: () => import('@/views/inbox/index.vue')
-        },
-        {
-          path: 'asset/add',
-          component: () => import('@/views/myassets/AddAsset.vue')
         },
         {
           path: 'admin/user/add',
@@ -76,8 +76,8 @@ const router = createRouter({
           component: () => import('@/views/admin/AssetTypes.vue')
         },
         {
-          path: 'admin/message',
-          component: () => import('@/views/inbox/index.vue')
+          path: 'admin/message/send',
+          component: () => import('@/views/admin/SendMessage.vue')
         },
         {
           path: 'admin/message/template',

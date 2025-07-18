@@ -31,7 +31,7 @@ interface TableRow {
 }
 
 const handleShowDetail = (row: TableRow) => {
-  router.push(`/warning/${row.id}`)
+  router.push(`/warnings/${row.id}`)
 }
 
 const handleDelete = (row: TableRow) => {

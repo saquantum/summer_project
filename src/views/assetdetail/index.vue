@@ -75,7 +75,7 @@ const cancelDrawing = () => {
 }
 
 const handleShowDetail = (row: WarningTableRow) => {
-  router.push(`/warning/${row.id}`)
+  router.push(`/warnings/${row.id}`)
 }
 
 const handleDelete = (row: WarningTableRow) => {

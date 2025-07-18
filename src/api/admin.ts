@@ -65,6 +65,8 @@ export const adminDeleteUserService = (users: string[]) =>
 export const adminUpdateUserInfoService = (userInforArr: UserInfoForm[]) =>
   request.put('/admin/user', userInforArr)
 
+export const adminGetUsersTotalService = (obj: object) =>
+  request.post('/admin/user/count', obj)
 /**
  * template
  */
@@ -154,6 +156,9 @@ export const adminDeleteAssetTypeService = (types: string[]) =>
   request.delete('/admin/asset/type', {
     data: { ids: types }
   })
+
+export const adminGetAssetsTotalService = (obj: object) =>
+  request.post('/admin/asset/count', obj)
 /**
  * warning
  */
@@ -181,3 +186,10 @@ export const adminUpdatePermissionService = (
   permission: Permission
 ): Promise<ApiResponse<Permission[]>> =>
   request.put(`/admin/permission/`, permission)
+
+/**
+ * message
+ */
+
+export const adminSendMessageService = (obj: object) =>
+  request.post('/admin/notify/inbox', obj)

@@ -2,16 +2,9 @@
 import {
   User,
   Crop,
-  EditPen,
   SwitchButton,
   CaretBottom,
   Message,
-  MessageBox,
-  Back,
-  House,
-  LocationInformation,
-  Warning,
-  CopyDocument,
   Operation,
   Search
 } from '@element-plus/icons-vue'
@@ -19,6 +12,7 @@ import avatar from '@/assets/default.png'
 import { ref, watch, computed } from 'vue'
 import { useAssetStore, useUserStore } from '@/stores/index.ts'
 import { useRouter, useRoute } from 'vue-router'
+import { ElMessage } from 'element-plus'
 
 const userStore = useUserStore()
 const assetStore = useAssetStore()
@@ -34,7 +28,11 @@ const handleCommand = (command: string) => {
   if (command === 'logout') {
     logout()
   } else if (command === 'profile') {
-    router.push('/user/profile')
+    if (userStore.user && !userStore.user.admin) {
+      router.push('/user/profile')
+    } else {
+      ElMessage.error('Admin currently does not have profile')
+    }
   } else if (command === 'password') {
     router.push('/security/verify-mail')
   }
@@ -54,12 +52,7 @@ const searchDialogVisible = ref(false)
 const showUserSideBar = computed(() => {
   if (!userStore.user?.admin) {
     return true
-  } else if (
-    userStore.user.admin &&
-    (route.path === '/admin/warnings' || route.path.startsWith('/warning'))
-  ) {
-    return false
-  } else if (userStore.user.admin && !route.path.includes('admin')) {
+  } else if (userStore.user.admin && userStore.proxyId) {
     return true
   }
   return false
@@ -79,126 +72,10 @@ watch(
         <img src="@/assets/uob-logo.svg" class="el-aside__logo" alt="logo" />
       </router-link>
 
-      <!-- user interface -->
-      <el-menu
-        :default-active="activeIndex"
-        active-text-color="#ffd04b"
-        background-color="#528add"
-        text-color="#fff"
-        router
-        v-model="activeIndex"
-        v-if="showUserSideBar"
-      >
-        <el-menu-item index="/user/profile">
-          <el-icon><User /></el-icon>
-          <span>My Profile</span>
-        </el-menu-item>
-
-        <el-sub-menu index="1">
-          <template #title>
-            <el-icon><LocationInformation /></el-icon>
-            <span>Asset</span>
-          </template>
-          <el-menu-item index="/assets">
-            <span>My assets</span>
-          </el-menu-item>
-
-          <el-menu-item index="/asset/add">
-            <span>Add asset</span>
-          </el-menu-item>
-
-          <el-menu-item
-            v-if="
-              activeIndex.startsWith('/asset') &&
-              activeIndex !== '/asset/add' &&
-              activeIndex !== '/assets'
-            "
-            :index="activeIndex"
-          >
-            <span>Asset detail</span>
-          </el-menu-item>
-        </el-sub-menu>
-
-        <el-menu-item index="/message">
-          <el-icon><MessageBox /></el-icon>
-          <span>Message</span>
-        </el-menu-item>
-
-        <el-menu-item v-if="userStore.user?.admin" index="/">
-          <el-icon><Back /></el-icon>
-          <span>Back to admin</span>
-        </el-menu-item>
-      </el-menu>
-
-      <!-- admin interface -->
-      <el-menu
-        active-text-color="#ffd04b"
-        background-color="#528add"
-        :default-active="$route.path"
-        text-color="#fff"
-        router
-        v-else
-      >
-        <el-menu-item index="/admin/dashboard">
-          <el-icon><House /></el-icon>
-          <span>Dashboard</span>
-        </el-menu-item>
-
-        <el-sub-menu index="1">
-          <template #title>
-            <el-icon><User /></el-icon>
-            <span>User</span>
-          </template>
-          <el-menu-item index="/admin/users">
-            <span>All Users</span>
-          </el-menu-item>
-          <el-menu-item index="/admin/user/add">
-            <span>Add User</span>
-          </el-menu-item>
-        </el-sub-menu>
-
-        <el-sub-menu index="2">
-          <template #title>
-            <el-icon><LocationInformation /></el-icon>
-            <span>Asset</span>
-          </template>
-          <el-menu-item index="/admin/assets">
-            <span>All Assets</span>
-          </el-menu-item>
-          <el-menu-item index="/admin/assets/add">
-            <span>Add Assets</span>
-          </el-menu-item>
-          <el-menu-item index="/admin/assets/types">
-            <span>Asset Types</span>
-          </el-menu-item>
-        </el-sub-menu>
-
-        <el-sub-menu index="3">
-          <template #title>
-            <el-icon><Warning /></el-icon>
-            <span>Warning</span>
-          </template>
-          <el-menu-item index="/admin/warnings">
-            <span>All Warning</span>
-          </el-menu-item>
-          <el-menu-item
-            v-if="activeIndex.startsWith('/warning')"
-            :index="activeIndex"
-          >
-            <span>Current Warning</span>
-          </el-menu-item>
-        </el-sub-menu>
-
-        <el-menu-item index="/admin/message/template">
-          <el-icon><CopyDocument /></el-icon>
-          <span>Message Template</span>
-        </el-menu-item>
-
-        <el-menu-item index="/admin/message">
-          <el-icon><MessageBox /></el-icon>
-          <span>Message</span>
-        </el-menu-item>
-      </el-menu>
+      <SideMenu
+        :showUserSideBar="showUserSideBar"
+        :activeIndex="activeIndex"
+      ></SideMenu>
 
       <div class="signout-container">
         <el-button
@@ -226,10 +103,14 @@ watch(
             <el-icon><Search /></el-icon>
           </el-button>
         </div>
-        <MobileMenu
-          v-if="mobileMenuVisible"
-          v-model:visible="mobileMenuVisible"
-        ></MobileMenu>
+
+        <el-drawer v-model="mobileMenuVisible" direction="ltr" size="350">
+          <SideMenu
+            v-model:visible="mobileMenuVisible"
+            :showUserSideBar="showUserSideBar"
+            :activeIndex="activeIndex"
+          ></SideMenu>
+        </el-drawer>
         <!-- <el-page-header
           v-if="userStore.user.admin && !route.path.includes('admin')"
           @back="router.go(-1)"
@@ -254,9 +135,6 @@ watch(
                 </el-dropdown-item>
                 <el-dropdown-item command="avatar" :icon="Crop">
                   Change avatar
-                </el-dropdown-item>
-                <el-dropdown-item command="password" :icon="EditPen">
-                  Reset Password
                 </el-dropdown-item>
                 <el-dropdown-item command="logout" :icon="SwitchButton">
                   Log out

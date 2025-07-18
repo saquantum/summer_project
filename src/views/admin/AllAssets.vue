@@ -2,21 +2,24 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAssetStore } from '@/stores/index'
-import { adminDeleteAssetService } from '@/api/admin'
+import {
+  adminDeleteAssetService,
+  adminGetAssetsTotalService
+} from '@/api/admin'
 import { type AssetSearchBody, type AssetTableItem } from '@/types'
 
 const assets = computed<AssetTableItem[]>(() =>
   assetStore.allAssets.map((item) => ({
     id: item.asset.id,
     name: item.asset.name,
-    type: item.asset.type?.name ?? 'none',
+    type: item.asset.type?.name ?? 'NULL',
     capacityLitres: item.asset.capacityLitres,
     material: item.asset.material,
     status: item.asset.status,
     installedAt: item.asset.installedAt,
     lastInspection: item.asset.lastInspection,
     assetHolderId: item.asset.ownerId,
-    warningLevel: item.warnings[0]?.warningLevel?.toLowerCase() ?? 'none'
+    warningLevel: item.warnings[0]?.warningLevel?.toLowerCase() ?? 'NULL'
   }))
 )
 
@@ -24,7 +27,7 @@ const router = useRouter()
 const assetStore = useAssetStore()
 
 const handleShowDetail = (row: AssetTableItem) => {
-  router.push(`/asset/${row.id}`)
+  router.push(`/assets/${row.id}`)
 }
 
 // delete dialog
@@ -73,7 +76,7 @@ const multiSort = ref<{ prop: string; order: string }[]>([])
 
 const currentPage = ref(1)
 const pageSize = ref(10)
-const total = ref(50)
+const total = ref(0)
 
 const assetSearchBody = ref<AssetSearchBody>({
   filters: {},
@@ -111,6 +114,10 @@ const fetchTableData = async () => {
   assetSearchBody.value.limit = pageSize.value
   assetSearchBody.value.orderList = sortStr
   await assetStore.getAllAssets(assetSearchBody.value)
+
+  const assetTotalBody = { filters: assetSearchBody.value.filters }
+  const res = await adminGetAssetsTotalService(assetTotalBody)
+  total.value = res.data
 }
 
 const handleSortChange = (sort: { prop: string; order: string | null }) => {

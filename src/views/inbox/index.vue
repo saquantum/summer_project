@@ -62,7 +62,7 @@ const handlePageChange = (page: number) => {
 const handleDelete = () => console.log(111)
 
 watch(
-  [filter, sort, sortOrder],
+  [filter, sort, sortOrder, () => mailStore.mails],
   () => {
     if (!mailStore.mails || mailStore.mails.length === 0) return
     const mails =

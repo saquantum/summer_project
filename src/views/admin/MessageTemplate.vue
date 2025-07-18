@@ -103,9 +103,8 @@ function addLinkInlineStyle(html: string): string {
 }
 
 function unwrapCodeBlocks(html: string): string {
-  // 提取 code 内容并替换整个 <pre><code>...</code></pre> 为原始代码
+  // extract code
   return html.replace(/<pre><code[^>]*>([\s\S]*?)<\/code><\/pre>/g, (_, code) =>
-    // 解码 HTML 实体
     code.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
   )
 }

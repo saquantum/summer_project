@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import {
   adminDeleteUserService,
   adminGetPermissionByUIDService,
+  adminGetUsersTotalService,
   adminUpdatePermissionService
 } from '@/api/admin'
 import { useRouter } from 'vue-router'
@@ -78,6 +79,10 @@ const fetchTableData = async () => {
   userSearchBody.value.limit = pageSize.value
   userSearchBody.value.orderList = sortStr
   userStore.getUsers('count', userSearchBody.value)
+
+  const userTotalBody = { filters: userSearchBody.value.filters }
+  const res = await adminGetUsersTotalService(userTotalBody)
+  total.value = res.data
 }
 
 const handleSortChange = (sort: { prop: string; order: string | null }) => {
@@ -149,7 +154,7 @@ const submit = async () => {
 
 const currentPage = ref(1)
 const pageSize = ref(10)
-const total = ref(50)
+const total = ref(0)
 
 const userSearchBody = ref<UserSearchBody>({
   filters: {},
