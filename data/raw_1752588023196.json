@@ -1,0 +1,61 @@
+{
+  "type" : "FeatureCollection", 
+  "features" : [
+    {
+      "type" : "Feature", 
+      "id" : 1662, 
+      "geometry" : 
+      {
+        "type" : "Polygon", 
+        "coordinates" : 
+        [
+          [
+            [-6.1798, 55.182], 
+            [-5.9381, 55.0909], 
+            [-5.8228, 55.0028], 
+            [-5.3174, 54.5083], 
+            [-5.4053, 54.2588], 
+            [-5.6964, 54.1303], 
+            [-6.059, 54.0078], 
+            [-6.3501, 54.0465], 
+            [-6.6522, 54.0304], 
+            [-6.8994, 54.2396], 
+            [-6.9818, 54.3486], 
+            [-7.3169, 54.0594], 
+            [-7.8552, 54.1849], 
+            [-8.031, 54.3389], 
+            [-8.2397, 54.4573], 
+            [-7.9211, 54.5943], 
+            [-7.9871, 54.7246], 
+            [-7.5366, 54.8418], 
+            [-7.3114, 55.0438], 
+            [-6.9269, 55.1632], 
+            [-6.3885, 55.204], 
+            [-6.1798, 55.182]
+          ]
+        ]
+      }, 
+      "properties" : {
+        "OBJECTID" : 1662, 
+        "weathertype" : "THUNDERSTORM", 
+        "warninglevel" : "YELLOW", 
+        "warningheadline" : "Heavy rain and a few thunderstorms may cause disruption in a few places, especially to travel, with isolated surface water flooding.", 
+        "validfromdate" : 1752573600000, 
+        "validtodate" : 1752595200000, 
+        "GlobalID" : "ff19529a-e9ab-47c7-96d5-e27c64381489", 
+        "warningImpact" : "2/Low", 
+        "warningLikelihood" : "3/Likely", 
+        "warningVersion" : "1.0", 
+        "affectedAreas" : "Northern Ireland (County Antrim, County Armagh, County Down, County Fermanagh, County Londonderry, County Tyrone)", 
+        "whatToExpect" : "There is a chance driving conditions will be affected by spray, standing water and/or hail, leading to longer journey times by car and bus.\n\nDelays to train services are possible.\n\nSome short term loss of power and other services is possible.\n\nSome flooding of a few homes and businesses is possible, leading to some damage to buildings or structures.\n\nPerhaps some damage to a few buildings and structures from lightning strikes", 
+        "warningFurtherDetails" : "Heavy rain will affect parts of Northern Ireland followed by some heavy showers and a few thunderstorms breaking out later this morning and into the afternoon, before clearing eastwards by evening. In some places these could produce 15-20 mm of rain in less than an hour, with a few spots seeing 30-40 mm in a few hours. Isolated hail and lightning strikes will be additional hazards.\n\nWhat Should I Do?\n\nConsider if your location is at risk of flash flooding. If so, consider preparing a flood plan and an emergency flood kit.  \n\nGive yourself the best chance of avoiding delays by checking road conditions if driving, or bus and train timetables, amending your travel plans if necessary. \n\nPeople cope better with power cuts when they have prepared for them in advance. It’s easy to do; consider gathering torches and batteries, a mobile phone power pack and other essential items. \n\nIf you find yourself outside and hear thunder, protect yourself by finding a safe enclosed shelter (such as a car). Do not shelter under or near trees, or other structures which may be struck by lightning. If you are on an elevated area move to lower ground. \n\nBe prepared for weather warnings to change quickly: when a weather warning is issued, the Met Office recommends staying up to date with the weather forecast in your area.", 
+        "warningUpdateDescription" : null, 
+        "issuedDate" : 1752570106000, 
+        "issuedDateString" : "15-07-2025 10:01:46 AM BST", 
+        "validFromDateString" : "15-07-2025 11:00:00 AM BST", 
+        "validToDateString" : "15-07-2025 05:00:00 PM BST", 
+        "modifiedDateString" : "15-07-2025 10:01:46 AM BST"
+      }
+    }
+  ]
+}

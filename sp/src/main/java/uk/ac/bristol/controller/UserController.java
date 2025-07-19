@@ -6,6 +6,7 @@ import uk.ac.bristol.advice.UserUID;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.FilterDTO;
 import uk.ac.bristol.pojo.User;
+import uk.ac.bristol.pojo.UserGroupDTO;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.QueryTool;
 
@@ -44,6 +45,12 @@ public class UserController {
         user.setPassword(null);
         user.setPermissionConfig(QueryTool.getUserPermissions(uid, null));
         return new ResponseBody(Code.SELECT_OK, user);
+    }
+
+    @GetMapping("/admin/user/group")
+    public ResponseBody getGroupedUsers(@RequestParam String groupBy) {
+        List<UserGroupDTO> groupedUsers = userService.getGroupedUsers(groupBy);
+        return new ResponseBody(Code.SELECT_OK, groupedUsers);
     }
 
     @GetMapping("/user/aid/{aid}")

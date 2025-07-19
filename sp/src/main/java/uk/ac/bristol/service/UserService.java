@@ -4,6 +4,7 @@ import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.pojo.UserWithAssets;
 import uk.ac.bristol.pojo.UserWithExtraColumns;
+import uk.ac.bristol.pojo.UserGroupDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,8 @@ public interface UserService {
                                                           List<Map<String, String>> orderList,
                                                           Integer limit,
                                                           Integer offset);
+
+    List<UserGroupDTO> getGroupedUsers(String groupBy);
 
     User getUserByAssetHolderId(String aid);
 

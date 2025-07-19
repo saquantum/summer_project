@@ -10,6 +10,8 @@ public class User {
     private boolean admin = false;
     private String avatar;
     private String token;
+    private String role;
+    private String department;
 
     @Override
     public String toString() {
@@ -95,4 +97,12 @@ public class User {
     public void setToken(String token) {
         this.token = token;
     }
+
+    public String getRole() { return role; }
+
+    public void setRole(String role) { this.role = role; }
+
+    public String getDepartment() { return department; }
+
+    public void setDepartment(String department) { this.department = department; }
 }
