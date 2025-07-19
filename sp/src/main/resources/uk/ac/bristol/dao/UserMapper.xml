@@ -178,7 +178,7 @@
     </select>
 
     <select id="countUsers" resultType="int">
-        select count(*)
+        select count(distinct user_id)
         from users
                  left join asset_holders
                            on user_asset_holder_id = asset_holder_id
