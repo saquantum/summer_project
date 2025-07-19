@@ -60,7 +60,7 @@ const handleConfirm = () => {
 </script>
 
 <template>
-  <el-dialog v-model="visible" :title="title" width="500">
+  <el-dialog v-model="visible" :title="title">
     <slot>
       <span>{{ content }}</span>
     </slot>
@@ -84,3 +84,5 @@ const handleConfirm = () => {
     </template>
   </el-dialog>
 </template>
+
+<style scoped></style>

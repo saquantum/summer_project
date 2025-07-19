@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { ref, watch, computed } from 'vue'
 import { useUserStore, useAssetStore } from '@/stores/index.ts'
 import type { AssetWithWarnings } from '@/types'
+import { useResponsiveAction } from '@/composables/useResponsiveAction'
 const assetStore = useAssetStore()
 const userStore = useUserStore()
 const router = useRouter()
@@ -20,19 +21,23 @@ const currentAssets = ref<AssetWithWarnings[] | []>([])
 const warningLevelOptions = [
   {
     value: 'NO',
-    label: 'No Warning'
+    label: 'No Warning',
+    text: 'No Warning'
   },
   {
     value: 'YELLOW',
-    label: 'Yellow Warning'
+    label: 'Yellow Warning',
+    text: 'Yellow Warning'
   },
   {
     value: 'AMBER',
-    label: 'Amber Warning'
+    label: 'Amber Warning',
+    text: 'Amber Warning'
   },
   {
     value: 'RED',
-    label: 'Red Warning'
+    label: 'Red Warning',
+    text: 'Red Warning'
   }
 ]
 
@@ -59,6 +64,21 @@ const warningOrder: Record<string, number> = {
   AMBER: 2,
   YELLOW: 1,
   '': 0
+}
+
+/**
+ * mobile component
+ */
+
+const isMobile = ref(false)
+
+const searchDetailVisible = ref(false)
+
+const clearFilters = () => {
+  searchDetailVisible.value = false
+  assetName.value = ''
+  assetType.value = ''
+  assetWarningLevel.value = ''
 }
 
 onMounted(async () => {
@@ -125,45 +145,67 @@ watch(
     immediate: true
   }
 )
+
+const handleSizeChange = () => {}
+
+useResponsiveAction((width) => {
+  if (width < 576) {
+    isMobile.value = true
+    console.log('Extra small screen, e.g., portrait phone')
+    handleSizeChange()
+  } else if (width >= 576 && width < 768) {
+    isMobile.value = false
+    handleSizeChange()
+    console.log('Small screen, e.g., landscape phone or small tablet')
+  } else if (width >= 768 && width < 992) {
+    isMobile.value = false
+    handleSizeChange()
+    console.log('Medium screen, e.g., tablets or small laptops')
+  } else {
+    isMobile.value = false
+    handleSizeChange()
+    console.log('Large screen, e.g., desktops or larger')
+  }
+})
 </script>
 
 <template>
   <!-- assets filter -->
   <div class="search-bar">
-    <el-input
-      v-model="assetName"
-      class="select-style"
-      placeholder="Search your assets"
-    ></el-input>
-    <el-select
-      v-model="assetWarningLevel"
-      placeholder="Select warning level"
-      size="large"
-      clearable
-      class="select-style"
+    <TestSearch
+      v-model:input="assetName"
+      v-model:visible="searchDetailVisible"
+      @search="searchDetailVisible = false"
+      @clearFilters="clearFilters"
     >
-      <el-option
-        v-for="item in warningLevelOptions"
-        :key="item.value"
-        :label="item.label"
-        :value="item.value"
-      ></el-option>
-    </el-select>
+      <el-select
+        v-model="assetWarningLevel"
+        placeholder="Select warning level"
+        :teleported="false"
+        clearable
+      >
+        <el-option
+          v-for="item in warningLevelOptions"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        ></el-option>
+      </el-select>
 
-    <el-select
-      v-model="assetType"
-      placeholder="Select Asset Type"
-      size="large"
-      clearable
-      class="select-style"
-    >
-      <el-option
-        v-for="item in assetStore.typeOptions"
-        :key="item.value"
-        :label="item.label"
-        :value="item.value"
-      ></el-option>
-    </el-select>
+      <el-select
+        v-model="assetType"
+        placeholder="Select Asset Type"
+        :teleported="false"
+        clearable
+      >
+        <el-option
+          v-for="item in assetStore.typeOptions"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        ></el-option>
+      </el-select>
+    </TestSearch>
   </div>
 
   <!-- warning legend -->

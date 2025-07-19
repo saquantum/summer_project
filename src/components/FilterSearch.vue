@@ -91,6 +91,26 @@ const statusOption = [
   { label: 'maintenance', value: 'maintenance' }
 ]
 
+// select value
+const warningLevelOptions = [
+  {
+    value: 'NO',
+    label: 'No Warning'
+  },
+  {
+    value: 'YELLOW',
+    label: 'Yellow Warning'
+  },
+  {
+    value: 'AMBER',
+    label: 'Amber Warning'
+  },
+  {
+    value: 'RED',
+    label: 'Red Warning'
+  }
+]
+
 const form = ref<AssetSearchForm>({
   id: '',
   name: '',
@@ -100,7 +120,8 @@ const form = ref<AssetSearchForm>({
   material: '',
   status: '',
   installedAt: null,
-  lastInspection: null
+  lastInspection: null,
+  warningLevel: ''
 })
 
 const handleSearch = () => {
@@ -123,7 +144,8 @@ const clearFilters = () => {
     material: '',
     status: '',
     installedAt: null,
-    lastInspection: null
+    lastInspection: null,
+    warningLevel: ''
   }
   handleSearch()
 }
@@ -138,7 +160,8 @@ const fuzzySearch = (input: string) => {
     material: '',
     status: '',
     installedAt: null,
-    lastInspection: null
+    lastInspection: null,
+    warningLevel: ''
   }
   const obj: AssetSearchBody = {
     ...props.assetSearchBody,
@@ -155,32 +178,6 @@ const fuzzySearch = (input: string) => {
   props.fetchTableData()
   visible.value = false
 }
-
-// watch(
-//   [form],
-//   () => {
-//     if (!form.value.typeId) {
-//       if (lastType) {
-//         const index = tags.value.indexOf(lastType)
-//         if (index !== -1) tags.value.splice(index, 1)
-//       }
-//       return
-//     }
-//     const obj = assetTypeOptions.find(
-//       (item) => item.value === form.value.typeId
-//     )
-//     if (!obj) return
-//     if (lastType) {
-//       const index = tags.value.indexOf(lastType)
-//       if (index !== -1) tags.value.splice(index, 1)
-//     }
-//     tags.value.push(obj.label)
-//     lastType = obj.label
-//   },
-//   {
-//     deep: true
-//   }
-// )
 
 onMounted(() => {
   document.addEventListener('mousedown', handleClickOutside)
@@ -201,8 +198,7 @@ defineExpose({
     ref="popoverRef"
     :visible="visible"
     placement="bottom-start"
-    :width="500"
-    :show-arrow="false"
+    :width="375"
     trigger="manual"
   >
     <template #reference>
@@ -229,6 +225,21 @@ defineExpose({
     ></template>
     <div v-if="detail">
       <el-form :model="form" label-width="auto" label-position="left">
+        <el-form-item label="Warning level">
+          <el-select
+            :teleported="false"
+            v-model="form.warningLevel"
+            placeholder="Select warning level"
+            clearable
+          >
+            <el-option
+              v-for="item in warningLevelOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            ></el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="Id">
           <el-input v-model="form.id"></el-input>
         </el-form-item>
@@ -317,17 +328,6 @@ defineExpose({
         </el-form-item>
       </el-form>
 
-      <!-- do this later -->
-      <!-- <div class="label">Id</div>
-      <el-autocomplete
-        v-model="assetId"
-        :fetch-suggestions="querySearch"
-        clearable
-        placeholder="Please Input"
-        :teleported="false"
-      />
-      <div class="label">test prop</div>
-      <ButtonInput></ButtonInput> -->
       <div style="margin-top: 20px">
         <el-button @click="handleSearch">Search</el-button>
         <el-button @click="clearFilters">Clear filters</el-button>

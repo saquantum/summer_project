@@ -7,6 +7,7 @@ import {
   adminGetAssetsTotalService
 } from '@/api/admin'
 import { type AssetSearchBody, type AssetTableItem } from '@/types'
+import { useResponsiveAction } from '@/composables/useResponsiveAction'
 
 const assets = computed<AssetTableItem[]>(() =>
   assetStore.allAssets.map((item) => ({
@@ -19,7 +20,7 @@ const assets = computed<AssetTableItem[]>(() =>
     installedAt: item.asset.installedAt,
     lastInspection: item.asset.lastInspection,
     assetHolderId: item.asset.ownerId,
-    warningLevel: item.warnings[0]?.warningLevel?.toLowerCase() ?? 'NULL'
+    warningLevel: item.warnings[0]?.warningLevel ?? 'NULL'
   }))
 )
 
@@ -51,10 +52,11 @@ const handleDelete = async () => {
 }
 
 const tableRowClassName = (scope: { row: AssetTableItem }) => {
-  const warningLevel = scope.row.warningLevel.toLowerCase()
-  if (warningLevel.includes('red')) {
+  const warningLevel = scope.row.warningLevel
+  console.log(warningLevel)
+  if (warningLevel === 'RED') {
     return 'warning-red'
-  } else if (warningLevel.includes('yellow')) {
+  } else if (warningLevel === 'YELLOW') {
     return 'warning-yellow'
   }
   return ''
@@ -69,7 +71,8 @@ const columns = [
   { prop: 'material', label: 'Material', width: 180 },
   { prop: 'status', label: 'Status', width: 180 },
   { prop: 'installedAt', label: 'Installed At', width: 180 },
-  { prop: 'lastInspection', label: 'Last inspection', width: 180 }
+  { prop: 'lastInspection', label: 'Last inspection', width: 180 },
+  { prop: 'warningLevel', label: 'Warning level', width: 180 }
 ]
 
 const multiSort = ref<{ prop: string; order: string }[]>([])
@@ -155,18 +158,7 @@ const handleSizeChange = (size: number) => {
   fetchTableData()
 }
 
-const screenWidth = ref(window.innerWidth)
-let debounceTimer: ReturnType<typeof setTimeout> | null = null
-
-const handleResize = () => {
-  if (debounceTimer) clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(() => {
-    screenWidth.value = window.innerWidth
-    resizeBasedOnWidth(screenWidth.value)
-  }, 200)
-}
-
-const resizeBasedOnWidth = (width: number) => {
+useResponsiveAction((width) => {
   if (width < 576) {
     console.log('Extra small screen, e.g., portrait phone')
     handleSizeChange(5)
@@ -180,24 +172,15 @@ const resizeBasedOnWidth = (width: number) => {
     handleSizeChange(10)
     console.log('Large screen, e.g., desktops or larger')
   }
-}
+})
 
 onMounted(async () => {
   await fetchTableData()
-  // resizeBasedOnWidth(screenWidth.value)
-  window.addEventListener('resize', handleResize)
 })
 </script>
 
 <template>
   <div>
-    <div class="asset-list">
-      <AssetCard
-        v-for="(item, index) in assets"
-        :key="index"
-        :asset="item"
-      ></AssetCard>
-    </div>
     <div class="search-wrapper">
       <FilterSearch
         :fetch-table-data="fetchTableData"
@@ -208,6 +191,15 @@ onMounted(async () => {
         :columns="columns"
         :fetch-table-data="fetchTableData"
       ></SortTool>
+    </div>
+
+    <div class="asset-list">
+      <AssetCard
+        v-for="(item, index) in assets"
+        :key="index"
+        :asset="item"
+        :on-delete="triggerDelete"
+      ></AssetCard>
     </div>
 
     <el-table
@@ -286,11 +278,13 @@ onMounted(async () => {
   gap: 16px;
 }
 
-.el-table .warning-red {
+:deep(.el-table .warning-red) {
   --el-table-tr-bg-color: var(--el-color-danger-light-8);
 }
-
-.el-table .warning-yellow {
+:deep(.el-table .warning-amber) {
+  --el-table-tr-bg-color: var(--el-color-warning-dark-2);
+}
+:deep(.el-table .warning-yellow) {
   --el-table-tr-bg-color: var(--el-color-warning-light-8);
 }
 

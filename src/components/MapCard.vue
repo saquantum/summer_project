@@ -29,6 +29,11 @@ const customIcon = new L.Icon({
   shadowSize: [41, 41]
 })
 
+/**
+ * locations is for situations like multiple warnings.
+ * In most situation, asset will only have one multipolygon
+ */
+
 const props = defineProps<{
   mapId: string
   locations: MultiPolygon[]
@@ -59,7 +64,7 @@ const handleClick = (e: LeafletMouseEvent) => {
   })
 }
 
-const focusedIndex = ref(0)
+const focusedIndex = ref(-1)
 const polygonLayers: L.Layer[] = []
 const highlightCurrentPolygon = () => {
   // reset layers
@@ -69,6 +74,27 @@ const highlightCurrentPolygon = () => {
 
   const polygons = props.locations[0].coordinates
   if (polygons.length === 0) return
+
+  // ignore default polygon
+  const DEFAULT_MULTIPOLYGON = {
+    type: 'MultiPolygon',
+    coordinates: [
+      [
+        [
+          [-0.5103751, 51.2867601],
+          [0.3340155, 51.2867601],
+          [0.3340155, 51.6918741],
+          [-0.5103751, 51.6918741],
+          [-0.5103751, 51.2867601]
+        ]
+      ]
+    ]
+  }
+
+  if (
+    JSON.stringify(props.locations[0]) === JSON.stringify(DEFAULT_MULTIPOLYGON)
+  )
+    return
 
   if (focusedIndex.value === polygons.length) {
     // display all polygons
@@ -113,7 +139,7 @@ const nextPolygon = () => {
 }
 
 const quickEscapePolygons = () => {
-  focusedIndex.value = props.locations[0].coordinates.length
+  focusedIndex.value = -1
   highlightCurrentPolygon()
 }
 
@@ -204,10 +230,15 @@ const finishOnePolygon = () => {
     finishOneShape()
   }
   const polygon = turf.polygon(polygonCoordinates)
-  const fixed = rewind(polygon, { reverse: true }) as Feature<Polygon>
-  console.log(fixed)
-  polygonCoorArr.push(fixed.geometry.coordinates)
-  polygonCoordinates = []
+  try {
+    const fixed = rewind(polygon, { reverse: true }) as Feature<Polygon>
+    polygonLayers.push(L.geoJSON(fixed))
+    polygonCoorArr.push(fixed.geometry.coordinates)
+    polygonCoordinates = []
+  } catch (e) {
+    console.error(e)
+    ElMessage.error('Fail to form polygon')
+  }
 }
 
 const endDrawing = async () => {
@@ -222,8 +253,7 @@ const endDrawing = async () => {
   if (props.asset) {
     const newAsset: Asset = {
       ...props.asset,
-      location: multiPolygon.geometry,
-      lastModified: Date.now()
+      location: multiPolygon.geometry
     }
     try {
       if (userStore.user?.admin) {

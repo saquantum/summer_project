@@ -3,7 +3,7 @@
 <template>
   <div class="login-page">
     <div class="card-wrapper">
-      <el-card class="glass-effect" style="width: 90%; max-width: 400px">
+      <el-card class="glass-effect">
         <router-view></router-view>
       </el-card>
     </div>
@@ -26,5 +26,14 @@
 .glass-effect {
   background-color: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
+  width: 90%;
+  max-width: 400px;
+}
+
+@media (min-width: 2560px) {
+  .glass-effect {
+    max-width: 700px !important;
+    padding: 48px 40px;
+  }
 }
 </style>

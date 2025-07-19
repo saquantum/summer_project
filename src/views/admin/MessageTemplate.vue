@@ -61,6 +61,8 @@ const title = ref('')
 const editorRef = ref()
 const allowedVariables = ['asset-model', 'contact_name', 'post_town']
 
+const canInsertCode = ref(false)
+
 const mockData = {
   'asset-model': 'Water tank',
   contact_name: 'Alice',
@@ -69,7 +71,7 @@ const mockData = {
 
 const submit = async () => {
   if (!template.value) return
-  template.value.body = content.value
+  template.value.body = renderedHTML.value
   template.value.title = title.value
   const res = await adminUpdateTemplateByIdService(template.value)
   console.log(res)
@@ -99,7 +101,15 @@ function addLinkInlineStyle(html: string): string {
     /<img\b([^>]*)>/g,
     '<img$1 style="display: block; height: auto; margin: 1.5rem 0; max-width: 100%; max-height: 100%;">'
   )
-  return htmlWithImgStyle
+  const htmlWithPreStyle = htmlWithImgStyle.replace(
+    /<pre\b([^>]*)>/g,
+    '<pre$1 style="background: #f5f5f5; color: #333; border-radius: 6px; padding: 16px; font-family: Fira Mono, Consolas, Menlo, monospace; font-size: 1em; overflow-x: auto; margin: 1.2em 0;">'
+  )
+  const htmlWithCodeStyle = htmlWithPreStyle.replace(
+    /<pre([^>]*)><code([^>]*)>/g,
+    '<pre$1><code$2 style="background: none; color: inherit; padding: 0; border-radius: 0; font-family: inherit; font-size: inherit;">'
+  )
+  return htmlWithCodeStyle
 }
 
 function unwrapCodeBlocks(html: string): string {
@@ -111,9 +121,15 @@ function unwrapCodeBlocks(html: string): string {
 
 const renderedHTML = computed(() => {
   try {
-    const htmlWithStyle = addLinkInlineStyle(unwrapCodeBlocks(content.value))
+    let htmlWithStyle
+    if (canInsertCode.value) {
+      htmlWithStyle = addLinkInlineStyle(unwrapCodeBlocks(content.value))
+    } else {
+      htmlWithStyle = addLinkInlineStyle(content.value)
+    }
     const compiled = Handlebars.compile(htmlWithStyle)
     const rawHtml = compiled(mockData)
+    console.log(DOMPurify.sanitize(rawHtml))
     return DOMPurify.sanitize(rawHtml)
     // return rawHtml
   } catch (e) {
@@ -196,10 +212,17 @@ watch(
   <el-input v-model="title"></el-input>
 
   <TiptapEditor ref="editorRef" v-model:content="content"></TiptapEditor>
-
+  <span>Insert code: </span>
+  <el-switch v-model="canInsertCode"></el-switch>
   <div
     class="preview"
-    style="width: 50%; border: 1px solid #ccc; padding: 1rem; margin-top: 20px"
+    style="
+      width: 50%;
+      border: 1px solid #ccc;
+      padding: 1rem;
+      margin-top: 20px;
+      background-color: white;
+    "
   >
     <div v-html="renderedHTML"></div>
   </div>

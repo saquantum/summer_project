@@ -59,6 +59,12 @@ export const assetConverFormToFilter = (form: AssetSearchForm): AssetFilter => {
     }
   }
 
+  if (form.warningLevel && form.warningLevel !== 'NO') {
+    body.warning_level = { op: 'like', val: `%${form.warningLevel}%` }
+  } else if (form.warningLevel && form.warningLevel === 'NO') {
+    body.warning_level = { op: 'isNull', val: '' }
+  }
+
   return body
 }
 

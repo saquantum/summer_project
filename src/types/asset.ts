@@ -26,6 +26,7 @@ export interface AssetSearchForm {
   status: string
   installedAt: [Date, Date] | null
   lastInspection: [Date, Date] | null
+  warningLevel: string
 }
 
 export interface AssetWithWarnings {

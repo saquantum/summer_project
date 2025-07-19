@@ -8,6 +8,19 @@ import Code from '@tiptap/extension-code'
 import Link from '@tiptap/extension-link'
 import { Color, TextStyle } from '@tiptap/extension-text-style'
 import { FileHandler } from '@tiptap/extension-file-handler'
+import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight'
+import { all, createLowlight } from 'lowlight'
+import css from 'highlight.js/lib/languages/css'
+import js from 'highlight.js/lib/languages/javascript'
+import ts from 'highlight.js/lib/languages/typescript'
+import html from 'highlight.js/lib/languages/xml'
+
+const lowlight = createLowlight(all)
+lowlight.register('html', html)
+lowlight.register('css', css)
+lowlight.register('js', js)
+lowlight.register('ts', ts)
+
 // import { Extension } from '@tiptap/core'
 // import { Decoration, DecorationSet } from 'prosemirror-view'
 // import { Plugin, PluginKey } from 'prosemirror-state'
@@ -187,6 +200,9 @@ const editor = useEditor({
           }
         })
       }
+    }),
+    CodeBlockLowlight.configure({
+      lowlight
     })
   ],
   onUpdate: ({ editor }) => {
@@ -325,6 +341,7 @@ defineExpose({
 </template>
 
 <style lang="scss">
+@import 'highlight.js/styles/github.css';
 .menu {
   margin-bottom: 20px;
 
@@ -335,6 +352,7 @@ defineExpose({
 }
 
 .editor {
+  background: white;
   border: 1px black solid;
   height: 300px;
   padding: 10px;
@@ -358,13 +376,24 @@ defineExpose({
   background: rgba(33, 196, 245, 0.555);
 }
 
-.ProseMirror code {
-  background-color: white;
-  color: #c7254e;
-  padding: 2px 4px;
-  border-radius: 4px;
-  font-family: monospace;
-  font-size: 0.95em;
+.ProseMirror pre {
+  background: #f5f5f5;
+  color: #333;
+  border-radius: 6px;
+  padding: 16px;
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+  font-size: 1em;
+  overflow-x: auto;
+  margin: 1.2em 0;
+}
+
+.ProseMirror pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+  font-family: inherit;
+  font-size: inherit;
 }
 
 .ProseMirror .error-variable {

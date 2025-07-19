@@ -25,10 +25,10 @@ export const useUserStore = defineStore(
       } catch (e) {
         const status = (e as { response?: { status?: number } })?.response
           ?.status
-        if (status === 403) {
+        if (status === 401) {
           ElMessage.error('Username or password is incorrect.')
         } else {
-          ElMessage.error('Login failed.')
+          ElMessage.error('Unknown Error')
         }
         throw new Error(String(e))
       }

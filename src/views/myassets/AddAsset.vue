@@ -394,7 +394,6 @@ onMounted(() => {
         label-width="auto"
         label-position="left"
         :rules="rules"
-        style="max-width: 600px"
         :disabled="disableAddAsset"
       >
         <el-form-item label="Username" prop="username">
@@ -472,7 +471,7 @@ onMounted(() => {
           <div v-if="form.locations.length > 0">
             <div><h3>Customise polygon</h3></div>
             <div v-if="isDrawing">Your are now drawing new polygon</div>
-            <div style="height: 400px; width: 600px; border: black 1px solid">
+            <div class="map-container">
               <MapCard
                 ref="mapCardRef"
                 :map-id="'AddAsset'"
@@ -548,18 +547,21 @@ onMounted(() => {
 
 <style scoped>
 .container {
-  margin-top: 20px;
   display: flex;
   justify-content: center;
 }
 
-.map-button {
-  margin-top: 10px;
+.map-container {
+  width: 600px;
+  height: 600px;
 }
 
-.form-button {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
+/* Extra small (phones) */
+@media (max-width: 575px) {
+  /* Styles for very small screens */
+  .map-container {
+    width: 375px;
+    height: 375px;
+  }
 }
 </style>

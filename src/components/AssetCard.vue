@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import type { AssetTableItem } from '@/types'
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
 const props = defineProps<{
   asset: AssetTableItem
+  onDelete: (row: AssetTableItem) => void
 }>()
 const displayData = ref()
 
@@ -23,6 +27,10 @@ if (props.asset) {
     { label: 'Installed at', value: props.asset.installedAt },
     { label: 'Last inspection', value: props.asset.lastInspection }
   ]
+}
+
+const handleEdit = () => {
+  router.push(`/assets/${props.asset.id}`)
 }
 </script>
 
@@ -57,8 +65,8 @@ if (props.asset) {
           <span>{{ item.value }}</span>
         </el-descriptions-item>
       </el-descriptions>
-      <el-button>Edit</el-button>
-      <el-button type="danger">Delete</el-button>
+      <el-button @click="handleEdit">Edit</el-button>
+      <el-button @click="onDelete(props.asset)" type="danger">Delete</el-button>
     </div>
   </el-card>
 </template>
