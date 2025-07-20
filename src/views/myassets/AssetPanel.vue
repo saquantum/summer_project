@@ -249,9 +249,9 @@ defineExpose({ assetWarningLevel })
               class="asset-title"
               :class="{
                 'warning-low': !item.maxWarning,
-                'warning-medium': item.warnings[0]?.warningLevel === 'YELLOW',
-                'warning-high': item.warnings[0]?.warningLevel === 'AMBER',
-                'warning-severe': item.warnings[0]?.warningLevel === 'RED'
+                'warning-medium': item.maxWarning?.warningLevel === 'YELLOW',
+                'warning-high': item.maxWarning?.warningLevel === 'AMBER',
+                'warning-severe': item.maxWarning?.warningLevel === 'RED'
               }"
             >
               {{ item.asset.name || 'Asset Name' }}
@@ -425,10 +425,10 @@ defineExpose({ assetWarningLevel })
   color: green;
 }
 .warning-medium {
-  color: #e6a23c;
+  color: #ffe923;
 }
 .warning-high {
-  color: orange;
+  color: #f90;
 }
 .warning-severe {
   color: red;

@@ -293,7 +293,7 @@ defineExpose({
     <el-row :gutter="20">
       <el-col :span="12">
         <el-form-item label="FIRST NAME" prop="firstName">
-          <el-input v-model="form.firstName" />
+          <el-input v-model="form.firstName" data-test="firstName" />
         </el-form-item>
       </el-col>
       <el-col :span="12">

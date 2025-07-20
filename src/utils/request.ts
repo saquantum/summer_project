@@ -1,6 +1,7 @@
 import axios from 'axios'
 import router from '@/router'
 import { useUserStore } from '@/stores'
+import { v4 as uuidv4 } from 'uuid'
 
 const baseURL = '/api'
 
@@ -12,6 +13,11 @@ const instance = axios.create({
 // Add a request interceptor
 instance.interceptors.request.use(
   function (config) {
+    if (config.method?.toLowerCase() === 'post') {
+      config.headers = config.headers || {}
+      config.headers['Idempotency-Key'] = uuidv4()
+      console.log(config)
+    }
     return config
   },
   function (error) {

@@ -68,13 +68,22 @@ onMounted(() => {
 })
 
 watch(
-  [filter, sort, sortOrder, () => mailStore.mails],
+  [searchKeyword, filter, sort, sortOrder, () => mailStore.mails],
   () => {
     if (!mailStore.mails || mailStore.mails.length === 0) return
-    const mails =
+    let mails =
       filter.value === 'all'
         ? mailStore.mails.slice()
         : mailStore.mails.filter((item) => item.hasRead === false)
+
+    const keyword = searchKeyword.value.trim().toLowerCase()
+    if (keyword) {
+      mails = mails.filter(
+        (item) =>
+          (item.title && item.title.toLowerCase().includes(keyword)) ||
+          (item.message && item.message.toLowerCase().includes(keyword))
+      )
+    }
 
     if (sort.value === 'date') {
       mails.sort((a, b) => {

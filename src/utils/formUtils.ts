@@ -86,6 +86,11 @@ export const createRepasswordRules = (getPassword: () => string) => [
 
 export const emailRules: FormItemRule[] = [
   { required: true, message: 'Email is required', trigger: 'blur' },
+  { type: 'email', message: 'Invalid email format', trigger: 'blur' }
+]
+
+export const uniqueEmailRules: FormItemRule[] = [
+  { required: true, message: 'Email is required', trigger: 'blur' },
   { type: 'email', message: 'Invalid email format', trigger: 'blur' },
   {
     asyncValidator: async (

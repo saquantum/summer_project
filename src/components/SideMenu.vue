@@ -45,7 +45,7 @@ const handleBackToAdmin = () => {
     v-if="props.showUserSideBar"
     @select="handleMenuSelect"
   >
-    <el-menu-item index="/user/profile">
+    <el-menu-item index="/user/profile" data-test="my-profile-side">
       <el-icon><User /></el-icon>
       <span>My Profile</span>
     </el-menu-item>
@@ -75,7 +75,7 @@ const handleBackToAdmin = () => {
       </el-menu-item>
     </el-sub-menu>
 
-    <el-menu-item index="/message">
+    <el-menu-item index="/message" data-test="message-side">
       <el-icon><MessageBox /></el-icon>
       <span>Message</span>
     </el-menu-item>

@@ -257,6 +257,12 @@ const setLink = () => {
     .run()
 }
 
+const setColor = (e: Event) => {
+  if (!editor.value || !e.target) return
+  const target = e.target as HTMLInputElement
+  editor.value.chain().focus().setColor(target.value).run()
+}
+
 watch(content, async (newValue) => {
   if (editor.value && newValue !== editor.value.getHTML()) {
     editor.value.commands.setContent(newValue)
@@ -276,7 +282,7 @@ defineExpose({
   <div class="menu" v-if="editor">
     <input
       type="color"
-      @input="editor.chain().focus().setColor($event.target.value).run()"
+      @input="setColor"
       :value="editor.getAttributes('textStyle').color"
     />
 

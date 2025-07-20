@@ -43,7 +43,7 @@ const descriptionsItem = computed(() => {
   if (!props.item) return []
   return [
     { label: 'Name', value: props.item.asset.name },
-    { label: 'TypeID', value: props.item.asset.type.name },
+    { label: 'Type', value: props.item.asset.type.name },
     { label: 'Capacity litres', value: props.item.asset.capacityLitres },
     { label: 'Material', value: props.item.asset.material },
     { label: 'Status', value: props.item.asset.status },

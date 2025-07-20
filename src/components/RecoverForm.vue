@@ -92,7 +92,7 @@ const handleConfirm = async () => {
     </el-form-item>
 
     <el-form-item>
-      <el-button @click="handleSendEmail">Send email</el-button>
+      <el-button @click="handleSendEmail">Send</el-button>
       <el-button @click="handleVerify" v-if="codeVisible">Verify</el-button>
     </el-form-item>
 

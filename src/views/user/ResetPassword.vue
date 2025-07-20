@@ -7,9 +7,12 @@ import {
   userEmailVerificationService,
   userResetPasswordService
 } from '@/api/user'
-import CodeUtil from '@/utils/codeUtil'
 import { useRouter } from 'vue-router'
-import type { FormItemRule } from 'element-plus'
+import {
+  codeRules,
+  createRepasswordRules,
+  passwordRules
+} from '@/utils/formUtils'
 const userStore = useUserStore()
 const assetStore = useAssetStore()
 const router = useRouter()
@@ -22,59 +25,9 @@ const form = ref({
 })
 
 const rules = {
-  // customize rules here
-  password: [
-    {
-      required: true,
-      message: 'Please input password',
-      trigger: 'blur'
-    }
-    // {
-    //   pattern: /^\S{6,15}$/,
-    //   message: 'password must between 6 to 15 characters',
-    //   trigger: 'blur'
-    // }
-  ],
-  repassword: [
-    { required: true, message: 'Please input password', trigger: 'blur' },
-    {
-      pattern: /^\S{6,15}$/,
-      message: 'password must between 6 to 15 characters',
-      trigger: 'blur'
-    },
-    {
-      validator: (
-        rule: FormItemRule,
-        value: string,
-        callback: (error?: Error) => void
-      ) => {
-        if (value !== form.value.password) {
-          callback(new Error("Those passwords didn't match. Try again."))
-        } else {
-          callback()
-        }
-      },
-      trigger: 'blur'
-    }
-  ],
-  code: [
-    {
-      required: true,
-      message: 'Please input captcha',
-      trigger: 'blur'
-    },
-    {
-      min: 6,
-      max: 6,
-      message: 'Captcha must be exactly 6 characters',
-      trigger: 'blur'
-    },
-    {
-      pattern: /^[A-Za-z0-9]{6}$/,
-      message: 'Captcha must contain only letters and numbers',
-      trigger: 'blur'
-    }
-  ]
+  password: passwordRules,
+  repassword: createRepasswordRules(() => form.value.password || ''),
+  code: codeRules
 }
 
 const resetFormVisible = ref(false)
@@ -88,9 +41,7 @@ const handleVerify = async () => {
   try {
     const res = await userEmailVerificationService(form.value)
     console.log(res)
-    if (CodeUtil.isSuccess(res.code)) {
-      resetFormVisible.value = true
-    }
+    resetFormVisible.value = true
   } catch (e) {
     console.error(e)
   }
@@ -131,7 +82,7 @@ const handleConfirm = async () => {
 
     <el-form-item>
       <el-button @click="handleSendEmail">Send OTP code</el-button>
-      <el-button @click="handleVerify">Next</el-button>
+      <el-button @click="handleVerify">Verify</el-button>
     </el-form-item>
   </el-form>
 

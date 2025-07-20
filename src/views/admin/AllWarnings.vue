@@ -13,12 +13,7 @@ const router = useRouter()
 const warningStore = useWarningStore()
 const mapId = 'allWarningsMap'
 const warningPolygon = ref<MultiPolygon[]>([])
-const style = ref<Style>({
-  weight: 1,
-  fillOpacity: 0.4,
-  color: '',
-  fillColor: ''
-})
+const styles = ref<Style[]>([])
 interface TableRow {
   id: number
   weatherType: string
@@ -41,7 +36,7 @@ const handleDelete = (row: TableRow) => {
 const processWarnings = () => {
   warningPolygon.value = []
   liveWarnings.value = warningStore.liveWarnings.map((item) => {
-    style.value = setWarningLevelStyle(item.warningLevel)
+    styles.value.push(setWarningLevelStyle(item.warningLevel))
     warningPolygon.value.push(item.area)
     return {
       id: item.id,
@@ -71,22 +66,23 @@ const processWarnings = () => {
 
 const getRowClass = (row: TableRow) => {
   const level = row.warningLevel?.toLowerCase() || ''
-  if (level.includes('red')) return 'row-red'
-  if (level.includes('amber')) return 'row-amber'
-  if (level.includes('yellow')) return 'row-yellow'
+  if (level.includes('RED')) return 'row-red'
+  if (level.includes('AMBER')) return 'row-amber'
+  if (level.includes('YELLOW')) return 'row-yellow'
   return ''
 }
 
 const setWarningLevelStyle = (level: string): Style => {
   const style = { weight: 2, fillOpacity: 0.4, color: '', fillColor: '' }
-  const l = level?.toLowerCase()
-  if (l?.includes('yellow')) {
+  console.log(level)
+  if (level.includes('YELLOW')) {
     style.color = '#cc9900'
     style.fillColor = '#ffff00'
-  } else if (l?.includes('amber')) {
+  } else if (level.includes('AMBER')) {
+    style.fillOpacity = 0.6
     style.color = '#cc6600'
-    style.fillColor = '#ffcc00'
-  } else if (l?.includes('red')) {
+    style.fillColor = '#f7b733'
+  } else if (level.includes('RED')) {
     style.color = '#800000'
     style.fillColor = '#ff0000'
   }
@@ -118,7 +114,7 @@ watch(
             v-if="warningPolygon.length > 0"
             :map-id="mapId"
             :locations="warningPolygon"
-            :style="style"
+            :styles="styles"
           />
         </div>
       </div>

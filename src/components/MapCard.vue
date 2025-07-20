@@ -34,14 +34,19 @@ const customIcon = new L.Icon({
  * In most situation, asset will only have one multipolygon
  */
 
-const props = defineProps<{
-  mapId: string
-  locations: MultiPolygon[]
-  mode: string
-  style: Style
-  asset: Asset
-  display: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    mapId: string
+    locations: MultiPolygon[]
+    mode: string
+    styles?: Style[]
+    asset: Asset
+    display: boolean
+  }>(),
+  {
+    styles: () => []
+  }
+)
 
 const userStore = useUserStore()
 
@@ -315,15 +320,25 @@ watch(
 
     const featureCollection: FeatureCollection = {
       type: 'FeatureCollection',
-      features: newVal.map((geometry) => ({
+      features: props.locations.map((geometry, idx) => ({
         type: 'Feature',
         geometry,
-        properties: {}
+        properties: { index: idx }
       }))
     }
 
     const geoLayer = L.geoJSON(featureCollection, {
-      style: props.style
+      style: (feature) => {
+        if (
+          feature &&
+          feature.properties &&
+          typeof feature.properties.index === 'number' &&
+          props.styles?.length > 0
+        ) {
+          return props.styles[feature.properties.index]
+        }
+        return {}
+      }
     }).addTo(m)
 
     try {
@@ -357,16 +372,27 @@ onMounted(async () => {
 
   const featureCollection: FeatureCollection = {
     type: 'FeatureCollection',
-    features: props.locations?.map((geometry) => ({
+    features: props.locations.map((geometry, idx) => ({
       type: 'Feature',
       geometry,
-      properties: {}
+      properties: { index: idx }
     }))
   }
 
   saveLayer = L.geoJSON(featureCollection, {
-    style: props.style
+    style: (feature) => {
+      if (
+        feature &&
+        feature.properties &&
+        typeof feature.properties.index === 'number' &&
+        props.styles?.length > 0
+      ) {
+        return props.styles[feature.properties.index]
+      }
+      return {}
+    }
   }).addTo(map)
+
   if (saveLayer) {
     try {
       map.fitBounds(saveLayer.getBounds())
