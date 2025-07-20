@@ -140,3 +140,22 @@ export const trimForm = (obj: object) => {
     }
   })
 }
+
+export const codeRules = [
+  {
+    required: true,
+    message: 'Please input code',
+    trigger: 'blur'
+  },
+  {
+    min: 6,
+    max: 6,
+    message: 'Code must be exactly 6 characters',
+    trigger: 'blur'
+  },
+  {
+    pattern: /^[A-Za-z0-9]{6}$/,
+    message: 'Code must contain only letters and numbers',
+    trigger: 'blur'
+  }
+]

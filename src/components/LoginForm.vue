@@ -131,6 +131,14 @@ const register = async () => {
       password: '',
       repassword: ''
     }
+
+    currentStep.value = 1
+    openSteps.value = ['1']
+    stepStatus.value = {
+      1: false,
+      2: false,
+      3: false
+    }
   } catch (e) {
     console.error(e)
   }
@@ -260,7 +268,7 @@ defineExpose({ currentStep })
           <div class="details-line">
             <span class="email">{{ registerForm.email }}</span>
             <el-link type="primary" @click.stop="editStep(1)" class="change">
-              CHANGE
+              Change
             </el-link>
           </div>
         </template>
@@ -315,7 +323,7 @@ defineExpose({ currentStep })
               @click.stop="editStep(2)"
               class="change"
             >
-              CHANGE
+              Change
             </el-link>
           </div>
         </template>
@@ -353,7 +361,7 @@ defineExpose({ currentStep })
           </el-form-item>
           <el-form-item>
             <el-button @click="goToStep3" class="step-button">
-              Save and continue
+              SAVE AND CONTINUE
             </el-button>
           </el-form-item>
         </template>
@@ -397,7 +405,7 @@ defineExpose({ currentStep })
           </el-form-item>
           <el-form-item>
             <el-button @click="register" class="step-button">
-              SAVE AND CONTINUE
+              REGISTER
             </el-button>
           </el-form-item>
         </template>

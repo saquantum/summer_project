@@ -84,4 +84,37 @@ describe('Register', () => {
     await flushPromises()
     expect(wrapper.vm.currentStep).toBe(1)
   })
+
+  it('email validator function correctly', async () => {
+    const wrapper = mount(LoginForm)
+    await wrapper.find('.fixed-bottom-tip .el-link').trigger('click')
+    await wrapper
+      .find('input[placeholder*="email" i]')
+      .setValue('abc123,$%^&*##&**((*@66.com')
+    await wrapper.find('[data-test="register-button1"]').trigger('click')
+    await flushPromises()
+    expect(wrapper.vm.currentStep).toBe(1)
+  })
+
+  it('can goto step 2 if email is correct', async () => {
+    const wrapper = mount(LoginForm)
+    await wrapper.find('.fixed-bottom-tip .el-link').trigger('click')
+    await wrapper
+      .find('input[placeholder*="email" i]')
+      .setValue('testmail@gmail.com')
+    await wrapper.find('[data-test="register-button1"]').trigger('click')
+    await flushPromises()
+    expect(wrapper.vm.currentStep).toBe(1)
+  })
+
+  it('cannot goto step 3 if personal information is empty', async () => {
+    const wrapper = mount(LoginForm)
+    await wrapper.find('.fixed-bottom-tip .el-link').trigger('click')
+    await wrapper
+      .find('input[placeholder*="email" i]')
+      .setValue('testmail@gmail.com')
+    await wrapper.find('[data-test="register-button1"]').trigger('click')
+    await flushPromises()
+    expect(wrapper.vm.currentStep).toBe(2)
+  })
 })

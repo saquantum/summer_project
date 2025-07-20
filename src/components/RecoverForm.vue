@@ -7,8 +7,11 @@ import {
   userEmailVerificationService,
   userResetPasswordService
 } from '@/api/user'
-import CodeUtil from '@/utils/codeUtil'
-import type { FormItemRule } from 'element-plus'
+import {
+  codeRules,
+  createRepasswordRules,
+  passwordRules
+} from '@/utils/formUtils'
 const router = useRouter()
 const form = ref({
   username: '',
@@ -23,58 +26,9 @@ const formRef = ref()
 const codeVisible = ref(false)
 const resetFormVisible = ref(false)
 const rules = {
-  password: [
-    {
-      required: true,
-      message: 'Please input password',
-      trigger: 'blur'
-    }
-    // {
-    //   pattern: /^\S{6,15}$/,
-    //   message: 'password must between 6 to 15 characters',
-    //   trigger: 'blur'
-    // }
-  ],
-  repassword: [
-    { required: true, message: 'Please input password', trigger: 'blur' },
-    // {
-    //   pattern: /^\S{6,15}$/,
-    //   message: 'password must between 6 to 15 characters',
-    //   trigger: 'blur'
-    // },
-    {
-      validator: (
-        rule: FormItemRule,
-        value: string,
-        callback: (error?: Error) => void
-      ) => {
-        if (value !== form.value.password) {
-          callback(new Error("Those passwords didn't match. Try again."))
-        } else {
-          callback()
-        }
-      },
-      trigger: 'blur'
-    }
-  ],
-  code: [
-    {
-      required: true,
-      message: 'Please input code',
-      trigger: 'blur'
-    },
-    {
-      min: 6,
-      max: 6,
-      message: 'Code must be exactly 6 characters',
-      trigger: 'blur'
-    },
-    {
-      pattern: /^[A-Za-z0-9]{6}$/,
-      message: 'Code must contain only letters and numbers',
-      trigger: 'blur'
-    }
-  ]
+  password: passwordRules,
+  repassword: createRepasswordRules(() => form.value.password || ''),
+  code: codeRules
 }
 
 // reset password
@@ -89,9 +43,7 @@ const handleVerify = async () => {
   try {
     const res = await userEmailVerificationService(form.value)
     console.log(res)
-    if (CodeUtil.isSuccess(res.code)) {
-      resetFormVisible.value = true
-    }
+    resetFormVisible.value = true
   } catch (e) {
     console.error(e)
   }

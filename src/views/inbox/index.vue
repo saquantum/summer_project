@@ -13,8 +13,11 @@ import { ref, computed, onMounted, watch } from 'vue'
 
 import { readMailService } from '@/api/mail'
 import { useUserStore } from '@/stores'
+import { useResponsiveAction } from '@/composables/useResponsiveAction'
 const mailStore = useMailStore()
 const userStore = useUserStore()
+
+const isWideScreen = ref(true)
 
 // sort and filter
 const filter = ref<'all' | 'unread'>('all')
@@ -35,7 +38,6 @@ const currentPageMails = computed(() => {
   const start = (currentPage.value - 1) * pageSize
   const end = start + pageSize
   const arr = currentMails.value.slice(start, end)
-
   return arr
 })
 
@@ -60,6 +62,10 @@ const handlePageChange = (page: number) => {
 
 // delelte
 const handleDelete = () => console.log(111)
+
+onMounted(() => {
+  mailStore.getMails()
+})
 
 watch(
   [filter, sort, sortOrder, () => mailStore.mails],
@@ -99,118 +105,130 @@ watch(
   }
 )
 
-onMounted(() => {
-  mailStore.getMails()
+useResponsiveAction((width) => {
+  if (width < 576) {
+    isWideScreen.value = false
+  } else if (width >= 576 && width < 768) {
+    isWideScreen.value = false
+  } else if (width >= 768 && width < 992) {
+    isWideScreen.value = false
+  } else {
+    isWideScreen.value = true
+  }
 })
 </script>
 
 <template>
-  <div class="card-container">
-    <el-card v-if="!mailDetailVisible" class="mail-card">
-      <template #header>
-        <div class="header-container">
-          <span class="header">Inbox</span>
-          <div class="search-dropdown">
-            <el-input
-              placeholder="Search something..."
-              v-model="searchKeyword"
-              style="max-width: 300px"
-            >
-              <template #append>
-                <el-popover>
-                  <el-button :icon="Search"></el-button>
-                </el-popover>
-              </template>
-            </el-input>
+  <div class="mail-layout">
+    <!-- list -->
+    <div
+      v-if="(!isWideScreen && !mailDetailVisible) || isWideScreen"
+      class="mail-list-panel"
+    >
+      <el-card>
+        <template #header>
+          <div class="header-container">
+            <span class="header">Inbox</span>
+            <div class="search-dropdown">
+              <el-input
+                placeholder="Search something..."
+                v-model="searchKeyword"
+                style="max-width: 300px"
+              >
+                <template #append>
+                  <el-popover>
+                    <el-button :icon="Search"></el-button>
+                  </el-popover>
+                </template>
+              </el-input>
+            </div>
+            <div>
+              <el-dropdown placement="bottom-start" trigger="click">
+                <el-button class="button">
+                  <Filter class="icon" />
+                </el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item @click="filter = 'all'">
+                      <el-icon v-if="filter === 'all'" style="margin-right: 4px"
+                        ><Check
+                      /></el-icon>
+                      All</el-dropdown-item
+                    >
+                    <el-dropdown-item @click="filter = 'unread'">
+                      <el-icon
+                        v-if="filter === 'unread'"
+                        style="margin-right: 4px"
+                        ><Check
+                      /></el-icon>
+                      Unread</el-dropdown-item
+                    >
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+
+              <el-dropdown placement="bottom-start" trigger="click">
+                <el-button class="button"><Sort class="icon" /> </el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <div style="padding: 8px 16px; font-weight: bold">
+                      Sort by
+                    </div>
+                    <el-dropdown-item @click="sort = 'date'">
+                      <el-icon v-if="sort === 'date'" style="margin-right: 4px"
+                        ><Check /></el-icon
+                      >Date</el-dropdown-item
+                    >
+                    <el-dropdown-item @click="sort = 'subject'"
+                      ><el-icon
+                        v-if="sort === 'subject'"
+                        style="margin-right: 4px"
+                        ><Check /></el-icon
+                      >Subject</el-dropdown-item
+                    >
+                    <div style="padding: 8px 16px; font-weight: bold">
+                      Sort order
+                    </div>
+                    <div v-if="sort === 'date'">
+                      <el-dropdown-item @click="sortOrder = 'asc'"
+                        ><el-icon
+                          v-if="sortOrder === 'asc'"
+                          style="margin-right: 4px"
+                          ><Check /></el-icon
+                        >Oldest on top</el-dropdown-item
+                      >
+                      <el-dropdown-item @click="sortOrder = 'desc'"
+                        ><el-icon
+                          v-if="sortOrder === 'desc'"
+                          style="margin-right: 4px"
+                          ><Check /></el-icon
+                        >Newest on top</el-dropdown-item
+                      >
+                    </div>
+
+                    <div v-if="sort === 'subject'">
+                      <el-dropdown-item @click="sortOrder = 'asc'"
+                        ><el-icon
+                          v-if="sortOrder === 'asc'"
+                          style="margin-right: 4px"
+                          ><Check /></el-icon
+                        >A-Z</el-dropdown-item
+                      >
+                      <el-dropdown-item @click="sortOrder = 'desc'"
+                        ><el-icon
+                          v-if="sortOrder === 'desc'"
+                          style="margin-right: 4px"
+                          ><Check /></el-icon
+                        >Z-A</el-dropdown-item
+                      >
+                    </div>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
           </div>
-          <div>
-            <el-dropdown placement="bottom-start" trigger="click">
-              <el-button class="button">
-                <Filter class="icon" />
-              </el-button>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item @click="filter = 'all'">
-                    <el-icon v-if="filter === 'all'" style="margin-right: 4px"
-                      ><Check
-                    /></el-icon>
-                    All</el-dropdown-item
-                  >
-                  <el-dropdown-item @click="filter = 'unread'">
-                    <el-icon
-                      v-if="filter === 'unread'"
-                      style="margin-right: 4px"
-                      ><Check
-                    /></el-icon>
-                    Unread</el-dropdown-item
-                  >
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
+        </template>
 
-            <el-dropdown placement="bottom-start" trigger="click">
-              <el-button class="button"><Sort class="icon" /> </el-button>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <div style="padding: 8px 16px; font-weight: bold">
-                    Sort by
-                  </div>
-                  <el-dropdown-item @click="sort = 'date'">
-                    <el-icon v-if="sort === 'date'" style="margin-right: 4px"
-                      ><Check /></el-icon
-                    >Date</el-dropdown-item
-                  >
-                  <el-dropdown-item @click="sort = 'subject'"
-                    ><el-icon
-                      v-if="sort === 'subject'"
-                      style="margin-right: 4px"
-                      ><Check /></el-icon
-                    >Subject</el-dropdown-item
-                  >
-                  <div style="padding: 8px 16px; font-weight: bold">
-                    Sort order
-                  </div>
-                  <div v-if="sort === 'date'">
-                    <el-dropdown-item @click="sortOrder = 'asc'"
-                      ><el-icon
-                        v-if="sortOrder === 'asc'"
-                        style="margin-right: 4px"
-                        ><Check /></el-icon
-                      >Oldest on top</el-dropdown-item
-                    >
-                    <el-dropdown-item @click="sortOrder = 'desc'"
-                      ><el-icon
-                        v-if="sortOrder === 'desc'"
-                        style="margin-right: 4px"
-                        ><Check /></el-icon
-                      >Newest on top</el-dropdown-item
-                    >
-                  </div>
-
-                  <div v-if="sort === 'subject'">
-                    <el-dropdown-item @click="sortOrder = 'asc'"
-                      ><el-icon
-                        v-if="sortOrder === 'asc'"
-                        style="margin-right: 4px"
-                        ><Check /></el-icon
-                      >A-Z</el-dropdown-item
-                    >
-                    <el-dropdown-item @click="sortOrder = 'desc'"
-                      ><el-icon
-                        v-if="sortOrder === 'desc'"
-                        style="margin-right: 4px"
-                        ><Check /></el-icon
-                      >Z-A</el-dropdown-item
-                    >
-                  </div>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-          </div>
-        </div>
-      </template>
-
-      <div>
         <div
           v-for="mail in currentPageMails"
           :key="mail.rowId"
@@ -238,24 +256,47 @@ onMounted(() => {
             ></el-button>
           </div>
         </div>
-      </div>
 
-      <el-pagination
-        layout="prev, pager, next"
-        :page-size="pageSize"
-        :total="currentMails.length"
-        @current-change="handlePageChange"
-        style="
-          margin-top: 20px;
-          text-align: right;
-          display: flex;
-          justify-content: center;
-        "
-      />
-
-      <!-- mail detail -->
-    </el-card>
-    <el-card v-else>
+        <el-pagination
+          layout="prev, pager, next"
+          :page-size="pageSize"
+          :total="currentMails.length"
+          @current-change="handlePageChange"
+          style="
+            margin-top: 20px;
+            text-align: right;
+            display: flex;
+            justify-content: center;
+          "
+        />
+      </el-card>
+    </div>
+    <!-- big screen detail -->
+    <div v-if="isWideScreen && selectedMail" class="mail-detail-panel">
+      <el-card>
+        <template #header>
+          <div>
+            <h3>{{ selectedMail?.title }}</h3>
+          </div>
+        </template>
+        <p>
+          <strong>Time:</strong>
+          {{
+            typeof selectedMail?.issuedDate === 'number'
+              ? new Date(selectedMail?.issuedDate).toLocaleString()
+              : selectedMail?.issuedDate
+          }}
+        </p>
+        <div style="margin-top: 10px">
+          {{ selectedMail?.message }}
+        </div>
+      </el-card>
+    </div>
+    <!-- small screen detail -->
+    <el-card
+      v-if="!isWideScreen && mailDetailVisible"
+      class="mail-detail-panel"
+    >
       <template #header>
         <div>
           <el-button @click="mailDetailVisible = false">
@@ -265,8 +306,8 @@ onMounted(() => {
         </div>
       </template>
       <p>
-        <strong>Time:</strong
-        >{{
+        <strong>Time:</strong>
+        {{
           typeof selectedMail?.issuedDate === 'number'
             ? new Date(selectedMail?.issuedDate).toLocaleString()
             : selectedMail?.issuedDate
@@ -280,10 +321,28 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.card-container {
+.mail-layout {
   display: flex;
-  justify-content: center;
-  width: 80vw;
+  flex-direction: column;
+  width: 100vw;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 80vh;
+}
+/* .mail-list-panel {
+  flex: 1 1 0%;
+} */
+.mail-detail-panel {
+  flex: 1 1 0%;
+  min-width: 350px;
+  max-width: 500px;
+}
+@media (min-width: 900px) {
+  .mail-layout {
+    flex-direction: row;
+    align-items: flex-start;
+    width: 90vw;
+  }
 }
 
 .button {

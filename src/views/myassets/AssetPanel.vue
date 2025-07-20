@@ -167,6 +167,8 @@ useResponsiveAction((width) => {
     console.log('Large screen, e.g., desktops or larger')
   }
 })
+
+defineExpose({ assetWarningLevel })
 </script>
 
 <template>
