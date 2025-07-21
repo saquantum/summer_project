@@ -112,6 +112,23 @@
         values (#{userId}, #{hasRead}, #{issuedDate}, #{validUntil}, #{title}, #{message})
     </insert>
 
+    <insert id="insertInboxMessageToUsersByFilter">
+        insert into inboxes (inbox_user_id,
+                             inbox_has_read,
+                             inbox_issued_date,
+                             inbox_valid_until,
+                             inbox_title,
+                             inbox_message)
+        select user_id,
+               #{message.hasRead},
+               #{message.issuedDate},
+               #{message.validUntil},
+               #{message.title},
+               #{message.message}
+        from users
+        <include refid="ResultMaps.filtering"/>
+    </insert>
+
     <update id="updateInboxMessageByUserId">
         update inboxes
         <set>

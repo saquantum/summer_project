@@ -1,8 +1,21 @@
 package uk.ac.bristol.controller;
 
-public class Code {
-    public static final int PAGINATION_MAX_LIMIT = 1000;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+
+@Component
+public class Code {
+    @Value("${app.pagination-limit}")
+    private int paginationLimit;
+
+    @PostConstruct
+    private void init() {
+        PAGINATION_MAX_LIMIT = this.paginationLimit;
+    }
+
+    public static int PAGINATION_MAX_LIMIT;
 
     public static final int SUCCESS = 20000;
     public static final int INSERT_ERR = 20010;

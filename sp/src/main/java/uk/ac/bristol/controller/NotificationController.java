@@ -40,6 +40,13 @@ public class NotificationController {
         return new ResponseBody(Code.SELECT_OK, contactService.getUserInboxMessagesByUserId(uid));
     }
 
+    @GetMapping("/admin/user/uid/{uid}/inbox")
+    public ResponseBody getUserInboxMessagesByUID(HttpServletResponse response,
+                                                HttpServletRequest request,
+                                                @UserUID @PathVariable String uid) {
+        return new ResponseBody(Code.SELECT_OK, contactService.getUserInboxMessagesByUserId(uid));
+    }
+
     @UserIdentificationUIDExecution
     @PutMapping("/user/uid/{uid}/inbox/{rowId}")
     public ResponseBody setMyInboxMessageReadByRowIdWithUID(HttpServletResponse response,
@@ -74,7 +81,30 @@ public class NotificationController {
                 "userId", userId,
                 "hasRead", false,
                 "issuedDate", now,
-                "validUntil", now.plus(Duration.ofMillis(validDuration)),
+                "validUntil", now.plus(Duration.ofMinutes(validDuration)),
+                "title", title,
+                "message", body)
+        );
+        return new ResponseBody(Code.SUCCESS, n, "Successfully sent " + n + " inbox messages.");
+    }
+
+    // TODO: split inbox tables into 2 tables: user-specific messages and common messages visible to all users.
+    // A problem: users registered later should receive the same old messages?
+
+    @PostMapping("/admin/notify/inbox/all")
+    public ResponseBody sendInboxMessageToUsersByFilter(@RequestBody Map<String, Object> message) {
+        Map<String, Object> filter = (Map<String, Object>) message.get("filters");
+        String title = (String) message.get("title");
+        String body = (String) message.get("body");
+        Long validDuration = Long.valueOf((Integer) message.get("duration"));
+
+        LocalDateTime now = LocalDateTime.now();
+        int n = contactService.insertInboxMessageToUsersByFilter(
+                filter,
+                Map.of(
+                "hasRead", false,
+                "issuedDate", now,
+                "validUntil", now.plus(Duration.ofMinutes(validDuration)),
                 "title", title,
                 "message", body)
         );

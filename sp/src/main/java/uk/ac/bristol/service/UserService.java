@@ -61,6 +61,8 @@ public interface UserService {
 
     int insertUser(User user);
 
+    int insertUserBatch(List<User> list);
+
     void registerNewUser(User user);
 
     int updateUser(User user);

@@ -336,6 +336,11 @@ public class ContactServiceImpl implements ContactService {
         return contactMapper.insertInboxMessageToUser(message);
     }
 
+    @Override
+    public int insertInboxMessageToUsersByFilter(Map<String, Object> filters, Map<String, Object> message) {
+        return contactMapper.insertInboxMessageToUsersByFilter(QueryTool.formatFilters(filters), message);
+    }
+
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int updateInboxMessageByUserId(Map<String, Object> message) {

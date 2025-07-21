@@ -310,11 +310,13 @@ public class UserController {
     }
 
     @PostMapping("/admin/user")
-    public ResponseBody insertUsers(@RequestBody List<User> list) {
-        for (User u : list) {
-            userService.insertUser(u);
-        }
-        return new ResponseBody(Code.INSERT_OK, null);
+    public ResponseBody insertUser(@RequestBody User user) {
+        return new ResponseBody(Code.INSERT_OK, userService.insertUser(user));
+    }
+
+    @PostMapping("/admin/user/batch")
+    public ResponseBody insertUserBatch(@RequestBody List<User> list) {
+        return new ResponseBody(Code.INSERT_OK, userService.insertUserBatch(list));
     }
 
     @PutMapping("/admin/user")

@@ -49,6 +49,8 @@ public interface ContactService {
 
     int insertInboxMessageToUser(Map<String, Object> message);
 
+    int insertInboxMessageToUsersByFilter(Map<String, Object> filters, Map<String, Object> message);
+
     int updateInboxMessageByUserId(Map<String, Object> message);
 
     int deleteInboxMessageByFilter(Map<String, Object> filters);

@@ -35,6 +35,8 @@ public interface ContactMapper {
 
     int insertInboxMessageToUser(Map<String, Object> message);
 
+    int insertInboxMessageToUsersByFilter(@Param("filterString") String filterString, @Param("message") Map<String, Object> message);
+
     int updateInboxMessageByUserId(Map<String, Object> message);
 
     int deleteInboxMessageByFilter(@Param("filterString") String filterString);

@@ -268,6 +268,15 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
+    public int insertUserBatch(List<User> list) {
+        for (User user : list) {
+            insertUser(user);
+        }
+        return list.size();
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
     public void registerNewUser(User user) {
         if (user.getId() == null) {
             throw new SpExceptions.PostMethodException("No valid user id is provided.");
