@@ -3,7 +3,6 @@ package uk.ac.bristol.advice;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 import uk.ac.bristol.exception.SpExceptions;
@@ -20,22 +19,6 @@ import java.util.Map;
 @Component
 @Aspect
 public class UserIdentificationAdvice {
-
-    @Pointcut("execution(* *..controller..*Controller.user*UID(..))")
-    public void identityUID() {
-    }
-
-    @Pointcut("execution(* *..controller..*Controller.user*AID(..))")
-    public void identityAID() {
-    }
-
-    @Pointcut("execution(* *..controller..*Controller.user*ByAssetWithUID(..))")
-    public void assetOwnershipUID() {
-    }
-
-    @Pointcut("execution(* *..controller..*Controller.user*ByAssetWithAID(..))")
-    public void assetOwnershipAID() {
-    }
 
     private Map<String, Object> getParametersFromJoinPoint(JoinPoint jp) {
         Map<String, Object> result = new HashMap<>();
@@ -67,7 +50,7 @@ public class UserIdentificationAdvice {
         return result;
     }
 
-    @Before("identityUID()")
+    @Before("@annotation(uk.ac.bristol.advice.UserIdentificationUIDExecution)")
     public void userIdentityVerificationByUID(JoinPoint jp) {
         Map<String, Object> parameters = getParametersFromJoinPoint(jp);
 
@@ -84,7 +67,7 @@ public class UserIdentificationAdvice {
         }
     }
 
-    @Before("identityAID()")
+    @Before("@annotation(uk.ac.bristol.advice.UserIdentificationAIDExecution)")
     public void userIdentityVerificationByAID(JoinPoint jp) {
         Map<String, Object> parameters = getParametersFromJoinPoint(jp);
 
@@ -101,7 +84,7 @@ public class UserIdentificationAdvice {
         }
     }
 
-    @Before("assetOwnershipUID()")
+    @Before("@annotation(uk.ac.bristol.advice.AssetOwnershipUIDExecution)")
     public void userAssetOwnershipByUID(JoinPoint jp) {
         Map<String, Object> parameters = getParametersFromJoinPoint(jp);
 
@@ -117,7 +100,7 @@ public class UserIdentificationAdvice {
         }
     }
 
-    @Before("assetOwnershipAID()")
+    @Before("@annotation(uk.ac.bristol.advice.AssetOwnershipAIDExecution)")
     public void userAssetOwnershipByAID(JoinPoint jp) {
         Map<String, Object> parameters = getParametersFromJoinPoint(jp);
 

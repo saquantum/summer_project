@@ -18,11 +18,10 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(DummyController.class)
-@Import({SpInterceptor.class, SpMVCConfigSupport.class})
+@Import({NonAdminInterceptor.class, SpMVCConfigSupport.class})
 public class SpInterceptorTest {
 
     @Autowired

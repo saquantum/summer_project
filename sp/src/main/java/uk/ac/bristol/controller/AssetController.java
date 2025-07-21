@@ -1,10 +1,7 @@
 package uk.ac.bristol.controller;
 
 import org.springframework.web.bind.annotation.*;
-import uk.ac.bristol.advice.UserAID;
-import uk.ac.bristol.advice.UserAsset;
-import uk.ac.bristol.advice.UserAssetId;
-import uk.ac.bristol.advice.UserUID;
+import uk.ac.bristol.advice.*;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
 import uk.ac.bristol.service.AssetService;
@@ -28,8 +25,9 @@ public class AssetController {
         this.assetService = assetService;
     }
 
+    @UserIdentificationUIDExecution
     @GetMapping("/user/uid/{uid}/asset")
-    public ResponseBody userGetMyAssetsByUID(HttpServletResponse response,
+    public ResponseBody getMyAssetsByUID(HttpServletResponse response,
                                              HttpServletRequest request,
                                              @UserUID @PathVariable String uid,
                                              @RequestParam(required = false) List<String> orderList,
@@ -46,8 +44,9 @@ public class AssetController {
         return new ResponseBody(Code.SELECT_OK, assets, message);
     }
 
+    @UserIdentificationAIDExecution
     @GetMapping("/user/aid/{aid}/asset")
-    public ResponseBody userGetMyAssetsByAID(HttpServletResponse response,
+    public ResponseBody getMyAssetsByAID(HttpServletResponse response,
                                              HttpServletRequest request,
                                              @UserAID @PathVariable String aid,
                                              @RequestParam(required = false) List<String> orderList,
@@ -94,28 +93,30 @@ public class AssetController {
         return new ResponseBody(Code.SELECT_OK, assets, message);
     }
 
-    /**
-     * DO NOT change the name of below two methods to be out of the range of the following format to align with the AOP pointcut:
-     * "user*ByAssetWithUID" / "user*ByAssetWithAID"
-     */
+    @UserIdentificationUIDExecution
+    @AssetOwnershipUIDExecution
     @GetMapping("/user/uid/{uid}/asset/{assetId}")
-    public ResponseBody userGetAssetByAssetWithUID(HttpServletResponse response,
+    public ResponseBody getMyAssetByAssetIdWithUID(HttpServletResponse response,
                                                    HttpServletRequest request,
                                                    @UserUID @PathVariable String uid,
                                                    @UserAssetId @PathVariable String assetId) {
         return new ResponseBody(Code.SELECT_OK, List.of(assetService.getAssetWithWarningsById(assetId)));
     }
 
+    @UserIdentificationAIDExecution
+    @AssetOwnershipAIDExecution
     @GetMapping("/user/aid/{aid}/asset/{assetId}")
-    public ResponseBody userGetAssetByAssetWithAID(HttpServletResponse response,
+    public ResponseBody getMyAssetByAssetIdWithAID(HttpServletResponse response,
                                                    HttpServletRequest request,
                                                    @UserAID @PathVariable String aid,
                                                    @UserAssetId @PathVariable String assetId) {
         return new ResponseBody(Code.SELECT_OK, List.of(assetService.getAssetWithWarningsById(assetId)));
     }
 
+    @UserIdentificationUIDExecution
+    @AssetOwnershipUIDExecution
     @RequestMapping(value = "/user/uid/{uid}/asset/{assetId}", method = RequestMethod.HEAD)
-    public void userHeadAssetLastModifiedByAssetWithUID(HttpServletResponse response,
+    public void headMyAssetLastModifiedByAssetIdWithUID(HttpServletResponse response,
                                                         HttpServletRequest request,
                                                         @UserUID @PathVariable String uid,
                                                         @UserAssetId @PathVariable String assetId,
@@ -129,8 +130,10 @@ public class AssetController {
         }
     }
 
+    @UserIdentificationAIDExecution
+    @AssetOwnershipAIDExecution
     @RequestMapping(value = "/user/aid/{aid}/asset/{assetId}", method = RequestMethod.HEAD)
-    public void userHeadAssetLastModifiedByAssetWithAID(HttpServletResponse response,
+    public void headMyAssetLastModifiedByAssetIdWithAID(HttpServletResponse response,
                                                         HttpServletRequest request,
                                                         @UserAID @PathVariable String aid,
                                                         @UserAssetId @PathVariable String assetId,
@@ -158,8 +161,9 @@ public class AssetController {
         }
     }
 
+    @UserIdentificationUIDExecution
     @PostMapping("/user/uid/{uid}/asset")
-    public ResponseBody userInsertAssetWithUID(HttpServletResponse response,
+    public ResponseBody insertAssetWithUID(HttpServletResponse response,
                                                HttpServletRequest request,
                                                @UserUID @PathVariable String uid,
                                                @RequestBody Asset asset) {
@@ -174,8 +178,9 @@ public class AssetController {
         return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset));
     }
 
+    @UserIdentificationAIDExecution
     @PostMapping("/user/aid/{aid}/asset")
-    public ResponseBody userInsertAssetWithAID(HttpServletResponse response,
+    public ResponseBody insertAssetWithAID(HttpServletResponse response,
                                                HttpServletRequest request,
                                                @UserAID @PathVariable String aid,
                                                @RequestBody Asset asset) {
@@ -234,8 +239,10 @@ public class AssetController {
         return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset));
     }
 
+    @UserIdentificationUIDExecution
+    @AssetOwnershipUIDExecution
     @PutMapping("/user/uid/{uid}/asset")
-    public ResponseBody userUpdateAssetWithUID(HttpServletResponse response,
+    public ResponseBody updateMyAssetWithUID(HttpServletResponse response,
                                                HttpServletRequest request,
                                                @UserUID @PathVariable String uid,
                                                @UserAsset @RequestBody Asset asset) {
@@ -249,8 +256,10 @@ public class AssetController {
         return new ResponseBody(Code.UPDATE_OK, assetService.updateAsset(asset));
     }
 
+    @UserIdentificationAIDExecution
+    @AssetOwnershipAIDExecution
     @PutMapping("/user/aid/{aid}/asset")
-    public ResponseBody userUpdateAssetWithAID(HttpServletResponse response,
+    public ResponseBody updateMyAssetWithAID(HttpServletResponse response,
                                                HttpServletRequest request,
                                                @UserAID @PathVariable String aid,
                                                @UserAsset @RequestBody Asset asset) {
@@ -269,8 +278,9 @@ public class AssetController {
         return new ResponseBody(Code.UPDATE_OK, assetService.updateAsset(asset));
     }
 
+    @UserIdentificationUIDExecution
     @DeleteMapping("/user/uid/{uid}/asset")
-    public ResponseBody userDeleteAssetsByAssetIdsWithUID(HttpServletResponse response,
+    public ResponseBody deleteMyAssetsByAssetIdsWithUID(HttpServletResponse response,
                                                           HttpServletRequest request,
                                                           @UserUID @PathVariable String uid,
                                                           @RequestBody Map<String, Object> body) {
@@ -287,8 +297,9 @@ public class AssetController {
         return new ResponseBody(Code.DELETE_OK, assetService.deleteAssetByIDs(ids));
     }
 
+    @UserIdentificationAIDExecution
     @DeleteMapping("/user/aid/{aid}/asset")
-    public ResponseBody userDeleteAssetsByAssetIdsWithAID(HttpServletResponse response,
+    public ResponseBody deleteMyAssetsByAssetIdsWithAID(HttpServletResponse response,
                                                           HttpServletRequest request,
                                                           @UserAID @PathVariable String aid,
                                                           @RequestBody Map<String, Object> body) {

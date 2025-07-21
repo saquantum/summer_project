@@ -2,6 +2,7 @@ package uk.ac.bristol.controller;
 
 import org.springframework.web.bind.annotation.*;
 import uk.ac.bristol.advice.UserAID;
+import uk.ac.bristol.advice.UserIdentificationUIDExecution;
 import uk.ac.bristol.advice.UserUID;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.FilterDTO;
@@ -31,52 +32,32 @@ public class NotificationController {
 
     /* ---------------- Inbox ---------------- */
 
+    @UserIdentificationUIDExecution
     @GetMapping("/user/uid/{uid}/inbox")
-    public ResponseBody userGetMyInboxMessagesByUID(HttpServletResponse response,
-                                                    HttpServletRequest request,
-                                                    @UserUID @PathVariable String uid) {
+    public ResponseBody getMyInboxMessagesByUID(HttpServletResponse response,
+                                                HttpServletRequest request,
+                                                @UserUID @PathVariable String uid) {
         return new ResponseBody(Code.SELECT_OK, contactService.getUserInboxMessagesByUserId(uid));
     }
 
-    @GetMapping("/user/aid/{aid}/inbox")
-    public ResponseBody userGetMyInboxMessagesByAID(HttpServletResponse response,
-                                                    HttpServletRequest request,
-                                                    @UserAID @PathVariable String aid) {
-        return new ResponseBody(Code.SELECT_OK, contactService.getUserInboxMessagesByUserId(aid));
-    }
-
+    @UserIdentificationUIDExecution
     @PutMapping("/user/uid/{uid}/inbox/{rowId}")
-    public ResponseBody userSetInboxMessageReadByRowIdWithUID(HttpServletResponse response,
-                                                              HttpServletRequest request,
-                                                              @UserUID @PathVariable String uid,
-                                                              @PathVariable long rowId) {
-        contactService.updateInboxMessageByUserId(Map.of("rowId", rowId, "hasRead", true));
+    public ResponseBody setMyInboxMessageReadByRowIdWithUID(HttpServletResponse response,
+                                                            HttpServletRequest request,
+                                                            @UserUID @PathVariable String uid,
+                                                            @PathVariable long rowId,
+                                                            @RequestParam(required = false, value = "has-read") Boolean read) {
+        boolean hasRead = read != null ? read : true;
+        contactService.updateInboxMessageByUserId(Map.of("rowId", rowId, "userId", uid, "hasRead", hasRead));
         return new ResponseBody(Code.UPDATE_OK, null);
     }
 
-    @PutMapping("/user/aid/{aid}/inbox/{rowId}")
-    public ResponseBody userSetInboxMessageReadByRowIdWithAID(HttpServletResponse response,
-                                                              HttpServletRequest request,
-                                                              @UserAID @PathVariable String aid,
-                                                              @PathVariable long rowId) {
-        contactService.updateInboxMessageByUserId(Map.of("rowId", rowId, "hasRead", true));
-        return new ResponseBody(Code.UPDATE_OK, null);
-    }
-
+    @UserIdentificationUIDExecution
     @DeleteMapping("/user/uid/{uid}/inbox/{rowId}")
-    public ResponseBody userDeleteInboxMessageByRowIdWithUID(HttpServletResponse response,
-                                                              HttpServletRequest request,
-                                                              @UserAID @PathVariable String uid,
-                                                              @PathVariable long rowId) {
-        contactService.deleteInboxMessageByFilter(Map.of("inbox_row_id", rowId));
-        return new ResponseBody(Code.DELETE_OK, null);
-    }
-
-    @DeleteMapping("/user/aid/{aid}/inbox/{rowId}")
-    public ResponseBody userDeleteInboxMessageByRowIdWithAID(HttpServletResponse response,
-                                                             HttpServletRequest request,
-                                                             @UserAID @PathVariable String aid,
-                                                             @PathVariable long rowId) {
+    public ResponseBody deleteMyInboxMessageByRowIdWithUID(HttpServletResponse response,
+                                                           HttpServletRequest request,
+                                                           @UserAID @PathVariable String uid,
+                                                           @PathVariable long rowId) {
         contactService.deleteInboxMessageByFilter(Map.of("inbox_row_id", rowId));
         return new ResponseBody(Code.DELETE_OK, null);
     }
