@@ -6,7 +6,7 @@ import {
   adminGetUserInfoService,
   adminUpdateUserInfoService
 } from '@/api/admin'
-import { ElMessage } from 'element-plus'
+import { ElMessage, type UploadProps } from 'element-plus'
 import type { User, UserInfoForm } from '@/types'
 import { useRoute } from 'vue-router'
 import {
@@ -69,6 +69,7 @@ const form = ref<UserInfoForm>({
   repassword: '',
   firstName: '',
   lastName: '',
+  avatar: '',
   assetHolder: {
     id: '',
     name: '',
@@ -93,21 +94,9 @@ const form = ref<UserInfoForm>({
 })
 const formRef = ref()
 
-// Avatar upload
-// const avatarUrl = ref(assetHolder.value.avatar || '')
-// const avatarFile = ref(null)
+const imageUrl = ref(user.value.avatar)
 
-// const handleAvatarChange = (e) => {
-//   const file = e.target.files[0]
-//   if (!file) return
-
-//   const reader = new FileReader()
-//   reader.onload = () => {
-//     avatarUrl.value = reader.result
-//   }
-//   reader.readAsDataURL(file)
-//   avatarFile.value = file
-// }
+const uploadUrl = import.meta.env.VITE_UPLOAD_URL
 
 const rules = {
   firstName: firstNameRules,
@@ -117,6 +106,26 @@ const rules = {
   'assetHolder.address.postcode': postcodeRules
 }
 
+const handleAvatarSuccess: UploadProps['onSuccess'] = (
+  response,
+  uploadFile
+) => {
+  console.log(response)
+  console.log(uploadFile)
+  if (userStore.user && response.data.url) {
+    imageUrl.value = response.data.url
+    ElMessage.success('Upload success')
+  }
+}
+
+const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
+  if (rawFile.size / 1024 / 1024 > 5) {
+    ElMessage.error('Avatar picture size can not exceed 2MB!')
+    return false
+  }
+  return true
+}
+
 const userToForm = (user: User): UserInfoForm => {
   return {
     id: user.id,
@@ -124,7 +133,7 @@ const userToForm = (user: User): UserInfoForm => {
     repassword: '',
     firstName: '',
     lastName: '',
-
+    avatar: user.avatar ?? '',
     assetHolder: {
       id: user.assetHolder?.id ?? '',
       name: user.assetHolder?.name ?? '',
@@ -153,6 +162,7 @@ const userToForm = (user: User): UserInfoForm => {
 const submit = async () => {
   trimForm(form.value)
   try {
+    form.value.avatar = imageUrl.value
     await formRef.value.validate()
   } catch {
     return
@@ -227,7 +237,7 @@ defineExpose({
 <template>
   <el-descriptions title="User Info" :column="column" border v-if="!isEdit">
     <el-descriptions-item label="Avatar">
-      <!-- <el-avatar :size="size" :src="circleUrl" /> -->
+      <el-avatar :src="user.avatar" />
     </el-descriptions-item>
     <el-descriptions-item
       v-for="(item, index) in descriptionsItem"
@@ -282,12 +292,24 @@ defineExpose({
     :rules="rules"
   >
     <!-- Avatar upload -->
-    <!-- <el-form-item label="Avatar">
+    <el-form-item label="Avatar">
       <div style="display: flex; align-items: center; gap: 16px">
-        <el-avatar :src="avatarUrl" size="large" />
-        <input type="file" accept="image/*" @change="handleAvatarChange" />
+        <el-upload
+          class="avatar-uploader"
+          :action="uploadUrl"
+          :data="{
+            uid: '0859f8d62389ad10bdaf599d6b5840d8',
+            token: 'b623ba4c187c69f60f3fe3ac0a4e665e'
+          }"
+          :show-file-list="false"
+          :on-success="handleAvatarSuccess"
+          :before-upload="beforeAvatarUpload"
+        >
+          <el-avatar v-if="user.avatar" :src="imageUrl"></el-avatar>
+          <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+        </el-upload>
       </div>
-    </el-form-item> -->
+    </el-form-item>
 
     <!-- name -->
     <el-row :gutter="20">

@@ -61,7 +61,7 @@ const title = ref('')
 const editorRef = ref()
 const allowedVariables = ['asset-model', 'contact_name', 'post_town']
 
-const canInsertCode = ref(false)
+const parseHtml = ref(false)
 
 const mockData = {
   'asset-model': 'Water tank',
@@ -112,24 +112,51 @@ function addLinkInlineStyle(html: string): string {
   return htmlWithCodeStyle
 }
 
-function unwrapCodeBlocks(html: string): string {
-  // extract code
-  return html.replace(/<pre><code[^>]*>([\s\S]*?)<\/code><\/pre>/g, (_, code) =>
-    code.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
+function restoreEscapedHtmlExceptCode(html: string) {
+  const codeBlocks: string[] = []
+  // 1. replace all code
+  const htmlWithPlaceholders = html.replace(
+    /<code[^>]*>[\s\S]*?<\/code>/g,
+    (match: string) => {
+      codeBlocks.push(match)
+      return `__CODE_BLOCK_${codeBlocks.length - 1}__`
+    }
+  )
+
+  // 2. restore other part
+  const restored = htmlWithPlaceholders.replace(
+    /(&lt;[\s\S]*?&gt;)/g,
+    (match: string) => {
+      const div = document.createElement('div')
+      div.innerHTML = match
+      return div.textContent || div.innerText || ''
+    }
+  )
+
+  // 3. restore code
+  return codeBlocks.reduce(
+    (acc, block, idx) => acc.replace(`__CODE_BLOCK_${idx}__`, block),
+    restored
   )
 }
 
 const renderedHTML = computed(() => {
   try {
     let htmlWithStyle
-    if (canInsertCode.value) {
-      htmlWithStyle = addLinkInlineStyle(unwrapCodeBlocks(content.value))
+    if (parseHtml.value) {
+      htmlWithStyle = addLinkInlineStyle(
+        restoreEscapedHtmlExceptCode(content.value)
+      )
     } else {
       htmlWithStyle = addLinkInlineStyle(content.value)
     }
+
+    // compile variable
     const compiled = Handlebars.compile(htmlWithStyle)
     const rawHtml = compiled(mockData)
     console.log(DOMPurify.sanitize(rawHtml))
+
+    // sanitize html code
     return DOMPurify.sanitize(rawHtml)
     // return rawHtml
   } catch (e) {
@@ -212,8 +239,8 @@ watch(
   <el-input v-model="title"></el-input>
 
   <TiptapEditor ref="editorRef" v-model:content="content"></TiptapEditor>
-  <span>Insert code: </span>
-  <el-switch v-model="canInsertCode"></el-switch>
+  <span>Parse html: </span>
+  <el-switch v-model="parseHtml"></el-switch>
   <div
     class="preview"
     style="

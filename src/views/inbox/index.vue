@@ -296,9 +296,7 @@ useResponsiveAction((width) => {
               : selectedMail?.issuedDate
           }}
         </p>
-        <div style="margin-top: 10px">
-          {{ selectedMail?.message }}
-        </div>
+        <div style="margin-top: 10px" v-html="selectedMail?.message"></div>
       </el-card>
     </div>
     <!-- small screen detail -->

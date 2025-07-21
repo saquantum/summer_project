@@ -17,28 +17,26 @@ const handleSend = async () => {
 </script>
 
 <template>
-  <el-form>
-    <el-form-item props="userId">
+  <el-form label-width="auto" label-position="left">
+    <el-form-item label="username" props="userId">
       <el-input
         v-model="form.userId"
         placeholder="Please input username"
       ></el-input>
     </el-form-item>
-    <el-form-item porps="duration">
-      <el-input type="number" v-model="form.duration"
-        >Please input duration</el-input
-      >
+    <el-form-item label="duration" porps="duration">
+      <el-input type="number" v-model="form.duration"></el-input>
     </el-form-item>
-    <el-form-item props="title">
+    <el-form-item label="title" props="title">
       <el-input
         v-model="form.title"
         placeholder="Please input title"
       ></el-input>
     </el-form-item>
-    <el-form-item props="body">
+    <el-form-item label="body" props="body">
       <el-input
         v-model="form.body"
-        placeholder="Please input username"
+        placeholder="Please input body"
         type="textarea"
         :row="5"
       ></el-input>

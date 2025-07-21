@@ -5,12 +5,17 @@ import { updateAssetByIdService } from '@/api/assets'
 
 import type { AssetInfoForm, AssetWithWarnings } from '@/types/asset'
 
-import { adminUpdateAssetService } from '@/api/admin'
+import {
+  adminGetUserInfoByAIDService,
+  adminUpdateAssetService
+} from '@/api/admin'
 
 const props = defineProps<{ isEdit: boolean; item: AssetWithWarnings }>()
 
 const assetStore = useAssetStore()
 const userStore = useUserStore()
+
+let uid = ''
 
 const form = ref<AssetInfoForm>({
   id: '',
@@ -20,7 +25,10 @@ const form = ref<AssetInfoForm>({
   material: '',
   status: '',
   installedAt: '',
-  lastInspection: ''
+  lastInspection: '',
+
+  // only for admin
+  ownerId: ''
 })
 const formRef = ref()
 
@@ -42,6 +50,7 @@ const statusOption = [
 const descriptionsItem = computed(() => {
   if (!props.item) return []
   return [
+    { label: 'OwnerId', value: props.item.asset.ownerId },
     { label: 'Name', value: props.item.asset.name },
     { label: 'Type', value: props.item.asset.type.name },
     { label: 'Capacity litres', value: props.item.asset.capacityLitres },
@@ -61,7 +70,8 @@ const assetToForm = (item: AssetWithWarnings): AssetInfoForm => {
     material: item.asset.material ?? '',
     status: item.asset.status ?? '',
     installedAt: item.asset.installedAt ?? '',
-    lastInspection: item.asset.lastInspection ?? ''
+    lastInspection: item.asset.lastInspection ?? '',
+    ownerId: item.asset.ownerId ?? ''
   }
 }
 
@@ -81,6 +91,10 @@ const submit = async () => {
 }
 
 onMounted(async () => {
+  const res = await adminGetUserInfoByAIDService(props.item.asset.ownerId)
+  console.log(res)
+  uid = res.data?.assetHolderId
+  console.log(uid)
   form.value = assetToForm(props.item)
 })
 
@@ -110,6 +124,13 @@ defineExpose({
     label-position="top"
     class="asset-form"
   >
+    <el-form-item label="Owner Id" prop="ownerId">
+      <el-input
+        v-model="form.ownerId"
+        :disabled="userStore.user && !userStore.user.admin"
+      />
+    </el-form-item>
+
     <el-form-item label="Name" prop="name">
       <el-input v-model="form.name" />
     </el-form-item>

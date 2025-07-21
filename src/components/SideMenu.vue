@@ -168,7 +168,7 @@ const handleBackToAdmin = () => {
 
     <el-menu-item index="/admin/message/send">
       <el-icon><MessageBox /></el-icon>
-      <span>Message</span>
+      <span>Send to Inbox</span>
     </el-menu-item>
   </el-menu>
 </template>

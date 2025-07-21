@@ -58,8 +58,9 @@ const tableRowClassName = (scope: { row: AssetTableItem }) => {
     return 'warning-red'
   } else if (warningLevel === 'YELLOW') {
     return 'warning-yellow'
-  }
-  return ''
+  } else if (warningLevel === 'AMBER') {
+    return 'warning-amber'
+  } else return ''
 }
 
 const columns = [
@@ -282,7 +283,7 @@ onMounted(async () => {
   --el-table-tr-bg-color: var(--el-color-danger-light-8);
 }
 :deep(.el-table .warning-amber) {
-  --el-table-tr-bg-color: var(--el-color-warning-dark-2);
+  --el-table-tr-bg-color: var(--el-color-warning-light-3);
 }
 :deep(.el-table .warning-yellow) {
   --el-table-tr-bg-color: var(--el-color-warning-light-8);

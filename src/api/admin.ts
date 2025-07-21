@@ -53,6 +53,9 @@ export const adminGetUserInfoService = (
   return request.get(`/admin/user/uid/${id}`)
 }
 
+export const adminGetUserInfoByAIDService = (aid: string) =>
+  request.get(`/admin/user/aid/${aid}`)
+
 export const adminInsertUserService = (
   users: UserInfoForm[]
 ): Promise<ApiResponse> => request.post('/admin/user', users)

@@ -38,6 +38,7 @@ export interface User {
   admin: boolean
   token: string | null
   permissionConfig: Permission
+  avatar: string
 }
 
 export interface LoginForm {
@@ -52,6 +53,7 @@ export interface UserInfoForm {
   repassword?: string
   firstName?: string
   lastName?: string
+  avatar?: string
   assetHolderId?: string | null
   assetHolder: AssetHolder
 }

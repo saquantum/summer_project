@@ -60,6 +60,7 @@ export interface AssetInfoForm {
   installedAt?: string
   lastInspection?: string
   location?: MultiPolygon
+  ownerId?: string
 }
 
 export interface AssetTableItem {

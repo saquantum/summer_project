@@ -54,6 +54,7 @@ declare module 'vue' {
     ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
     ElTag: typeof import('element-plus/es')['ElTag']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
+    ElUpload: typeof import('element-plus/es')['ElUpload']
     FilterSearch: typeof import('./src/components/FilterSearch.vue')['default']
     HTMLPreview: typeof import('./src/components/HTMLPreview.vue')['default']
     LoginForm: typeof import('./src/components/LoginForm.vue')['default']

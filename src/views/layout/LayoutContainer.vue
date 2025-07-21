@@ -8,7 +8,6 @@ import {
   Operation,
   Search
 } from '@element-plus/icons-vue'
-import avatar from '@/assets/default.png'
 import { ref, watch, computed } from 'vue'
 import { useAssetStore, useUserStore } from '@/stores/index.ts'
 import { useRouter, useRoute } from 'vue-router'
@@ -125,7 +124,7 @@ watch(
 
           <el-dropdown placement="bottom-end" @command="handleCommand">
             <span class="el-dropdown__box">
-              <el-avatar :src="avatar" />
+              <el-avatar :src="userStore.user?.avatar" />
               <el-icon><CaretBottom /></el-icon>
             </span>
             <template #dropdown>

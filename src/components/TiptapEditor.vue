@@ -362,7 +362,7 @@ defineExpose({
   border: 1px black solid;
   height: 300px;
   padding: 10px;
-  max-width: 800px;
+  max-width: 50%;
   overflow: auto;
 }
 
@@ -382,13 +382,20 @@ defineExpose({
   background: rgba(33, 196, 245, 0.555);
 }
 
-.ProseMirror pre {
+.ProseMirror code {
   background: #f5f5f5;
-  color: #333;
-  border-radius: 6px;
-  padding: 16px;
+  color: #222;
   font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
   font-size: 1em;
+  padding: 2px 5px;
+}
+
+.ProseMirror pre {
+  background: #f5f5f5;
+  color: #222;
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+  font-size: 1em;
+  padding: 16px;
   overflow-x: auto;
   margin: 1.2em 0;
 }
@@ -396,10 +403,9 @@ defineExpose({
 .ProseMirror pre code {
   background: none;
   color: inherit;
-  padding: 0;
-  border-radius: 0;
   font-family: inherit;
   font-size: inherit;
+  padding: 0;
 }
 
 .ProseMirror .error-variable {
