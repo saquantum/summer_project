@@ -4,6 +4,12 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="ResultMaps">
+
+    <resultMap id="MetaDataMap" type="java.util.Map">
+        <id property="tableName" column="table_name"/>
+        <result property="totalCount" column="total_count"/>
+    </resultMap>
+
     <resultMap id="AddressMap" type="java.util.Map">
         <id property="assetHolderId" column="address_id"/>
         <result property="street" column="address_street"/>
@@ -30,20 +36,30 @@
         <result property="addressId" column="asset_holder_address_id"/>
         <result property="contactPreferencesId" column="asset_holder_contact_preferences_id"/>
         <result property="lastModified" column="asset_holder_last_modified"/>
+
+        <association property="address" javaType="java.util.Map" resultMap="AddressMap"/>
+        <association property="contactPreferences" javaType="java.util.Map" resultMap="ContactPreferencesMap"/>
     </resultMap>
 
     <resultMap id="UserMap" type="uk.ac.bristol.pojo.User">
         <id property="id" column="user_id"/>
         <result property="assetHolderId" column="user_asset_holder_id"/>
-        <result property="password" column="user_password"/>
+        <result property="avatar" column="user_avatar"/>
         <result property="admin" column="user_is_admin"/>
+        <association property="assetHolder" javaType="uk.ac.bristol.pojo.AssetHolder" resultMap="AssetHolderMap"/>
+        <association property="permissionConfig" javaType="uk.ac.bristol.pojo.PermissionConfig" resultMap="PermissionConfigMap"/>
     </resultMap>
 
-    <resultMap id="UserWithAssetHolderMap" type="uk.ac.bristol.pojo.UserWithAssetHolder">
+    <resultMap id="UserWithExtraColumnsMap" type="uk.ac.bristol.pojo.UserWithExtraColumns">
         <id property="user.id" column="user_id"/>
         <result property="accumulation" column="accumulation"/>
         <association property="user" javaType="uk.ac.bristol.pojo.User" resultMap="UserMap"/>
-        <association property="assetHolder" javaType="uk.ac.bristol.pojo.AssetHolder" resultMap="AssetHolderMap"/>
+    </resultMap>
+
+    <resultMap id="AssetTypeMap" type="uk.ac.bristol.pojo.AssetType">
+        <id property="id" column="asset_type_type_id"/>
+        <result property="name" column="asset_type_name"/>
+        <result property="description" column="asset_type_description"/>
     </resultMap>
 
     <resultMap id="AssetMap" type="uk.ac.bristol.pojo.Asset">
@@ -58,12 +74,8 @@
         <result property="installedAt" column="asset_installed_at"/>
         <result property="lastInspection" column="asset_last_inspection"/>
         <result property="lastModified" column="asset_last_modified"/>
-    </resultMap>
 
-    <resultMap id="AssetTypeMap" type="uk.ac.bristol.pojo.AssetType">
-        <id property="id" column="asset_type_id"/>
-        <result property="name" column="asset_type_name"/>
-        <result property="description" column="asset_type_description"/>
+        <association property="type" javaType="uk.ac.bristol.pojo.AssetType" resultMap="AssetTypeMap"/>
     </resultMap>
 
     <resultMap id="WarningMap" type="uk.ac.bristol.pojo.Warning">
@@ -88,10 +100,55 @@
         <collection property="warnings" ofType="uk.ac.bristol.pojo.Warning" resultMap="WarningMap"/>
     </resultMap>
 
-    <resultMap id="TemplateMap" type="java.util.Map">
-        <id property="id" column="templates_id"/>
-        <result property="message" column="templates_message"/>
+    <resultMap id="UserWithAssetsMap" type="uk.ac.bristol.pojo.UserWithAssets">
+        <id property="user.id" column="user_id"/>
+        <association property="user" javaType="uk.ac.bristol.pojo.User" resultMap="UserMap"/>
+        <collection property="assets" ofType="uk.ac.bristol.pojo.Asset" resultMap="AssetMap"/>
     </resultMap>
+
+    <resultMap id="TemplateMap" type="uk.ac.bristol.pojo.Template">
+        <id property="id" column="template_id"/>
+        <result property="assetTypeId" column="template_asset_type_id"/>
+        <result property="warningType" column="template_weather_warning_type"/>
+        <result property="severity" column="template_severity"/>
+        <result property="contactChannel" column="template_contact_channel"/>
+        <result property="title" column="template_title"/>
+        <result property="body" column="template_body"/>
+    </resultMap>
+
+    <resultMap id="PermissionConfigMap" type="uk.ac.bristol.pojo.PermissionConfig">
+        <id property="userId" column="permission_config_user_id"/>
+        <result property="canCreateAsset" column="permission_config_can_create_asset"/>
+        <result property="canSetPolygonOnCreate" column="permission_config_can_set_polygon_on_create"/>
+        <result property="canUpdateAssetFields" column="permission_config_can_update_asset_fields"/>
+        <result property="canUpdateAssetPolygon" column="permission_config_can_update_asset_polygon"/>
+        <result property="canDeleteAsset" column="permission_config_can_delete_asset"/>
+        <result property="canUpdateProfile" column="permission_config_can_update_profile"/>
+    </resultMap>
+
+    <resultMap id="InboxMessage" type="java.util.Map">
+        <id property="rowId" column="inbox_row_id"/>
+        <result property="userId" column="inbox_user_id"/>
+        <result property="hasRead" column="inbox_has_read"/>
+        <result property="issuedDate" column="inbox_issued_date"/>
+        <result property="validUntil" column="inbox_valid_until"/>
+        <result property="title" column="inbox_title"/>
+        <result property="message" column="inbox_message"/>
+    </resultMap>
+
+    <sql id="filtering">
+        <where>
+            <if test="filterString != null and filterString != '' ">
+                ${filterString}
+            </if>
+        </where>
+    </sql>
+
+    <sql id="combinedFiltering">
+        <if test="filterString != null and filterString != '' ">
+            and ${filterString}
+        </if>
+    </sql>
 
     <sql id="orderAndPage">
         <if test="orderList != null and orderList.size() > 0">

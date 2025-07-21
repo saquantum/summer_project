@@ -3,7 +3,8 @@ package uk.ac.bristol.dao;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import uk.ac.bristol.pojo.User;
-import uk.ac.bristol.pojo.UserWithAssetHolder;
+import uk.ac.bristol.pojo.UserWithAssets;
+import uk.ac.bristol.pojo.UserWithExtraColumns;
 
 import java.util.List;
 import java.util.Map;
@@ -11,38 +12,45 @@ import java.util.Map;
 @Mapper
 public interface UserMapper {
 
-    List<User> selectAllUsers(@Param("orderList") List<Map<String, String>> orderList,
-                              @Param("limit") Integer limit,
-                              @Param("offset") Integer offset);
+    List<User> selectUsers(@Param("filterString") String filterString,
+                           @Param("orderList") List<Map<String, String>> orderList,
+                           @Param("limit") Integer limit,
+                           @Param("offset") Integer offset);
 
-    List<User> selectUserById(@Param("id") String id);
+    List<User> selectUsersPuttingAssetHoldersTableMain(@Param("filterString") String filterString,
+                                                       @Param("orderList") List<Map<String, String>> orderList,
+                                                       @Param("limit") Integer limit,
+                                                       @Param("offset") Integer offset);
 
-    List<User> loginQuery(User user);
+    List<User> selectUsersWithoutAssociation(@Param("filterString") String filterString,
+                                             @Param("orderList") List<Map<String, String>> orderList,
+                                             @Param("limit") Integer limit,
+                                             @Param("offset") Integer offset);
 
-    List<User> selectUserByAssetHolderId(@Param("assetHolderId") String assetHolderId);
+    List<UserWithExtraColumns> selectUsersWithAccumulator(@Param("function") String function,
+                                                          @Param("column") String column,
+                                                          @Param("filterString") String filterString,
+                                                          @Param("orderList") List<Map<String, String>> orderList,
+                                                          @Param("limit") Integer limit,
+                                                          @Param("offset") Integer offset);
 
-    List<User> selectUserByAdmin(@Param("isAdmin") Boolean isAdmin,
-                                 @Param("orderList") List<Map<String, String>> orderList,
-                                 @Param("limit") Integer limit,
-                                 @Param("offset") Integer offset);
+    String selectPasswordByUserId(@Param("id") String id);
 
-    List<UserWithAssetHolder> selectAllUsersWithAssetHolder(@Param("orderList") List<Map<String, String>> orderList,
-                                                            @Param("limit") Integer limit,
-                                                            @Param("offset") Integer offset);
+    Long selectUserRowIdByUserId(@Param("id") String id);
 
-    List<UserWithAssetHolder> selectAllUnauthorisedUsersWithAssetHolder(@Param("orderList") List<Map<String, String>> orderList,
-                                                                        @Param("limit") Integer limit,
-                                                                        @Param("offset") Integer offset);
+    List<UserWithAssets> groupUsersWithOwnedAssetsByWarningId(@Param("limit") Integer limit,
+                                                              @Param("cursor") Long cursor,
+                                                              @Param("warningId") Long warningId,
+                                                              @Param("getDiff") boolean getDiff,
+                                                              @Param("newArea") String newAreaAsJson);
 
-    List<UserWithAssetHolder> selectAllUsersWithAccumulator(@Param("function") String function,
-                                                            @Param("column") String column,
-                                                            @Param("orderList") List<Map<String, String>> orderList,
-                                                            @Param("limit") Integer limit,
-                                                            @Param("offset") Integer offset);
+    int countUsers(@Param("filterString") String filterString);
 
     int insertUser(User user);
 
     int updateUserByUserId(User user);
+
+    int updateUserPasswordByUserId(User user);
 
     int deleteUserByAssetHolderIDs(@Param("ids") String[] assetHolderIds);
 

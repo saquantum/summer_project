@@ -5,7 +5,9 @@
 
 <mapper namespace="uk.ac.bristol.dao.AssetHolderMapper">
     <select id="selectAddressByAssetHolderId" resultMap="ResultMaps.AddressMap">
-        select * from address where address_id = #{assetHolderId};
+        select *
+        from address
+        where address_id = #{assetHolderId};
     </select>
 
     <insert id="insertAddress">
@@ -29,12 +31,16 @@
     </update>
 
     <delete id="deleteAddressByAssetHolderIds">
-        delete from address where address_id in
+        delete
+        from address
+        where address_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 
     <select id="selectContactPreferencesByAssetHolderId" resultMap="ResultMaps.ContactPreferencesMap">
-        select * from contact_preferences where contact_preferences_id = #{assetHolderId};
+        select *
+        from contact_preferences
+        where contact_preferences_id = #{assetHolderId};
     </select>
 
     <insert id="insertContactPreferences">
@@ -62,31 +68,32 @@
     </update>
 
     <delete id="deleteContactPreferencesByAssetHolderIds">
-        delete from contact_preferences where contact_preferences_id in
+        delete
+        from contact_preferences
+        where contact_preferences_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 
-    <select id="selectAllAssetHolders" resultMap="ResultMaps.AssetHolderMap">
-        select * from asset_holders
-        <include refid="ResultMaps.orderAndPage"/>
-    </select>
-
-    <select id="selectAssetHolderByIDs" resultMap="ResultMaps.AssetHolderMap">
+    <select id="selectAssetHolders" resultMap="ResultMaps.AssetHolderMap">
         select *
         from asset_holders
-        where asset_holder_id in
-        <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
+                 left join address on asset_holder_address_id = address_id
+                 left join contact_preferences on asset_holder_contact_preferences_id = contact_preferences_id
+        <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
-    <select id="selectByAssetHolder" resultMap="ResultMaps.AssetHolderMap">
-        select * from asset_holders
-        <where>
-            <if test="id != null">and asset_holder_id = #{id}</if>
-            <if test="name != null and name != ''">and asset_holder_name like #{name}</if>
-            <if test="email != null and email != ''">and asset_holder_email like #{email}</if>
-            <if test="phone != null and phone != ''">and asset_holder_phone like #{phone}</if>
-        </where>
+    <select id="selectAssetHoldersWithoutAssociations" resultMap="ResultMaps.AssetHolderMap">
+        select *
+        from asset_holders
+        <include refid="ResultMaps.filtering"/>
+        <include refid="ResultMaps.orderAndPage"/>
+    </select>
+
+    <select id="testEmailAddressExistence" resultType="java.lang.Boolean">
+        select count(*) > 0
+        from asset_holders
+        where asset_holder_email = #{email};
     </select>
 
     <insert id="insertAssetHolder" >
@@ -100,17 +107,25 @@
         values (#{id}, #{name}, #{email}, #{phone}, #{addressId}, #{contactPreferencesId}, #{lastModified});
     </insert>
 
-    <insert id="insertAssetHolderAutoId" >
-        INSERT INTO asset_holders (
-            asset_holder_name,
-            asset_holder_email,
-            asset_holder_phone,
-            asset_holder_address_id,
-            asset_holder_contact_preferences_id,
-            asset_holder_last_modified
-        )
-        VALUES (#{name}, #{email}, #{phone}, #{addressId}, #{contactPreferencesId}, #{lastModified})
+    <insert id="insertAssetHolderAutoId" parameterType="uk.ac.bristol.pojo.AssetHolder" keyProperty="id" keyColumn="asset_holder_id">
+        insert into asset_holders (asset_holder_name,
+                                   asset_holder_email,
+                                   asset_holder_phone,
+                                   asset_holder_address_id,
+                                   asset_holder_contact_preferences_id)
+        values (#{name}, #{email}, #{phone}, #{addressId}, #{contactPreferencesId})
+        returning asset_holder_id
     </insert>
+
+    <select id="generateAssetHolderId" parameterType="uk.ac.bristol.pojo.AssetHolder" resultType="string">
+        insert into asset_holders (asset_holder_name,
+                                   asset_holder_email,
+                                   asset_holder_phone,
+                                   asset_holder_address_id,
+                                   asset_holder_contact_preferences_id)
+        values ('', '', '', #{addressId}, #{contactPreferencesId})
+        returning asset_holder_id
+    </select>
 
     <update id="updateAssetHolder">
         update asset_holders
@@ -126,7 +141,9 @@
     </update>
 
     <delete id="deleteAssetHolderByAssetHolderIDs">
-        delete from asset_holders where asset_holder_id in
+        delete
+        from asset_holders
+        where asset_holder_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 </mapper>

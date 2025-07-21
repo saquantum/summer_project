@@ -5,9 +5,12 @@ import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -46,13 +49,14 @@ public final class JwtUtil {
     }
 
     public static Claims parseJWT(String jwt) {
+        if (jwt == null || jwt.isBlank()) throw new IllegalArgumentException("jwt is null or blank");
         JwtParser parser = Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build();
         return parser.parseClaimsJws(jwt).getBody();
     }
 
-    public static String getJWTFromCookie(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public static String getJWTFromCookie(HttpServletRequest request) throws IOException {
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
                 if ("token".equals(cookie.getName())) {
@@ -60,16 +64,12 @@ public final class JwtUtil {
                 }
             }
         }
-
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write("{\"code\":401, \"message\":\"Missing or empty token\"}");
         return null;
     }
 
     public static void bindJWTAsCookie(HttpServletResponse response, String token) {
         ResponseCookie cookie = ResponseCookie.from("token", token)
-                .httpOnly(true)
+                .httpOnly(JwtUtilConfig.HTTP_ONLY)
                 .secure(false)
                 .sameSite("Lax")
                 .path("/")
@@ -97,10 +97,23 @@ public final class JwtUtil {
     public static boolean isDomainResolvable(String email) {
         try {
             String domain = email.substring(email.indexOf("@") + 1);
-            InetAddress.getByName(domain); // 尝试解析域名
+            InetAddress.getByName(domain);
             return true;
         } catch (Exception e) {
             return false;
         }
+    }
+}
+
+@Component
+class JwtUtilConfig {
+    @Value("${app.http-only}")
+    public Boolean isHttpOnly;
+
+    public static Boolean HTTP_ONLY;
+
+    @PostConstruct
+    private void init() {
+        HTTP_ONLY = this.isHttpOnly;
     }
 }

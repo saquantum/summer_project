@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="uk.ac.bristol.dao.AssetMapper">
-    <select id="selectAllAssets" resultMap="ResultMaps.AssetMap">
+    <select id="selectAssets" resultMap="ResultMaps.AssetMap">
         select asset_id,
                asset_name,
                asset_type_id,
@@ -15,45 +15,16 @@
                asset_status,
                asset_installed_at,
                asset_last_inspection,
-               asset_last_modified
+               asset_last_modified,
+               asset_types.*
         from assets
+                 left join asset_types
+                           on asset_type_type_id = asset_type_id
+        <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
-    <select id="selectAllAssetsWithWarnings" resultMap="ResultMaps.AssetWithWarningsMap">
-        select a.asset_id,
-               a.asset_name,
-               a.asset_type_id,
-               a.asset_owner_id,
-               ST_AsGeoJSON(a.asset_location) as asset_location,
-               a.asset_capacity_litres,
-               a.asset_material,
-               a.asset_status,
-               a.asset_installed_at,
-               a.asset_last_inspection,
-               a.asset_last_modified,
-
-               w.warning_id,
-               w.warning_weather_type,
-               w.warning_level,
-               w.warning_head_line,
-               w.warning_valid_from,
-               w.warning_valid_to,
-               w.warning_impact,
-               w.warning_likelihood,
-               w.warning_affected_areas,
-               w.warning_what_to_expect,
-               w.warning_further_details,
-               w.warning_update_description,
-               ST_AsGeoJSON(w.warning_area)   as warning_area
-        from assets a
-                 left join weather_warnings w
-                           on ST_Intersects(a.asset_location, w.warning_area) and
-                              now() between w.warning_valid_from and w.warning_valid_to
-        <include refid="ResultMaps.orderAndPage"/>
-    </select>
-
-    <select id="selectAssetByID" resultMap="ResultMaps.AssetMap">
+    <select id="selectAssetsWithWarnings" resultMap="ResultMaps.AssetWithWarningsMap">
         select asset_id,
                asset_name,
                asset_type_id,
@@ -64,45 +35,34 @@
                asset_status,
                asset_installed_at,
                asset_last_inspection,
-               asset_last_modified
+               asset_last_modified,
+
+               warning_id,
+               warning_weather_type,
+               warning_level,
+               warning_head_line,
+               warning_valid_from,
+               warning_valid_to,
+               warning_impact,
+               warning_likelihood,
+               warning_affected_areas,
+               warning_what_to_expect,
+               warning_further_details,
+               warning_update_description,
+               ST_AsGeoJSON(warning_area)   as warning_area,
+
+               asset_types.*
         from assets
-        where asset_id = #{id};
+                 left join weather_warnings
+                           on ST_Intersects(asset_location, warning_area) and
+                              now() between warning_valid_from and warning_valid_to
+                 left join asset_types
+                           on asset_type_type_id = asset_type_id
+        <include refid="ResultMaps.filtering"/>
+        <include refid="ResultMaps.orderAndPage"/>
     </select>
 
-    <select id="selectAssetWithWarningsByID" resultMap="ResultMaps.AssetWithWarningsMap">
-        select a.asset_id,
-               a.asset_name,
-               a.asset_type_id,
-               a.asset_owner_id,
-               ST_AsGeoJSON(a.asset_location) as asset_location,
-               a.asset_capacity_litres,
-               a.asset_material,
-               a.asset_status,
-               a.asset_installed_at,
-               a.asset_last_inspection,
-               a.asset_last_modified,
-
-               w.warning_id,
-               w.warning_weather_type,
-               w.warning_level,
-               w.warning_head_line,
-               w.warning_valid_from,
-               w.warning_valid_to,
-               w.warning_impact,
-               w.warning_likelihood,
-               w.warning_affected_areas,
-               w.warning_what_to_expect,
-               w.warning_further_details,
-               w.warning_update_description,
-               ST_AsGeoJSON(w.warning_area)   as warning_area
-        from assets a
-                 left join weather_warnings w
-                           on ST_Intersects(a.asset_location, w.warning_area) and
-                              now() between w.warning_valid_from and w.warning_valid_to
-        where asset_id = #{id};
-    </select>
-
-    <select id="selectByAsset" resultMap="ResultMaps.AssetMap">
+    <select id="selectAssetsWithWarningsPuttingWarningsTableMain" resultMap="ResultMaps.AssetWithWarningsMap">
         select asset_id,
                asset_name,
                asset_type_id,
@@ -113,135 +73,110 @@
                asset_status,
                asset_installed_at,
                asset_last_inspection,
-               asset_last_modified
+               asset_last_modified,
+
+               warning_id,
+               warning_weather_type,
+               warning_level,
+               warning_head_line,
+               warning_valid_from,
+               warning_valid_to,
+               warning_impact,
+               warning_likelihood,
+               warning_affected_areas,
+               warning_what_to_expect,
+               warning_further_details,
+               warning_update_description,
+               ST_AsGeoJSON(warning_area)   as warning_area,
+
+               asset_types.*
+        from weather_warnings
+                 right join assets
+                           on ST_Intersects(asset_location, warning_area) and
+                              now() between warning_valid_from and warning_valid_to
+                 left join asset_types
+                           on asset_type_type_id = asset_type_id
+        <include refid="ResultMaps.filtering"/>
+        <include refid="ResultMaps.orderAndPage"/>
+    </select>
+
+    <select id="countAssetsWithWarnings" resultType="int">
+        select count(distinct asset_id)
         from assets
-        <where>
-            <if test="id != null and id != ''">and asset_id = #{id}</if>
-            <if test="name != null and name != ''">and asset_name like #{name}</if>
-            <if test="typeId != null and typeId != ''">and asset_type_id = #{typeId}</if>
-            <if test="ownerId != null and ownerId != ''">and asset_owner_id = #{ownerId}</if>
-            <if test="material != null and material != ''">and asset_material = #{material}</if>
-            <if test="status != null and status != ''">and asset_status = #{status}</if>
-        </where>
-        <include refid="ResultMaps.orderAndPage"/>
+                 left join weather_warnings
+                           on ST_Intersects(asset_location, warning_area) and
+                              now() between warning_valid_from and warning_valid_to
+                 left join asset_types
+                           on asset_type_type_id = asset_type_id
+        <include refid="ResultMaps.filtering"/>
     </select>
 
-    <select id="selectByAssetWithWarnings" resultMap="ResultMaps.AssetWithWarningsMap">
-        select a.asset_id,
-        a.asset_name,
-        a.asset_type_id,
-        a.asset_owner_id,
-        ST_AsGeoJSON(a.asset_location) as asset_location,
-        a.asset_capacity_litres,
-        a.asset_material,
-        a.asset_status,
-        a.asset_installed_at,
-        a.asset_last_inspection,
-        a.asset_last_modified,
-
-        w.warning_id,
-        w.warning_weather_type,
-        w.warning_level,
-        w.warning_head_line,
-        w.warning_valid_from,
-        w.warning_valid_to,
-        w.warning_impact,
-        w.warning_likelihood,
-        w.warning_affected_areas,
-        w.warning_what_to_expect,
-        w.warning_further_details,
-        w.warning_update_description,
-        ST_AsGeoJSON(w.warning_area) as warning_area
-        from assets a
-        left join weather_warnings w
-        on ST_Intersects(a.asset_location, w.warning_area) and
-        now() between w.warning_valid_from and w.warning_valid_to
-        <where>
-            <if test="id != null and id != ''">and asset_id = #{id}</if>
-            <if test="name != null and name != ''">and asset_name like #{name}</if>
-            <if test="typeId != null and typeId != ''">and asset_type_id = #{typeId}</if>
-            <if test="ownerId != null and ownerId != ''">and asset_owner_id = #{ownerId}</if>
-            <if test="material != null and material != ''">and asset_material = #{material}</if>
-            <if test="status != null and status != ''">and asset_status = #{status}</if>
-        </where>
-        <include refid="ResultMaps.orderAndPage"/>
-    </select>
-
-    <select id="selectAllAssetsOfHolder" resultMap="ResultMaps.AssetMap">
-        select asset_id,
-               asset_name,
-               asset_type_id,
-               asset_owner_id,
-               ST_AsGeoJSON(asset_location) as asset_location,
-               asset_capacity_litres,
-               asset_material,
-               asset_status,
-               asset_installed_at,
-               asset_last_inspection,
-               asset_last_modified
-        from assets
-        where asset_owner_id = #{ownerId}
-        <include refid="ResultMaps.orderAndPage"/>
-    </select>
-
-    <select id="selectAllAssetsWithWarningsOfHolder" resultMap="ResultMaps.AssetWithWarningsMap">
-        select a.asset_id,
-               a.asset_name,
-               a.asset_type_id,
-               a.asset_owner_id,
-               ST_AsGeoJSON(a.asset_location) as asset_location,
-               a.asset_capacity_litres,
-               a.asset_material,
-               a.asset_status,
-               a.asset_installed_at,
-               a.asset_last_inspection,
-               a.asset_last_modified,
-
-               w.warning_id,
-               w.warning_weather_type,
-               w.warning_level,
-               w.warning_head_line,
-               w.warning_valid_from,
-               w.warning_valid_to,
-               w.warning_impact,
-               w.warning_likelihood,
-               w.warning_affected_areas,
-               w.warning_what_to_expect,
-               w.warning_further_details,
-               w.warning_update_description,
-               ST_AsGeoJSON(w.warning_area)   as warning_area
-        from assets a
-                 left join weather_warnings w
-                           on ST_Intersects(a.asset_location, w.warning_area) and
-                              now() between w.warning_valid_from and w.warning_valid_to
-        where asset_owner_id = #{ownerId}
-        <include refid="ResultMaps.orderAndPage"/>
-    </select>
-
-    <select id="selectAllAssetTypes" resultMap="ResultMaps.AssetTypeMap">
-        select * from asset_types
+    <select id="selectAssetTypes" resultMap="ResultMaps.AssetTypeMap">
+        select *
+        from asset_types
+        <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
     <insert id="insertAssetType">
-        insert into asset_types (asset_type_id, asset_type_name, asset_type_description)
+        insert into asset_types (asset_type_type_id,
+                                 asset_type_name,
+                                 asset_type_description)
         values (#{id}, #{name}, #{description});
     </insert>
 
+    <insert id="insertAssetTypeAutoId">
+        insert into asset_types (asset_type_name, asset_type_description)
+        values (#{name}, #{description});
+    </insert>
+
     <insert id="insertAsset">
-        insert into assets
-        (asset_id,
-         asset_name,
-         asset_type_id,
-         asset_owner_id,
-         asset_location,
-         asset_capacity_litres,
-         asset_material,
-         asset_status,
-         asset_installed_at,
-         asset_last_inspection,
-         asset_last_modified)
+        insert into assets (asset_id,
+                            asset_name,
+                            asset_type_id,
+                            asset_owner_id,
+                            asset_location,
+                            asset_capacity_litres,
+                            asset_material,
+                            asset_status,
+                            asset_installed_at,
+                            asset_last_inspection,
+                            asset_last_modified)
         values (#{id}, #{name}, #{typeId}, #{ownerId}, ST_Multi(ST_MakeValid(ST_GeomFromGeoJSON(#{locationAsJson}))),
+                #{capacityLitres}, #{material}, #{status},
+                #{installedAt}, #{lastInspection}, #{lastModified});
+    </insert>
+
+    <select id="insertAssetReturningId" parameterType="uk.ac.bristol.pojo.Asset" resultType="java.lang.String">
+        insert into assets (asset_id,
+                            asset_name,
+                            asset_type_id,
+                            asset_owner_id,
+                            asset_location,
+                            asset_capacity_litres,
+                            asset_material,
+                            asset_status,
+                            asset_installed_at,
+                            asset_last_inspection,
+                            asset_last_modified)
+        values (#{id}, #{name}, #{typeId}, #{ownerId}, ST_Multi(ST_MakeValid(ST_GeomFromGeoJSON(#{locationAsJson}))),
+                #{capacityLitres}, #{material}, #{status},
+                #{installedAt}, #{lastInspection}, #{lastModified})
+        returning asset_id;
+    </select>
+
+    <insert id="insertAssetAutoId">
+        insert into assets (asset_name,
+                            asset_type_id,
+                            asset_owner_id,
+                            asset_location,
+                            asset_capacity_litres,
+                            asset_material,
+                            asset_status,
+                            asset_installed_at,
+                            asset_last_inspection,
+                            asset_last_modified)
+        values (#{name}, #{typeId}, #{ownerId}, ST_Multi(ST_MakeValid(ST_GeomFromGeoJSON(#{locationAsJson}))),
                 #{capacityLitres}, #{material}, #{status},
                 #{installedAt}, #{lastInspection}, #{lastModified});
     </insert>
@@ -252,7 +187,7 @@
             <if test="name != null and name != ''">asset_type_name = #{name},</if>
             <if test="description != null and description != ''">asset_type_description = #{description},</if>
         </set>
-        where asset_type_id = #{id};
+        where asset_type_type_id = #{id};
     </update>
 
     <update id="updateAsset">
@@ -273,12 +208,16 @@
     </update>
 
     <delete id="deleteAssetTypeByIDs">
-        delete from asset_types where asset_type_id in
+        delete
+        from asset_types
+        where asset_type_type_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 
     <delete id="deleteAssetByIDs">
-        delete from assets where asset_id in
+        delete
+        from assets
+        where asset_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 </mapper>

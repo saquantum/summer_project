@@ -20,6 +20,7 @@
                ST_AsGeoJSON(warning_area) as warning_area
         from weather_warnings
         where now() between warning_valid_from and warning_valid_to
+        <include refid="ResultMaps.combinedFiltering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
     
@@ -38,6 +39,7 @@
                warning_update_description,
                ST_AsGeoJSON(warning_area) as warning_area
         from weather_warnings
+        <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
@@ -59,19 +61,25 @@
         where warning_id = #{id}
     </select>
 
-    <select id="selectOwnerIdOfAllAssetsIntersectingWithGivenWarning" resultType="java.lang.String">
-        select distinct asset_owner_id
-        from assets
-                 left join weather_warnings on ST_Intersects(asset_location, warning_area)
-        where warning_id = #{warningId}
-    </select>
-
-    <select id="testIfGivenAssetIntersectsWithWarning" resultType="java.lang.Boolean">
-        select ST_Intersects(asset_location, warning_area)
-        from assets
-                 inner join weather_warnings on ST_Intersects(asset_location, warning_area)
-        where asset_id = #{assetId}
-          and warning_id = #{warningId}
+    <select id="selectWarningsIntersectingWithGivenAsset" resultMap="ResultMaps.WarningMap">
+        select warning_id,
+               warning_weather_type,
+               warning_level,
+               warning_head_line,
+               warning_valid_from,
+               warning_valid_to,
+               warning_impact,
+               warning_likelihood,
+               warning_affected_areas,
+               warning_what_to_expect,
+               warning_further_details,
+               warning_update_description,
+               ST_AsGeoJSON(warning_area) as warning_area
+        from weather_warnings
+                 join assets
+                      on ST_Intersects(asset_location, warning_area) and
+                         now() between warning_valid_from and warning_valid_to
+        where asset_id = #{assetId};
     </select>
 
     <insert id="insertWarning">
@@ -129,26 +137,40 @@
         </foreach>
     </delete>
 
-    <select id="selectAllNotificationTemplates" resultMap="ResultMaps.TemplateMap">
-        select *
-        from templates;
+    <select id="testWarningExists" resultType="java.lang.Boolean">
+        select count(*) > 0 from weather_warnings where warning_id = #{id};
+    </select>
+    
+    <select id="testWarningDetailDiff" resultType="java.lang.Boolean">
+        select
+            case
+                when
+                    warning_weather_type != #{weatherType}
+                    or warning_level != #{warningLevel}
+                    or warning_head_line != #{warningHeadLine}
+                    or warning_valid_from != #{validFrom}
+                    or warning_valid_to != #{validTo}
+                    or warning_impact != #{warningImpact}
+                    or warning_likelihood != #{warningLikelihood}
+                    or warning_affected_areas != #{affectedAreas}
+                    or warning_what_to_expect != #{whatToExpect}
+                    or warning_further_details != #{warningFurtherDetails}
+                then true
+                else false
+            end
+        from weather_warnings
+        where warning_id = #{id}
     </select>
 
-    <insert id="insertNotificationTemplate">
-        insert into templates (templates_message)
-        values (#{message});
-    </insert>
-
-    <update id="updateNotificationTemplate">
-        update templates
-        set templates_message = #{message}
-        where templates_id = #{id};
-    </update>
-
-    <delete id="deleteNotificationTemplateByIds">
-        delete from templates where templates_id in
-        <foreach collection="ids" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
-    </delete>
+    <select id="testWarningAreaDiff" resultType="java.lang.Boolean">
+        select
+            case
+                when
+                    warning_area != ST_Multi(ST_GeomFromGeoJSON(#{areaAsJson}))
+                then true
+                else false
+        end
+        from weather_warnings
+        where warning_id = #{id}
+    </select>
 </mapper>

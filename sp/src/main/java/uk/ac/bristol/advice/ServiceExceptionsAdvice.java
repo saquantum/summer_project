@@ -10,7 +10,7 @@ import uk.ac.bristol.exception.SpExceptions;
 @Component
 @Aspect
 public class ServiceExceptionsAdvice {
-    @Pointcut("execution(* *..service.impl.*(..))")
+    @Pointcut("execution(* *..service.impl.*.*(..))")
     public void pt() {
     }
 
@@ -18,7 +18,7 @@ public class ServiceExceptionsAdvice {
     public Object classifyExceptions(ProceedingJoinPoint jp) throws Throwable {
         try {
             return jp.proceed();
-        } catch (SpExceptions.SystemException e) {
+        } catch (SpExceptions e) {
             throw e;
         } catch (Exception e) {
             String methodName = jp.getSignature().getName().toLowerCase();
@@ -32,7 +32,7 @@ public class ServiceExceptionsAdvice {
             } else if (methodName.startsWith("delete")) {
                 throw new SpExceptions.DeleteMethodException(e.getMessage());
             } else {
-                throw new SpExceptions.BusinessException(e.getMessage());
+                throw new SpExceptions.SystemException(e.getMessage());
             }
         }
     }

@@ -6,6 +6,7 @@ spring.application.name: sp
 
 app:
   base-url: https://sp.zr17.fun
+  http-only: true
 
 spring:
   datasource:
@@ -40,12 +41,11 @@ mock-data:
   asset-types: data/asset_types.json
   users: data/users.json
   warnings: data/geojson-sample.json
-  templates: data/templates.json
-  js: js/arcgis-converter.js
+  notifications: data/templates.json
   state: mock-data-state/mock_data_state.json
 
 metoffice:
-  url:  "https://services.arcgis.com/Lq3V5RFuTBC9I7kv/arcgis/rest/services/Met_Office_National_Severe_Weather_Warning_Service_Live/FeatureServer/0/query?where=1=1&outFields=*&returnGeometry=false&f=pgeojson"
+  url:  "https://services.arcgis.com/Lq3V5RFuTBC9I7kv/arcgis/rest/services/Met_Office_National_Severe_Weather_Warning_Service_Live/FeatureServer/0/query?where=1=1&outFields=*&returnGeometry=true&f=pgeojson"
   crawler:
     rate: 600000
 

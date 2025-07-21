@@ -12,9 +12,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 @Component
 public class MockDataInitializer implements CommandLineRunner {
+
+    public static final CountDownLatch latch = new CountDownLatch(1);
 
     private final ImportMockData importMockData;
     private static final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
@@ -29,10 +32,8 @@ public class MockDataInitializer implements CommandLineRunner {
     private String USERS_FILE_PATH;
     @Value("${mock-data.warnings}")
     private String WARNINGS_FILE_PATH;
-    @Value("${mock-data.templates}")
-    private String TEMPLATES_FILE_PATH;
-    @Value("${mock-data.js}")
-    private String JS_CONVERTER_FILE_PATH;
+    @Value("${mock-data.notifications}")
+    private String NOTIFICATION_FILE_PATH;
 
     public MockDataInitializer(ImportMockData importMockData) throws IOException {
         this.importMockData = importMockData;
@@ -68,15 +69,16 @@ public class MockDataInitializer implements CommandLineRunner {
         importMockData.resetSchema();
         importMockData.importUsers(getClasspathStream(USERS_FILE_PATH));
         importMockData.importAssets(getClasspathStream(ASSET_TYPES_FILE_PATH), getClasspathStream(ASSETS_FILE_PATH));
-        importMockData.importWarnings(getClasspathStream(WARNINGS_FILE_PATH), getClasspathStream(JS_CONVERTER_FILE_PATH));
-        importMockData.importTemplates(getClasspathStream(TEMPLATES_FILE_PATH));
+        importMockData.importWarnings(getClasspathStream(WARNINGS_FILE_PATH));
+        importMockData.importTemplates(getClasspathStream(NOTIFICATION_FILE_PATH));
     }
 
     @Override
     public void run(String... args) throws Exception {
         if (shouldImport("users")
                 || shouldImport("assets")
-                || shouldImport("warnings")) {
+                || shouldImport("warnings")
+                || shouldImport("templates")) {
             importMockData.resetSchema();
         }
 
@@ -96,17 +98,18 @@ public class MockDataInitializer implements CommandLineRunner {
         }
 
         if (shouldImport("warnings")) {
-            importMockData.importWarnings(getClasspathStream(WARNINGS_FILE_PATH), getClasspathStream(JS_CONVERTER_FILE_PATH));
+            importMockData.importWarnings(getClasspathStream(WARNINGS_FILE_PATH));
             markAsImported("warnings");
         } else {
             System.out.println("Warnings file skipped");
         }
 
         if (shouldImport("templates")) {
-            importMockData.importTemplates(getClasspathStream(TEMPLATES_FILE_PATH));
+            importMockData.importTemplates(getClasspathStream(NOTIFICATION_FILE_PATH));
             markAsImported("templates");
         } else {
             System.out.println("Templates file skipped");
         }
+        latch.countDown();
     }
 }

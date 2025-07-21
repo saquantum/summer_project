@@ -10,15 +10,19 @@ import java.util.Map;
 @Mapper
 public interface WarningMapper {
 
-    List<Warning> selectAllWarnings(@Param("orderList") List<Map<String, String>> orderList,
+    List<Warning> selectAllWarnings(@Param("filterString") String filterString,
+                                    @Param("orderList") List<Map<String, String>> orderList,
                                     @Param("limit") Integer limit,
                                     @Param("offset") Integer offset);
 
-    List<Warning> selectAllWarningsIncludingOutdated(@Param("orderList") List<Map<String, String>> orderList,
+    List<Warning> selectAllWarningsIncludingOutdated(@Param("filterString") String filterString,
+                                                     @Param("orderList") List<Map<String, String>> orderList,
                                                      @Param("limit") Integer limit,
                                                      @Param("offset") Integer offset);
 
     List<Warning> selectWarningById(@Param("id") Long id);
+
+    List<Warning> selectWarningsIntersectingWithGivenAsset(@Param("assetId") String assetId);
 
     int insertWarning(Warning warning);
 
@@ -28,17 +32,9 @@ public interface WarningMapper {
 
     int deleteWarningByIDs(@Param("ids") List<Long> ids);
 
-    List<Map<String, Object>> selectAllNotificationTemplates();
+    boolean testWarningExists(@Param("id") Long id);
 
-    int insertNotificationTemplate(@Param("message") String message);
+    boolean testWarningDetailDiff(Warning warning);
 
-    int updateNotificationTemplate(Map<String, String> template);
-
-    int deleteNotificationTemplateByIds(@Param("ids") Integer[] ids);
-
-    int deleteNotificationTemplateByIds(@Param("ids") List<Integer> ids);
-
-    List<String> selectOwnerIdOfAllAssetsIntersectingWithGivenWarning(@Param("warningId") Long warningId);
-
-    Boolean testIfGivenAssetIntersectsWithWarning(@Param("assetId") String assetId, @Param("warningId") Long warningId);
+    boolean testWarningAreaDiff(@Param("id") Long warningId, @Param("areaAsJson") String areaAsJson);
 }

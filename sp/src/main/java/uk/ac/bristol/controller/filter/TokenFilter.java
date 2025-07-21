@@ -24,7 +24,7 @@ public class TokenFilter implements Filter {
             throw new ServletException("Protocols other than HTTP are not supported");
         }
 
-        String token = JwtUtil.getJWTFromCookie(request, response);
+        String token = JwtUtil.getJWTFromCookie(request);
         if (token == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");

@@ -7,31 +7,29 @@ import java.util.Map;
 
 public interface WarningService {
 
-    List<Warning> getAllWarnings(List<Map<String, String>> orderList,
+    List<Warning> getAllWarnings(Map<String, Object> filters,
+                                 List<Map<String, String>> orderList,
                                  Integer limit,
                                  Integer offset);
 
-    List<Warning> getAllWarningsIncludingOutdated(List<Map<String, String>> orderList,
+    List<Warning> getAllWarningsIncludingOutdated(Map<String, Object> filters,
+                                                  List<Map<String, String>> orderList,
                                                   Integer limit,
                                                   Integer offset);
 
     List<Warning> getWarningById(Long id);
 
+    List<Warning> getWarningsIntersectingWithGivenAsset(String assetId);
+
+    boolean storeWarningsAndSendNotifications(List<Warning> parsedWarnings);
+
     int insertWarning(Warning warning);
+
+    int insertWarningsList(List<Warning> warnings);
 
     int updateWarning(Warning warning);
 
     int deleteWarningByIDs(Long[] ids);
 
     int deleteWarningByIDs(List<Long> ids);
-
-    List<Map<String, Object>> getAllNotificationTemplates();
-
-    int insertNotificationTemplate(String message);
-
-    int updateNotificationTemplate(Map<String, String> template);
-
-    int deleteNotificationTemplateByIds(Integer[] ids);
-
-    int deleteNotificationTemplateByIds(List<Integer> ids);
 }

@@ -12,45 +12,37 @@ import java.util.Map;
 @Mapper
 public interface AssetMapper {
 
-    List<Asset> selectAllAssets(@Param("orderList") List<Map<String, String>> orderList,
-                                @Param("limit") Integer limit,
-                                @Param("offset") Integer offset);
+    List<Asset> selectAssets(@Param("filterString") String filterString,
+                             @Param("orderList") List<Map<String, String>> orderList,
+                             @Param("limit") Integer limit,
+                             @Param("offset") Integer offset);
 
-    List<AssetWithWeatherWarnings> selectAllAssetsWithWarnings(@Param("orderList") List<Map<String, String>> orderList,
-                                                               @Param("limit") Integer limit,
-                                                               @Param("offset") Integer offset);
+    List<AssetWithWeatherWarnings> selectAssetsWithWarnings(@Param("filterString") String filterString,
+                                                            @Param("orderList") List<Map<String, String>> orderList,
+                                                            @Param("limit") Integer limit,
+                                                            @Param("offset") Integer offset);
 
-    List<Asset> selectAssetByID(@Param("id") String id);
+    List<AssetWithWeatherWarnings> selectAssetsWithWarningsPuttingWarningsTableMain(@Param("filterString") String filterString,
+                                                                                    @Param("orderList") List<Map<String, String>> orderList,
+                                                                                    @Param("limit") Integer limit,
+                                                                                    @Param("offset") Integer offset);
 
-    List<AssetWithWeatherWarnings> selectAssetWithWarningsByID(@Param("id") String id);
+    int countAssetsWithWarnings(@Param("filterString") String filterString);
 
-    List<Asset> selectByAsset(Asset asset,
-                              @Param("orderList") List<Map<String, String>> orderList,
-                              @Param("limit") Integer limit,
-                              @Param("offset") Integer offset);
-
-    List<AssetWithWeatherWarnings> selectByAssetWithWarnings(Asset asset,
-                                                             @Param("orderList") List<Map<String, String>> orderList,
-                                                             @Param("limit") Integer limit,
-                                                             @Param("offset") Integer offset);
-
-    List<Asset> selectAllAssetsOfHolder(@Param("ownerId") String ownerId,
-                                        @Param("orderList") List<Map<String, String>> orderList,
-                                        @Param("limit") Integer limit,
-                                        @Param("offset") Integer offset);
-
-    List<AssetWithWeatherWarnings> selectAllAssetsWithWarningsOfHolder(@Param("ownerId") String ownerId,
-                                                                       @Param("orderList") List<Map<String, String>> orderList,
-                                                                       @Param("limit") Integer limit,
-                                                                       @Param("offset") Integer offset);
-
-    List<AssetType> selectAllAssetTypes(@Param("orderList") List<Map<String, String>> orderList,
-                                        @Param("limit") Integer limit,
-                                        @Param("offset") Integer offset);
+    List<AssetType> selectAssetTypes(@Param("filterString") String filterString,
+                                     @Param("orderList") List<Map<String, String>> orderList,
+                                     @Param("limit") Integer limit,
+                                     @Param("offset") Integer offset);
 
     int insertAssetType(AssetType assetType);
 
+    int insertAssetTypeAutoId(AssetType assetType);
+
     int insertAsset(Asset asset);
+
+    List<String> insertAssetReturningId(Asset asset);
+
+    int insertAssetAutoId(Asset asset);
 
     int updateAssetType(AssetType assetType);
 

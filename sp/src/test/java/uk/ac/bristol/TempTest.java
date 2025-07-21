@@ -3,10 +3,8 @@ package uk.ac.bristol;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import uk.ac.bristol.service.AssetService;
-import uk.ac.bristol.service.ImportMockData;
-import uk.ac.bristol.service.UserService;
-import uk.ac.bristol.service.WarningService;
+import uk.ac.bristol.dao.UserMapper;
+import uk.ac.bristol.service.*;
 
 @SpringBootTest
 public class TempTest {
@@ -22,5 +20,9 @@ public class TempTest {
 
     @Autowired
     public WarningService warningService;
+    private ContactService contactService;
+    @Autowired
+    private UserMapper userMapper;
+
 
 }

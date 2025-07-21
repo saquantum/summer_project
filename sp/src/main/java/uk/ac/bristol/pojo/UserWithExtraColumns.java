@@ -1,8 +1,7 @@
 package uk.ac.bristol.pojo;
 
-public class UserWithAssetHolder {
+public class UserWithExtraColumns {
     private User user;
-    private AssetHolder assetHolder;
     private Double accumulation;
 
     public User getUser() {
@@ -11,14 +10,6 @@ public class UserWithAssetHolder {
 
     public void setUser(User user) {
         this.user = user;
-    }
-
-    public AssetHolder getAssetHolder() {
-        return assetHolder;
-    }
-
-    public void setAssetHolder(AssetHolder assetHolder) {
-        this.assetHolder = assetHolder;
     }
 
     public Double getAccumulation() {

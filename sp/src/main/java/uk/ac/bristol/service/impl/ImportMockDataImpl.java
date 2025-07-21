@@ -8,45 +8,56 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.Settings;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
-import uk.ac.bristol.service.AssetService;
-import uk.ac.bristol.service.ImportMockData;
-import uk.ac.bristol.service.UserService;
-import uk.ac.bristol.service.WarningService;
+import uk.ac.bristol.service.*;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.Instant;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
-@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
 @Service
 public class ImportMockDataImpl implements ImportMockData {
 
     private final Settings settings;
+    private final PermissionConfigService permissionConfigService;
     private final UserService userService;
     private final AssetService assetService;
     private final WarningService warningService;
+    private final ContactService contactService;
     private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
-    public ImportMockDataImpl(Settings settings, UserService userService, AssetService assetService, WarningService warningService) {
+    public ImportMockDataImpl(Settings settings,
+                              PermissionConfigService permissionConfigService,
+                              UserService userService,
+                              AssetService assetService,
+                              WarningService warningService,
+                              ContactService contactService) {
         this.settings = settings;
+        this.permissionConfigService = permissionConfigService;
         this.userService = userService;
         this.assetService = assetService;
         this.warningService = warningService;
+        this.contactService = contactService;
     }
 
     @Override
     public void resetSchema() {
         settings.resetSchema();
-        settings.createAddress();
-        settings.createContactPreferences();
-        settings.createAssetHolders();
-        settings.createUsers();
-        settings.createAssetTypes();
-        settings.createAssets();
-        settings.createWeatherWarnings();
-        settings.createNotificationTemplates();
+        settings.createTableMetaData();
+        settings.createAssetHolders("asset_holders");
+        settings.createAddress("address");
+        settings.createContactPreferences("contact_preferences");
+        settings.createUsers("users");
+        settings.createAssetTypes("asset_types");
+        settings.createAssets("assets");
+        settings.createWeatherWarnings("weather_warnings");
+        settings.createNotificationTemplates("templates");
+        settings.createPermissionConfigs("permission_configs");
+        settings.createUserInboxes("inboxes");
     }
 
     @Override
@@ -61,19 +72,30 @@ public class ImportMockDataImpl implements ImportMockData {
         for (AssetHolder assetHolder : assetHolders) {
             User user = new User();
             user.setId(assetHolder.getId());
-
-            assetHolder.setId("$" + assetHolder.getId());
-
-            assetHolder.setAddressId(assetHolder.getId());
-            assetHolder.getAddress().put("assetHolderId", assetHolder.getAddressId());
-            assetHolder.setContactPreferencesId(assetHolder.getId());
-            assetHolder.getContactPreferences().put("assetHolderId", assetHolder.getContactPreferencesId());
-
-            user.setAssetHolderId(assetHolder.getId());
             user.setAssetHolder(assetHolder);
             user.setPassword("123456");
             user.setAdmin(false);
+            user.setAvatar("https://cdn-icons-png.flaticon.com/512/149/149071.png");
             userService.insertUser(user);
+            permissionConfigService.insertPermissionConfig(new PermissionConfig(user.getId()));
+            // insert template welcome messages
+            LocalDateTime now = LocalDateTime.now();
+            contactService.insertInboxMessageToUser(Map.of(
+                    "userId", user.getId(),
+                    "hasRead", false,
+                    "issuedDate", now,
+                    "validUntil", now.plusYears(100),
+                    "title", user.getAssetHolder().getName() + ", your account has been activated",
+                    "message", "If you encounter any issues using our system, please feel free to contact us.")
+            );
+            contactService.insertInboxMessageToUser(Map.of(
+                    "userId", user.getId(),
+                    "hasRead", false,
+                    "issuedDate", now.plus(Duration.ofMillis(1000L)),
+                    "validUntil", now.plusYears(100),
+                    "title", "Please check and confirm details of your assets",
+                    "message", "The administrator should already have prepared the assets of yours which can be viewed from \"My Assets\" panel. Please do confirm they are accurate to receive correct notifications.")
+            );
         }
         // register admin
         User admin = new User();
@@ -81,6 +103,7 @@ public class ImportMockDataImpl implements ImportMockData {
         admin.setPassword("admin");
         admin.setAdmin(true);
         userService.insertUser(admin);
+        permissionConfigService.insertPermissionConfig(new PermissionConfig("admin"));
     }
 
     @Override
@@ -105,7 +128,7 @@ public class ImportMockDataImpl implements ImportMockData {
     }
 
     @Override
-    public void importWarnings(InputStream warningsInputStream, InputStream JSConverterInputStream) {
+    public void importWarnings(InputStream warningsInputStream) {
         try {
             List<Map<String, Object>> list = mapper.readValue(warningsInputStream, new TypeReference<List<Map<String, Object>>>() {
             });
@@ -117,20 +140,7 @@ public class ImportMockDataImpl implements ImportMockData {
                         Map<String, Object> properties = (Map<String, Object>) feature.get("properties");
                         Map<String, Object> geometry = (Map<String, Object>) feature.get("geometry");
 
-                        Warning warning = new Warning();
-                        warning.setId(((Number) properties.get("OBJECTID")).longValue());
-                        warning.setWeatherType((String) properties.get("weathertype"));
-                        warning.setWarningLevel((String) properties.get("warninglevel"));
-                        warning.setWarningHeadLine((String) properties.get("warningheadline"));
-                        warning.setValidFrom(Instant.ofEpochMilli(((Number) properties.get("validfromdate")).longValue()));
-                        warning.setValidTo(Instant.ofEpochMilli(((Number) properties.get("validtodate")).longValue()));
-                        warning.setWarningImpact((String) properties.get("warningImpact"));
-                        warning.setWarningLikelihood((String) properties.get("warningLikelihood"));
-                        warning.setAffectedAreas((String) properties.get("affectedAreas"));
-                        warning.setWhatToExpect((String) properties.get("whatToExpect"));
-                        warning.setWarningFurtherDetails((String) properties.get("warningFurtherDetails"));
-                        warning.setWarningUpdateDescription((String) properties.get("warningUpdateDescription"));
-                        warning.setArea(geometry);
+                        Warning warning = Warning.getWarningFromGeoJSON(properties, geometry);
 
                         warningService.insertWarning(warning);
                     }
@@ -144,10 +154,36 @@ public class ImportMockDataImpl implements ImportMockData {
     @Override
     public void importTemplates(InputStream notificationTemplatesInputStream) {
         try {
-            List<Map<String, String>> templates = mapper.readValue(notificationTemplatesInputStream, new TypeReference<List<Map<String, String>>>() {
+            List<Map<String, Object>> templates = mapper.readValue(notificationTemplatesInputStream, new TypeReference<List<Map<String, Object>>>() {
             });
-            for (Map<String, String> template : templates) {
-                warningService.insertNotificationTemplate(template.get("message"));
+
+            List<String> warningTypes = List.of("Rain", "Thunderstorm", "Wind", "Snow", "Lightning", "Ice", "Heat", "Fog");
+            List<String> severities = List.of("YELLOW", "AMBER", "RED");
+            List<String> assetTypeIds = List.of("type_001", "type_002", "type_003", "type_004", "type_005", "type_006", "type_007");
+            List<String> channels = List.of("email", "phone", "post");
+
+            Random r = new Random();
+            for (String warningType : warningTypes) {
+                for (String severity : severities) {
+                    for (String assetTypeId : assetTypeIds) {
+                        int idx = r.nextInt(templates.size());
+                        for (String channel : channels) {
+                            Template template = new Template();
+                            template.setAssetTypeId(assetTypeId);
+                            template.setWarningType(warningType);
+                            template.setSeverity(severity);
+                            template.setContactChannel(channel);
+                            template.setTitle(warningType + templates.get(idx).get("title").toString());
+                            template.setBody(templates.get(idx).get("body").toString());
+
+                            if (!contactService.getNotificationTemplateByTypes(template).isEmpty()) {
+                                contactService.updateNotificationTemplateMessageByTypes(template);
+                            } else {
+                                contactService.insertNotificationTemplate(template);
+                            }
+                        }
+                    }
+                }
             }
         } catch (IOException e) {
             throw new SpExceptions.SystemException("Loading Templates failed." + e.getMessage());

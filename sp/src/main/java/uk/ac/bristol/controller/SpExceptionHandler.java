@@ -4,8 +4,38 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import uk.ac.bristol.exception.SpExceptions;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestControllerAdvice
 public class SpExceptionHandler {
+
+    @ExceptionHandler({SpExceptions.BadRequestException.class})
+    public ResponseBody handleBadRequestException(HttpServletResponse response, SpExceptions.BadRequestException e) {
+        e.printStackTrace();
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        return new ResponseBody(Code.BAD_REQUEST, null, e.getMessage());
+    }
+
+    @ExceptionHandler({SpExceptions.UnauthorisedException.class})
+    public ResponseBody handleUnauthorisedException(HttpServletResponse response, SpExceptions.UnauthorisedException e) {
+        e.printStackTrace();
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        return new ResponseBody(Code.UNAUTHORISED, null, e.getMessage());
+    }
+
+    @ExceptionHandler({SpExceptions.ForbiddenException.class})
+    public ResponseBody handleForbiddenException(HttpServletResponse response, SpExceptions.ForbiddenException e) {
+        e.printStackTrace();
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        return new ResponseBody(Code.FORBIDDEN, null, e.getMessage());
+    }
+
+    @ExceptionHandler({SpExceptions.NotFoundException.class})
+    public ResponseBody handleNotFoundException(HttpServletResponse response, SpExceptions.NotFoundException e) {
+        e.printStackTrace();
+        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        return new ResponseBody(Code.NOT_FOUND, null, e.getMessage());
+    }
 
     @ExceptionHandler(SpExceptions.GetMethodException.class)
     public ResponseBody handleGetException(SpExceptions.GetMethodException e) {

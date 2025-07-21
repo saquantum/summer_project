@@ -4,108 +4,245 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="uk.ac.bristol.dao.UserMapper">
-    <select id="selectAllUsers" resultMap="ResultMaps.UserMap">
+    <select id="selectUsers" resultMap="ResultMaps.UserMap">
         select *
         from users
+                 left join asset_holders
+                           on user_asset_holder_id = asset_holder_id
+                 left join address
+                           on asset_holder_address_id = address_id
+                 left join contact_preferences
+                           on asset_holder_contact_preferences_id = contact_preferences_id
+                 left join permission_configs
+                           on permission_config_user_id = user_id
+        <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
-    <select id="selectAllUsersWithAssetHolder" resultMap="ResultMaps.UserWithAssetHolderMap">
+    <select id="selectUsersPuttingAssetHoldersTableMain" resultMap="ResultMaps.UserMap">
         select *
-        from users
-            left join asset_holders
-                on users.user_asset_holder_id = asset_holders.asset_holder_id
+        from asset_holders
+                 left join address
+                           on asset_holder_address_id = address_id
+                 left join contact_preferences
+                           on asset_holder_contact_preferences_id = contact_preferences_id
+                 right join users
+                            on user_asset_holder_id = asset_holder_id
+                 left join permission_configs
+                           on permission_config_user_id = user_id
+        <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
-    <select id="selectAllUnauthorisedUsersWithAssetHolder" resultMap="ResultMaps.UserWithAssetHolderMap">
+    <select id="selectUsersWithoutAssociation" resultMap="ResultMaps.UserMap">
         select *
         from users
-        left join asset_holders
-        on users.user_asset_holder_id = asset_holders.asset_holder_id
-        where user_is_admin = false
+        <include refid="ResultMaps.filtering"/>
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
-    <select id="selectAllUsersWithAccumulator" resultMap="ResultMaps.UserWithAssetHolderMap">
-        select
-        user_id,
-        user_password,
-        user_asset_holder_id,
-        asset_holder_id,
-        asset_holder_name,
-        asset_holder_email,
-        asset_holder_phone,
-        asset_holder_address_id,
-        asset_holder_contact_preferences_id,
-        asset_holder_last_modified,
-        ${function}(asset_id) as accumulation
+    <select id="selectUsersWithAccumulator" resultMap="ResultMaps.UserWithExtraColumnsMap">
+        select user_id,
+               user_is_admin,
+               user_avatar,
+               user_asset_holder_id,
+               asset_holder_id,
+               asset_holder_name,
+               asset_holder_email,
+               asset_holder_phone,
+               asset_holder_address_id,
+               address_street,
+               address_city,
+               address_postcode,
+               address_country,
+               asset_holder_contact_preferences_id,
+               contact_preferences_email,
+               contact_preferences_phone,
+               contact_preferences_post,
+               contact_preferences_discord,
+               contact_preferences_telegram,
+               contact_preferences_whatsapp,
+               asset_holder_last_modified,
+               permission_config_can_create_asset,
+               permission_config_can_set_polygon_on_create,
+               permission_config_can_update_asset_fields,
+               permission_config_can_update_asset_polygon,
+               permission_config_can_delete_asset,
+               permission_config_can_update_profile,
+               ${function}(${column}) as accumulation
         from users
-        left join asset_holders
-        on users.user_asset_holder_id = asset_holders.asset_holder_id
-        left join assets on asset_holder_id = asset_owner_id
-        group by
-        user_id,
-        user_password,
-        user_asset_holder_id,
-        asset_holder_id,
-        asset_holder_name,
-        asset_holder_email,
-        asset_holder_phone,
-        asset_holder_address_id,
-        asset_holder_contact_preferences_id,
-        asset_holder_last_modified
+                 left join asset_holders
+                           on user_asset_holder_id = asset_holder_id
+                 left join assets
+                           on asset_holder_id = asset_owner_id
+                 left join address
+                           on address_id = asset_holder_address_id
+                 left join contact_preferences
+                           on contact_preferences_id = asset_holder_contact_preferences_id
+                 left join permission_configs
+                           on user_id = permission_config_user_id
+        <include refid="ResultMaps.filtering"/>
+        group by user_id,
+            user_is_admin,
+            user_avatar,
+            user_asset_holder_id,
+            asset_holder_id,
+            asset_holder_name,
+            asset_holder_email,
+            asset_holder_phone,
+            asset_holder_address_id,
+            address_street,
+            address_city,
+            address_postcode,
+            address_country,
+            asset_holder_contact_preferences_id,
+            contact_preferences_email,
+            contact_preferences_phone,
+            contact_preferences_post,
+            contact_preferences_discord,
+            contact_preferences_telegram,
+            contact_preferences_whatsapp,
+            asset_holder_last_modified,
+            permission_config_can_create_asset,
+            permission_config_can_set_polygon_on_create,
+            permission_config_can_update_asset_fields,
+            permission_config_can_update_asset_polygon,
+            permission_config_can_delete_asset,
+            permission_config_can_update_profile
         <include refid="ResultMaps.orderAndPage"/>
     </select>
 
-    <select id="selectUserById" resultMap="ResultMaps.UserMap">
-        select *
+    <select id="selectPasswordByUserId" resultType="java.lang.String">
+        select user_password
         from users
         where user_id = #{id};
     </select>
 
-    <select id="loginQuery" resultMap="ResultMaps.UserMap">
-        select *
+    <select id="selectUserRowIdByUserId" resultType="java.lang.Long">
+        select user_row_id
         from users
         where user_id = #{id}
-          and user_password = #{password};
     </select>
 
-    <select id="selectUserByAssetHolderId" resultMap="ResultMaps.UserMap">
-        select *
+    <select id="groupUsersWithOwnedAssetsByWarningId" resultMap="ResultMaps.UserWithAssetsMap">
+        select users.*,
+               asset_holders.*,
+               address.*,
+               contact_preferences.*,
+               asset_id,
+               asset_name,
+               asset_type_id,
+               asset_owner_id,
+               ST_AsGeoJSON(asset_location) as asset_location,
+               asset_capacity_litres,
+               asset_material,
+               asset_status,
+               asset_installed_at,
+               asset_last_inspection,
+               asset_last_modified,
+               asset_types.*
         from users
-        where user_asset_holder_id = #{assetHolderId};
+                left join asset_holders
+                            on user_asset_holder_id = asset_holder_id
+                left join address
+                            on address_id = asset_holder_address_id
+                left join contact_preferences
+                            on contact_preferences_id = asset_holder_contact_preferences_id
+                inner join assets
+                            on asset_holder_id = asset_owner_id
+                left join asset_types
+                            on asset_type_type_id = asset_type_id
+        <if test="getDiff == null or getDiff == false">
+                inner join weather_warnings
+                            on warning_id = #{warningId}
+                                and ST_Intersects(asset_location, warning_area)
+                                and now() between warning_valid_from and warning_valid_to
+        </if>
+        where 1=1
+        <if test="getDiff != null and getDiff == true">
+            and ST_Intersects(asset_location, ST_Multi(ST_GeomFromGeoJSON(#{newArea})))
+            and asset_id not in (
+                select a.asset_id
+                from assets a
+                    join weather_warnings w
+                        on w.warning_id = #{warningId}
+                where ST_Intersects(a.asset_location, w.warning_area)
+                    and now() between warning_valid_from and warning_valid_to
+            )
+        </if>
+        <if test="limit != null and cursor != null">
+            and user_row_id > #{cursor}
+            order by user_row_id
+            limit #{limit}
+        </if>
     </select>
 
-    <select id="selectUserByAdmin" resultMap="ResultMaps.UserMap">
-        select *
+    <select id="countUsers" resultType="int">
+        select count(distinct user_id)
         from users
-        where user_is_admin = #{isAdmin}
-        <include refid="ResultMaps.orderAndPage"/>
+                 left join asset_holders
+                           on user_asset_holder_id = asset_holder_id
+                 left join assets
+                           on asset_holder_id = asset_owner_id
+                 left join address
+                           on asset_holder_address_id = address_id
+                 left join contact_preferences
+                           on asset_holder_contact_preferences_id = contact_preferences_id
+                 left join permission_configs
+                           on permission_config_user_id = user_id
+        <include refid="ResultMaps.filtering"/>
     </select>
 
     <insert id="insertUser">
-        insert into users (user_id, user_password, user_asset_holder_id, user_is_admin)
-        values (#{id}, #{password}, #{assetHolderId}, #{admin});
+        insert into users (user_id,
+                           user_password,
+                           user_password_plaintext,
+                           user_avatar,
+                           user_asset_holder_id,
+                           user_is_admin)
+        values (#{id}, #{password}, #{passwordPlainText}, #{avatar}, #{assetHolderId}, #{admin});
     </insert>
 
     <update id="updateUserByUserId">
         update users
         <set>
-            <if test="assetHolderId != null and assetHolderId != ''">user_asset_holder_id = #{assetHolderId},</if>
-            <if test="password != null and password != ''">user_password = #{password},</if>
-            <if test="admin != null">user_is_admin = #{admin},</if>
+            <if test="avatar != null and avatar != ''">
+                user_avatar = #{avatar},
+            </if>
+            <if test="assetHolderId != null and assetHolderId != ''">
+                user_asset_holder_id = #{assetHolderId},
+            </if>
+            <if test="admin != null">
+                user_is_admin = #{admin},
+            </if>
+        </set>
+        where user_id = #{id};
+    </update>
+
+    <update id="updateUserPasswordByUserId">
+        update users
+        <set>
+            <if test="password != null and password != ''">
+                user_password = #{password},
+            </if>
+            <if test="passwordPlainText != null and passwordPlainText != ''">
+                user_password_plaintext =#{passwordPlainText},
+            </if>
         </set>
         where user_id = #{id};
     </update>
 
     <delete id="deleteUserByAssetHolderIDs">
-        delete from users where user_asset_holder_id in
+        delete
+        from users
+        where user_asset_holder_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 
     <delete id="deleteUserByIds">
-        delete from users where user_id in
+        delete
+        from users
+        where user_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 </mapper>

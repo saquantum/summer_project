@@ -1,12 +1,13 @@
 package uk.ac.bristol.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
-import uk.ac.bristol.pojo.User;
-import uk.ac.bristol.service.AssetService;
-import uk.ac.bristol.service.UserService;
-import uk.ac.bristol.service.WarningService;
+import uk.ac.bristol.exception.SpExceptions;
+import uk.ac.bristol.pojo.FilterDTO;
+import uk.ac.bristol.pojo.PermissionConfig;
+import uk.ac.bristol.pojo.Template;
+import uk.ac.bristol.service.ContactService;
+import uk.ac.bristol.service.MetaDataService;
+import uk.ac.bristol.service.PermissionConfigService;
 import uk.ac.bristol.util.QueryTool;
 
 import java.util.List;
@@ -17,107 +18,134 @@ import java.util.Map;
 @CrossOrigin
 public class AdminController {
 
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    private final MetaDataService metaDataService;
+    private final PermissionConfigService permissionConfigService;
+    private final ContactService contactService;
 
-    private final UserService userService;
-    private final AssetService assetService;
-    private final WarningService warningService;
-
-    public AdminController(UserService userService, AssetService assetService, WarningService warningService) {
-        this.userService = userService;
-        this.assetService = assetService;
-        this.warningService = warningService;
+    public AdminController(MetaDataService metaDataService, PermissionConfigService permissionConfigService, ContactService contactService) {
+        this.metaDataService = metaDataService;
+        this.permissionConfigService = permissionConfigService;
+        this.contactService = contactService;
     }
 
-    @GetMapping("/user/all")
-    public ResponseBody getAllUsers(@RequestParam(required = false) List<String> orderList,
-                                    @RequestParam(required = false) Integer limit,
-                                    @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAssetHolder(QueryTool.getOrderList(orderList), limit, offset));
+    @GetMapping("/metadata")
+    public ResponseBody getAllMetaData() {
+        return new ResponseBody(Code.SELECT_OK, metaDataService.getAllMetaData());
     }
 
-    @GetMapping("/user/unauthorised")
-    public ResponseBody getAllUnauthorisedUsersWithAssetHolder(@RequestParam(required = false) List<String> orderList,
-                                                               @RequestParam(required = false) Integer limit,
-                                                               @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, userService.getAllUnauthorisedUsersWithAssetHolder(QueryTool.getOrderList(orderList), limit, offset));
+    @GetMapping("/metadata/{tableName}")
+    public ResponseBody getMetaDataByTableName(@PathVariable String tableName) {
+        return new ResponseBody(Code.SELECT_OK, metaDataService.getMetaDataByTableName(tableName));
     }
 
-    @GetMapping("/user/with-asset-ids")
-    public ResponseBody getAllAssetHoldersWithAssetIds(@RequestParam(required = false) List<String> orderList,
-                                                       @RequestParam(required = false) Integer limit,
-                                                       @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, userService.getAllAssetHoldersWithAssetIds(QueryTool.getOrderList(orderList), limit, offset));
-    }
-
-    /**
-     * e.g. "/user/accumulate?function=count"
-     * <br><br>
-     * BE AWARE: This SQL Statement is weak to SQL injection, do pass verified parameter in!
-     */
-    @GetMapping("/user/accumulate")
-    public ResponseBody getAllUsersWithAccumulator(@RequestParam String function,
-                                                   @RequestParam String column,
-                                                   @RequestParam(required = false) List<String> orderList,
-                                                   @RequestParam(required = false) Integer limit,
-                                                   @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAccumulator(function, column, QueryTool.getOrderList(orderList), limit, offset));
-    }
-
-    @GetMapping("/user/uid/{id}")
-    public ResponseBody getUserByUserId(@PathVariable String id,
-                                        @RequestParam(required = false) List<String> orderList,
+    @GetMapping("/template")
+    public ResponseBody getAllTemplates(@RequestParam(required = false) List<String> orderList,
                                         @RequestParam(required = false) Integer limit,
                                         @RequestParam(required = false) Integer offset) {
-        User user = userService.getUserByUserId(id, QueryTool.getOrderList(orderList), limit, offset);
-        user.setPassword(null);
-        return new ResponseBody(Code.SELECT_OK, user);
+        FilterDTO filter = new FilterDTO(limit);
+        String message = QueryTool.formatPaginationLimit(filter);
+        return new ResponseBody(Code.SELECT_OK, contactService.getAllNotificationTemplates(
+                null,
+                QueryTool.getOrderList(orderList),
+                filter.getLimit(),
+                offset
+        ), message);
     }
 
-    @GetMapping("/user/aid/{id}")
-    public ResponseBody getUserByAssetHolderId(@PathVariable String id,
-                                               @RequestParam(required = false) List<String> orderList,
-                                               @RequestParam(required = false) Integer limit,
-                                               @RequestParam(required = false) Integer offset) {
-        User user = userService.getUserByAssetHolderId(id, QueryTool.getOrderList(orderList), limit, offset);
-        user.setPassword(null);
-        return new ResponseBody(Code.SELECT_OK, user);
-    }
-
-    @PostMapping("/user")
-    public ResponseBody insertUsers(@RequestBody List<User> list) {
-        for (User u : list) {
-            userService.insertUser(u);
+    @PostMapping("/template/search")
+    public ResponseBody getAllTemplates(@RequestBody FilterDTO filter) {
+        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
+            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
         }
-        return new ResponseBody(Code.INSERT_OK, null);
+        String message = QueryTool.formatPaginationLimit(filter);
+        return new ResponseBody(Code.SELECT_OK, contactService.getAllNotificationTemplates(
+                filter.getFilters(),
+                QueryTool.getOrderList(filter.getOrderList()),
+                filter.getLimit(),
+                filter.getOffset()
+        ), message);
     }
 
-    @PutMapping("/user")
-    public ResponseBody updateUsers(@RequestBody List<User> list) {
-        for (User u : list) {
-            userService.updateUser(u);
+    @GetMapping("/template/type")
+    public ResponseBody getTemplateByTypes(@RequestParam(value = "assetTypeId", required = true) String assetTypeId,
+                                           @RequestParam(value = "warningType", required = true) String warningType,
+                                           @RequestParam(value = "severity", required = true) String severity,
+                                           @RequestParam(value = "channel", required = true) String channel) {
+        Template template = new Template();
+        template.setAssetTypeId(assetTypeId);
+        template.setWarningType(warningType);
+        template.setSeverity(severity);
+        template.setContactChannel(channel);
+        return new ResponseBody(Code.SELECT_OK, contactService.getNotificationTemplateByTypes(template));
+    }
+
+    @GetMapping("/template/id/{id}")
+    public ResponseBody getTemplateById(@PathVariable Long id) {
+        return new ResponseBody(Code.SELECT_OK, contactService.getNotificationTemplateById(id));
+    }
+
+    @PostMapping("/template")
+    public ResponseBody insertTemplate(@RequestBody Template template) {
+        template.setId(null);
+        return new ResponseBody(Code.INSERT_OK, contactService.insertNotificationTemplate(template));
+    }
+
+    @PutMapping("/template/type")
+    public ResponseBody updateTemplateByTypes(@RequestBody Template template) {
+        return new ResponseBody(Code.UPDATE_OK, contactService.updateNotificationTemplateMessageByTypes(template));
+    }
+
+    @PutMapping("/template/id")
+    public ResponseBody updateTemplateById(@RequestBody Template template) {
+        return new ResponseBody(Code.UPDATE_OK, contactService.updateNotificationTemplateMessageById(template));
+    }
+
+    @DeleteMapping("/template")
+    public ResponseBody deleteTemplatesByIds(@RequestBody Map<String, Object> body) {
+        List<Long> ids = (List<Long>) body.get("ids");
+        return new ResponseBody(Code.DELETE_OK, contactService.deleteNotificationTemplateByIds(ids));
+    }
+
+    @GetMapping("/permission")
+    public ResponseBody getAllPermissions(@RequestParam(required = false) List<String> orderList,
+                                          @RequestParam(required = false) Integer limit,
+                                          @RequestParam(required = false) Integer offset) {
+        FilterDTO filter = new FilterDTO(limit);
+        String message = QueryTool.formatPaginationLimit(filter);
+        return new ResponseBody(Code.SELECT_OK, permissionConfigService.getAllPermissionConfigs(
+                null,
+                QueryTool.getOrderList(orderList),
+                filter.getLimit(),
+                offset
+        ), message);
+    }
+
+    @PostMapping("/permission/search")
+    public ResponseBody getAllPermissions(@RequestBody FilterDTO filter) {
+        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
+            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
         }
-        return new ResponseBody(Code.UPDATE_OK, null);
+        String message = QueryTool.formatPaginationLimit(filter);
+        return new ResponseBody(Code.SELECT_OK, permissionConfigService.getAllPermissionConfigs(
+                filter.getFilters(),
+                QueryTool.getOrderList(filter.getOrderList()),
+                filter.getLimit(),
+                filter.getOffset()
+        ), message);
     }
 
-    // TODO: Consider soft delete.
-    @DeleteMapping("/user")
-    public ResponseBody deleteUserByUserIds(@RequestBody Map<String, Object> body) {
-        List<String> ids = (List<String>) body.get("ids");
-        return new ResponseBody(Code.DELETE_OK, userService.deleteUserByUserIds(ids));
+    @GetMapping("/permission/{uid}")
+    public ResponseBody getPermissionByUserId(@PathVariable String uid) {
+        return new ResponseBody(Code.SELECT_OK, permissionConfigService.getPermissionConfigByUserId(uid));
     }
 
-    @GetMapping("/asset")
-    public ResponseBody getAllAssetsWithWarnings(@RequestParam(required = false) List<String> orderList,
-                                                 @RequestParam(required = false) Integer limit,
-                                                 @RequestParam(required = false) Integer offset) {
-        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetsWithWarnings(QueryTool.getOrderList(orderList), limit, offset));
+    @PostMapping("/permission")
+    public ResponseBody insertPermissionConfig(@RequestBody PermissionConfig permissionConfig) {
+        return new ResponseBody(Code.INSERT_OK, permissionConfigService.insertPermissionConfig(permissionConfig));
     }
 
-    @GetMapping("/asset/{assetId}")
-    public ResponseBody getAssetById(@PathVariable String assetId) {
-        return new ResponseBody(Code.SELECT_OK, assetService.getAssetWithWarningsById(assetId));
+    @PutMapping("/permission")
+    public ResponseBody updatePermissionConfig(@RequestBody PermissionConfig permissionConfig) {
+        return new ResponseBody(Code.UPDATE_OK, permissionConfigService.updatePermissionConfigByUserId(permissionConfig));
     }
-
 }

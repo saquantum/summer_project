@@ -422,5 +422,155 @@
         "id": 1606
       }
     ]
+  },
+  {
+    "type" : "FeatureCollection",
+    "features" : [
+      {
+        "type" : "Feature",
+        "id" : 1658,
+        "geometry" :
+        {
+          "type" : "Polygon",
+          "coordinates" :
+          [
+            [
+              [-2.3717, 55.9926],
+              [-2.233, 55.9796],
+              [-2.0586, 55.9254],
+              [-1.8999, 55.7947],
+              [-1.7194, 55.7055],
+              [-1.6198, 55.6288],
+              [-1.5051, 55.4789],
+              [-1.4612, 55.2729],
+              [-1.3788, 55.1271],
+              [-1.2854, 54.9429],
+              [-1.1975, 54.7658],
+              [-1.1302, 54.7024],
+              [-1.0547, 54.6492],
+              [-1.0561, 54.5744],
+              [-1.1797, 54.5267],
+              [-1.3513, 54.5019],
+              [-1.5147, 54.5211],
+              [-1.6411, 54.5808],
+              [-2.0105, 54.5115],
+              [-2.1808, 54.6516],
+              [-2.2083, 54.8323],
+              [-2.428, 54.9587],
+              [-2.395, 55.0689],
+              [-2.6202, 55.2165],
+              [-2.8015, 55.3041],
+              [-3.0652, 55.4446],
+              [-3.2629, 55.5597],
+              [-3.3069, 55.7085],
+              [-3.4799, 55.8776],
+              [-3.6186, 55.9],
+              [-3.6996, 55.9469],
+              [-3.7189, 56.0168],
+              [-3.6557, 56.069],
+              [-3.5294, 56.1226],
+              [-3.3426, 56.1425],
+              [-3.2162, 56.141],
+              [-3.013, 56.1287],
+              [-2.8427, 56.1119],
+              [-2.7061, 56.0973],
+              [-2.5859, 56.077],
+              [-2.4953, 56.0452],
+              [-2.3717, 55.9926]
+            ]
+          ]
+        },
+        "properties" : {
+          "OBJECTID" : 1658,
+          "weathertype" : "THUNDERSTORM",
+          "warninglevel" : "YELLOW",
+          "warningheadline" : "Slow-moving heavy showers and thunderstorms may lead to some travel disruption and flooding in a few places",
+          "validfromdate" : 1751450400000,
+          "validtodate" : 1751475600000,
+          "GlobalID" : "f7381ba0-9943-49d9-ae82-80e2f8d01963",
+          "warningImpact" : "2/Low",
+          "warningLikelihood" : "3/Likely",
+          "warningVersion" : "1.0",
+          "affectedAreas" : "Central, Tayside & Fife (Falkirk, Fife);\n\nNorth East England (Darlington, Durham, Gateshead, Hartlepool, Middlesbrough, Newcastle upon Tyne, North Tyneside, Northumberland, Redcar and Cleveland, South Tyneside, Stockton-on-Tees, Sunderland);\n\nSW Scotland, Lothian Borders (East Lothian, Edinburgh, Midlothian Council, Scottish Borders, West Lothian)",
+          "whatToExpect" : "There is a good chance driving conditions will be affected by spray, standing water, leading to longer journey times by car and bus.\n\nDelays to train services are possible.\n\nSome short term loss of power and other services is likely.\n\nPossibly some flooding of a few homes and businesses leading to some damage to buildings or structures as well as some damage to a few buildings and structures from lightning strikes",
+          "warningFurtherDetails" : "Heavy showers and some thunderstorms are expected to develop across parts of southeast Scotland and northeast England on Wednesday, clearing east into the North Sea later in the afternoon. Whilst some places may see relatively small amounts of rainfall, a few locations could see 15-20 mm of rain in an hour or less leading to some impacts from surface water flooding. Where several showers move over the same area, there is a chance of 20-30 mm falling in 2-3 hours.\n\nAs the showers clear to the east strong winds may develop on the western flank with gusts of around 40 mph possible for a short period of time.\n\nWhat Should I Do?\n\nConsider if your location is at risk of flash flooding. If so, consider preparing a flood plan and an \nemergency flood kit. \n\nGive yourself the best chance of avoiding delays by checking road conditions if driving, or bus and \ntrain timetables, amending your travel plans if necessary.\n\nPeople cope better with power cuts when they have prepared for them in advance. It’s easy to do; \nconsider gathering torches and batteries, a mobile phone power pack and other essential items.\n\nIf you find yourself outside and hear thunder, protect yourself by finding a safe enclosed shelter \n(such as a car). Do not shelter under or near trees, or other structures which may be struck by \nlightning. If you are on an elevated area move to lower ground.\n\nBe prepared for weather warnings to change quickly: when a weather warning is issued, the Met \nOffice recommends staying up to date with the weather forecast in your area.",
+          "warningUpdateDescription" : null,
+          "issuedDate" : 1751442994000,
+          "issuedDateString" : "02-07-2025 08:56:34 AM BST",
+          "validFromDateString" : "02-07-2025 11:00:00 AM BST",
+          "validToDateString" : "02-07-2025 06:00:00 PM BST",
+          "modifiedDateString" : "02-07-2025 08:56:34 AM BST"
+        }
+      }
+    ]
+  },
+  {
+    "type" : "FeatureCollection",
+    "features" : [
+      {
+        "type" : "Feature",
+        "id" : 1659,
+        "geometry" :
+        {
+          "type" : "Polygon",
+          "coordinates" :
+          [
+            [
+              [-5.2954, 57.8769],
+              [-5.1526, 57.7892],
+              [-4.9768, 57.71],
+              [-4.9438, 57.6278],
+              [-4.9658, 57.4804],
+              [-4.7681, 57.2196],
+              [-4.7021, 57.0049],
+              [-4.7571, 56.7407],
+              [-4.7351, 56.5413],
+              [-4.6033, 56.4139],
+              [-4.5538, 56.35],
+              [-4.5154, 56.2464],
+              [-4.5264, 56.118],
+              [-4.5593, 55.9953],
+              [-4.7296, 55.826],
+              [-5.0647, 55.7024],
+              [-5.4822, 55.7518],
+              [-5.9052, 55.8907],
+              [-6.1743, 56.0229],
+              [-6.3611, 56.1792],
+              [-6.4874, 56.3622],
+              [-6.4929, 56.5595],
+              [-6.427, 56.7346],
+              [-6.6742, 57.0258],
+              [-6.7841, 57.2879],
+              [-6.828, 57.4745],
+              [-6.4215, 57.7862],
+              [-6.0315, 57.8886],
+              [-5.5811, 57.9528],
+              [-5.2954, 57.8769]
+            ]
+          ]
+        },
+        "properties" : {
+          "OBJECTID" : 1659,
+          "weathertype" : "RAIN",
+          "warninglevel" : "YELLOW",
+          "warningheadline" : "Persistent, heavy rain on Friday and Saturday brings difficult travel conditions and possible flooding in places.",
+          "validfromdate" : 1751605200000,
+          "validtodate" : 1751724000000,
+          "GlobalID" : "9fc2c77e-e989-442d-9fa9-d548453193b5",
+          "warningImpact" : "2/Low",
+          "warningLikelihood" : "3/Likely",
+          "warningVersion" : "1.0",
+          "affectedAreas" : "Central, Tayside & Fife (Perth and Kinross, Stirling);\n\nHighlands & Eilean Siar (Highland);\n\nStrathclyde (Argyll and Bute, Inverclyde, North Ayrshire, Renfrewshire, West Dunbartonshire)",
+          "whatToExpect" : "Spray and flooding on roads probably making journey times longer.\n\nBus and train services probably affected with journey times taking longer.\n\nSome interruption to power supplies and other services possible",
+          "warningFurtherDetails" : "Rain is expected to be persistent, and heavy at times, during much of Friday and overnight, before slowly easing later on Saturday. 40 to 60 mm rain is expected to build up quite widely with in excess of 100 mm over a few mountains. \n\nRain will be accompanied by windy conditions, especially Friday daytime when gusts will reach 40 to 50 mph around coasts and hills.\n\nWhat Should I Do?\n\nKeep yourself and others safe; prepare to avoid travelling by road during potentially dangerous road conditions. If you must travel, ensure you watch for possible danger and drive cautiously.  \n\nIt is not safe to drive, walk or swim through floodwater, avoid it where possible and if you are affected by fast flowing or deep-water call 999, and wait for help.  \n\nPreparing a flood kit could save you from loss or damage due to flooding to your home or business.  In your flood kit have: insurance and any other important documents; a torch & spare batteries; a first aid kit, prescription medicines and supplies for looking after your family members or pets; and warm, waterproof clothes, blankets, food and water.  \n\nConsider checking on vulnerable people that you know including older people, those with underlying conditions and those who live alone; they may need support with food and medical supplies. \n\nIf you are worried about your health or that of somebody you know, ring NHS 111.\n\nStay up to date with the weather forecast for your area and follow advice from emergency services and local authorities.",
+          "warningUpdateDescription" : null,
+          "issuedDate" : 1751530422000,
+          "issuedDateString" : "03-07-2025 09:13:42 AM BST",
+          "validFromDateString" : "04-07-2025 06:00:00 AM BST",
+          "validToDateString" : "05-07-2025 03:00:00 PM BST",
+          "modifiedDateString" : "03-07-2025 09:13:42 AM BST"
+        }
+      }
+    ]
   }
 ]

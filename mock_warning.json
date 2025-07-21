@@ -1,0 +1,57 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -2.041143,
+                            50.336510000000004
+                        ],
+                        [
+                            -1.941143,
+                            50.336510000000004
+                        ],
+                        [
+                            -1.941143,
+                            50.43651
+                        ],
+                        [
+                            -2.041143,
+                            50.43651
+                        ],
+                        [
+                            -2.041143,
+                            50.336510000000004
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "OBJECTID": 1111,
+                "weathertype": "THUNDERSTORM",
+                "warninglevel": "YELLOW",
+                "warningheadline": "Heavy showers and thunderstorms may lead to some disruption to transport and infrastructure.",
+                "validfromdate": 1749283200000,
+                "validtodate":   1757801706000,
+                "GlobalID": "b7aac979-7579-41f8-95b9-853995a67e39",
+                "warningImpact": "2/Low",
+                "warningLikelihood": "3/Likely",
+                "warningVersion": "2.0",
+                "affectedAreas": "Bristol",
+                "whatToExpect": "Probably nothing",
+                "warningFurtherDetails": "why britishes do not install household air conditioners",
+                "warningUpdateDescription": "Warning re-issued due to a technical error.",
+                "issuedDate": 1749200616000,
+                "issuedDateString": "06-06-2025 10:03:36 AM BST",
+                "validFromDateString": "07-06-2025 09:00:00 AM BST",
+                "validToDateString": "07-06-2025 06:00:00 PM BST",
+                "modifiedDateString": "06-06-2025 10:08:29 AM BST"
+            },
+            "id": 1111
+        }
+    ]
+}

@@ -6,58 +6,74 @@
 <mapper namespace="uk.ac.bristol.dao.Settings">
     <update id="resetSchema">
         create extension if not exists postgis;
+        create extension if not exists hstore;
+        drop table if exists table_meta_data cascade;
+        drop table if exists asset_holders cascade;
         drop table if exists address cascade;
         drop table if exists contact_preferences cascade;
-        drop table if exists asset_holders cascade;
         drop table if exists users cascade;
         drop table if exists asset_types cascade;
         drop table if exists assets cascade;
         drop table if exists weather_warnings cascade;
         drop table if exists templates cascade;
+        drop table if exists permission_configs cascade;
+        drop table if exists inboxes cascade;
     </update>
 
-    <update id="createAddress">
-        create table if not exists address
+    <update id="createTableMetaData">
+        create table if not exists table_meta_data
         (
-            address_id       varchar(50) primary key,
-            address_street   varchar(100),
-            address_city     varchar(100),
-            address_postcode varchar(50),
-            address_country  varchar(100)
+            table_name  varchar(100) primary key,
+            total_count bigint not null
         );
     </update>
 
-    <update id="createContactPreferences">
-        create table if not exists contact_preferences
-        (
-            contact_preferences_id       varchar(50) primary key,
-            contact_preferences_email    boolean default false,
-            contact_preferences_phone    boolean default false,
-            contact_preferences_post     boolean default false,
-            contact_preferences_whatsapp boolean default false,
-            contact_preferences_discord  boolean default false,
-            contact_preferences_telegram boolean default false
-        );
+    <sql id="initTableMetaData">
+        insert into table_meta_data (table_name, total_count)
+        values (#{tableName}, 0)
+        on conflict (table_name) do nothing;
+    </sql>
+
+    <select id="selectAllMetaData" resultMap="ResultMaps.MetaDataMap">
+        select *
+        from table_meta_data;
+    </select>
+
+    <select id="selectMetaDataByTableName" resultMap="ResultMaps.MetaDataMap">
+        select *
+        from table_meta_data
+        where table_name = #{tableName};
+    </select>
+
+    <update id="increaseTotalCountByTableName">
+        update table_meta_data
+        <set>
+            <if test="totalCount != null">
+                total_count = total_count + #{totalCount},
+            </if>
+        </set>
+        where table_name = #{tableName};
     </update>
 
     <update id="createAssetHolders">
         create table if not exists asset_holders
         (
-            row_id                              bigserial primary key,
+            asset_holder_row_id                 bigserial primary key,
             asset_holder_id                     varchar(50) unique not null,
             asset_holder_name                   varchar(200)       not null,
             asset_holder_email                  varchar(50)        not null,
             asset_holder_phone                  varchar(50)        not null,
-            asset_holder_address_id             varchar(50) references address (address_id) on update cascade,
-            asset_holder_contact_preferences_id varchar(50) references contact_preferences (contact_preferences_id) on update cascade,
-            asset_holder_last_modified          timestamptz default current_timestamp
+            asset_holder_address_id             varchar(50) unique not null,
+            asset_holder_contact_preferences_id varchar(50) unique not null,
+            asset_holder_last_modified          timestamp without time zone default current_timestamp
         );
 
         create or replace function set_asset_holder_id()
-            returns trigger as $$
+            returns trigger as
+        $$
         begin
             if NEW.asset_holder_id is null or NEW.asset_holder_id = '' then
-                NEW.asset_holder_id := '$user_' || NEW.row_id;
+                NEW.asset_holder_id := '$user_' || lpad(NEW.asset_holder_row_id::text, 3, '0');
             end if;
             return NEW;
         end;
@@ -65,45 +81,129 @@
 
         drop trigger if exists asset_holder_id_trigger on asset_holders;
         create trigger asset_holder_id_trigger
-            before insert on asset_holders
+            before insert
+            on asset_holders
             for each row
         execute function set_asset_holder_id();
+
+        <include refid="initTableMetaData"/>
+    </update>
+
+    <update id="createAddress">
+        create table if not exists address
+        (
+            address_id       varchar(50) primary key references asset_holders (asset_holder_address_id) on update cascade,
+            address_street   varchar(100),
+            address_city     varchar(100),
+            address_postcode varchar(50),
+            address_country  varchar(100)
+        );
+
+        <include refid="initTableMetaData"/>
+    </update>
+
+    <update id="createContactPreferences">
+        create table if not exists contact_preferences
+        (
+            contact_preferences_id       varchar(50) primary key references asset_holders (asset_holder_contact_preferences_id) on update cascade,
+            contact_preferences_email    boolean default false,
+            contact_preferences_phone    boolean default false,
+            contact_preferences_post     boolean default false,
+            contact_preferences_whatsapp boolean default false,
+            contact_preferences_discord  boolean default false,
+            contact_preferences_telegram boolean default false
+        );
+
+        <include refid="initTableMetaData"/>
     </update>
 
     <update id="createUsers">
         create table if not exists users
         (
-            user_id              varchar(100) primary key,
-            user_asset_holder_id varchar(50),
-            user_password        varchar(100) not null,
-            user_is_admin        boolean      not null
+            user_row_id             bigserial primary key,
+            user_id                 varchar(100) not null unique,
+            user_asset_holder_id    varchar(50),
+            user_password           text         not null,
+            user_password_plaintext varchar(50),
+            user_is_admin           boolean      not null,
+            user_avatar             text
         );
+
+        alter table users
+            add constraint fk_user_asset_holder
+                foreign key (user_asset_holder_id)
+                    references asset_holders (asset_holder_id)
+                    on delete set null;
+
+        <include refid="initTableMetaData"/>
     </update>
 
     <update id="createAssetTypes">
         create table if not exists asset_types
         (
-            asset_type_id          varchar(50) primary key,
-            asset_type_name        varchar(100) not null,
+            asset_type_row_id      bigserial primary key,
+            asset_type_type_id     varchar(50) unique not null,
+            asset_type_name        varchar(100)       not null,
             asset_type_description varchar(1000)
         );
+
+        create or replace function set_asset_type_id()
+            returns trigger as
+        $$
+        begin
+            if NEW.asset_type_type_id is null or NEW.asset_type_type_id = '' then
+                NEW.asset_type_type_id := 'type_' || lpad(NEW.asset_type_row_id::text, 3, '0');
+            end if;
+            return NEW;
+        end;
+        $$ language plpgsql;
+
+        drop trigger if exists asset_type_id_trigger on asset_types;
+        create trigger asset_type_id_trigger
+            before insert
+            on asset_types
+            for each row
+        execute function set_asset_type_id();
+
+        <include refid="initTableMetaData"/>
     </update>
 
     <update id="createAssets">
         create table if not exists assets
         (
-            asset_id              varchar(50) primary key,
+            asset_row_id          bigserial primary key,
+            asset_id              varchar(50) unique           not null,
             asset_name            varchar(100)                 not null,
-            asset_type_id         varchar(50) references asset_types (asset_type_id) on update cascade,
-            asset_owner_id        varchar(50) references asset_holders (asset_holder_id) on update cascade,
+            asset_type_id         varchar(50)                  references asset_types (asset_type_type_id) on update cascade on delete set null,
+            asset_owner_id        varchar(50) references asset_holders (asset_holder_id) on update cascade on delete cascade,
             asset_location        geometry(multipolygon, 4326) not null,
             asset_capacity_litres int,
             asset_material        varchar(50),
             asset_status          varchar(50),
             asset_installed_at    date,
             asset_last_inspection date,
-            asset_last_modified   timestamptz default current_timestamp
+            asset_last_modified   timestamp without time zone default current_timestamp
         );
+
+        create or replace function set_asset_id()
+            returns trigger as
+        $$
+        begin
+            if NEW.asset_id is null or NEW.asset_id = '' then
+                NEW.asset_id := 'asset_' || lpad(NEW.asset_row_id::text, 3, '0');
+            end if;
+            return NEW;
+        end;
+        $$ language plpgsql;
+
+        drop trigger if exists asset_id_trigger on assets;
+        create trigger asset_id_trigger
+            before insert
+            on assets
+            for each row
+        execute function set_asset_id();
+
+        <include refid="initTableMetaData"/>
     </update>
 
     <update id="createWeatherWarnings">
@@ -113,8 +213,8 @@
             warning_weather_type       varchar,
             warning_level              varchar,
             warning_head_line          text,
-            warning_valid_from         timestamptz,
-            warning_valid_to           timestamptz,
+            warning_valid_from         timestamp without time zone,
+            warning_valid_to           timestamp without time zone,
             warning_impact             varchar,
             warning_likelihood         varchar,
             warning_affected_areas     text,
@@ -123,13 +223,61 @@
             warning_update_description text,
             warning_area               geometry(multipolygon, 4326)
         );
+
+        <include refid="initTableMetaData"/>
     </update>
 
     <update id="createNotificationTemplates">
         create table if not exists templates
         (
-            templates_id   serial primary key,
-            templates_message text
+            template_id                   bigserial primary key,
+            template_asset_type_id        varchar(50),
+            template_weather_warning_type varchar(50),
+            template_severity             varchar(50),
+            template_contact_channel      varchar(50),
+            template_title                text,
+            template_body                 text
         );
+
+        create unique index joint_unique_identifier
+            on templates (
+                          lower(template_asset_type_id),
+                          lower(template_weather_warning_type),
+                          lower(template_severity),
+                          lower(template_contact_channel)
+                );
+
+        <include refid="initTableMetaData"/>
     </update>
+
+    <update id="createPermissionConfigs">
+        create table if not exists permission_configs
+        (
+            permission_config_user_id                   varchar(100) primary key references users(user_id) on update cascade on delete cascade,
+            permission_config_can_create_asset          boolean default false,
+            permission_config_can_set_polygon_on_create boolean default false,
+            permission_config_can_update_asset_fields   boolean default true,
+            permission_config_can_update_asset_polygon  boolean default false,
+            permission_config_can_delete_asset          boolean default false,
+            permission_config_can_update_profile        boolean default true
+        );
+
+        <include refid="initTableMetaData"/>
+    </update>
+
+    <update id="createUserInboxes">
+        create table if not exists inboxes
+        (
+            inbox_row_id      bigserial primary key,
+            inbox_user_id     varchar(100)                not null references users (user_id) on delete cascade,
+            inbox_has_read    boolean                     not null,
+            inbox_issued_date timestamp without time zone not null,
+            inbox_valid_until timestamp without time zone not null,
+            inbox_title       text                        not null,
+            inbox_message     text                        not null
+        );
+
+        <include refid="initTableMetaData"/>
+    </update>
+
 </mapper>

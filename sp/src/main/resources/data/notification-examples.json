@@ -1,0 +1,98 @@
+[
+  {
+    "title": "Prepare Your {{asset-model}} for Freezing Weather",
+    "body": "Dear {{contact_name}},\n\nWith freezing temperatures forecast in {{post_town}}, please empty your water-butt or ensure it’s no more than half full. This helps prevent ice expansion which can crack your water-butt and cause leaks.\n\nThank you for helping to protect your equipment and reduce water waste.\n\nBest regards,\n- Charlie, Our Rainwater",
+    "asset_type": "Water-Butt",
+    "contact_channel": "Email",
+    "severe_weather_type": "Freezing",
+    "severe_weather_severity": "Moderate"
+  },
+  {
+    "title": "Heatwave Alert: Use Your Stored Rainwater Wisely",
+    "body": "Dear {{contact_name}},\n\nA severe heatwave is expected in {{post_town}} this week. To conserve water, please use water collected in your water-butt to water your garden in the evening or early morning to reduce evaporation.\n\nYour efforts help manage local water resources during extreme heat.\n\nBest regards,\n- Charlie, Our Rainwater",
+    "asset_type": "Water-Butt",
+    "contact_channel": "Email",
+    "severe_weather_type": "Heatwave",
+    "severe_weather_severity": "Severe"
+  },
+  {
+    "title": "Heavy Rainfall Warning: Check Your {{asset-model}} Overflow",
+    "body": "Dear {{contact_name}},\n\nHeavy rain is forecast in {{post_town}} over the next few days. Please empty your water-butt to make space for the additional runoff, and ensure your water-butt overflow is clear and directed away from your home’s foundations to prevent flooding or water damage.\n\nStay safe and thank you for managing rainwater responsibly.\n\nBest regards,\n- Charlie, Our Rainwater",
+    "asset_type": "Water-Butt",
+    "contact_channel": "Email",
+    "severe_weather_type": "Heavy Rain",
+    "severe_weather_severity": "High"
+  },
+  {
+    "title": "Freeze Warning: Drain Water-Butt",
+    "body": "Freeze coming. Empty or half-fill your water-butt to stop ice damage. - Charlie, Our Rainwater",
+    "asset_type": "Water-Butt",
+    "contact_channel": "SMS",
+    "severe_weather_type": "Freezing",
+    "severe_weather_severity": "Moderate"
+  },
+  {
+    "title": "Heatwave: Use Rainwater",
+    "body": "Severe heat ahead. Water your garden from your water-butt in the evening to save water. - Charlie, Our Rainwater",
+    "asset_type": "Water-Butt",
+    "contact_channel": "SMS",
+    "severe_weather_type": "Heatwave",
+    "severe_weather_severity": "Severe"
+  },
+  {
+    "title": "Heavy Rain: Check Overflow",
+    "body": "Heavy rain coming. Clear your water-butt overflow to avoid flooding. - Charlie, Our Rainwater",
+    "asset_type": "Water-Butt",
+    "contact_channel": "SMS",
+    "severe_weather_type": "Heavy Rain",
+    "severe_weather_severity": "High"
+  },
+  {
+    "title": "Strong Winds Forecast: Secure Your {{asset-model}}",
+    "body": "Dear {{contact_name}},\n\nHigh winds are forecast in {{post_town}}. Please check your water-butt is secure and the lid is tightly fitted to prevent damage or tipping over.\n\nStay safe.\n\nBest regards,\n- Charlie, Our Rainwater",
+    "asset_type": "Water-Butt",
+    "contact_channel": "Email",
+    "severe_weather_type": "Windy",
+    "severe_weather_severity": "Moderate"
+  },
+  {
+    "title": "High Winds: Secure Water-Butt",
+    "body": "High winds coming. Check your water-butt lid is tight and the barrel is stable. - Charlie, Our Rainwater",
+    "asset_type": "Water-Butt",
+    "contact_channel": "SMS",
+    "severe_weather_type": "Windy",
+    "severe_weather_severity": "Moderate"
+  },
+  {
+    "title": "Cold Snap: Protect Your {{asset-model}}",
+    "body": "Dear {{contact_name}},\n\nFreezing weather is expected in {{post_town}}. You may want to insulate or cover your plants to protect them from frost damage.\n\nBest regards,\n- Charlie, Our Rainwater",
+    "asset_type": "SuDS Planter",
+    "contact_channel": "Email",
+    "severe_weather_type": "Freezing",
+    "severe_weather_severity": "Low"
+  },
+  {
+    "title": "Heavy Rain: Clear SuDS Drains",
+    "body": "Heavy rain due soon. Please clear leaves and debris from your SuDS planter overflow to help manage runoff. - Charlie, Our Rainwater",
+    "asset_type": "SuDS Planter",
+    "contact_channel": "SMS",
+    "severe_weather_type": "Heavy Rain",
+    "severe_weather_severity": "High"
+  },
+  {
+    "title": "Heatwave: Water Your {{asset-model}}",
+    "body": "Dear {{contact_name}},\n\nHot weather is forecast in {{post_town}}. Water your SuDS planter plants in the evening to keep them healthy and absorbent during dry spells.\n\nBest regards,\n- Charlie, Our Rainwater",
+    "asset_type": "SuDS Planter",
+    "contact_channel": "Email",
+    "severe_weather_type": "Heatwave",
+    "severe_weather_severity": "Moderate"
+  },
+  {
+    "title": "Windy Weather: Check SuDS Planter",
+    "body": "Strong winds expected. Ensure your SuDS planter is free of loose items and plant stakes are secure. - Charlie, Our Rainwater",
+    "asset_type": "SuDS Planter",
+    "contact_channel": "SMS",
+    "severe_weather_type": "Windy",
+    "severe_weather_severity": "Moderate"
+  }
+]

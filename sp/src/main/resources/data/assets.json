@@ -1,2002 +1,2119 @@
 [
-    {
-        "id": "asset_001",
-        "name": "Permeable Pavement #230",
-        "type_id": "type_004",
-        "owner_id": "user_020",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            69.415027,
-                            -24.081802
-                        ],
-                        [
-                            -121.546703,
-                            -46.728423
-                        ],
-                        [
-                            -134.280637,
-                            -50.415313
-                        ],
-                        [
-                            22.633238,
-                            -30.930646
-                        ],
-                        [
-                            29.258231,
-                            89.135351
-                        ]
-                    ]
-                ]
+  {
+    "id": "asset_001",
+    "name": "Permeable Pavement #230",
+    "type_id": "type_004",
+    "owner_id": "user_020",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -2.041143,
+              50.336510000000004
+            ],
+            [
+              -1.941143,
+              50.336510000000004
+            ],
+            [
+              -1.941143,
+              50.43651
+            ],
+            [
+              -2.041143,
+              50.43651
+            ],
+            [
+              -2.041143,
+              50.336510000000004
             ]
-        },
-        "capacity_litres": 8898,
-        "material": "Steel",
-        "status": "inactive",
-        "installed_at": "1975-04-04",
-        "last_inspection": "1998-06-15"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_002",
-        "name": "Retention Pond #465",
-        "type_id": "type_006",
-        "owner_id": "user_033",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -129.382308,
-                            4.949998
-                        ],
-                        [
-                            -14.149611,
-                            52.87443
-                        ],
-                        [
-                            119.016507,
-                            59.140788
-                        ],
-                        [
-                            105.444622,
-                            -0.94168
-                        ],
-                        [
-                            166.595801,
-                            27.904754
-                        ]
-                    ]
-                ]
+    "capacity_litres": 8898,
+    "material": "Steel",
+    "status": "inactive",
+    "installed_at": "1975-04-04",
+    "last_inspection": "1998-06-15"
+  },
+  {
+    "id": "asset_002",
+    "name": "Retention Pond #465",
+    "type_id": "type_006",
+    "owner_id": "user_033",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -2.037683,
+              55.028189000000005
+            ],
+            [
+              -1.937683,
+              55.028189000000005
+            ],
+            [
+              -1.937683,
+              55.128189
+            ],
+            [
+              -2.037683,
+              55.128189
+            ],
+            [
+              -2.037683,
+              55.028189000000005
             ]
-        },
-        "capacity_litres": 3820,
-        "material": "Steel",
-        "status": "inactive",
-        "installed_at": "1979-07-01",
-        "last_inspection": "1994-08-18"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_003",
-        "name": "Water Tank #955",
-        "type_id": "type_001",
-        "owner_id": "user_040",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -146.437308,
-                            -75.251394
-                        ],
-                        [
-                            -139.818757,
-                            6.169453
-                        ],
-                        [
-                            -76.303359,
-                            -53.156362
-                        ],
-                        [
-                            -57.08,
-                            43.063291
-                        ],
-                        [
-                            139.405591,
-                            49.836274
-                        ]
-                    ]
-                ]
+    "capacity_litres": 3820,
+    "material": "Steel",
+    "status": "inactive",
+    "installed_at": "1979-07-01",
+    "last_inspection": "1994-08-18"
+  },
+  {
+    "id": "asset_003",
+    "name": "Water Tank #955",
+    "type_id": "type_001",
+    "owner_id": "user_040",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              0.876664,
+              58.039567000000005
+            ],
+            [
+              0.9766640000000001,
+              58.039567000000005
+            ],
+            [
+              0.9766640000000001,
+              58.139567
+            ],
+            [
+              0.876664,
+              58.139567
+            ],
+            [
+              0.876664,
+              58.039567000000005
             ]
-        },
-        "capacity_litres": 1572,
-        "material": "Concrete",
-        "status": "inactive",
-        "installed_at": "2013-01-04",
-        "last_inspection": "2011-11-28"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_004",
-        "name": "Green Roof #952",
-        "type_id": "type_003",
-        "owner_id": "user_037",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            137.244206,
-                            -19.518063
-                        ],
-                        [
-                            -60.513956,
-                            -50.188108
-                        ],
-                        [
-                            -42.061324,
-                            54.370409
-                        ],
-                        [
-                            150.382752,
-                            9.772537
-                        ],
-                        [
-                            -144.809646,
-                            28.226093
-                        ]
-                    ]
-                ]
+    "capacity_litres": 1572,
+    "material": "Concrete",
+    "status": "inactive",
+    "installed_at": "2013-01-04",
+    "last_inspection": "2011-11-28"
+  },
+  {
+    "id": "asset_004",
+    "name": "Green Roof #952",
+    "type_id": "type_003",
+    "owner_id": "user_037",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -3.937982,
+              54.699160000000006
+            ],
+            [
+              -3.8379820000000002,
+              54.699160000000006
+            ],
+            [
+              -3.8379820000000002,
+              54.79916
+            ],
+            [
+              -3.937982,
+              54.79916
+            ],
+            [
+              -3.937982,
+              54.699160000000006
             ]
-        },
-        "capacity_litres": 2763,
-        "material": "Concrete",
-        "status": "active",
-        "installed_at": "2015-04-14",
-        "last_inspection": "1995-07-16"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_005",
-        "name": "Retention Pond #623",
-        "type_id": "type_006",
-        "owner_id": "user_003",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            45.258164,
-                            -26.032222
-                        ],
-                        [
-                            168.530561,
-                            -75.826126
-                        ],
-                        [
-                            128.958955,
-                            -19.96018
-                        ],
-                        [
-                            71.917847,
-                            -33.830702
-                        ],
-                        [
-                            -98.810649,
-                            48.307871
-                        ]
-                    ]
-                ]
+    "capacity_litres": 2763,
+    "material": "Concrete",
+    "status": "active",
+    "installed_at": "2015-04-14",
+    "last_inspection": "1995-07-16"
+  },
+  {
+    "id": "asset_005",
+    "name": "Retention Pond #623",
+    "type_id": "type_006",
+    "owner_id": "user_003",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -4.363091,
+              56.039958000000006
+            ],
+            [
+              -4.263091,
+              56.039958000000006
+            ],
+            [
+              -4.263091,
+              56.139958
+            ],
+            [
+              -4.363091,
+              56.139958
+            ],
+            [
+              -4.363091,
+              56.039958000000006
             ]
-        },
-        "capacity_litres": 2901,
-        "material": "Steel",
-        "status": "inactive",
-        "installed_at": "1970-04-10",
-        "last_inspection": "1997-09-07"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_006",
-        "name": "Green Roof #877",
-        "type_id": "type_003",
-        "owner_id": "user_017",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            87.732213,
-                            15.634847
-                        ],
-                        [
-                            -31.274248,
-                            -9.072114
-                        ],
-                        [
-                            59.341465,
-                            21.213389
-                        ],
-                        [
-                            -50.758518,
-                            -16.202014
-                        ],
-                        [
-                            133.288669,
-                            89.051803
-                        ]
-                    ]
-                ]
+    "capacity_litres": 2901,
+    "material": "Steel",
+    "status": "inactive",
+    "installed_at": "1970-04-10",
+    "last_inspection": "1997-09-07"
+  },
+  {
+    "id": "asset_006",
+    "name": "Green Roof #877",
+    "type_id": "type_003",
+    "owner_id": "user_017",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -3.177199,
+              53.253817000000005
+            ],
+            [
+              -3.0771990000000002,
+              53.253817000000005
+            ],
+            [
+              -3.0771990000000002,
+              53.353817
+            ],
+            [
+              -3.177199,
+              53.353817
+            ],
+            [
+              -3.177199,
+              53.253817000000005
             ]
-        },
-        "capacity_litres": 6180,
-        "material": "Plastic",
-        "status": "active",
-        "installed_at": "1980-10-25",
-        "last_inspection": "1997-02-04"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_007",
-        "name": "Rain Garden #806",
-        "type_id": "type_007",
-        "owner_id": "user_003",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -122.095059,
-                            -58.994953
-                        ],
-                        [
-                            26.996662,
-                            8.407401
-                        ],
-                        [
-                            124.879446,
-                            -21.899644
-                        ],
-                        [
-                            109.176316,
-                            44.263626
-                        ],
-                        [
-                            -137.084427,
-                            7.643403
-                        ]
-                    ]
-                ]
+    "capacity_litres": 6180,
+    "material": "Plastic",
+    "status": "active",
+    "installed_at": "1980-10-25",
+    "last_inspection": "1997-02-04"
+  },
+  {
+    "id": "asset_007",
+    "name": "Rain Garden #806",
+    "type_id": "type_007",
+    "owner_id": "user_003",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -3.813952,
+              50.811754
+            ],
+            [
+              -3.7139520000000004,
+              50.811754
+            ],
+            [
+              -3.7139520000000004,
+              50.911753999999995
+            ],
+            [
+              -3.813952,
+              50.911753999999995
+            ],
+            [
+              -3.813952,
+              50.811754
             ]
-        },
-        "capacity_litres": 881,
-        "material": "Composite",
-        "status": "active",
-        "installed_at": "2007-09-29",
-        "last_inspection": "2001-02-03"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_008",
-        "name": "Swale #481",
-        "type_id": "type_005",
-        "owner_id": "user_007",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            133.92912,
-                            -3.29868
-                        ],
-                        [
-                            -10.637119,
-                            -25.975846
-                        ],
-                        [
-                            24.719915,
-                            -29.469295
-                        ],
-                        [
-                            -22.357246,
-                            80.196838
-                        ],
-                        [
-                            -10.422313,
-                            75.604496
-                        ]
-                    ]
-                ]
+    "capacity_litres": 881,
+    "material": "Composite",
+    "status": "active",
+    "installed_at": "2007-09-29",
+    "last_inspection": "2001-02-03"
+  },
+  {
+    "id": "asset_008",
+    "name": "Swale #481",
+    "type_id": "type_005",
+    "owner_id": "user_007",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              1.10845,
+              56.566174000000004
+            ],
+            [
+              1.20845,
+              56.566174000000004
+            ],
+            [
+              1.20845,
+              56.666174
+            ],
+            [
+              1.10845,
+              56.666174
+            ],
+            [
+              1.10845,
+              56.566174000000004
             ]
-        },
-        "capacity_litres": 3166,
-        "material": "Concrete",
-        "status": "active",
-        "installed_at": "1972-08-20",
-        "last_inspection": "2014-06-14"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_009",
-        "name": "Water Tank #700",
-        "type_id": "type_001",
-        "owner_id": "user_013",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -72.517265,
-                            -78.846288
-                        ],
-                        [
-                            64.397863,
-                            -65.969923
-                        ],
-                        [
-                            -36.444137,
-                            88.957676
-                        ],
-                        [
-                            -68.622582,
-                            67.689413
-                        ],
-                        [
-                            -66.613045,
-                            48.756309
-                        ]
-                    ]
-                ]
+    "capacity_litres": 3166,
+    "material": "Concrete",
+    "status": "active",
+    "installed_at": "1972-08-20",
+    "last_inspection": "2014-06-14"
+  },
+  {
+    "id": "asset_009",
+    "name": "Water Tank #700",
+    "type_id": "type_001",
+    "owner_id": "user_013",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -3.5308469999999996,
+              55.064262
+            ],
+            [
+              -3.430847,
+              55.064262
+            ],
+            [
+              -3.430847,
+              55.164261999999994
+            ],
+            [
+              -3.5308469999999996,
+              55.164261999999994
+            ],
+            [
+              -3.5308469999999996,
+              55.064262
             ]
-        },
-        "capacity_litres": 7836,
-        "material": "Plastic",
-        "status": "maintenance",
-        "installed_at": "1975-12-07",
-        "last_inspection": "2010-09-11"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_010",
-        "name": "Soakaway #290",
-        "type_id": "type_002",
-        "owner_id": "user_035",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -79.172116,
-                            49.756113
-                        ],
-                        [
-                            -127.662973,
-                            -15.238493
-                        ],
-                        [
-                            -43.879416,
-                            -69.388843
-                        ],
-                        [
-                            143.653182,
-                            -71.651529
-                        ],
-                        [
-                            154.17274,
-                            31.723828
-                        ]
-                    ]
-                ]
+    "capacity_litres": 7836,
+    "material": "Plastic",
+    "status": "maintenance",
+    "installed_at": "1975-12-07",
+    "last_inspection": "2010-09-11"
+  },
+  {
+    "id": "asset_010",
+    "name": "Soakaway #290",
+    "type_id": "type_002",
+    "owner_id": "user_035",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              0.16256900000000002,
+              52.156484000000006
+            ],
+            [
+              0.262569,
+              52.156484000000006
+            ],
+            [
+              0.262569,
+              52.256484
+            ],
+            [
+              0.16256900000000002,
+              52.256484
+            ],
+            [
+              0.16256900000000002,
+              52.156484000000006
             ]
-        },
-        "capacity_litres": 4096,
-        "material": "Steel",
-        "status": "active",
-        "installed_at": "2024-03-19",
-        "last_inspection": "2023-09-13"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_011",
-        "name": "Rain Garden #314",
-        "type_id": "type_007",
-        "owner_id": "user_041",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            170.076614,
-                            -23.025328
-                        ],
-                        [
-                            162.154985,
-                            -68.460621
-                        ],
-                        [
-                            -76.863954,
-                            65.545157
-                        ],
-                        [
-                            -25.80383,
-                            17.728683
-                        ],
-                        [
-                            102.110689,
-                            2.272179
-                        ]
-                    ]
-                ]
+    "capacity_litres": 4096,
+    "material": "Steel",
+    "status": "active",
+    "installed_at": "2024-03-19",
+    "last_inspection": "2023-09-13"
+  },
+  {
+    "id": "asset_011",
+    "name": "Rain Garden #314",
+    "type_id": "type_007",
+    "owner_id": "user_041",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -0.9808330000000001,
+              56.798273
+            ],
+            [
+              -0.880833,
+              56.798273
+            ],
+            [
+              -0.880833,
+              56.898272999999996
+            ],
+            [
+              -0.9808330000000001,
+              56.898272999999996
+            ],
+            [
+              -0.9808330000000001,
+              56.798273
             ]
-        },
-        "capacity_litres": 8875,
-        "material": "Plastic",
-        "status": "maintenance",
-        "installed_at": "2009-10-12",
-        "last_inspection": "2016-09-02"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_012",
-        "name": "Green Roof #498",
-        "type_id": "type_003",
-        "owner_id": "user_020",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -91.216585,
-                            86.456047
-                        ],
-                        [
-                            27.31427,
-                            3.108282
-                        ],
-                        [
-                            97.621551,
-                            11.803876
-                        ],
-                        [
-                            69.841787,
-                            -78.991967
-                        ],
-                        [
-                            -28.000062,
-                            61.5009
-                        ]
-                    ]
-                ]
+    "capacity_litres": 8875,
+    "material": "Plastic",
+    "status": "maintenance",
+    "installed_at": "2009-10-12",
+    "last_inspection": "2016-09-02"
+  },
+  {
+    "id": "asset_012",
+    "name": "Green Roof #498",
+    "type_id": "type_003",
+    "owner_id": "user_020",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -0.751097,
+              52.855536
+            ],
+            [
+              -0.6510969999999999,
+              52.855536
+            ],
+            [
+              -0.6510969999999999,
+              52.955535999999995
+            ],
+            [
+              -0.751097,
+              52.955535999999995
+            ],
+            [
+              -0.751097,
+              52.855536
             ]
-        },
-        "capacity_litres": 1376,
-        "material": "Composite",
-        "status": "active",
-        "installed_at": "1970-05-02",
-        "last_inspection": "1980-09-14"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_013",
-        "name": "Rain Garden #579",
-        "type_id": "type_007",
-        "owner_id": "user_019",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -148.318447,
-                            82.939889
-                        ],
-                        [
-                            -22.128469,
-                            24.893336
-                        ],
-                        [
-                            -101.355508,
-                            -44.189904
-                        ],
-                        [
-                            21.310976,
-                            -76.354142
-                        ],
-                        [
-                            116.323555,
-                            -57.97378
-                        ]
-                    ]
-                ]
+    "capacity_litres": 1376,
+    "material": "Composite",
+    "status": "active",
+    "installed_at": "1970-05-02",
+    "last_inspection": "1980-09-14"
+  },
+  {
+    "id": "asset_013",
+    "name": "Rain Garden #579",
+    "type_id": "type_007",
+    "owner_id": "user_019",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -5.3531949999999995,
+              55.051289000000004
+            ],
+            [
+              -5.253195,
+              55.051289000000004
+            ],
+            [
+              -5.253195,
+              55.151289
+            ],
+            [
+              -5.3531949999999995,
+              55.151289
+            ],
+            [
+              -5.3531949999999995,
+              55.051289000000004
             ]
-        },
-        "capacity_litres": 5100,
-        "material": "Plastic",
-        "status": "maintenance",
-        "installed_at": "1974-12-04",
-        "last_inspection": "2018-08-16"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_014",
-        "name": "Permeable Pavement #697",
-        "type_id": "type_004",
-        "owner_id": "user_014",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            1.144944,
-                            88.24621
-                        ],
-                        [
-                            -172.422314,
-                            -18.543444
-                        ],
-                        [
-                            -59.066649,
-                            -52.461502
-                        ],
-                        [
-                            69.009801,
-                            -62.273246
-                        ],
-                        [
-                            5.956575,
-                            10.085976
-                        ]
-                    ]
-                ]
+    "capacity_litres": 5100,
+    "material": "Plastic",
+    "status": "maintenance",
+    "installed_at": "1974-12-04",
+    "last_inspection": "2018-08-16"
+  },
+  {
+    "id": "asset_014",
+    "name": "Permeable Pavement #697",
+    "type_id": "type_004",
+    "owner_id": "user_014",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              0.362267,
+              54.167985
+            ],
+            [
+              0.462267,
+              54.167985
+            ],
+            [
+              0.462267,
+              54.267984999999996
+            ],
+            [
+              0.362267,
+              54.267984999999996
+            ],
+            [
+              0.362267,
+              54.167985
             ]
-        },
-        "capacity_litres": 1600,
-        "material": "Plastic",
-        "status": "inactive",
-        "installed_at": "2009-02-14",
-        "last_inspection": "2003-12-10"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_015",
-        "name": "Soakaway #835",
-        "type_id": "type_002",
-        "owner_id": "user_025",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            31.982638,
-                            24.871604
-                        ],
-                        [
-                            111.101868,
-                            -31.166697
-                        ],
-                        [
-                            164.59134,
-                            75.324928
-                        ],
-                        [
-                            -120.740063,
-                            80.686202
-                        ],
-                        [
-                            4.887007,
-                            -39.210139
-                        ]
-                    ]
-                ]
+    "capacity_litres": 1600,
+    "material": "Plastic",
+    "status": "inactive",
+    "installed_at": "2009-02-14",
+    "last_inspection": "2003-12-10"
+  },
+  {
+    "id": "asset_015",
+    "name": "Soakaway #835",
+    "type_id": "type_002",
+    "owner_id": "user_025",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -2.522884,
+              57.111397000000004
+            ],
+            [
+              -2.4228840000000003,
+              57.111397000000004
+            ],
+            [
+              -2.4228840000000003,
+              57.211397
+            ],
+            [
+              -2.522884,
+              57.211397
+            ],
+            [
+              -2.522884,
+              57.111397000000004
             ]
-        },
-        "capacity_litres": 2763,
-        "material": "Steel",
-        "status": "maintenance",
-        "installed_at": "2005-02-17",
-        "last_inspection": "2024-07-16"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_016",
-        "name": "Water Tank #410",
-        "type_id": "type_001",
-        "owner_id": "user_013",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            64.079481,
-                            21.642033
-                        ],
-                        [
-                            161.899458,
-                            -2.582356
-                        ],
-                        [
-                            -147.474017,
-                            -31.451563
-                        ],
-                        [
-                            63.57487,
-                            47.821274
-                        ],
-                        [
-                            -4.350147,
-                            82.054851
-                        ]
-                    ]
-                ]
+    "capacity_litres": 2763,
+    "material": "Steel",
+    "status": "maintenance",
+    "installed_at": "2005-02-17",
+    "last_inspection": "2024-07-16"
+  },
+  {
+    "id": "asset_016",
+    "name": "Water Tank #410",
+    "type_id": "type_001",
+    "owner_id": "user_013",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -2.2899819999999997,
+              51.710074000000006
+            ],
+            [
+              -2.189982,
+              51.710074000000006
+            ],
+            [
+              -2.189982,
+              51.810074
+            ],
+            [
+              -2.2899819999999997,
+              51.810074
+            ],
+            [
+              -2.2899819999999997,
+              51.710074000000006
             ]
-        },
-        "capacity_litres": 6506,
-        "material": "Concrete",
-        "status": "active",
-        "installed_at": "2016-10-25",
-        "last_inspection": "2016-07-19"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_017",
-        "name": "Permeable Pavement #996",
-        "type_id": "type_004",
-        "owner_id": "user_048",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -155.936642,
-                            83.967565
-                        ],
-                        [
-                            -114.392755,
-                            20.153039
-                        ],
-                        [
-                            120.209517,
-                            -82.670647
-                        ],
-                        [
-                            14.190814,
-                            -0.00411
-                        ],
-                        [
-                            39.575647,
-                            -13.827498
-                        ]
-                    ]
-                ]
+    "capacity_litres": 6506,
+    "material": "Concrete",
+    "status": "active",
+    "installed_at": "2016-10-25",
+    "last_inspection": "2016-07-19"
+  },
+  {
+    "id": "asset_017",
+    "name": "Permeable Pavement #996",
+    "type_id": "type_004",
+    "owner_id": "user_048",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              0.33878,
+              57.810031
+            ],
+            [
+              0.43878,
+              57.810031
+            ],
+            [
+              0.43878,
+              57.910031
+            ],
+            [
+              0.33878,
+              57.910031
+            ],
+            [
+              0.33878,
+              57.810031
             ]
-        },
-        "capacity_litres": 1418,
-        "material": "Steel",
-        "status": "inactive",
-        "installed_at": "2023-01-25",
-        "last_inspection": "2003-12-08"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_018",
-        "name": "Swale #373",
-        "type_id": "type_005",
-        "owner_id": "user_016",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            126.259317,
-                            -9.558563
-                        ],
-                        [
-                            -71.743104,
-                            -85.288813
-                        ],
-                        [
-                            124.368352,
-                            -78.809632
-                        ],
-                        [
-                            53.209214,
-                            -8.507021
-                        ],
-                        [
-                            -37.405633,
-                            69.155201
-                        ]
-                    ]
-                ]
+    "capacity_litres": 1418,
+    "material": "Steel",
+    "status": "inactive",
+    "installed_at": "2023-01-25",
+    "last_inspection": "2003-12-08"
+  },
+  {
+    "id": "asset_018",
+    "name": "Swale #373",
+    "type_id": "type_005",
+    "owner_id": "user_016",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -0.5287810000000001,
+              58.298855
+            ],
+            [
+              -0.428781,
+              58.298855
+            ],
+            [
+              -0.428781,
+              58.398855
+            ],
+            [
+              -0.5287810000000001,
+              58.398855
+            ],
+            [
+              -0.5287810000000001,
+              58.298855
             ]
-        },
-        "capacity_litres": 5265,
-        "material": "Steel",
-        "status": "maintenance",
-        "installed_at": "2020-04-13",
-        "last_inspection": "1999-08-12"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_019",
-        "name": "Rain Garden #550",
-        "type_id": "type_007",
-        "owner_id": "user_017",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -20.637026,
-                            69.759794
-                        ],
-                        [
-                            -31.399722,
-                            10.336894
-                        ],
-                        [
-                            -37.692112,
-                            87.559337
-                        ],
-                        [
-                            -58.148265,
-                            -79.848311
-                        ],
-                        [
-                            -88.324138,
-                            27.565451
-                        ]
-                    ]
-                ]
+    "capacity_litres": 5265,
+    "material": "Steel",
+    "status": "maintenance",
+    "installed_at": "2020-04-13",
+    "last_inspection": "1999-08-12"
+  },
+  {
+    "id": "asset_019",
+    "name": "Rain Garden #550",
+    "type_id": "type_007",
+    "owner_id": "user_017",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -5.166744,
+              57.994729
+            ],
+            [
+              -5.066744,
+              57.994729
+            ],
+            [
+              -5.066744,
+              58.094728999999994
+            ],
+            [
+              -5.166744,
+              58.094728999999994
+            ],
+            [
+              -5.166744,
+              57.994729
             ]
-        },
-        "capacity_litres": 8463,
-        "material": "Concrete",
-        "status": "maintenance",
-        "installed_at": "2009-06-25",
-        "last_inspection": "1983-10-04"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_020",
-        "name": "Rain Garden #165",
-        "type_id": "type_007",
-        "owner_id": "user_050",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -101.0178,
-                            -84.525256
-                        ],
-                        [
-                            156.105873,
-                            -71.213388
-                        ],
-                        [
-                            -56.796977,
-                            -69.539875
-                        ],
-                        [
-                            48.103348,
-                            -34.155911
-                        ],
-                        [
-                            -136.664446,
-                            27.270214
-                        ]
-                    ]
-                ]
+    "capacity_litres": 8463,
+    "material": "Concrete",
+    "status": "maintenance",
+    "installed_at": "2009-06-25",
+    "last_inspection": "1983-10-04"
+  },
+  {
+    "id": "asset_020",
+    "name": "Rain Garden #165",
+    "type_id": "type_007",
+    "owner_id": "user_050",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -0.979233,
+              53.166013
+            ],
+            [
+              -0.8792329999999999,
+              53.166013
+            ],
+            [
+              -0.8792329999999999,
+              53.266012999999994
+            ],
+            [
+              -0.979233,
+              53.266012999999994
+            ],
+            [
+              -0.979233,
+              53.166013
             ]
-        },
-        "capacity_litres": 6408,
-        "material": "Composite",
-        "status": "maintenance",
-        "installed_at": "2023-04-15",
-        "last_inspection": "2013-09-07"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_021",
-        "name": "Green Roof #694",
-        "type_id": "type_003",
-        "owner_id": "user_045",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            64.773129,
-                            30.92246
-                        ],
-                        [
-                            145.270572,
-                            8.134235
-                        ],
-                        [
-                            -50.53494,
-                            7.333518
-                        ],
-                        [
-                            111.259972,
-                            59.507525
-                        ],
-                        [
-                            -60.387699,
-                            -68.253808
-                        ]
-                    ]
-                ]
+    "capacity_litres": 6408,
+    "material": "Composite",
+    "status": "maintenance",
+    "installed_at": "2023-04-15",
+    "last_inspection": "2013-09-07"
+  },
+  {
+    "id": "asset_021",
+    "name": "Green Roof #694",
+    "type_id": "type_003",
+    "owner_id": "user_045",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -1.790075,
+              54.147735000000004
+            ],
+            [
+              -1.690075,
+              54.147735000000004
+            ],
+            [
+              -1.690075,
+              54.247735
+            ],
+            [
+              -1.790075,
+              54.247735
+            ],
+            [
+              -1.790075,
+              54.147735000000004
             ]
-        },
-        "capacity_litres": 2746,
-        "material": "Composite",
-        "status": "inactive",
-        "installed_at": "2009-09-27",
-        "last_inspection": "2010-03-20"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_022",
-        "name": "Green Roof #241",
-        "type_id": "type_003",
-        "owner_id": "user_031",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -35.348755,
-                            72.855544
-                        ],
-                        [
-                            164.470926,
-                            75.488253
-                        ],
-                        [
-                            -124.29255,
-                            5.440806
-                        ],
-                        [
-                            -5.155195,
-                            -25.74746
-                        ],
-                        [
-                            -112.984898,
-                            -24.483504
-                        ]
-                    ]
-                ]
+    "capacity_litres": 2746,
+    "material": "Composite",
+    "status": "inactive",
+    "installed_at": "2009-09-27",
+    "last_inspection": "2010-03-20"
+  },
+  {
+    "id": "asset_022",
+    "name": "Green Roof #241",
+    "type_id": "type_003",
+    "owner_id": "user_031",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              0.080387,
+              53.730955
+            ],
+            [
+              0.18038700000000002,
+              53.730955
+            ],
+            [
+              0.18038700000000002,
+              53.830954999999996
+            ],
+            [
+              0.080387,
+              53.830954999999996
+            ],
+            [
+              0.080387,
+              53.730955
             ]
-        },
-        "capacity_litres": 5528,
-        "material": "Composite",
-        "status": "maintenance",
-        "installed_at": "2022-01-04",
-        "last_inspection": "1987-08-19"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_023",
-        "name": "Rain Garden #196",
-        "type_id": "type_007",
-        "owner_id": "user_017",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -154.494068,
-                            39.743046
-                        ],
-                        [
-                            -13.281943,
-                            -36.934921
-                        ],
-                        [
-                            97.591851,
-                            39.169333
-                        ],
-                        [
-                            136.242656,
-                            -24.546427
-                        ],
-                        [
-                            78.323223,
-                            -23.361267
-                        ]
-                    ]
-                ]
+    "capacity_litres": 5528,
+    "material": "Composite",
+    "status": "maintenance",
+    "installed_at": "2022-01-04",
+    "last_inspection": "1987-08-19"
+  },
+  {
+    "id": "asset_023",
+    "name": "Rain Garden #196",
+    "type_id": "type_007",
+    "owner_id": "user_017",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -4.3908,
+              56.891161000000004
+            ],
+            [
+              -4.2908,
+              56.891161000000004
+            ],
+            [
+              -4.2908,
+              56.991161
+            ],
+            [
+              -4.3908,
+              56.991161
+            ],
+            [
+              -4.3908,
+              56.891161000000004
             ]
-        },
-        "capacity_litres": 2745,
-        "material": "Plastic",
-        "status": "active",
-        "installed_at": "2011-01-29",
-        "last_inspection": "1978-12-01"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_024",
-        "name": "Soakaway #743",
-        "type_id": "type_002",
-        "owner_id": "user_017",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -65.380479,
-                            -47.860387
-                        ],
-                        [
-                            -145.531332,
-                            77.98206
-                        ],
-                        [
-                            57.199924,
-                            14.95098
-                        ],
-                        [
-                            60.089421,
-                            -36.262416
-                        ],
-                        [
-                            -133.242099,
-                            22.151213
-                        ]
-                    ]
-                ]
+    "capacity_litres": 2745,
+    "material": "Plastic",
+    "status": "active",
+    "installed_at": "2011-01-29",
+    "last_inspection": "1978-12-01"
+  },
+  {
+    "id": "asset_024",
+    "name": "Soakaway #743",
+    "type_id": "type_002",
+    "owner_id": "user_017",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              1.083464,
+              54.398099
+            ],
+            [
+              1.183464,
+              54.398099
+            ],
+            [
+              1.183464,
+              54.498098999999996
+            ],
+            [
+              1.083464,
+              54.498098999999996
+            ],
+            [
+              1.083464,
+              54.398099
             ]
-        },
-        "capacity_litres": 3759,
-        "material": "Plastic",
-        "status": "maintenance",
-        "installed_at": "1974-05-09",
-        "last_inspection": "1986-09-07"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_025",
-        "name": "Rain Garden #428",
-        "type_id": "type_007",
-        "owner_id": "user_009",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -24.161992,
-                            -19.078701
-                        ],
-                        [
-                            -147.711603,
-                            -76.649949
-                        ],
-                        [
-                            117.741992,
-                            -18.916124
-                        ],
-                        [
-                            -143.582774,
-                            33.825383
-                        ],
-                        [
-                            1.072015,
-                            -41.761631
-                        ]
-                    ]
-                ]
+    "capacity_litres": 3759,
+    "material": "Plastic",
+    "status": "maintenance",
+    "installed_at": "1974-05-09",
+    "last_inspection": "1986-09-07"
+  },
+  {
+    "id": "asset_025",
+    "name": "Rain Garden #428",
+    "type_id": "type_007",
+    "owner_id": "user_009",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              0.015999,
+              50.291036000000005
+            ],
+            [
+              0.115999,
+              50.291036000000005
+            ],
+            [
+              0.115999,
+              50.391036
+            ],
+            [
+              0.015999,
+              50.391036
+            ],
+            [
+              0.015999,
+              50.291036000000005
             ]
-        },
-        "capacity_litres": 8260,
-        "material": "Composite",
-        "status": "maintenance",
-        "installed_at": "1980-09-09",
-        "last_inspection": "2007-01-22"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_026",
-        "name": "Green Roof #274",
-        "type_id": "type_003",
-        "owner_id": "user_005",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -157.86543,
-                            53.742356
-                        ],
-                        [
-                            -35.998208,
-                            39.901753
-                        ],
-                        [
-                            20.482003,
-                            47.064939
-                        ],
-                        [
-                            -130.992812,
-                            39.056324
-                        ],
-                        [
-                            -9.657022,
-                            79.301959
-                        ]
-                    ]
-                ]
+    "capacity_litres": 8260,
+    "material": "Composite",
+    "status": "maintenance",
+    "installed_at": "1980-09-09",
+    "last_inspection": "2007-01-22"
+  },
+  {
+    "id": "asset_026",
+    "name": "Green Roof #274",
+    "type_id": "type_003",
+    "owner_id": "user_005",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -5.191638,
+              52.783507
+            ],
+            [
+              -5.0916380000000006,
+              52.783507
+            ],
+            [
+              -5.0916380000000006,
+              52.883506999999994
+            ],
+            [
+              -5.191638,
+              52.883506999999994
+            ],
+            [
+              -5.191638,
+              52.783507
             ]
-        },
-        "capacity_litres": 2426,
-        "material": "Concrete",
-        "status": "maintenance",
-        "installed_at": "2001-12-03",
-        "last_inspection": "2007-03-13"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_027",
-        "name": "Swale #867",
-        "type_id": "type_005",
-        "owner_id": "user_048",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -124.216467,
-                            58.204169
-                        ],
-                        [
-                            70.554259,
-                            3.991167
-                        ],
-                        [
-                            93.970033,
-                            -49.870367
-                        ],
-                        [
-                            -44.004568,
-                            -81.468064
-                        ],
-                        [
-                            -163.905239,
-                            -5.286656
-                        ]
-                    ]
-                ]
+    "capacity_litres": 2426,
+    "material": "Concrete",
+    "status": "maintenance",
+    "installed_at": "2001-12-03",
+    "last_inspection": "2007-03-13"
+  },
+  {
+    "id": "asset_027",
+    "name": "Swale #867",
+    "type_id": "type_005",
+    "owner_id": "user_048",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -1.291574,
+              58.424012000000005
+            ],
+            [
+              -1.191574,
+              58.424012000000005
+            ],
+            [
+              -1.191574,
+              58.524012
+            ],
+            [
+              -1.291574,
+              58.524012
+            ],
+            [
+              -1.291574,
+              58.424012000000005
             ]
-        },
-        "capacity_litres": 192,
-        "material": "Concrete",
-        "status": "inactive",
-        "installed_at": "1979-11-15",
-        "last_inspection": "2012-09-21"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_028",
-        "name": "Water Tank #395",
-        "type_id": "type_001",
-        "owner_id": "user_050",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            91.606795,
-                            -68.22045
-                        ],
-                        [
-                            179.48126,
-                            3.175331
-                        ],
-                        [
-                            -166.835974,
-                            74.339596
-                        ],
-                        [
-                            -104.702137,
-                            29.97534
-                        ],
-                        [
-                            140.64627,
-                            -43.777756
-                        ]
-                    ]
-                ]
+    "capacity_litres": 192,
+    "material": "Concrete",
+    "status": "inactive",
+    "installed_at": "1979-11-15",
+    "last_inspection": "2012-09-21"
+  },
+  {
+    "id": "asset_028",
+    "name": "Water Tank #395",
+    "type_id": "type_001",
+    "owner_id": "user_050",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -3.8372659999999996,
+              57.939346
+            ],
+            [
+              -3.737266,
+              57.939346
+            ],
+            [
+              -3.737266,
+              58.039345999999995
+            ],
+            [
+              -3.8372659999999996,
+              58.039345999999995
+            ],
+            [
+              -3.8372659999999996,
+              57.939346
             ]
-        },
-        "capacity_litres": 3580,
-        "material": "Composite",
-        "status": "maintenance",
-        "installed_at": "1985-03-25",
-        "last_inspection": "2008-01-04"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_029",
-        "name": "Retention Pond #755",
-        "type_id": "type_006",
-        "owner_id": "user_010",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -130.755481,
-                            -50.297726
-                        ],
-                        [
-                            23.202589,
-                            34.391432
-                        ],
-                        [
-                            169.559836,
-                            17.723264
-                        ],
-                        [
-                            173.527174,
-                            -0.915007
-                        ],
-                        [
-                            9.351333,
-                            52.945524
-                        ]
-                    ]
-                ]
+    "capacity_litres": 3580,
+    "material": "Composite",
+    "status": "maintenance",
+    "installed_at": "1985-03-25",
+    "last_inspection": "2008-01-04"
+  },
+  {
+    "id": "asset_029",
+    "name": "Retention Pond #755",
+    "type_id": "type_006",
+    "owner_id": "user_010",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -0.355921,
+              56.642642
+            ],
+            [
+              -0.255921,
+              56.642642
+            ],
+            [
+              -0.255921,
+              56.742642
+            ],
+            [
+              -0.355921,
+              56.742642
+            ],
+            [
+              -0.355921,
+              56.642642
             ]
-        },
-        "capacity_litres": 5495,
-        "material": "Concrete",
-        "status": "active",
-        "installed_at": "2024-04-28",
-        "last_inspection": "1986-07-09"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_030",
-        "name": "Soakaway #690",
-        "type_id": "type_002",
-        "owner_id": "user_014",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -121.495356,
-                            -46.306223
-                        ],
-                        [
-                            -171.694066,
-                            -20.02996
-                        ],
-                        [
-                            154.576259,
-                            -65.100965
-                        ],
-                        [
-                            -163.844748,
-                            50.09863
-                        ],
-                        [
-                            -121.909524,
-                            -82.874766
-                        ]
-                    ]
-                ]
+    "capacity_litres": 5495,
+    "material": "Concrete",
+    "status": "active",
+    "installed_at": "2024-04-28",
+    "last_inspection": "1986-07-09"
+  },
+  {
+    "id": "asset_030",
+    "name": "Soakaway #690",
+    "type_id": "type_002",
+    "owner_id": "user_014",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              0.118164,
+              53.604507000000005
+            ],
+            [
+              0.21816400000000002,
+              53.604507000000005
+            ],
+            [
+              0.21816400000000002,
+              53.704507
+            ],
+            [
+              0.118164,
+              53.704507
+            ],
+            [
+              0.118164,
+              53.604507000000005
             ]
-        },
-        "capacity_litres": 3510,
-        "material": "Composite",
-        "status": "inactive",
-        "installed_at": "1998-11-22",
-        "last_inspection": "2001-10-16"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_031",
-        "name": "Permeable Pavement #839",
-        "type_id": "type_004",
-        "owner_id": "user_029",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -132.64675,
-                            43.299878
-                        ],
-                        [
-                            -148.956553,
-                            -81.335961
-                        ],
-                        [
-                            -62.685175,
-                            -60.442963
-                        ],
-                        [
-                            58.26141,
-                            66.578307
-                        ],
-                        [
-                            168.222306,
-                            53.396979
-                        ]
-                    ]
-                ]
+    "capacity_litres": 3510,
+    "material": "Composite",
+    "status": "inactive",
+    "installed_at": "1998-11-22",
+    "last_inspection": "2001-10-16"
+  },
+  {
+    "id": "asset_031",
+    "name": "Permeable Pavement #839",
+    "type_id": "type_004",
+    "owner_id": "user_029",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -5.408209,
+              57.411704
+            ],
+            [
+              -5.308209000000001,
+              57.411704
+            ],
+            [
+              -5.308209000000001,
+              57.511703999999995
+            ],
+            [
+              -5.408209,
+              57.511703999999995
+            ],
+            [
+              -5.408209,
+              57.411704
             ]
-        },
-        "capacity_litres": 1261,
-        "material": "Plastic",
-        "status": "active",
-        "installed_at": "1979-12-22",
-        "last_inspection": "1998-07-20"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_032",
-        "name": "Water Tank #553",
-        "type_id": "type_001",
-        "owner_id": "user_008",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -139.070239,
-                            16.741694
-                        ],
-                        [
-                            -150.79189,
-                            75.75937
-                        ],
-                        [
-                            -178.017942,
-                            17.313964
-                        ],
-                        [
-                            128.639415,
-                            -53.255504
-                        ],
-                        [
-                            -115.157728,
-                            68.370634
-                        ]
-                    ]
-                ]
+    "capacity_litres": 1261,
+    "material": "Plastic",
+    "status": "active",
+    "installed_at": "1979-12-22",
+    "last_inspection": "1998-07-20"
+  },
+  {
+    "id": "asset_032",
+    "name": "Water Tank #553",
+    "type_id": "type_001",
+    "owner_id": "user_008",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              0.809228,
+              57.6529
+            ],
+            [
+              0.909228,
+              57.6529
+            ],
+            [
+              0.909228,
+              57.7529
+            ],
+            [
+              0.809228,
+              57.7529
+            ],
+            [
+              0.809228,
+              57.6529
             ]
-        },
-        "capacity_litres": 9575,
-        "material": "Plastic",
-        "status": "active",
-        "installed_at": "2001-10-10",
-        "last_inspection": "1984-11-30"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_033",
-        "name": "Water Tank #948",
-        "type_id": "type_001",
-        "owner_id": "user_043",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -143.120754,
-                            2.450288
-                        ],
-                        [
-                            -109.422577,
-                            58.244176
-                        ],
-                        [
-                            140.663683,
-                            -22.672061
-                        ],
-                        [
-                            -2.230827,
-                            -26.691855
-                        ],
-                        [
-                            25.104192,
-                            10.170781
-                        ]
-                    ]
-                ]
+    "capacity_litres": 9575,
+    "material": "Plastic",
+    "status": "active",
+    "installed_at": "2001-10-10",
+    "last_inspection": "1984-11-30"
+  },
+  {
+    "id": "asset_033",
+    "name": "Water Tank #948",
+    "type_id": "type_001",
+    "owner_id": "user_043",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -4.708684,
+              56.023911000000005
+            ],
+            [
+              -4.608684,
+              56.023911000000005
+            ],
+            [
+              -4.608684,
+              56.123911
+            ],
+            [
+              -4.708684,
+              56.123911
+            ],
+            [
+              -4.708684,
+              56.023911000000005
             ]
-        },
-        "capacity_litres": 8279,
-        "material": "Concrete",
-        "status": "inactive",
-        "installed_at": "1997-01-10",
-        "last_inspection": "1988-04-01"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_034",
-        "name": "Permeable Pavement #899",
-        "type_id": "type_004",
-        "owner_id": "user_050",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -151.048164,
-                            65.829981
-                        ],
-                        [
-                            -56.362464,
-                            36.633336
-                        ],
-                        [
-                            103.176886,
-                            84.779702
-                        ],
-                        [
-                            21.273798,
-                            85.144027
-                        ],
-                        [
-                            -168.499453,
-                            33.008819
-                        ]
-                    ]
-                ]
+    "capacity_litres": 8279,
+    "material": "Concrete",
+    "status": "inactive",
+    "installed_at": "1997-01-10",
+    "last_inspection": "1988-04-01"
+  },
+  {
+    "id": "asset_034",
+    "name": "Permeable Pavement #899",
+    "type_id": "type_004",
+    "owner_id": "user_050",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -0.34052299999999996,
+              53.599011000000004
+            ],
+            [
+              -0.240523,
+              53.599011000000004
+            ],
+            [
+              -0.240523,
+              53.699011
+            ],
+            [
+              -0.34052299999999996,
+              53.699011
+            ],
+            [
+              -0.34052299999999996,
+              53.599011000000004
             ]
-        },
-        "capacity_litres": 8716,
-        "material": "Concrete",
-        "status": "maintenance",
-        "installed_at": "1991-04-18",
-        "last_inspection": "1999-07-26"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_035",
-        "name": "Swale #943",
-        "type_id": "type_005",
-        "owner_id": "user_006",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            47.513965,
-                            21.861562
-                        ],
-                        [
-                            71.177664,
-                            80.461666
-                        ],
-                        [
-                            -86.148775,
-                            21.447169
-                        ],
-                        [
-                            -33.659575,
-                            -6.825628
-                        ],
-                        [
-                            -55.491053,
-                            -32.161738
-                        ]
-                    ]
-                ]
+    "capacity_litres": 8716,
+    "material": "Concrete",
+    "status": "maintenance",
+    "installed_at": "1991-04-18",
+    "last_inspection": "1999-07-26"
+  },
+  {
+    "id": "asset_035",
+    "name": "Swale #943",
+    "type_id": "type_005",
+    "owner_id": "user_006",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -4.827952,
+              58.018934
+            ],
+            [
+              -4.727952,
+              58.018934
+            ],
+            [
+              -4.727952,
+              58.118933999999996
+            ],
+            [
+              -4.827952,
+              58.118933999999996
+            ],
+            [
+              -4.827952,
+              58.018934
             ]
-        },
-        "capacity_litres": 7732,
-        "material": "Concrete",
-        "status": "inactive",
-        "installed_at": "1999-07-23",
-        "last_inspection": "2004-01-06"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_036",
-        "name": "Rain Garden #341",
-        "type_id": "type_007",
-        "owner_id": "user_050",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -118.149981,
-                            40.413017
-                        ],
-                        [
-                            106.392639,
-                            41.126705
-                        ],
-                        [
-                            106.211989,
-                            8.792977
-                        ],
-                        [
-                            -27.832192,
-                            18.302402
-                        ],
-                        [
-                            54.562358,
-                            65.634314
-                        ]
-                    ]
-                ]
+    "capacity_litres": 7732,
+    "material": "Concrete",
+    "status": "inactive",
+    "installed_at": "1999-07-23",
+    "last_inspection": "2004-01-06"
+  },
+  {
+    "id": "asset_036",
+    "name": "Rain Garden #341",
+    "type_id": "type_007",
+    "owner_id": "user_050",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -1.701046,
+              55.66911
+            ],
+            [
+              -1.601046,
+              55.66911
+            ],
+            [
+              -1.601046,
+              55.76911
+            ],
+            [
+              -1.701046,
+              55.76911
+            ],
+            [
+              -1.701046,
+              55.66911
             ]
-        },
-        "capacity_litres": 890,
-        "material": "Concrete",
-        "status": "maintenance",
-        "installed_at": "2018-01-17",
-        "last_inspection": "2002-02-17"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_037",
-        "name": "Permeable Pavement #149",
-        "type_id": "type_004",
-        "owner_id": "user_024",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            87.606169,
-                            63.466282
-                        ],
-                        [
-                            93.67048,
-                            -67.808439
-                        ],
-                        [
-                            60.901729,
-                            -81.406107
-                        ],
-                        [
-                            -31.545081,
-                            -45.679492
-                        ],
-                        [
-                            -147.879353,
-                            -8.133306
-                        ]
-                    ]
-                ]
+    "capacity_litres": 890,
+    "material": "Concrete",
+    "status": "maintenance",
+    "installed_at": "2018-01-17",
+    "last_inspection": "2002-02-17"
+  },
+  {
+    "id": "asset_037",
+    "name": "Permeable Pavement #149",
+    "type_id": "type_004",
+    "owner_id": "user_024",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -3.8197379999999996,
+              56.661175
+            ],
+            [
+              -3.719738,
+              56.661175
+            ],
+            [
+              -3.719738,
+              56.761174999999994
+            ],
+            [
+              -3.8197379999999996,
+              56.761174999999994
+            ],
+            [
+              -3.8197379999999996,
+              56.661175
             ]
-        },
-        "capacity_litres": 1945,
-        "material": "Composite",
-        "status": "maintenance",
-        "installed_at": "2006-09-26",
-        "last_inspection": "1993-06-29"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_038",
-        "name": "Permeable Pavement #819",
-        "type_id": "type_004",
-        "owner_id": "user_004",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -9.269435,
-                            1.837022
-                        ],
-                        [
-                            -140.322844,
-                            26.873491
-                        ],
-                        [
-                            -111.290532,
-                            45.955239
-                        ],
-                        [
-                            -169.371315,
-                            42.929768
-                        ],
-                        [
-                            134.266037,
-                            47.950971
-                        ]
-                    ]
-                ]
+    "capacity_litres": 1945,
+    "material": "Composite",
+    "status": "maintenance",
+    "installed_at": "2006-09-26",
+    "last_inspection": "1993-06-29"
+  },
+  {
+    "id": "asset_038",
+    "name": "Permeable Pavement #819",
+    "type_id": "type_004",
+    "owner_id": "user_004",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -2.700491,
+              54.992041
+            ],
+            [
+              -2.6004910000000003,
+              54.992041
+            ],
+            [
+              -2.6004910000000003,
+              55.092040999999995
+            ],
+            [
+              -2.700491,
+              55.092040999999995
+            ],
+            [
+              -2.700491,
+              54.992041
             ]
-        },
-        "capacity_litres": 417,
-        "material": "Composite",
-        "status": "active",
-        "installed_at": "2014-03-05",
-        "last_inspection": "2019-06-15"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_039",
-        "name": "Swale #325",
-        "type_id": "type_005",
-        "owner_id": "user_043",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            47.912719,
-                            75.852052
-                        ],
-                        [
-                            -67.638954,
-                            -0.972581
-                        ],
-                        [
-                            -93.290448,
-                            -65.890628
-                        ],
-                        [
-                            -43.183819,
-                            34.705534
-                        ],
-                        [
-                            -80.538103,
-                            74.090004
-                        ]
-                    ]
-                ]
+    "capacity_litres": 417,
+    "material": "Composite",
+    "status": "active",
+    "installed_at": "2014-03-05",
+    "last_inspection": "2019-06-15"
+  },
+  {
+    "id": "asset_039",
+    "name": "Swale #325",
+    "type_id": "type_005",
+    "owner_id": "user_043",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              1.3520809999999999,
+              50.033226000000006
+            ],
+            [
+              1.452081,
+              50.033226000000006
+            ],
+            [
+              1.452081,
+              50.133226
+            ],
+            [
+              1.3520809999999999,
+              50.133226
+            ],
+            [
+              1.3520809999999999,
+              50.033226000000006
             ]
-        },
-        "capacity_litres": 3209,
-        "material": "Concrete",
-        "status": "active",
-        "installed_at": "2005-02-06",
-        "last_inspection": "1990-01-13"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_040",
-        "name": "Water Tank #110",
-        "type_id": "type_001",
-        "owner_id": "user_028",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -20.134924,
-                            -3.960183
-                        ],
-                        [
-                            82.710291,
-                            -55.832348
-                        ],
-                        [
-                            -150.960352,
-                            -20.92832
-                        ],
-                        [
-                            176.369051,
-                            20.314995
-                        ],
-                        [
-                            -137.395775,
-                            5.344582
-                        ]
-                    ]
-                ]
+    "capacity_litres": 3209,
+    "material": "Concrete",
+    "status": "active",
+    "installed_at": "2005-02-06",
+    "last_inspection": "1990-01-13"
+  },
+  {
+    "id": "asset_040",
+    "name": "Water Tank #110",
+    "type_id": "type_001",
+    "owner_id": "user_028",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -4.266281,
+              50.82103
+            ],
+            [
+              -4.166281000000001,
+              50.82103
+            ],
+            [
+              -4.166281000000001,
+              50.921029999999995
+            ],
+            [
+              -4.266281,
+              50.921029999999995
+            ],
+            [
+              -4.266281,
+              50.82103
             ]
-        },
-        "capacity_litres": 5078,
-        "material": "Composite",
-        "status": "maintenance",
-        "installed_at": "1991-08-05",
-        "last_inspection": "2012-01-16"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_041",
-        "name": "Retention Pond #233",
-        "type_id": "type_006",
-        "owner_id": "user_003",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            33.926517,
-                            -27.401326
-                        ],
-                        [
-                            144.746058,
-                            -58.168343
-                        ],
-                        [
-                            159.779096,
-                            -57.681196
-                        ],
-                        [
-                            35.751911,
-                            12.025641
-                        ],
-                        [
-                            -89.600306,
-                            57.065547
-                        ]
-                    ]
-                ]
+    "capacity_litres": 5078,
+    "material": "Composite",
+    "status": "maintenance",
+    "installed_at": "1991-08-05",
+    "last_inspection": "2012-01-16"
+  },
+  {
+    "id": "asset_041",
+    "name": "Retention Pond #233",
+    "type_id": "type_006",
+    "owner_id": "user_003",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -2.3515029999999997,
+              53.996344
+            ],
+            [
+              -2.251503,
+              53.996344
+            ],
+            [
+              -2.251503,
+              54.096343999999995
+            ],
+            [
+              -2.3515029999999997,
+              54.096343999999995
+            ],
+            [
+              -2.3515029999999997,
+              53.996344
             ]
-        },
-        "capacity_litres": 5713,
-        "material": "Concrete",
-        "status": "inactive",
-        "installed_at": "2009-10-08",
-        "last_inspection": "2012-07-02"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_042",
-        "name": "Soakaway #260",
-        "type_id": "type_002",
-        "owner_id": "user_022",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -116.85585,
-                            -35.979266
-                        ],
-                        [
-                            -68.323302,
-                            60.04934
-                        ],
-                        [
-                            -16.170968,
-                            -77.012234
-                        ],
-                        [
-                            91.964648,
-                            48.367857
-                        ],
-                        [
-                            149.085537,
-                            56.434427
-                        ]
-                    ]
-                ]
+    "capacity_litres": 5713,
+    "material": "Concrete",
+    "status": "inactive",
+    "installed_at": "2009-10-08",
+    "last_inspection": "2012-07-02"
+  },
+  {
+    "id": "asset_042",
+    "name": "Soakaway #260",
+    "type_id": "type_002",
+    "owner_id": "user_022",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -2.900727,
+              57.452780000000004
+            ],
+            [
+              -2.800727,
+              57.452780000000004
+            ],
+            [
+              -2.800727,
+              57.55278
+            ],
+            [
+              -2.900727,
+              57.55278
+            ],
+            [
+              -2.900727,
+              57.452780000000004
             ]
-        },
-        "capacity_litres": 7879,
-        "material": "Concrete",
-        "status": "maintenance",
-        "installed_at": "1971-09-20",
-        "last_inspection": "2022-12-10"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_043",
-        "name": "Retention Pond #174",
-        "type_id": "type_006",
-        "owner_id": "user_018",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -19.407078,
-                            -48.465577
-                        ],
-                        [
-                            -68.385239,
-                            10.313354
-                        ],
-                        [
-                            -118.779959,
-                            88.968617
-                        ],
-                        [
-                            -137.286318,
-                            -60.521099
-                        ],
-                        [
-                            118.269249,
-                            66.10842
-                        ]
-                    ]
-                ]
+    "capacity_litres": 7879,
+    "material": "Concrete",
+    "status": "maintenance",
+    "installed_at": "1971-09-20",
+    "last_inspection": "2022-12-10"
+  },
+  {
+    "id": "asset_043",
+    "name": "Retention Pond #174",
+    "type_id": "type_006",
+    "owner_id": "user_018",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -0.042684,
+              56.919443
+            ],
+            [
+              0.057316000000000006,
+              56.919443
+            ],
+            [
+              0.057316000000000006,
+              57.019442999999995
+            ],
+            [
+              -0.042684,
+              57.019442999999995
+            ],
+            [
+              -0.042684,
+              56.919443
             ]
-        },
-        "capacity_litres": 8645,
-        "material": "Composite",
-        "status": "maintenance",
-        "installed_at": "1970-11-13",
-        "last_inspection": "2015-07-15"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_044",
-        "name": "Swale #411",
-        "type_id": "type_005",
-        "owner_id": "user_042",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -3.859564,
-                            67.61921
-                        ],
-                        [
-                            154.615575,
-                            0.311302
-                        ],
-                        [
-                            92.793407,
-                            -77.899167
-                        ],
-                        [
-                            165.005626,
-                            30.243576
-                        ],
-                        [
-                            54.139492,
-                            19.772492
-                        ]
-                    ]
-                ]
+    "capacity_litres": 8645,
+    "material": "Composite",
+    "status": "maintenance",
+    "installed_at": "1970-11-13",
+    "last_inspection": "2015-07-15"
+  },
+  {
+    "id": "asset_044",
+    "name": "Swale #411",
+    "type_id": "type_005",
+    "owner_id": "user_042",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -3.717199,
+              51.523970000000006
+            ],
+            [
+              -3.6171990000000003,
+              51.523970000000006
+            ],
+            [
+              -3.6171990000000003,
+              51.62397
+            ],
+            [
+              -3.717199,
+              51.62397
+            ],
+            [
+              -3.717199,
+              51.523970000000006
             ]
-        },
-        "capacity_litres": 1829,
-        "material": "Steel",
-        "status": "inactive",
-        "installed_at": "2003-02-25",
-        "last_inspection": "1992-10-26"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_045",
-        "name": "Retention Pond #969",
-        "type_id": "type_006",
-        "owner_id": "user_040",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -127.247165,
-                            -69.225763
-                        ],
-                        [
-                            -26.604339,
-                            54.294965
-                        ],
-                        [
-                            -86.705492,
-                            1.369009
-                        ],
-                        [
-                            100.07309,
-                            -26.360364
-                        ],
-                        [
-                            52.998985,
-                            36.208494
-                        ]
-                    ]
-                ]
+    "capacity_litres": 1829,
+    "material": "Steel",
+    "status": "inactive",
+    "installed_at": "2003-02-25",
+    "last_inspection": "1992-10-26"
+  },
+  {
+    "id": "asset_045",
+    "name": "Retention Pond #969",
+    "type_id": "type_006",
+    "owner_id": "user_040",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -5.308971,
+              56.964408000000006
+            ],
+            [
+              -5.208971,
+              56.964408000000006
+            ],
+            [
+              -5.208971,
+              57.064408
+            ],
+            [
+              -5.308971,
+              57.064408
+            ],
+            [
+              -5.308971,
+              56.964408000000006
             ]
-        },
-        "capacity_litres": 8848,
-        "material": "Composite",
-        "status": "active",
-        "installed_at": "2005-10-09",
-        "last_inspection": "2019-12-21"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_046",
-        "name": "Permeable Pavement #454",
-        "type_id": "type_004",
-        "owner_id": "user_024",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            13.571587,
-                            32.355953
-                        ],
-                        [
-                            109.449945,
-                            65.496082
-                        ],
-                        [
-                            138.779296,
-                            -28.622059
-                        ],
-                        [
-                            138.207181,
-                            80.802191
-                        ],
-                        [
-                            -64.952353,
-                            -54.196423
-                        ]
-                    ]
-                ]
+    "capacity_litres": 8848,
+    "material": "Composite",
+    "status": "active",
+    "installed_at": "2005-10-09",
+    "last_inspection": "2019-12-21"
+  },
+  {
+    "id": "asset_046",
+    "name": "Permeable Pavement #454",
+    "type_id": "type_004",
+    "owner_id": "user_024",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -2.739568,
+              55.449581
+            ],
+            [
+              -2.639568,
+              55.449581
+            ],
+            [
+              -2.639568,
+              55.549580999999996
+            ],
+            [
+              -2.739568,
+              55.549580999999996
+            ],
+            [
+              -2.739568,
+              55.449581
             ]
-        },
-        "capacity_litres": 9890,
-        "material": "Plastic",
-        "status": "active",
-        "installed_at": "1986-06-22",
-        "last_inspection": "2015-07-03"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_047",
-        "name": "Soakaway #898",
-        "type_id": "type_002",
-        "owner_id": "user_004",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -16.39981,
-                            15.608045
-                        ],
-                        [
-                            -103.794708,
-                            78.020679
-                        ],
-                        [
-                            1.819531,
-                            -58.792512
-                        ],
-                        [
-                            7.431652,
-                            -69.221154
-                        ],
-                        [
-                            -0.614347,
-                            61.561993
-                        ]
-                    ]
-                ]
+    "capacity_litres": 9890,
+    "material": "Plastic",
+    "status": "active",
+    "installed_at": "1986-06-22",
+    "last_inspection": "2015-07-03"
+  },
+  {
+    "id": "asset_047",
+    "name": "Soakaway #898",
+    "type_id": "type_002",
+    "owner_id": "user_004",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              1.211155,
+              58.443066
+            ],
+            [
+              1.311155,
+              58.443066
+            ],
+            [
+              1.311155,
+              58.543065999999996
+            ],
+            [
+              1.211155,
+              58.543065999999996
+            ],
+            [
+              1.211155,
+              58.443066
             ]
-        },
-        "capacity_litres": 7376,
-        "material": "Composite",
-        "status": "inactive",
-        "installed_at": "1972-11-04",
-        "last_inspection": "1972-03-14"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_048",
-        "name": "Water Tank #799",
-        "type_id": "type_001",
-        "owner_id": "user_021",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            -113.625953,
-                            -13.345837
-                        ],
-                        [
-                            109.498211,
-                            72.143942
-                        ],
-                        [
-                            -111.734205,
-                            31.397507
-                        ],
-                        [
-                            -172.618272,
-                            -14.64427
-                        ],
-                        [
-                            46.55601,
-                            -18.501223
-                        ]
-                    ]
-                ]
+    "capacity_litres": 7376,
+    "material": "Composite",
+    "status": "inactive",
+    "installed_at": "1972-11-04",
+    "last_inspection": "1972-03-14"
+  },
+  {
+    "id": "asset_048",
+    "name": "Water Tank #799",
+    "type_id": "type_001",
+    "owner_id": "user_021",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -1.103397,
+              51.950607000000005
+            ],
+            [
+              -1.0033969999999999,
+              51.950607000000005
+            ],
+            [
+              -1.0033969999999999,
+              52.050607
+            ],
+            [
+              -1.103397,
+              52.050607
+            ],
+            [
+              -1.103397,
+              51.950607000000005
             ]
-        },
-        "capacity_litres": 3391,
-        "material": "Concrete",
-        "status": "active",
-        "installed_at": "1985-06-13",
-        "last_inspection": "1987-09-18"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_049",
-        "name": "Permeable Pavement #712",
-        "type_id": "type_004",
-        "owner_id": "user_030",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            140.259067,
-                            -81.987849
-                        ],
-                        [
-                            -93.478652,
-                            -17.850123
-                        ],
-                        [
-                            8.47175,
-                            -1.67772
-                        ],
-                        [
-                            123.233566,
-                            63.28675
-                        ],
-                        [
-                            -97.074634,
-                            62.081038
-                        ]
-                    ]
-                ]
+    "capacity_litres": 3391,
+    "material": "Concrete",
+    "status": "active",
+    "installed_at": "1985-06-13",
+    "last_inspection": "1987-09-18"
+  },
+  {
+    "id": "asset_049",
+    "name": "Permeable Pavement #712",
+    "type_id": "type_004",
+    "owner_id": "user_030",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -4.51921,
+              50.530117000000004
+            ],
+            [
+              -4.4192100000000005,
+              50.530117000000004
+            ],
+            [
+              -4.4192100000000005,
+              50.630117
+            ],
+            [
+              -4.51921,
+              50.630117
+            ],
+            [
+              -4.51921,
+              50.530117000000004
             ]
-        },
-        "capacity_litres": 9975,
-        "material": "Composite",
-        "status": "maintenance",
-        "installed_at": "1972-06-04",
-        "last_inspection": "2010-03-14"
+          ]
+        ]
+      ]
     },
-    {
-        "id": "asset_050",
-        "name": "Retention Pond #280",
-        "type_id": "type_006",
-        "owner_id": "user_009",
-        "location": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [
-                        [
-                            31.46873,
-                            -48.235306
-                        ],
-                        [
-                            12.253305,
-                            -53.615109
-                        ],
-                        [
-                            9.995216,
-                            -0.822633
-                        ],
-                        [
-                            -121.401411,
-                            -69.086592
-                        ],
-                        [
-                            170.498893,
-                            -80.083364
-                        ]
-                    ]
-                ]
+    "capacity_litres": 9975,
+    "material": "Composite",
+    "status": "maintenance",
+    "installed_at": "1972-06-04",
+    "last_inspection": "2010-03-14"
+  },
+  {
+    "id": "asset_050",
+    "name": "Retention Pond #280",
+    "type_id": "type_006",
+    "owner_id": "user_009",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -3.6450449999999996,
+              50.537923000000006
+            ],
+            [
+              -3.545045,
+              50.537923000000006
+            ],
+            [
+              -3.545045,
+              50.637923
+            ],
+            [
+              -3.6450449999999996,
+              50.637923
+            ],
+            [
+              -3.6450449999999996,
+              50.537923000000006
             ]
-        },
-        "capacity_litres": 1624,
-        "material": "Plastic",
-        "status": "maintenance",
-        "installed_at": "2007-12-05",
-        "last_inspection": "1974-07-10"
-    }
+          ]
+        ]
+      ]
+    },
+    "capacity_litres": 1624,
+    "material": "Plastic",
+    "status": "maintenance",
+    "installed_at": "2007-12-05",
+    "last_inspection": "1974-07-10"
+  },
+  {
+    "name": "Test Asset 1",
+    "type_id": "type_006",
+    "owner_id": "user_051",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -2.041143,
+              50.336510000000004
+            ],
+            [
+              -1.941143,
+              50.336510000000004
+            ],
+            [
+              -1.941143,
+              50.43651
+            ],
+            [
+              -2.041143,
+              50.43651
+            ],
+            [
+              -2.041143,
+              50.336510000000004
+            ]
+          ]
+        ]
+      ]
+    },
+    "capacity_litres": 5000,
+    "material": "Steel",
+    "status": "inactive",
+    "installed_at": "1975-04-04",
+    "last_inspection": "1998-06-15"
+  },
+  {
+    "name": "Test Asset 2",
+    "type_id": "type_002",
+    "owner_id": "user_052",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -2.041143,
+              50.336510000000004
+            ],
+            [
+              -1.941143,
+              50.336510000000004
+            ],
+            [
+              -1.941143,
+              50.43651
+            ],
+            [
+              -2.041143,
+              50.43651
+            ],
+            [
+              -2.041143,
+              50.336510000000004
+            ]
+          ]
+        ]
+      ]
+    },
+    "capacity_litres": 5000,
+    "material": "Steel",
+    "status": "inactive",
+    "installed_at": "1975-04-04",
+    "last_inspection": "1998-06-15"
+  },
+  {
+    "name": "Test Asset 3",
+    "type_id": "type_005",
+    "owner_id": "user_053",
+    "location": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -2.041143,
+              50.336510000000004
+            ],
+            [
+              -1.941143,
+              50.336510000000004
+            ],
+            [
+              -1.941143,
+              50.43651
+            ],
+            [
+              -2.041143,
+              50.43651
+            ],
+            [
+              -2.041143,
+              50.336510000000004
+            ]
+          ]
+        ]
+      ]
+    },
+    "capacity_litres": 5000,
+    "material": "Steel",
+    "status": "inactive",
+    "installed_at": "1975-04-04",
+    "last_inspection": "1998-06-15"
+  }
 ]
