@@ -6,10 +6,8 @@ import {
   adminGetTemplateByTypesService,
   adminUpdateTemplateByIdService
 } from '@/api/admin'
-import Handlebars from 'handlebars'
 import { useAssetStore } from '@/stores'
 import type { Template } from '@/types'
-import DOMPurify from 'dompurify'
 
 const assetStore = useAssetStore()
 
@@ -61,13 +59,10 @@ const title = ref('')
 const editorRef = ref()
 const allowedVariables = ['asset-model', 'contact_name', 'post_town']
 
-const parseHtml = ref(false)
-
-const mockData = {
-  'asset-model': 'Water tank',
-  contact_name: 'Alice',
-  post_town: 'London'
-}
+const renderedHTML = computed(() => {
+  if (!editorRef.value) return ''
+  return editorRef.value.renderedHTML
+})
 
 const submit = async () => {
   if (!template.value) return
@@ -91,79 +86,6 @@ const handleDelete = async () => {
   await adminDeleteTemplateByIdService(deleteId.value)
   dialogVisible.value = false
 }
-
-function addLinkInlineStyle(html: string): string {
-  const htmlWithLinkStyle = html.replace(
-    /<a\b([^>]*)>/g,
-    '<a$1 style="color: #409eff; text-decoration: underline; font-weight: bold;">'
-  )
-  const htmlWithImgStyle = htmlWithLinkStyle.replace(
-    /<img\b([^>]*)>/g,
-    '<img$1 style="display: block; height: auto; margin: 1.5rem 0; max-width: 100%; max-height: 100%;">'
-  )
-  const htmlWithPreStyle = htmlWithImgStyle.replace(
-    /<pre\b([^>]*)>/g,
-    '<pre$1 style="background: #f5f5f5; color: #333; border-radius: 6px; padding: 16px; font-family: Fira Mono, Consolas, Menlo, monospace; font-size: 1em; overflow-x: auto; margin: 1.2em 0;">'
-  )
-  const htmlWithCodeStyle = htmlWithPreStyle.replace(
-    /<pre([^>]*)><code([^>]*)>/g,
-    '<pre$1><code$2 style="background: none; color: inherit; padding: 0; border-radius: 0; font-family: inherit; font-size: inherit;">'
-  )
-  return htmlWithCodeStyle
-}
-
-function restoreEscapedHtmlExceptCode(html: string) {
-  const codeBlocks: string[] = []
-  // 1. replace all code
-  const htmlWithPlaceholders = html.replace(
-    /<code[^>]*>[\s\S]*?<\/code>/g,
-    (match: string) => {
-      codeBlocks.push(match)
-      return `__CODE_BLOCK_${codeBlocks.length - 1}__`
-    }
-  )
-
-  // 2. restore other part
-  const restored = htmlWithPlaceholders.replace(
-    /(&lt;[\s\S]*?&gt;)/g,
-    (match: string) => {
-      const div = document.createElement('div')
-      div.innerHTML = match
-      return div.textContent || div.innerText || ''
-    }
-  )
-
-  // 3. restore code
-  return codeBlocks.reduce(
-    (acc, block, idx) => acc.replace(`__CODE_BLOCK_${idx}__`, block),
-    restored
-  )
-}
-
-const renderedHTML = computed(() => {
-  try {
-    let htmlWithStyle
-    if (parseHtml.value) {
-      htmlWithStyle = addLinkInlineStyle(
-        restoreEscapedHtmlExceptCode(content.value)
-      )
-    } else {
-      htmlWithStyle = addLinkInlineStyle(content.value)
-    }
-
-    // compile variable
-    const compiled = Handlebars.compile(htmlWithStyle)
-    const rawHtml = compiled(mockData)
-    console.log(DOMPurify.sanitize(rawHtml))
-
-    // sanitize html code
-    return DOMPurify.sanitize(rawHtml)
-    // return rawHtml
-  } catch (e) {
-    console.error(e)
-    return '<p style="color:red">Syntax Error!</p>'
-  }
-})
 
 onMounted(async () => {})
 
@@ -238,20 +160,20 @@ watch(
   <div>Title</div>
   <el-input v-model="title"></el-input>
 
-  <TiptapEditor ref="editorRef" v-model:content="content"></TiptapEditor>
-  <span>Parse html: </span>
-  <el-switch v-model="parseHtml"></el-switch>
-  <div
-    class="preview"
-    style="
-      width: 50%;
-      border: 1px solid #ccc;
-      padding: 1rem;
-      margin-top: 20px;
-      background-color: white;
-    "
-  >
-    <div v-html="renderedHTML"></div>
+  <div style="display: flex; gap: 24px; align-items: flex-start">
+    <TiptapEditor ref="editorRef" v-model:content="content" />
+    <div
+      class="preview"
+      style="
+        border: 1px solid #ccc;
+        padding: 1rem;
+        margin-top: 0;
+        min-height: 524px;
+        background-color: white;
+      "
+    >
+      <div v-html="renderedHTML"></div>
+    </div>
   </div>
 
   <div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { adminSendMessageService } from '@/api/admin'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 const form = ref({
   userId: '',
@@ -9,8 +9,16 @@ const form = ref({
   body: ''
 })
 
+const editorRef = ref()
+
+const renderedHTML = computed(() => {
+  if (!editorRef.value) return ''
+  return editorRef.value.renderedHTML
+})
+
 const handleSend = async () => {
   form.value.duration = Number(form.value.duration)
+  form.value.body = renderedHTML.value
   const res = await adminSendMessageService(form.value)
   console.log(res)
 }
@@ -33,14 +41,25 @@ const handleSend = async () => {
         placeholder="Please input title"
       ></el-input>
     </el-form-item>
-    <el-form-item label="body" props="body">
-      <el-input
-        v-model="form.body"
-        placeholder="Please input body"
-        type="textarea"
-        :row="5"
-      ></el-input>
-    </el-form-item>
   </el-form>
-  <el-button @click="handleSend">Send</el-button>
+
+  <div style="display: flex; gap: 24px; align-items: flex-start">
+    <TiptapEditor ref="editorRef" v-model:content="form.body" />
+    <div
+      class="preview"
+      style="
+        border: 1px solid #ccc;
+        padding: 1rem;
+        margin-top: 0;
+        min-height: 524px;
+        min-width: 500px;
+        background-color: white;
+      "
+    >
+      <div v-html="renderedHTML"></div>
+    </div>
+  </div>
+  <div>
+    <el-button @click="handleSend">Send</el-button>
+  </div>
 </template>
