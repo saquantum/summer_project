@@ -92,6 +92,7 @@ public class WarningServiceImpl implements WarningService {
             // 3. warning area updated: send notifications to assets not intersecting with it beforehand
             else if (warningMapper.testWarningAreaDiff(warning.getId(), warning.getAreaAsJson())) {
                 handleGroupedUsersWithRespectToPagination(warning, true);
+                warningMapper.updateWarning(warning);
             } else {
                 s--;
             }
