@@ -101,7 +101,7 @@
     </select>
 
     <select id="countAssetsWithWarnings" resultType="int">
-        select count(distinct asset_id)
+        select count(*)
         from assets
                  left join weather_warnings
                            on ST_Intersects(asset_location, warning_area) and

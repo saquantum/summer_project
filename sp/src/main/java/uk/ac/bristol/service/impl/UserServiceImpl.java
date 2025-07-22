@@ -17,12 +17,44 @@ import uk.ac.bristol.service.PermissionConfigService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
 import uk.ac.bristol.util.QueryTool;
+import uk.ac.bristol.pojo.User;
+import uk.ac.bristol.pojo.UserGroupDTO;
 
 import java.time.Instant;
 import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
+
+    @Override
+    public List<UserGroupDTO> getGroupedUsers(String groupBy) {
+        List<User> users = getAllUsers(new HashMap<>(), new ArrayList<>(), null, null);
+
+        Map<String, List<User>> grouped = new HashMap<>();
+
+        for (User user : users) {
+            String key = getGroupKey(user, groupBy);
+            grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(user);
+        }
+
+        List<UserGroupDTO> result = new ArrayList<>();
+        for (Map.Entry<String, List<User>> entry : grouped.entrySet()) {
+            result.add(new UserGroupDTO(entry.getKey(), entry.getValue()));
+        }
+
+        return result;
+    }
+
+    private String getGroupKey(User user, String groupBy) {
+        switch (groupBy) {
+            case "role":
+                return user.getRole() == null ? "Unknown" : user.getRole();
+            case "department":
+                return user.getDepartment() == null ? "Unknown" : user.getDepartment();
+            default:
+                return "Unknown";
+        }
+    }
 
     private final MetaDataMapper metaDataMapper;
     private final AssetHolderMapper assetHolderMapper;
