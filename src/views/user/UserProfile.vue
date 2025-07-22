@@ -36,6 +36,15 @@ const isDisabled = computed(() => {
     return !userStore.user?.permissionConfig.canUpdateProfile
   }
 })
+
+defineExpose({
+  isEdit,
+  isDisabled,
+  user,
+  submit,
+  handleEdit,
+  userFormRef
+})
 </script>
 
 <template>

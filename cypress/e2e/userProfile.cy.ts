@@ -1,3 +1,5 @@
+/* eslint-env cypress */
+
 describe('UserProfile', () => {
   beforeEach(() => {
     cy.visit('/login')

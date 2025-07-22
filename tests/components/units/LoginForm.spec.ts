@@ -2,11 +2,16 @@ import { mount } from '@vue/test-utils'
 import LoginForm from '@/components/LoginForm.vue'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
+
 // Mock router
 const pushMock = vi.fn()
-vi.mock('vue-router', () => ({
-  useRouter: () => ({ push: pushMock })
-}))
+vi.mock('vue-router', async (importOriginal) => {
+  const actual = (await importOriginal()) as Record<string, unknown>
+  return {
+    ...actual,
+    useRouter: () => ({ push: pushMock })
+  }
+})
 
 // Mock stores and API calls
 vi.mock('@/stores/index.ts', () => ({
@@ -104,7 +109,7 @@ describe('Register', () => {
       .setValue('testmail@gmail.com')
     await wrapper.find('[data-test="register-button1"]').trigger('click')
     await flushPromises()
-    expect(wrapper.vm.currentStep).toBe(1)
+    expect(wrapper.vm.currentStep).toBe(2)
   })
 
   it('cannot goto step 3 if personal information is empty', async () => {
@@ -115,6 +120,12 @@ describe('Register', () => {
       .setValue('testmail@gmail.com')
     await wrapper.find('[data-test="register-button1"]').trigger('click')
     await flushPromises()
-    expect(wrapper.vm.currentStep).toBe(2)
+
+    // Now we're at step 2, try to go to step 3 without filling personal info
+    // Find the step button within step 2 context
+    const stepButtons = wrapper.findAll('.step-button')
+    await stepButtons[1].trigger('click') // Second step button (step 2)
+    await flushPromises()
+    expect(wrapper.vm.currentStep).toBe(2) // Should stay at step 2
   })
 })

@@ -16,6 +16,7 @@ import html from 'highlight.js/lib/languages/xml'
 import type { UploadProps } from 'element-plus'
 import Handlebars from 'handlebars'
 import DOMPurify from 'dompurify'
+import { uploadUrl } from '@/utils/request'
 
 const lowlight = createLowlight(all)
 lowlight.register('html', html)
@@ -76,8 +77,6 @@ const CustomImage = Image.extend({
     ]
   }
 })
-
-const uploadUrl = import.meta.env.VITE_UPLOAD_URL
 
 const editor = useEditor({
   content: content.value,
@@ -284,14 +283,21 @@ const renderedHTML = computed(() => {
       htmlWithStyle = addLinkInlineStyle(content.value)
     }
 
-    // compile variable
-    const compiled = Handlebars.compile(htmlWithStyle)
-    const rawHtml = compiled(mockData)
-    console.log(DOMPurify.sanitize(rawHtml))
-
     // sanitize html code
-    return DOMPurify.sanitize(rawHtml)
+    return DOMPurify.sanitize(htmlWithStyle)
     // return rawHtml
+  } catch (e) {
+    console.error(e)
+    return '<p style="color:red">Syntax Error!</p>'
+  }
+})
+
+const compiledHTML = computed(() => {
+  try {
+    // compile variable
+    const compiled = Handlebars.compile(renderedHTML.value)
+
+    return compiled(mockData)
   } catch (e) {
     console.error(e)
     return '<p style="color:red">Syntax Error!</p>'
@@ -308,7 +314,7 @@ watch(fileList, (newVal) => {
   console.log(newVal)
 })
 
-defineExpose({ renderedHTML })
+defineExpose({ renderedHTML, compiledHTML })
 </script>
 
 <template>

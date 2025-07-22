@@ -5,6 +5,8 @@ import { v4 as uuidv4 } from 'uuid'
 
 const baseURL = '/api'
 
+const uploadUrl = 'https://www.imgurl.org/api/v2/upload'
+
 const instance = axios.create({
   baseURL,
   timeout: 10000
@@ -53,4 +55,4 @@ instance.interceptors.response.use(
 )
 
 export default instance
-export { baseURL }
+export { baseURL, uploadUrl }

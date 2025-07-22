@@ -1,3 +1,5 @@
+/* eslint-env mocha, cypress */
+
 describe('Inbox Page', () => {
   beforeEach(() => {
     cy.visit('/login')
@@ -21,9 +23,12 @@ describe('Inbox Page', () => {
   })
 
   it('searches mails by keyword', () => {
-    cy.get('input[placeholder="Search something..."]').type('test')
+    cy.get('input[placeholder="Search something..."]').type('Naomi')
     cy.get('.mail-item').each(($el) => {
-      cy.wrap($el).find('.mail-title').invoke('text').should('match', /test/i)
+      cy.wrap($el)
+        .find('.mail-title')
+        .invoke('text')
+        .should('match', /N  zZaomi/i)
     })
   })
 

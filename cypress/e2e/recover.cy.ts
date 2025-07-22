@@ -15,7 +15,7 @@ describe('RecoverForm', () => {
     cy.get('input[placeholder="Enter your email address"]').type(
       'testrecover@example.com'
     )
-    cy.contains('Send email').click()
+    cy.contains('Send').click()
     // After sending, the code input should appear
     cy.get('input[placeholder="Enter code code"]').should('be.visible')
     cy.contains('Verify').should('be.visible')
@@ -25,7 +25,7 @@ describe('RecoverForm', () => {
     cy.get('input[placeholder="Enter your email address"]').type(
       'testrecover@example.com'
     )
-    cy.contains('Send email').click()
+    cy.contains('Send').click()
     cy.get('input[placeholder="Enter code code"]')
       .should('be.visible')
       .type('123456')
@@ -42,7 +42,7 @@ describe('RecoverForm', () => {
     cy.get('input[placeholder="Enter your email address"]').type(
       'testrecover@example.com'
     )
-    cy.contains('Send email').click()
+    cy.contains('Send').click()
     cy.get('input[placeholder="Enter code code"]').type('123456')
     cy.contains('Verify').click()
     cy.get('input[placeholder="Please input password"]').type('newpassword')

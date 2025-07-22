@@ -17,7 +17,8 @@ import {
   postcodeRules,
   trimForm
 } from '@/utils/formUtils'
-
+import { uploadUrl } from '@/utils/request'
+import { Plus } from '@element-plus/icons-vue'
 const route = useRoute()
 const props = defineProps<{ isEdit: boolean }>()
 
@@ -94,9 +95,7 @@ const form = ref<UserInfoForm>({
 })
 const formRef = ref()
 
-const imageUrl = ref(user.value.avatar)
-
-const uploadUrl = import.meta.env.VITE_UPLOAD_URL
+const imageUrl = ref('')
 
 const rules = {
   firstName: firstNameRules,
@@ -214,6 +213,9 @@ const loadUserData = async () => {
       currentUser.value = res.data
     }
 
+    imageUrl.value = currentUser.value?.avatar ?? ''
+    console.log(imageUrl.value)
+
     if (!currentUser.value?.assetHolder) throw new Error('User does not exist')
     const arr = currentUser.value.assetHolder.name.split(' ')
     form.value = userToForm(currentUser.value)
@@ -237,7 +239,7 @@ defineExpose({
 <template>
   <el-descriptions title="User Info" :column="column" border v-if="!isEdit">
     <el-descriptions-item label="Avatar">
-      <el-avatar :src="user.avatar" />
+      <el-avatar :src="currentUser?.avatar" />
     </el-descriptions-item>
     <el-descriptions-item
       v-for="(item, index) in descriptionsItem"
@@ -305,7 +307,7 @@ defineExpose({
           :on-success="handleAvatarSuccess"
           :before-upload="beforeAvatarUpload"
         >
-          <el-avatar v-if="user.avatar" :src="imageUrl"></el-avatar>
+          <el-avatar v-if="currentUser?.avatar" :src="imageUrl"></el-avatar>
           <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
         </el-upload>
       </div>

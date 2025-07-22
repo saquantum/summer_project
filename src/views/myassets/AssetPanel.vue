@@ -168,7 +168,13 @@ useResponsiveAction((width) => {
   }
 })
 
-defineExpose({ assetWarningLevel })
+defineExpose({
+  assetWarningLevel,
+  assetName,
+  assetType,
+  currentAssets,
+  currentPageAssets
+})
 </script>
 
 <template>

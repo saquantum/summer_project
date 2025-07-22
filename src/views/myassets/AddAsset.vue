@@ -3,15 +3,14 @@ import { ref, watch, onMounted, computed } from 'vue'
 import request from '@/utils/request'
 import { useAssetStore, useUserStore } from '@/stores/index.ts'
 import { adminGetUserInfoService } from '@/api/admin'
-import { userCheckUIDService, userInsertAssetService } from '@/api/user'
+import { userInsertAssetService } from '@/api/user'
 import { adminInsertAssetService } from '@/api/admin'
 import type { Feature, MultiPolygon } from 'geojson'
-import { ElMessage, type FormItemRule } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import type { ComponentPublicInstance } from 'vue'
 import type MapCard from '@/components/MapCard.vue'
 import type { AssetForm, NominatimResult } from '@/types'
-import { trimForm } from '@/utils/formUtils'
-import CodeUtil from '@/utils/codeUtil'
+import { createAssetHolderRules, trimForm } from '@/utils/formUtils'
 
 // user store
 const userStore = useUserStore()
@@ -152,31 +151,7 @@ const formRef = ref<InstanceType<
 > | null>(null)
 
 const rules = {
-  username: [
-    { required: true, message: 'Please input username', trigger: 'blur' },
-    {
-      validator: async (
-        rule: FormItemRule,
-        value: string,
-        callback: (_error?: Error) => void
-      ) => {
-        const res = await userCheckUIDService(value)
-        if (CodeUtil.isSuccess(res.code)) {
-          if (userStore.user?.admin) {
-            const res = await adminGetUserInfoService(value)
-            if (res.data.admin) {
-              callback(new Error('Can not add asset to admin'))
-              return
-            }
-          }
-          callback()
-        } else {
-          callback(new Error(`Username ${value} does not exist.`))
-        }
-      },
-      trigger: 'blur'
-    }
-  ],
+  username: createAssetHolderRules(userStore.user?.admin ?? false),
   name: [
     { required: true, message: 'Please input asset name', trigger: 'blur' }
   ],

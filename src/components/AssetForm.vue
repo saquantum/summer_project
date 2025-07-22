@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watchEffect } from 'vue'
 import { useAssetStore, useUserStore } from '@/stores/index.ts'
 import { updateAssetByIdService } from '@/api/assets'
 
@@ -7,15 +7,31 @@ import type { AssetInfoForm, AssetWithWarnings } from '@/types/asset'
 
 import {
   adminGetUserInfoByAIDService,
+  adminGetUserInfoService,
   adminUpdateAssetService
 } from '@/api/admin'
+import { createAssetHolderRules } from '@/utils/formUtils'
+import { ElMessage } from 'element-plus'
 
 const props = defineProps<{ isEdit: boolean; item: AssetWithWarnings }>()
 
 const assetStore = useAssetStore()
 const userStore = useUserStore()
 
-let uid = ''
+const uid = ref('')
+
+const fetchUserId = async () => {
+  if (userStore.user && !userStore.user.admin) {
+    uid.value = userStore.user.id
+  } else {
+    try {
+      const res = await adminGetUserInfoByAIDService(props.item.asset.ownerId)
+      uid.value = res.data.id
+    } catch (error) {
+      console.error('Failed to fetch user info:', error)
+    }
+  }
+}
 
 const form = ref<AssetInfoForm>({
   id: '',
@@ -32,7 +48,34 @@ const form = ref<AssetInfoForm>({
 })
 const formRef = ref()
 
-const rules = ref()
+const rules = {
+  ownerId: createAssetHolderRules(userStore.user?.admin ?? false),
+  name: [
+    { required: true, message: 'Please input asset name', trigger: 'blur' }
+  ],
+  typeId: [
+    { required: true, message: 'Please input asset type', trigger: 'blur' }
+  ],
+  material: [
+    { required: true, message: 'Please input asset material', trigger: 'blur' }
+  ],
+  status: [
+    { required: true, message: 'Please input asset status', trigger: 'blur' }
+  ],
+  capacityLitres: [
+    {
+      required: true,
+      message: 'Please input asset capacity litres',
+      trigger: 'blur'
+    }
+  ],
+  installedAt: [
+    { required: true, message: 'Please input time', trigger: 'blur' }
+  ],
+  lastInspection: [
+    { required: true, message: 'Please input time', trigger: 'blur' }
+  ]
+}
 
 const materialOption = [
   { label: 'Steel', value: 'Steel' },
@@ -49,8 +92,9 @@ const statusOption = [
 
 const descriptionsItem = computed(() => {
   if (!props.item) return []
+
   return [
-    { label: 'OwnerId', value: props.item.asset.ownerId },
+    { label: 'OwnerId', value: uid.value },
     { label: 'Name', value: props.item.asset.name },
     { label: 'Type', value: props.item.asset.type.name },
     { label: 'Capacity litres', value: props.item.asset.capacityLitres },
@@ -80,22 +124,38 @@ const disabledAfterToday = (time: Date) => {
 }
 
 const submit = async () => {
-  if (userStore.user?.admin) {
-    await adminUpdateAssetService(form.value)
-  } else {
-    if (userStore.user?.id) {
+  try {
+    if (userStore.user && userStore.user.admin) {
+      const ownerId = form.value.ownerId
+      if (ownerId) {
+        const res = await adminGetUserInfoService(ownerId)
+        form.value.ownerId = res.data.assetHolderId as string
+      }
+      await adminUpdateAssetService(form.value)
+    } else if (userStore.user) {
       await updateAssetByIdService(userStore.user.id, form.value)
     }
+    assetStore.updateAssetById(form.value.id)
+    ElMessage.success('Asset updated')
+  } catch (e) {
+    console.error(e)
+    ElMessage.error('Fail to update asset')
   }
-  assetStore.updateAssetById(form.value.id)
 }
 
 onMounted(async () => {
-  const res = await adminGetUserInfoByAIDService(props.item.asset.ownerId)
-  console.log(res)
-  uid = res.data?.assetHolderId
-  console.log(uid)
+  await fetchUserId()
   form.value = assetToForm(props.item)
+  if (uid.value) {
+    form.value.ownerId = uid.value
+  }
+})
+
+// Watch for changes in user store or props and refetch user ID
+watchEffect(() => {
+  if (userStore.user || props.item?.asset?.ownerId) {
+    fetchUserId()
+  }
 })
 
 defineExpose({

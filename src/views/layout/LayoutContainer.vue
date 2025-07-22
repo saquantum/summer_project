@@ -110,11 +110,6 @@ watch(
             :activeIndex="activeIndex"
           ></SideMenu>
         </el-drawer>
-        <!-- <el-page-header
-          v-if="userStore.user.admin && !route.path.includes('admin')"
-          @back="router.go(-1)"
-        >
-        </el-page-header> -->
         <div class="header-right">
           <el-badge is-dot class="icon-badge">
             <el-icon @click="handleMailClick" class="bell">

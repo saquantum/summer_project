@@ -64,6 +64,11 @@ const renderedHTML = computed(() => {
   return editorRef.value.renderedHTML
 })
 
+const compiledHTML = computed(() => {
+  if (!editorRef.value) return ''
+  return editorRef.value.compiledHTML
+})
+
 const submit = async () => {
   if (!template.value) return
   template.value.body = renderedHTML.value
@@ -172,7 +177,7 @@ watch(
         background-color: white;
       "
     >
-      <div v-html="renderedHTML"></div>
+      <div v-html="compiledHTML"></div>
     </div>
   </div>
 

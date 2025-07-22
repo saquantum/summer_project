@@ -1,4 +1,5 @@
 import { userCheckEmailService, userCheckUIDService } from '@/api/user'
+import { adminGetUserInfoService } from '@/api/admin'
 import type { InternalRuleItem } from 'async-validator'
 import CodeUtil from './codeUtil'
 import type { FormItemRule } from 'element-plus'
@@ -161,6 +162,36 @@ export const codeRules = [
   {
     pattern: /^[A-Za-z0-9]{6}$/,
     message: 'Code must contain only letters and numbers',
+    trigger: 'blur'
+  }
+]
+
+export const createAssetHolderRules = (admin: boolean) => [
+  { required: true, message: 'Please input username', trigger: 'blur' },
+  {
+    asyncValidator: async (
+      rule: FormItemRule,
+      value: string,
+      callback: (_error?: Error) => void
+    ) => {
+      try {
+        const res = await userCheckUIDService(value)
+        if (CodeUtil.isSuccess(res.code)) {
+          if (admin) {
+            const adminRes = await adminGetUserInfoService(value)
+            if (adminRes.data.admin) {
+              callback(new Error('Can not add asset to admin'))
+              return
+            }
+          }
+          callback()
+        } else {
+          callback(new Error(`Username ${value} does not exist.`))
+        }
+      } catch {
+        callback(new Error('Server error occurred'))
+      }
+    },
     trigger: 'blur'
   }
 ]
