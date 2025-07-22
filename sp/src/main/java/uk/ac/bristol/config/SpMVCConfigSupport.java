@@ -8,6 +8,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
+import uk.ac.bristol.controller.interceptor.PostInterceptor;
 import uk.ac.bristol.controller.interceptor.SpInterceptor;
 
 import java.util.concurrent.Executor;
@@ -18,6 +19,9 @@ public class SpMVCConfigSupport extends WebMvcConfigurationSupport {
 
     @Autowired
     SpInterceptor spInterceptor;
+
+    @Autowired
+    PostInterceptor PostInterceptor;
 
     // redirect URI resources
     @Override
@@ -32,6 +36,9 @@ public class SpMVCConfigSupport extends WebMvcConfigurationSupport {
                 .addPathPatterns("/api/asset/**")
                 .addPathPatterns("/api/warning/**")
                 .addPathPatterns("/api/admin/**");
+
+        registry.addInterceptor(PostInterceptor)
+                .addPathPatterns("/**");
     }
 
     @Bean("notificationExecutor")
