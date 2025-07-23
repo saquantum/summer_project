@@ -13,10 +13,10 @@ import css from 'highlight.js/lib/languages/css'
 import js from 'highlight.js/lib/languages/javascript'
 import ts from 'highlight.js/lib/languages/typescript'
 import html from 'highlight.js/lib/languages/xml'
-import type { UploadProps } from 'element-plus'
+import { ElMessage, type UploadProps } from 'element-plus'
 import Handlebars from 'handlebars'
 import DOMPurify from 'dompurify'
-import { uploadUrl } from '@/utils/request'
+import { getUploadData, getUploadUrl, validateImageFile } from '@/config/upload'
 
 const lowlight = createLowlight(all)
 lowlight.register('html', html)
@@ -208,6 +208,15 @@ const handleUploadSuccess: UploadProps['onSuccess'] = (
   console.log(uploadFile)
   if (response.data?.url && editor.value)
     editor.value.chain().focus().setImage({ src: response.data.url }).run()
+}
+
+const beforeImageUpload: UploadProps['beforeUpload'] = (rawFile) => {
+  const validation = validateImageFile(rawFile)
+  if (!validation.valid) {
+    ElMessage.error(validation.message || 'File validation failed')
+    return false
+  }
+  return true
 }
 
 /**
@@ -461,13 +470,11 @@ defineExpose({ renderedHTML, compiledHTML })
       </el-popover>
 
       <el-upload
-        :action="uploadUrl"
-        :data="{
-          uid: '0859f8d62389ad10bdaf599d6b5840d8',
-          token: 'b623ba4c187c69f60f3fe3ac0a4e665e'
-        }"
+        :action="getUploadUrl('image')"
+        :data="getUploadData()"
         :show-file-list="false"
         :on-success="handleUploadSuccess"
+        :before-upload="beforeImageUpload"
       >
         <button>
           <svg

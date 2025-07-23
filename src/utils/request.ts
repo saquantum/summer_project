@@ -1,11 +1,7 @@
 import axios from 'axios'
-import router from '@/router'
-import { useUserStore } from '@/stores'
 import { v4 as uuidv4 } from 'uuid'
 
 const baseURL = '/api'
-
-const uploadUrl = 'https://www.imgurl.org/api/v2/upload'
 
 const instance = axios.create({
   baseURL,
@@ -45,9 +41,10 @@ instance.interceptors.response.use(
 
     // 401 permission denied or token expired
     if (error.response?.status === 401) {
-      const userStore = useUserStore()
-      userStore.reset()
-      router.push('/login')
+      import('@/stores').then(({ useGlobalLogout }) => {
+        const { logout } = useGlobalLogout()
+        logout()
+      })
     }
     // default
     return Promise.reject(error)
@@ -55,4 +52,4 @@ instance.interceptors.response.use(
 )
 
 export default instance
-export { baseURL, uploadUrl }
+export { baseURL }

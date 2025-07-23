@@ -10,6 +10,8 @@ const mockRouter = {
   currentRoute: { value: { path: '/dashboard' } }
 }
 
+// Mock global logout function
+const mockLogout = vi.fn()
 vi.mock('vue-router', () => ({
   useRouter: () => mockRouter,
   useRoute: () => ({ path: '/dashboard' })
@@ -24,17 +26,14 @@ const mockUserStore = {
     lastName: 'Doe',
     avatar: 'https://example.com/avatar.jpg'
   },
-  proxyId: null,
-  reset: vi.fn()
-}
-
-const mockAssetStore = {
-  reset: vi.fn()
+  proxyId: null
 }
 
 vi.mock('@/stores/index.ts', () => ({
-  useUserStore: () => mockUserStore,
-  useAssetStore: () => mockAssetStore
+  useGlobalLogout: () => ({
+    logout: mockLogout
+  }),
+  useUserStore: () => mockUserStore
 }))
 
 // Mock Element Plus - partial mock approach
@@ -217,12 +216,8 @@ describe('LayoutContainer', () => {
     const signOutButton = wrapper.find('.signout-button')
     await signOutButton.trigger('click')
 
-    // Verify stores are reset
-    expect(mockUserStore.reset).toHaveBeenCalled()
-    expect(mockAssetStore.reset).toHaveBeenCalled()
-
-    // Verify navigation to login
-    expect(mockRouter.push).toHaveBeenCalledWith('/login')
+    // Verify logout function was called
+    expect(mockLogout).toHaveBeenCalled()
   })
 
   it('handles dropdown commands - logout', async () => {
@@ -234,9 +229,7 @@ describe('LayoutContainer', () => {
     const layoutInstance = wrapper.vm as any
     await layoutInstance.handleCommand('logout')
 
-    expect(mockUserStore.reset).toHaveBeenCalled()
-    expect(mockAssetStore.reset).toHaveBeenCalled()
-    expect(mockRouter.push).toHaveBeenCalledWith('/login')
+    expect(mockLogout).toHaveBeenCalled()
   })
 
   it('handles dropdown commands - profile for regular user', async () => {

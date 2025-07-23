@@ -17,8 +17,12 @@ import {
   postcodeRules,
   trimForm
 } from '@/utils/formUtils'
-import { uploadUrl } from '@/utils/request'
 import { Plus } from '@element-plus/icons-vue'
+import {
+  getUploadData,
+  validateAvatarFile,
+  getUploadUrl
+} from '@/config/upload'
 const route = useRoute()
 const props = defineProps<{ isEdit: boolean }>()
 
@@ -118,8 +122,9 @@ const handleAvatarSuccess: UploadProps['onSuccess'] = (
 }
 
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
-  if (rawFile.size / 1024 / 1024 > 5) {
-    ElMessage.error('Avatar picture size can not exceed 2MB!')
+  const validation = validateAvatarFile(rawFile)
+  if (!validation.valid) {
+    ElMessage.error(validation.message || 'File validation failed')
     return false
   }
   return true
@@ -298,11 +303,8 @@ defineExpose({
       <div style="display: flex; align-items: center; gap: 16px">
         <el-upload
           class="avatar-uploader"
-          :action="uploadUrl"
-          :data="{
-            uid: '0859f8d62389ad10bdaf599d6b5840d8',
-            token: 'b623ba4c187c69f60f3fe3ac0a4e665e'
-          }"
+          :action="getUploadUrl('avatar')"
+          :data="getUploadData()"
           :show-file-list="false"
           :on-success="handleAvatarSuccess"
           :before-upload="beforeAvatarUpload"

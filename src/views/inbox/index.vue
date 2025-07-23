@@ -306,7 +306,7 @@ useResponsiveAction((width) => {
     >
       <template #header>
         <div>
-          <el-button @click="mailDetailVisible = false">
+          <el-button @click="mailDetailVisible = false" data-test="back-button">
             <el-icon><ArrowLeft /></el-icon>
           </el-button>
           <h3>{{ selectedMail?.title }}</h3>
@@ -320,9 +320,7 @@ useResponsiveAction((width) => {
             : selectedMail?.issuedDate
         }}
       </p>
-      <div style="margin-top: 10px">
-        {{ selectedMail?.message }}
-      </div>
+      <div style="margin-top: 10px" v-html="selectedMail?.message"></div>
     </el-card>
   </div>
 </template>
