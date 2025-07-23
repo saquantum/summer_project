@@ -1,15 +1,20 @@
 package uk.ac.bristol.controller;
 
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.service.ContactService;
+import uk.ac.bristol.service.TokenBlacklistService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/api")
@@ -18,10 +23,12 @@ public class LoginController {
 
     private final UserService userService;
     private final ContactService contactService;
+    private final TokenBlacklistService tokenBlacklistService;
 
-    public LoginController(UserService userService, ContactService contactService) {
+    public LoginController(UserService userService, ContactService contactService, TokenBlacklistService tokenBlacklistService) {
         this.userService = userService;
         this.contactService = contactService;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     @PostMapping("/login")
@@ -116,5 +123,19 @@ public class LoginController {
             return new ResponseBody(Code.SELECT_OK, null, "The email address already exists.");
         }
         return new ResponseBody(Code.SELECT_ERR, null, "The email address does not exist.");
+    }
+
+    @PostMapping("/logout")
+    public ResponseBody logout(HttpServletRequest request) {
+        try {
+            String token = JwtUtil.getJWTFromCookie(request);
+            if (token != null) {
+                tokenBlacklistService.blacklistToken(token);
+                return new ResponseBody(Code.SUCCESS, null, "Logged out successfully");
+            }
+            return new ResponseBody(Code.BUSINESS_ERR, null, "No token found");
+        } catch (Exception e) {
+            return new ResponseBody(Code.BUSINESS_ERR, null, "Logout failed: " + e.getMessage());
+        }
     }
 }

@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -102,6 +104,22 @@ public final class JwtUtil {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public static long getRemainingSeconds(String jwt) {
+        try {
+            Claims claims = parseJWT(jwt);
+            long now = System.currentTimeMillis();
+            long exp = claims.getExpiration().getTime();
+            return Math.max(0, (exp - now) / 1000);
+        } catch (Exception e) {
+            System.err.println("Failed to parse JWT in getRemainingSeconds: " + e.getMessage());
+            return -1;
+        }
+    }
+
+    public static long getExpirePeriod() {
+        return expirePeriod;
     }
 }
 
