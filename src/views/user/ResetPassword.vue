@@ -1,21 +1,21 @@
 <script setup lang="ts">
 import { Lock } from '@element-plus/icons-vue'
-import { ref, nextTick } from 'vue'
-import { useAssetStore, useUserStore } from '@/stores/index.ts'
+import { ref } from 'vue'
+import { useGlobalLogout, useUserStore } from '@/stores/index.ts'
 import {
   userGetEmailService,
   userEmailVerificationService,
   userResetPasswordService
 } from '@/api/user'
-import { useRouter } from 'vue-router'
+
 import {
   codeRules,
   createRepasswordRules,
   passwordRules
 } from '@/utils/formUtils'
 const userStore = useUserStore()
-const assetStore = useAssetStore()
-const router = useRouter()
+
+const { logout } = useGlobalLogout()
 
 const form = ref({
   code: '',
@@ -33,8 +33,11 @@ const rules = {
 const resetFormVisible = ref(false)
 
 const handleSendEmail = async () => {
-  const res = await userGetEmailService(form.value.email)
-  console.log(res)
+  try {
+    await userGetEmailService(form.value.email)
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 const handleVerify = async () => {
@@ -49,13 +52,8 @@ const handleVerify = async () => {
 
 const handleConfirm = async () => {
   try {
-    const res = await userResetPasswordService(form.value)
-    console.log(res)
-    router.push('/login')
-    nextTick(() => {
-      userStore.reset()
-      assetStore.reset()
-    })
+    await userResetPasswordService(form.value)
+    logout()
   } catch (e) {
     console.error(e)
   }

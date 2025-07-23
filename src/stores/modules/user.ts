@@ -53,18 +53,12 @@ export const useUserStore = defineStore(
       proxyId.value = id
     }
 
-    const reset = () => {
-      user.value = null
-      proxyId.value = ''
-      searchHistory.value = []
-    }
     return {
       user,
       users,
       searchHistory,
       userSearchHistory,
       getUser,
-      reset,
       proxyId,
       setProxyId,
       updateUser,

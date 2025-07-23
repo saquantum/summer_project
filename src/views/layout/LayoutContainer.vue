@@ -1,28 +1,23 @@
 <script setup lang="ts">
 import {
   User,
-  Crop,
   SwitchButton,
   CaretBottom,
   Message,
   Operation,
-  Search
+  Search,
+  Lock
 } from '@element-plus/icons-vue'
 import { ref, watch, computed } from 'vue'
-import { useAssetStore, useUserStore } from '@/stores/index.ts'
+import { useUserStore, useGlobalLogout } from '@/stores/index.ts'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 
 const userStore = useUserStore()
-const assetStore = useAssetStore()
 const router = useRouter()
 const route = useRoute()
 
-const logout = () => {
-  userStore.reset()
-  assetStore.reset()
-  router.push('/login')
-}
+const { logout } = useGlobalLogout()
 const handleCommand = (command: string) => {
   if (command === 'logout') {
     logout()
@@ -127,8 +122,8 @@ watch(
                 <el-dropdown-item command="profile" :icon="User">
                   My profile
                 </el-dropdown-item>
-                <el-dropdown-item command="avatar" :icon="Crop">
-                  Change avatar
+                <el-dropdown-item command="password" :icon="Lock">
+                  Change password
                 </el-dropdown-item>
                 <el-dropdown-item command="logout" :icon="SwitchButton">
                   Log out

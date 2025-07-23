@@ -9,10 +9,6 @@ import type { Warning } from '@/types'
 export const useWarningStore = defineStore(
   'rain-warnings',
   () => {
-    const reset = () => {
-      allWarnings.value = []
-    }
-
     const allWarnings = ref<Warning[]>([])
     const liveWarnings = ref<Warning[]>([])
 
@@ -34,8 +30,7 @@ export const useWarningStore = defineStore(
       getAllLiveWarnings,
       outdatedWarnings,
       allWarnings,
-      liveWarnings,
-      reset
+      liveWarnings
     }
   },
   {

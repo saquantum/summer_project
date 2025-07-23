@@ -411,7 +411,7 @@ onMounted(() => {
         </el-form-item>
 
         <el-form-item label="Capacity litres" prop="capacityLitres">
-          <el-input v-model="form.capacityLitres" type="number"></el-input>
+          <el-input-number v-model="form.capacityLitres" :min="0" />
         </el-form-item>
 
         <el-form-item label="Installed at" prop="installedAt">
@@ -463,8 +463,16 @@ onMounted(() => {
               <el-option label="sequence" value="sequence"></el-option>
             </el-select>
             <div class="map-button">
-              <el-button @click="prevPolygon">⬅</el-button>
-              <el-button @click="nextPolygon">➡</el-button>
+              <el-button
+                @click="prevPolygon"
+                :disabled="mapCardRef?.disablePrev"
+                >⬅</el-button
+              >
+              <el-button
+                @click="nextPolygon"
+                :disabled="mapCardRef?.disableNext"
+                >➡</el-button
+              >
               <el-button @click="quickEscapePolygons">reset display</el-button>
 
               <el-button

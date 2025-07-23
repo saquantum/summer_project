@@ -10,9 +10,12 @@ const router = createRouter({
       children: [
         {
           path: '/recover',
-          component: () => import('@/components/RecoverForm.vue')
+          component: () => import('@/components/cards/RecoverCard.vue')
         },
-        { path: '', component: () => import('@/components/LoginForm.vue') }
+        {
+          path: '',
+          component: () => import('@/components/cards/LoginCard.vue')
+        }
       ]
     },
     {

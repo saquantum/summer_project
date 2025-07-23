@@ -14,7 +14,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const user = ref()
 
-const userFormRef = ref()
+const userCardRef = ref()
 const permission = ref<Permission[] | null>(null)
 const checkboxOptions = ref<{ label: string; value: boolean }[]>([])
 
@@ -29,7 +29,7 @@ const proxyUser = () => {
 
 const isEdit = ref(false)
 const submit = async () => {
-  userFormRef.value.submit()
+  userCardRef.value.submit()
 
   if (permission.value && permission.value.length > 0) {
     const p = permission.value[0]
@@ -68,7 +68,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UserForm ref="userFormRef" v-model:isEdit="isEdit"></UserForm>
+  <UserCard ref="userCardRef" v-model:isEdit="isEdit"></UserCard>
   <div>
     <h3>Permission</h3>
     <el-checkbox

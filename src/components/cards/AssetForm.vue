@@ -195,8 +195,19 @@ defineExpose({
       <el-input v-model="form.name" />
     </el-form-item>
 
+    <el-form-item label="Type" prop="typeId">
+      <el-select v-model="form.material">
+        <el-option
+          v-for="item in assetStore.typeOptions"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        ></el-option>
+      </el-select>
+    </el-form-item>
+
     <el-form-item label="Asset material" prop="material">
-      <el-select v-model="form.material" placeholder="Select material">
+      <el-select v-model="form.material">
         <el-option
           v-for="item in materialOption"
           :key="item.value"

@@ -4,7 +4,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 const router = useRouter()
-const userFormRef = ref()
+const userCardRef = ref()
 const userStore = useUserStore()
 
 const user = computed(() => {
@@ -12,7 +12,7 @@ const user = computed(() => {
   return userStore.user
 })
 const submit = () => {
-  userFormRef.value.submit()
+  userCardRef.value.submit()
 }
 
 const isEdit = ref(false)
@@ -43,12 +43,12 @@ defineExpose({
   user,
   submit,
   handleEdit,
-  userFormRef
+  userCardRef
 })
 </script>
 
 <template>
-  <UserForm ref="userFormRef" v-model:isEdit="isEdit"></UserForm>
+  <UserCard ref="userCardRef" v-model:isEdit="isEdit"></UserCard>
 
   <!-- operation -->
   <el-button

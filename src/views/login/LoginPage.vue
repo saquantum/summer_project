@@ -3,9 +3,7 @@
 <template>
   <div class="login-page">
     <div class="card-wrapper">
-      <el-card class="glass-effect">
-        <router-view></router-view>
-      </el-card>
+      <router-view></router-view>
     </div>
   </div>
 </template>

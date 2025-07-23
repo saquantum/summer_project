@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 import type { ApiResponse } from '@/types/api'
-import type { AssetType, RegisterForm, User } from '@/types'
+import type { RegisterForm, User } from '@/types'
 export const userRegisterService = (obj: RegisterForm): Promise<ApiResponse> =>
   request.post('/register', obj)
 
@@ -55,6 +55,3 @@ export const userResetPasswordService = ({
   email: string
   password: string
 }): Promise<ApiResponse> => request.post('/email/password', { email, password })
-
-export const userGetAssetTypesService = (): Promise<ApiResponse<AssetType[]>> =>
-  request.get('/asset/type')

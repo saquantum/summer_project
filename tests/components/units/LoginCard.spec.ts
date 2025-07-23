@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import LoginForm from '@/components/LoginForm.vue'
+import LoginCard from '@/components/cards/LoginCard.vue'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 
@@ -28,24 +28,24 @@ vi.mock('@/api/user', () => ({
 }))
 
 // Basic tests
-describe('LoginForm.vue', () => {
+describe('LoginCard.vue', () => {
   beforeEach(() => {
     pushMock.mockClear()
   })
 
   it('renders sign in form by default', () => {
-    const wrapper = mount(LoginForm)
+    const wrapper = mount(LoginCard)
     expect(wrapper.find('.form-title').text()).toBe('SIGN IN')
   })
 
   it('shows register form when clicking Register', async () => {
-    const wrapper = mount(LoginForm)
+    const wrapper = mount(LoginCard)
     await wrapper.find('.fixed-bottom-tip .el-link').trigger('click')
     expect(wrapper.find('.form-title').text()).toBe('SIGN UP')
   })
 
   it('calls login when sign in button is clicked', async () => {
-    const wrapper = mount(LoginForm)
+    const wrapper = mount(LoginCard)
     await wrapper.find('input[placeholder*="username" i]').setValue('testuser')
     await wrapper.find('input[placeholder*="password" i]').setValue('testpass')
     await wrapper.find('button.button').trigger('click')
@@ -54,7 +54,7 @@ describe('LoginForm.vue', () => {
   })
 
   it('shows error if username is empty', async () => {
-    const wrapper = mount(LoginForm)
+    const wrapper = mount(LoginCard)
     await wrapper.find('input[placeholder*="password" i]').setValue('testpass')
     await wrapper.find('button.button').trigger('click')
     // Should not call router.push
@@ -62,7 +62,7 @@ describe('LoginForm.vue', () => {
   })
 
   it('shows error if password is empty', async () => {
-    const wrapper = mount(LoginForm)
+    const wrapper = mount(LoginCard)
     await wrapper.find('input[placeholder*="username" i]').setValue('testuser')
     await wrapper.find('button.button').trigger('click')
     // Should not call router.push
@@ -77,13 +77,13 @@ describe('Register', () => {
   })
 
   it('shows register form when clicking Register', async () => {
-    const wrapper = mount(LoginForm)
+    const wrapper = mount(LoginCard)
     await wrapper.find('.fixed-bottom-tip .el-link').trigger('click')
     expect(wrapper.find('.form-title').text()).toBe('SIGN UP')
   })
 
   it('cannot goto step 2 if email is empty', async () => {
-    const wrapper = mount(LoginForm)
+    const wrapper = mount(LoginCard)
     await wrapper.find('.fixed-bottom-tip .el-link').trigger('click')
     await wrapper.find('[data-test="register-button1"]').trigger('click')
     await flushPromises()
@@ -91,7 +91,7 @@ describe('Register', () => {
   })
 
   it('email validator function correctly', async () => {
-    const wrapper = mount(LoginForm)
+    const wrapper = mount(LoginCard)
     await wrapper.find('.fixed-bottom-tip .el-link').trigger('click')
     await wrapper
       .find('input[placeholder*="email" i]')
@@ -102,7 +102,7 @@ describe('Register', () => {
   })
 
   it('can goto step 2 if email is correct', async () => {
-    const wrapper = mount(LoginForm)
+    const wrapper = mount(LoginCard)
     await wrapper.find('.fixed-bottom-tip .el-link').trigger('click')
     await wrapper
       .find('input[placeholder*="email" i]')
@@ -113,7 +113,7 @@ describe('Register', () => {
   })
 
   it('cannot goto step 3 if personal information is empty', async () => {
-    const wrapper = mount(LoginForm)
+    const wrapper = mount(LoginCard)
     await wrapper.find('.fixed-bottom-tip .el-link').trigger('click')
     await wrapper
       .find('input[placeholder*="email" i]')

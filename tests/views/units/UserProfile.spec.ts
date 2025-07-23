@@ -25,12 +25,12 @@ vi.mock('element-plus', async () => {
   }
 })
 
-// Mock UserForm component
+// Mock UserCard component
 const submitMock = vi.fn()
-vi.mock('@/components/UserForm.vue', () => ({
+vi.mock('@/components/cards/UserCard.vue', () => ({
   default: {
-    name: 'UserForm',
-    template: '<div class="user-form-mock">UserForm Content</div>',
+    name: 'UserCard',
+    template: '<div class="user-card-mock">UserCard Content</div>',
     props: ['isEdit'],
     emits: ['update:isEdit']
   }
@@ -76,8 +76,8 @@ describe('UserProfile.vue', () => {
       const wrapper = mount(UserProfile)
       await nextTick()
 
-      // Check that UserForm component is rendered
-      expect(wrapper.find('.user-form-mock').exists()).toBe(true)
+      // Check that UserCard component is rendered
+      expect(wrapper.find('.user-card-mock').exists()).toBe(true)
 
       // Check that buttons are present
       const buttons = wrapper.findAll('button')

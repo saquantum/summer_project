@@ -112,12 +112,10 @@ export const adminGetAssetsService = (
   offset: number,
   limit: number,
   orderList: string
-): Promise<ApiResponse<AssetWithWarnings[]>> => {
-  console.log(offset, limit, orderList)
-  return request.get('/admin/asset/', {
+): Promise<ApiResponse<AssetWithWarnings[]>> =>
+  request.get('/admin/asset/', {
     params: { offset: offset, limit: limit, orderList: orderList }
   })
-}
 
 export const adminSearchAssetService = (obj: AssetSearchBody) => {
   return request.post('/admin/asset/search', obj)
@@ -131,12 +129,10 @@ export const adminGetUserAssetsService = (
 
 export const adminDeleteAssetService = (
   assets: string[]
-): Promise<ApiResponse> => {
-  console.log(assets)
-  return request.delete('/admin/asset', {
+): Promise<ApiResponse> =>
+  request.delete('/admin/asset', {
     data: { ids: assets }
   })
-}
 
 export const adminGetAssetByIdService = (
   id: string

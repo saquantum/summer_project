@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import UserForm from '@/components/UserForm.vue'
+import UserCard from '@/components/cards/UserCard.vue'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { ElMessage } from 'element-plus'
@@ -87,9 +87,9 @@ vi.mock('@/utils/request', () => ({
   uploadUrl: 'http://test-upload-url.com'
 }))
 
-describe('UserForm', () => {
+describe('UserCard', () => {
   const createWrapper = (props = {}) => {
-    return mount(UserForm, {
+    return mount(UserCard, {
       props: { isEdit: false, ...props }
     })
   }
@@ -358,7 +358,7 @@ describe('UserForm', () => {
     }
 
     // Create wrapper with invalid data
-    const invalidWrapper = mount(UserForm, {
+    const invalidWrapper = mount(UserCard, {
       props: { isEdit: true },
       global: {
         mocks: {

@@ -21,10 +21,7 @@ export const useMailStore = defineStore(
       }
     }
 
-    const reset = () => {
-      mails.value = []
-    }
-    return { mails, getMails, reset }
+    return { mails, getMails }
   },
   {
     persist: true

@@ -65,35 +65,61 @@ const locations = computed({
   }
 })
 
+const isDrawing = ref(false)
+
 const beginDrawing = () => {
+  isDrawing.value = true
   mapCardRef.value?.beginDrawing()
 }
-const endDrawing = () => {
-  mapCardRef.value?.endDrawing()
-}
+
 const finishOneShape = () => {
   mapCardRef.value?.finishOneShape()
 }
+
 const finishOnePolygon = () => {
   mapCardRef.value?.finishOnePolygon()
 }
+
+const endDrawing = () => {
+  isDrawing.value = false
+  mapCardRef.value?.endDrawing()
+}
+
 const cancelDrawing = () => {
+  isDrawing.value = false
   mapCardRef.value?.cancelDrawing()
+}
+
+const prevPolygon = () => {
+  mapCardRef.value?.prevPolygon()
+}
+
+const nextPolygon = () => {
+  mapCardRef.value?.nextPolygon()
+}
+
+const quickEscapePolygons = () => {
+  mapCardRef.value?.quickEscapePolygons()
 }
 
 const handleShowDetail = (row: WarningTableRow) => {
   router.push(`/warnings/${row.id}`)
 }
 
+const disableSetPolygon = computed(() => {
+  if (
+    !userStore.user?.admin &&
+    !userStore.user?.permissionConfig.canSetPolygonOnCreate
+  )
+    return true
+  return false
+})
+
 const isMobile = computed(() => {
   if (typeof window !== 'undefined') {
     return window.innerWidth <= 768
   }
   return false
-})
-
-const buttonSize = computed(() => {
-  return isMobile.value ? 'small' : 'default'
 })
 </script>
 
@@ -205,21 +231,44 @@ const buttonSize = computed(() => {
       </div>
 
       <div class="control-buttons">
-        <el-button @click="beginDrawing" type="primary" :size="buttonSize">
-          Draw New Asset
-        </el-button>
-        <el-button @click="finishOneShape" :size="buttonSize">
-          Finish Shape
-        </el-button>
-        <el-button @click="finishOnePolygon" :size="buttonSize">
-          Finish Polygon
-        </el-button>
-        <el-button @click="endDrawing" type="success" :size="buttonSize">
-          End Drawing
-        </el-button>
-        <el-button @click="cancelDrawing" type="danger" :size="buttonSize">
-          Cancel Drawing
-        </el-button>
+        <el-button @click="prevPolygon" :disabled="mapCardRef?.disablePrev"
+          >⬅</el-button
+        >
+        <el-button @click="nextPolygon" :disabled="mapCardRef?.disableNext"
+          >➡</el-button
+        >
+        <el-button @click="quickEscapePolygons">reset display</el-button>
+
+        <el-button
+          v-if="!isDrawing"
+          @click="beginDrawing"
+          :disabled="disableSetPolygon"
+          >Draw new polygon</el-button
+        >
+        <el-button
+          v-if="isDrawing"
+          @click="finishOneShape"
+          :disabled="disableSetPolygon"
+          >Finish one shape</el-button
+        >
+        <el-button
+          v-if="isDrawing"
+          @click="finishOnePolygon"
+          :disabled="disableSetPolygon"
+          >Finish one polygon</el-button
+        >
+        <el-button
+          v-if="isDrawing"
+          @click="endDrawing"
+          :disabled="disableSetPolygon"
+          >End drawing</el-button
+        >
+        <el-button
+          v-if="isDrawing"
+          @click="cancelDrawing"
+          :disabled="disableSetPolygon"
+          >Cancel drawing</el-button
+        >
       </div>
     </div>
   </div>

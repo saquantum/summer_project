@@ -13,7 +13,7 @@ import type {
   AssetWithWarnings,
   Warning
 } from '@/types'
-import { userGetAssetTypesService } from '@/api/user'
+import { getAssetTypesService } from '@/api/assets'
 import { useUserStore } from './user'
 
 export const useAssetStore = defineStore(
@@ -48,7 +48,7 @@ export const useAssetStore = defineStore(
     )
 
     const getAssetTypes = async () => {
-      const res = await userGetAssetTypesService()
+      const res = await getAssetTypesService()
       assetTypes.value = res.data
     }
 
@@ -104,16 +104,10 @@ export const useAssetStore = defineStore(
       }
     }
 
-    const reset = () => {
-      userAssets.value = []
-      allAssets.value = []
-      assetTypes.value = []
-    }
-
     return {
       userAssets,
       getUserAssets,
-      reset,
+
       allAssets,
       getAllAssets,
       getAssetTypes,

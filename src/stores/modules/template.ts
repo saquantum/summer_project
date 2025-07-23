@@ -17,10 +17,7 @@ export const useTemplateStore = defineStore(
       templates.value = data
     }
 
-    const reset = () => {
-      templates.value = []
-    }
-    return { templates, getTemplates, reset }
+    return { templates, getTemplates }
   },
   {
     persist: true

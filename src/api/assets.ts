@@ -1,6 +1,11 @@
 import request from '@/utils/request'
 import type { ApiResponse } from '@/types/api'
-import type { Asset, AssetInfoForm, AssetWithWarnings } from '@/types'
+import type {
+  Asset,
+  AssetInfoForm,
+  AssetType,
+  AssetWithWarnings
+} from '@/types'
 
 export const assetsGetInfoService = (
   userId: string
@@ -14,3 +19,6 @@ export const updateAssetByIdService = (
   uid: string,
   obj: AssetInfoForm | Asset
 ) => request.put(`/user/uid/${uid}/asset`, obj)
+
+export const getAssetTypesService = (): Promise<ApiResponse<AssetType[]>> =>
+  request.get('/asset/type')

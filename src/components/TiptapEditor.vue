@@ -195,13 +195,9 @@ const setColor = (e: Event) => {
 }
 
 const handleCommand = (command: string) => {
-  console.log(command)
   if (!editor.value) return
-  editor.value
-    .chain()
-    .focus()
-    .toggleHeading({ level: Number(command) })
-    .run()
+  const level = Number(command) as 1 | 2 | 3 | 4 | 5 | 6
+  editor.value.chain().focus().toggleHeading({ level }).run()
 }
 
 const handleUploadSuccess: UploadProps['onSuccess'] = (

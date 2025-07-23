@@ -9,8 +9,8 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AllTemplates: typeof import('./src/components/AllTemplates.vue')['default']
-    AssetCard: typeof import('./src/components/AssetCard.vue')['default']
-    AssetForm: typeof import('./src/components/AssetForm.vue')['default']
+    AssetCard: typeof import('./src/components/cards/AssetCard.vue')['default']
+    AssetForm: typeof import('./src/components/cards/AssetForm.vue')['default']
     ButtonInput: typeof import('./src/components/ButtonInput.vue')['default']
     ConfirmDialog: typeof import('./src/components/ConfirmDialog.vue')['default']
     CustomerService: typeof import('./src/components/CustomerService.vue')['default']
@@ -56,11 +56,12 @@ declare module 'vue' {
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
     ElUpload: typeof import('element-plus/es')['ElUpload']
     FilterSearch: typeof import('./src/components/FilterSearch.vue')['default']
-    HTMLPreview: typeof import('./src/components/HTMLPreview.vue')['default']
-    LoginForm: typeof import('./src/components/LoginForm.vue')['default']
+    LoginCard: typeof import('./src/components/cards/LoginCard.vue')['default']
+    LoginForm: typeof import('./src/components/cards/LoginForm.vue')['default']
     MapCard: typeof import('./src/components/MapCard.vue')['default']
     PermissionIndicator: typeof import('./src/components/PermissionIndicator.vue')['default']
-    RecoverForm: typeof import('./src/components/RecoverForm.vue')['default']
+    RecoverCard: typeof import('./src/components/cards/RecoverCard.vue')['default']
+    RecoverForm: typeof import('./src/components/cards/RecoverForm.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SearchDialog: typeof import('./src/components/SearchDialog.vue')['default']
@@ -70,9 +71,10 @@ declare module 'vue' {
     TabBar: typeof import('./src/components/TabBar.vue')['default']
     TestSearch: typeof import('./src/components/TestSearch.vue')['default']
     TiptapEditor: typeof import('./src/components/TiptapEditor.vue')['default']
+    UserCard: typeof import('./src/components/cards/UserCard.vue')['default']
     UserCollapse: typeof import('./src/components/UserCollapse.vue')['default']
     UserForm: typeof import('./src/components/UserForm.vue')['default']
     UserSearch: typeof import('./src/components/UserSearch.vue')['default']
-    WarningCard: typeof import('./src/components/WarningCard.vue')['default']
+    WarningCard: typeof import('./src/components/cards/WarningCard.vue')['default']
   }
 }
