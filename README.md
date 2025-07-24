@@ -21,3 +21,11 @@ Some test users are:
 
 {username: "user_050", password: "123456"}
 
+### docker
+
+Run the project in the root file with
+
+```sh
+docker compose up --build -d
+```
+

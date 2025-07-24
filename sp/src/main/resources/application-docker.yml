@@ -53,3 +53,8 @@ logging:
   level:
     uk.ac.bristol.dao: DEBUG
     org.apache.ibatis: DEBUG
+
+twilio:
+  account-sid: ACca414e42cf744fe7c04c1bef9c0d09c3
+  auth-token: 94c438edc8444eae48d0be61a44eadab
+  from-number: "+447473357602"

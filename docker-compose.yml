@@ -1,0 +1,62 @@
+services:
+  # Vue.js Frontend Service
+  frontend:
+    build:
+      context: ./vue
+      dockerfile: Dockerfile
+    container_name: summer-frontend
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_BASE_URL=http://localhost:8080/api
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Spring Boot Backend Service
+  backend:
+    build:
+      context: ./sp
+      dockerfile: Dockerfile
+    container_name: summer-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/rainwaterDB
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=123456
+    depends_on:
+      - db
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # PostgreSQL Database Service
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: summer-database
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=rainwaterDB
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    restart: unless-stopped
+
+# Network Configuration
+networks:
+  app-network:
+    driver: bridge
+
+# Persistent Data Volumes
+volumes:
+  postgres_data:
+    driver: local
