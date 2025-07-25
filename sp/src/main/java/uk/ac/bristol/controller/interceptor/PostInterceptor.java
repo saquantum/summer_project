@@ -32,7 +32,7 @@ public class PostInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        String keyHeader = request.getHeader("idempotent-key");
+        String keyHeader = request.getHeader("Idempotent-Key");
         if (keyHeader == null || keyHeader.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write("Missing idempotent-key header");
