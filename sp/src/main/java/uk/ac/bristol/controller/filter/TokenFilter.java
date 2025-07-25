@@ -1,6 +1,5 @@
 package uk.ac.bristol.controller.filter;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.ac.bristol.controller.Code;
 import uk.ac.bristol.service.TokenBlacklistService;

@@ -24,6 +24,12 @@ public interface WarningMapper {
 
     List<Warning> selectWarningsIntersectingWithGivenAsset(@Param("assetId") String assetId);
 
+    boolean testWarningExistence(@Param("id") Long id);
+
+    boolean testWarningDetailDiff(Warning warning);
+
+    boolean testWarningAreaDiff(@Param("id") Long warningId, @Param("areaAsJson") String areaAsJson);
+
     int insertWarning(Warning warning);
 
     int updateWarning(Warning warning);
@@ -31,10 +37,4 @@ public interface WarningMapper {
     int deleteWarningByIDs(@Param("ids") Long[] ids);
 
     int deleteWarningByIDs(@Param("ids") List<Long> ids);
-
-    boolean testWarningExists(@Param("id") Long id);
-
-    boolean testWarningDetailDiff(Warning warning);
-
-    boolean testWarningAreaDiff(@Param("id") Long warningId, @Param("areaAsJson") String areaAsJson);
 }

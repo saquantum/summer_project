@@ -17,7 +17,7 @@ public interface Settings {
 
     void createContactPreferences(@Param("tableName") String tableName);
 
-    void createAssetHolders(@Param("tableName") String tableName);
+    void createContactDetails(@Param("tableName") String tableName);
 
     void createUsers(@Param("tableName") String tableName);
 

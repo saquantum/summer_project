@@ -112,7 +112,7 @@ public class AdminController {
                                           @RequestParam(required = false) Integer offset) {
         FilterDTO filter = new FilterDTO(limit);
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, permissionConfigService.getAllPermissionConfigs(
+        return new ResponseBody(Code.SELECT_OK, permissionConfigService.getPermissionConfigs(
                 null,
                 QueryTool.getOrderList(orderList),
                 filter.getLimit(),
@@ -126,7 +126,7 @@ public class AdminController {
             throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
         }
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, permissionConfigService.getAllPermissionConfigs(
+        return new ResponseBody(Code.SELECT_OK, permissionConfigService.getPermissionConfigs(
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),

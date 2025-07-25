@@ -39,10 +39,10 @@ public class AssetServiceImpl implements AssetService {
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<Asset> getAllAssets(Map<String, Object> filters,
-                                    List<Map<String, String>> orderList,
-                                    Integer limit,
-                                    Integer offset) {
+    public List<Asset> getAssets(Map<String, Object> filters,
+                                 List<Map<String, String>> orderList,
+                                 Integer limit,
+                                 Integer offset) {
         return assetMapper.selectAssets(
                 QueryTool.formatFilters(filters),
                 QueryTool.filterOrderList(orderList, "assets"),
@@ -51,10 +51,10 @@ public class AssetServiceImpl implements AssetService {
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<AssetWithWeatherWarnings> getAllAssetsWithWarnings(Map<String, Object> filters,
-                                                                   List<Map<String, String>> orderList,
-                                                                   Integer limit,
-                                                                   Integer offset) {
+    public List<AssetWithWeatherWarnings> getAssetsWithWarnings(Map<String, Object> filters,
+                                                                List<Map<String, String>> orderList,
+                                                                Integer limit,
+                                                                Integer offset) {
         List<Map<String, String>> list = QueryTool.filterOrderList(orderList, "assets", "weather_warnings");
 
         if (list.isEmpty() || metaDataMapper.filterRegisteredColumnsInTables(List.of("weather_warnings"), List.of(list.get(0).get("column"))).isEmpty()) {
@@ -95,10 +95,10 @@ public class AssetServiceImpl implements AssetService {
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<Asset> getAllAssetsByAssetHolderId(String ownerId,
-                                                   List<Map<String, String>> orderList,
-                                                   Integer limit,
-                                                   Integer offset) {
+    public List<Asset> getAssetsByOwnerId(String ownerId,
+                                          List<Map<String, String>> orderList,
+                                          Integer limit,
+                                          Integer offset) {
         return assetMapper.selectAssets(
                 QueryTool.formatFilters(Map.of("asset_owner_id", ownerId)),
                 QueryTool.filterOrderList(orderList, "assets"),
@@ -107,10 +107,10 @@ public class AssetServiceImpl implements AssetService {
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<AssetWithWeatherWarnings> getAllAssetsWithWarningsByAssetHolderId(String ownerId,
-                                                                                  List<Map<String, String>> orderList,
-                                                                                  Integer limit,
-                                                                                  Integer offset) {
+    public List<AssetWithWeatherWarnings> getAssetsWithWarningsByOwnerId(String ownerId,
+                                                                         List<Map<String, String>> orderList,
+                                                                         Integer limit,
+                                                                         Integer offset) {
         return assetMapper.selectAssetsWithWarnings(
                 QueryTool.formatFilters(Map.of("asset_owner_id", ownerId)),
                 QueryTool.filterOrderList(orderList, "assets", "asset_types", "weather_warnings"),
@@ -119,10 +119,10 @@ public class AssetServiceImpl implements AssetService {
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<AssetType> getAllAssetTypes(Map<String, Object> filters,
-                                            List<Map<String, String>> orderList,
-                                            Integer limit,
-                                            Integer offset) {
+    public List<AssetType> getAssetTypes(Map<String, Object> filters,
+                                         List<Map<String, String>> orderList,
+                                         Integer limit,
+                                         Integer offset) {
         return assetMapper.selectAssetTypes(
                 QueryTool.formatFilters(filters),
                 QueryTool.filterOrderList(orderList, "asset_types"),
@@ -131,7 +131,7 @@ public class AssetServiceImpl implements AssetService {
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<String> selectAssetIdsByWarningId(@Param("id") Long id) {
+    public List<String> getAssetIdsIntersectingWithGivenWarning(@Param("id") Long id) {
         return assetMapper.selectAssetsWithWarnings(
                         QueryTool.formatFilters(Map.of("warning_id", id)),
                         null, null, null)
@@ -182,7 +182,7 @@ public class AssetServiceImpl implements AssetService {
             asset.setId(assetId.get(0));
             List<Warning> warnings = warningService.getWarningsIntersectingWithGivenAsset(asset.getId());
             if (!warnings.isEmpty()) {
-                User owner = userService.getUserByAssetHolderId(asset.getOwnerId());
+                User owner = userService.getUserByUserId(asset.getOwnerId());
                 for (Warning warning : warnings) {
                     contactService.sendNotificationsToUser(warning, new UserWithAssets(owner, new ArrayList<>(List.of(asset))));
                 }
@@ -215,12 +215,12 @@ public class AssetServiceImpl implements AssetService {
             }
             ownerId = tmp.get(0).getOwnerId();
         }
-        User owner = userService.getUserByAssetHolderId(ownerId);
+        User owner = userService.getUserByUserId(ownerId);
 
         // update user last modified
         Instant now = Instant.now();
-        owner.getAssetHolder().setLastModified(now);
-        userService.updateAssetHolder(owner.getAssetHolder());
+        owner.setLastModified(now);
+        userService.updateUser(owner);
 
         // if asset area is not touched, update now and return early
         asset.setLastModified(now);

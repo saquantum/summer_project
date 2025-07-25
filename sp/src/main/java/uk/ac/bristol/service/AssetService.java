@@ -9,36 +9,36 @@ import java.util.Map;
 
 public interface AssetService {
 
-    List<Asset> getAllAssets(Map<String, Object> filters,
-                             List<Map<String, String>> orderList,
-                             Integer limit,
-                             Integer offset);
+    List<Asset> getAssets(Map<String, Object> filters,
+                          List<Map<String, String>> orderList,
+                          Integer limit,
+                          Integer offset);
 
-    List<AssetWithWeatherWarnings> getAllAssetsWithWarnings(Map<String, Object> filters,
-                                                            List<Map<String, String>> orderList,
-                                                            Integer limit,
-                                                            Integer offset);
+    List<AssetWithWeatherWarnings> getAssetsWithWarnings(Map<String, Object> filters,
+                                                         List<Map<String, String>> orderList,
+                                                         Integer limit,
+                                                         Integer offset);
 
     Asset getAssetById(String id);
 
     AssetWithWeatherWarnings getAssetWithWarningsById(String id);
 
-    List<Asset> getAllAssetsByAssetHolderId(String ownerId,
-                                            List<Map<String, String>> orderList,
-                                            Integer limit,
-                                            Integer offset);
+    List<Asset> getAssetsByOwnerId(String ownerId,
+                                   List<Map<String, String>> orderList,
+                                   Integer limit,
+                                   Integer offset);
 
-    List<AssetWithWeatherWarnings> getAllAssetsWithWarningsByAssetHolderId(String ownerId,
-                                                                           List<Map<String, String>> orderList,
-                                                                           Integer limit,
-                                                                           Integer offset);
+    List<AssetWithWeatherWarnings> getAssetsWithWarningsByOwnerId(String ownerId,
+                                                                  List<Map<String, String>> orderList,
+                                                                  Integer limit,
+                                                                  Integer offset);
 
-    List<AssetType> getAllAssetTypes(Map<String, Object> filters,
-                                     List<Map<String, String>> orderList,
-                                     Integer limit,
-                                     Integer offset);
+    List<AssetType> getAssetTypes(Map<String, Object> filters,
+                                  List<Map<String, String>> orderList,
+                                  Integer limit,
+                                  Integer offset);
 
-    List<String> selectAssetIdsByWarningId(Long id);
+    List<String> getAssetIdsIntersectingWithGivenWarning(Long id);
 
     int countAssetsWithFilter(Map<String, Object> filters);
 

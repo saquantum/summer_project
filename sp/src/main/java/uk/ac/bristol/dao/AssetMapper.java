@@ -29,6 +29,20 @@ public interface AssetMapper {
 
     int countAssetsWithWarnings(@Param("filterString") String filterString);
 
+    int insertAsset(Asset asset);
+
+    List<String> insertAssetReturningId(Asset asset);
+
+    int insertAssetAutoId(Asset asset);
+
+    int updateAsset(Asset asset);
+
+    int deleteAssetByIDs(@Param("ids") String[] ids);
+
+    int deleteAssetByIDs(@Param("ids") List<String> ids);
+
+    /* asset types */
+
     List<AssetType> selectAssetTypes(@Param("filterString") String filterString,
                                      @Param("orderList") List<Map<String, String>> orderList,
                                      @Param("limit") Integer limit,
@@ -38,21 +52,9 @@ public interface AssetMapper {
 
     int insertAssetTypeAutoId(AssetType assetType);
 
-    int insertAsset(Asset asset);
-
-    List<String> insertAssetReturningId(Asset asset);
-
-    int insertAssetAutoId(Asset asset);
-
     int updateAssetType(AssetType assetType);
-
-    int updateAsset(Asset asset);
 
     int deleteAssetTypeByIDs(@Param("ids") String[] ids);
 
     int deleteAssetTypeByIDs(@Param("ids") List<String> ids);
-
-    int deleteAssetByIDs(@Param("ids") String[] ids);
-
-    int deleteAssetByIDs(@Param("ids") List<String> ids);
 }
