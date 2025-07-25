@@ -10,6 +10,8 @@ import java.util.Map;
 @Mapper
 public interface ContactMapper {
 
+    /* templates */
+
     List<Template> selectAllNotificationTemplates(@Param("filterString") String filterString,
                                                   @Param("orderList") List<Map<String, String>> orderList,
                                                   @Param("limit") Integer limit,
@@ -30,6 +32,8 @@ public interface ContactMapper {
     int deleteNotificationTemplateByIds(@Param("ids") List<Long> ids);
 
     int deleteNotificationTemplateByType(Template template);
+
+    /* inboxes */
 
     List<Map<String, Object>> selectUserInboxMessagesByUserId(@Param("userId") String userId);
 

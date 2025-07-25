@@ -7,14 +7,12 @@ import java.util.Map;
 
 public interface PermissionConfigService {
 
-    List<PermissionConfig> getAllPermissionConfigs(Map<String, Object> filters,
+    List<PermissionConfig> getPermissionConfigs(Map<String, Object> filters,
                                                    List<Map<String, String>> orderList,
                                                    Integer limit,
                                                    Integer offset);
 
-    List<PermissionConfig> getPermissionConfigByUserId(String userId);
-
-    List<PermissionConfig> getPermissionConfigByAssetHolderId(String assetHolderId);
+    PermissionConfig getPermissionConfigByUserId(String userId);
 
     int insertPermissionConfig(PermissionConfig permissionConfig);
 

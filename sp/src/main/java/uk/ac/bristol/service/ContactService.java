@@ -31,7 +31,7 @@ public interface ContactService {
 
     List<Template> getNotificationTemplateByTypes(Template template);
 
-    List<Template> getNotificationTemplateById(Long id);
+    Template getNotificationTemplateById(Long id);
 
     int insertNotificationTemplate(Template templates);
 

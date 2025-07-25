@@ -8,8 +8,8 @@
         create extension if not exists postgis;
         create extension if not exists hstore;
         drop table if exists table_meta_data cascade;
-        drop table if exists asset_holders cascade;
         drop table if exists address cascade;
+        drop table if exists contact_details cascade;
         drop table if exists contact_preferences cascade;
         drop table if exists users cascade;
         drop table if exists asset_types cascade;
@@ -56,36 +56,21 @@
         where table_name = #{tableName};
     </update>
 
-    <update id="createAssetHolders">
-        create table if not exists asset_holders
+    <update id="createUsers">
+        create table if not exists users
         (
-            asset_holder_row_id                 bigserial primary key,
-            asset_holder_id                     varchar(50) unique not null,
-            asset_holder_name                   varchar(200)       not null,
-            asset_holder_email                  varchar(50)        not null,
-            asset_holder_phone                  varchar(50)        not null,
-            asset_holder_address_id             varchar(50) unique not null,
-            asset_holder_contact_preferences_id varchar(50) unique not null,
-            asset_holder_last_modified          timestamp without time zone default current_timestamp
+            user_row_id             bigserial primary key,
+            user_id                 varchar(100) not null unique,
+            user_password           text         not null,
+            user_password_plaintext varchar(50),
+            user_is_admin           boolean      not null,
+            user_admin_level        int check (user_admin_level >= 0),
+            user_avatar             text,
+            user_name               varchar(200),
+            user_last_modified      timestamp without time zone default current_timestamp
         );
 
-        create or replace function set_asset_holder_id()
-            returns trigger as
-        $$
-        begin
-            if NEW.asset_holder_id is null or NEW.asset_holder_id = '' then
-                NEW.asset_holder_id := '$user_' || lpad(NEW.asset_holder_row_id::text, 3, '0');
-            end if;
-            return NEW;
-        end;
-        $$ language plpgsql;
-
-        drop trigger if exists asset_holder_id_trigger on asset_holders;
-        create trigger asset_holder_id_trigger
-            before insert
-            on asset_holders
-            for each row
-        execute function set_asset_holder_id();
+        create index user_id_index on users (user_id);
 
         <include refid="initTableMetaData"/>
     </update>
@@ -93,7 +78,7 @@
     <update id="createAddress">
         create table if not exists address
         (
-            address_id       varchar(50) primary key references asset_holders (asset_holder_address_id) on update cascade,
+            address_id       varchar(100) primary key references users (user_id) on update cascade,
             address_street   varchar(100),
             address_city     varchar(100),
             address_postcode varchar(50),
@@ -106,7 +91,7 @@
     <update id="createContactPreferences">
         create table if not exists contact_preferences
         (
-            contact_preferences_id       varchar(50) primary key references asset_holders (asset_holder_contact_preferences_id) on update cascade,
+            contact_preferences_id       varchar(100) primary key references users (user_id) on update cascade,
             contact_preferences_email    boolean default false,
             contact_preferences_phone    boolean default false,
             contact_preferences_post     boolean default false,
@@ -118,23 +103,17 @@
         <include refid="initTableMetaData"/>
     </update>
 
-    <update id="createUsers">
-        create table if not exists users
+    <update id="createContactDetails">
+        create table if not exists contact_details
         (
-            user_row_id             bigserial primary key,
-            user_id                 varchar(100) not null unique,
-            user_asset_holder_id    varchar(50),
-            user_password           text         not null,
-            user_password_plaintext varchar(50),
-            user_is_admin           boolean      not null,
-            user_avatar             text
+            contact_details_id       varchar(100) primary key references users (user_id) on update cascade,
+            contact_details_email    varchar(50) not null unique,
+            contact_details_phone    varchar(30) not null,
+            contact_details_post     varchar(100),
+            contact_details_whatsapp varchar(30),
+            contact_details_discord  varchar(50),
+            contact_details_telegram varchar(50)
         );
-
-        alter table users
-            add constraint fk_user_asset_holder
-                foreign key (user_asset_holder_id)
-                    references asset_holders (asset_holder_id)
-                    on delete set null;
 
         <include refid="initTableMetaData"/>
     </update>
@@ -176,7 +155,7 @@
             asset_id              varchar(50) unique           not null,
             asset_name            varchar(100)                 not null,
             asset_type_id         varchar(50)                  references asset_types (asset_type_type_id) on update cascade on delete set null,
-            asset_owner_id        varchar(50) references asset_holders (asset_holder_id) on update cascade on delete cascade,
+            asset_owner_id        varchar(50)                  references users (user_id) on update cascade on delete cascade,
             asset_location        geometry(multipolygon, 4326) not null,
             asset_capacity_litres int,
             asset_material        varchar(50),

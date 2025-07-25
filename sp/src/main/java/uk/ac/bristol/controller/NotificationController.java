@@ -1,8 +1,7 @@
 package uk.ac.bristol.controller;
 
 import org.springframework.web.bind.annotation.*;
-import uk.ac.bristol.advice.UserAID;
-import uk.ac.bristol.advice.UserIdentificationUIDExecution;
+import uk.ac.bristol.advice.UserIdentificationExecution;
 import uk.ac.bristol.advice.UserUID;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.FilterDTO;
@@ -32,7 +31,7 @@ public class NotificationController {
 
     /* ---------------- Inbox ---------------- */
 
-    @UserIdentificationUIDExecution
+    @UserIdentificationExecution
     @GetMapping("/user/uid/{uid}/inbox")
     public ResponseBody getMyInboxMessagesByUID(HttpServletResponse response,
                                                 HttpServletRequest request,
@@ -42,12 +41,12 @@ public class NotificationController {
 
     @GetMapping("/admin/user/uid/{uid}/inbox")
     public ResponseBody getUserInboxMessagesByUID(HttpServletResponse response,
-                                                HttpServletRequest request,
-                                                @UserUID @PathVariable String uid) {
+                                                  HttpServletRequest request,
+                                                  @UserUID @PathVariable String uid) {
         return new ResponseBody(Code.SELECT_OK, contactService.getUserInboxMessagesByUserId(uid));
     }
 
-    @UserIdentificationUIDExecution
+    @UserIdentificationExecution
     @PutMapping("/user/uid/{uid}/inbox/{rowId}")
     public ResponseBody setMyInboxMessageReadByRowIdWithUID(HttpServletResponse response,
                                                             HttpServletRequest request,
@@ -59,11 +58,11 @@ public class NotificationController {
         return new ResponseBody(Code.UPDATE_OK, null);
     }
 
-    @UserIdentificationUIDExecution
+    @UserIdentificationExecution
     @DeleteMapping("/user/uid/{uid}/inbox/{rowId}")
     public ResponseBody deleteMyInboxMessageByRowIdWithUID(HttpServletResponse response,
                                                            HttpServletRequest request,
-                                                           @UserAID @PathVariable String uid,
+                                                           @UserUID @PathVariable String uid,
                                                            @PathVariable long rowId) {
         contactService.deleteInboxMessageByFilter(Map.of("inbox_row_id", rowId));
         return new ResponseBody(Code.DELETE_OK, null);
@@ -102,11 +101,11 @@ public class NotificationController {
         int n = contactService.insertInboxMessageToUsersByFilter(
                 filter,
                 Map.of(
-                "hasRead", false,
-                "issuedDate", now,
-                "validUntil", now.plus(Duration.ofMinutes(validDuration)),
-                "title", title,
-                "message", body)
+                        "hasRead", false,
+                        "issuedDate", now,
+                        "validUntil", now.plus(Duration.ofMinutes(validDuration)),
+                        "title", title,
+                        "message", body)
         );
         return new ResponseBody(Code.SUCCESS, n, "Successfully sent " + n + " inbox messages.");
     }

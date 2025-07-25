@@ -33,8 +33,6 @@ public class UserIdentificationAdvice {
             for (Annotation annotation : paramAnnotations[i]) {
                 if (annotation instanceof UserUID) {
                     result.put("uid", arg);
-                } else if (annotation instanceof UserAID) {
-                    result.put("aid", arg);
                 } else if (annotation instanceof UserAsset) {
                     result.put("assetId", ((Asset) arg).getId());
                 } else if (annotation instanceof UserAssetId) {
@@ -50,7 +48,7 @@ public class UserIdentificationAdvice {
         return result;
     }
 
-    @Before("@annotation(uk.ac.bristol.advice.UserIdentificationUIDExecution)")
+    @Before("@annotation(uk.ac.bristol.advice.UserIdentificationExecution)")
     public void userIdentityVerificationByUID(JoinPoint jp) {
         Map<String, Object> parameters = getParametersFromJoinPoint(jp);
 
@@ -61,30 +59,13 @@ public class UserIdentificationAdvice {
         if (!QueryTool.userIdentityVerification(
                 (HttpServletResponse) parameters.get("response"),
                 (HttpServletRequest) parameters.get("request"),
-                (String) parameters.get("uid"),
-                null)) {
+                (String) parameters.get("uid")
+        )) {
             throw new SpExceptions.ForbiddenException("User identification failed");
         }
     }
 
-    @Before("@annotation(uk.ac.bristol.advice.UserIdentificationAIDExecution)")
-    public void userIdentityVerificationByAID(JoinPoint jp) {
-        Map<String, Object> parameters = getParametersFromJoinPoint(jp);
-
-        if (parameters.get("aid") == null || parameters.get("request") == null || parameters.get("response") == null) {
-            throw new IllegalStateException("Missing required parameters for user identity validation with aid.");
-        }
-
-        if (!QueryTool.userIdentityVerification(
-                (HttpServletResponse) parameters.get("response"),
-                (HttpServletRequest) parameters.get("request"),
-                null,
-                (String) parameters.get("aid"))) {
-            throw new SpExceptions.ForbiddenException("User identification failed");
-        }
-    }
-
-    @Before("@annotation(uk.ac.bristol.advice.AssetOwnershipUIDExecution)")
+    @Before("@annotation(uk.ac.bristol.advice.AssetOwnershipExecution)")
     public void userAssetOwnershipByUID(JoinPoint jp) {
         Map<String, Object> parameters = getParametersFromJoinPoint(jp);
 
@@ -94,24 +75,8 @@ public class UserIdentificationAdvice {
 
         if (!QueryTool.verifyAssetOwnership(
                 (String) parameters.get("assetId"),
-                (String) parameters.get("uid"),
-                null)) {
-            throw new SpExceptions.ForbiddenException("Asset owner identification failed");
-        }
-    }
-
-    @Before("@annotation(uk.ac.bristol.advice.AssetOwnershipAIDExecution)")
-    public void userAssetOwnershipByAID(JoinPoint jp) {
-        Map<String, Object> parameters = getParametersFromJoinPoint(jp);
-
-        if (parameters.get("aid") == null || parameters.get("assetId") == null) {
-            throw new IllegalStateException("Missing required parameters for asset ownership validation by aid.");
-        }
-
-        if (!QueryTool.verifyAssetOwnership(
-                (String) parameters.get("assetId"),
-                null,
-                (String) parameters.get("aid"))) {
+                (String) parameters.get("uid")
+        )) {
             throw new SpExceptions.ForbiddenException("Asset owner identification failed");
         }
     }

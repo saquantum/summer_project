@@ -123,8 +123,8 @@ public final class QueryTool {
         return list;
     }
 
-    public static boolean userIdentityVerification(HttpServletResponse response, HttpServletRequest request, String uid, String aid) {
-        if ((uid == null || uid.isEmpty()) && (aid == null || aid.isEmpty())) {
+    public static boolean userIdentityVerification(HttpServletResponse response, HttpServletRequest request, String uid) {
+        if (uid == null || uid.isEmpty()) {
             return false;
         }
         Claims claims = null;
@@ -141,38 +141,19 @@ public final class QueryTool {
             return true;
         }
         String id = (String) claims.get("id");
-        String assetHolderId = (String) claims.get("assetHolderId");
-
-        if (id != null && uid != null && id.equals(uid)) {
-            return true;
-        }
-
-        if (assetHolderId != null && aid != null && assetHolderId.equals(aid)) {
-            return true;
-        }
-
-        return false;
+        return id != null && id.equals(uid);
     }
 
-    public static boolean verifyAssetOwnership(String assetId, String uid, String aid) {
-        if (assetId == null) {
-            return false;
-        }
-        if (uid == null && aid == null) {
+    public static boolean verifyAssetOwnership(String assetId, String uid) {
+        if (assetId == null || assetId.isBlank() || uid == null || uid.isBlank()) {
             return false;
         }
         Asset asset = QueryToolConfig.assetService.getAssetById(assetId);
-        if (uid != null) {
-            User user = QueryToolConfig.userService.getUserByUserId(uid);
-            if (user.getAssetHolder() == null) return false;
-            if (!Objects.equals(user.getAssetHolder().getId(), asset.getOwnerId())) return false;
+        User user = QueryToolConfig.userService.getUserByUserId(uid);
+        if (user.isAdmin()) {
+            return false;
         }
-        if (aid != null) {
-            User user = QueryToolConfig.userService.getUserByAssetHolderId(aid);
-            if (user.getAssetHolder() == null) return false;
-            if (!Objects.equals(user.getAssetHolder().getId(), asset.getOwnerId())) return false;
-        }
-        return true;
+        return Objects.equals(user.getId(), asset.getOwnerId());
     }
 
     // if any table are inserted or deleted during runtime, should consider modify this setup
@@ -211,32 +192,20 @@ public final class QueryTool {
         return result;
     }
 
-    public static PermissionConfig getUserPermissions(String uid, String aid) {
-        List<PermissionConfig> adminConfig = QueryToolConfig.permissionConfigService.getPermissionConfigByUserId("admin");
-        if (adminConfig.size() != 1) {
-            throw new SpExceptions.SystemException("Found " + adminConfig.size() + " global permission configs");
+    public static PermissionConfig getUserPermissions(String uid) {
+        if (uid == null) {
+            throw new SpExceptions.BusinessException("No valid uid is provided");
         }
 
-        List<PermissionConfig> list;
-        PermissionConfig config;
-        if (uid != null) {
-            list = QueryToolConfig.permissionConfigService.getPermissionConfigByUserId(uid);
-        } else if (aid != null) {
-            list = QueryToolConfig.permissionConfigService.getPermissionConfigByAssetHolderId(aid);
-        } else {
-            throw new SpExceptions.BusinessException("No valid uid or aid is received");
-        }
-        if (list.size() != 1) {
-            throw new SpExceptions.SystemException("Found " + list.size() + " permission configs for user " + uid);
-        }
-        config = list.get(0);
+        PermissionConfig adminConfig = QueryToolConfig.permissionConfigService.getPermissionConfigByUserId("admin");
+        PermissionConfig config = QueryToolConfig.permissionConfigService.getPermissionConfigByUserId(uid);
         return new PermissionConfig(uid,
-                adminConfig.get(0).getCanCreateAsset() && config.getCanCreateAsset(),
-                adminConfig.get(0).getCanSetPolygonOnCreate() && config.getCanSetPolygonOnCreate(),
-                adminConfig.get(0).getCanUpdateAssetFields() && config.getCanUpdateAssetFields(),
-                adminConfig.get(0).getCanUpdateAssetPolygon() && config.getCanUpdateAssetPolygon(),
-                adminConfig.get(0).getCanDeleteAsset() && config.getCanDeleteAsset(),
-                adminConfig.get(0).getCanUpdateProfile() && config.getCanUpdateProfile()
+                adminConfig.getCanCreateAsset() && config.getCanCreateAsset(),
+                adminConfig.getCanSetPolygonOnCreate() && config.getCanSetPolygonOnCreate(),
+                adminConfig.getCanUpdateAssetFields() && config.getCanUpdateAssetFields(),
+                adminConfig.getCanUpdateAssetPolygon() && config.getCanUpdateAssetPolygon(),
+                adminConfig.getCanDeleteAsset() && config.getCanDeleteAsset(),
+                adminConfig.getCanUpdateProfile() && config.getCanUpdateProfile()
         );
     }
 

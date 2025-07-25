@@ -44,14 +44,15 @@ public class ImportMockDataImpl implements ImportMockData {
         this.contactService = contactService;
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public void resetSchema() {
         settings.resetSchema();
         settings.createTableMetaData();
-        settings.createAssetHolders("asset_holders");
-        settings.createAddress("address");
-        settings.createContactPreferences("contact_preferences");
         settings.createUsers("users");
+        settings.createAddress("address");
+        settings.createContactDetails("contact_details");
+        settings.createContactPreferences("contact_preferences");
         settings.createAssetTypes("asset_types");
         settings.createAssets("assets");
         settings.createWeatherWarnings("weather_warnings");
@@ -61,19 +62,23 @@ public class ImportMockDataImpl implements ImportMockData {
         settings.createImageStorage("image_storage");
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public void importUsers(InputStream usersInputStream) {
-        List<AssetHolder> assetHolders = null;
+        List<Map<String, Object>> parsed = null;
         try {
-            assetHolders = mapper.readValue(usersInputStream, new TypeReference<List<AssetHolder>>() {
+            parsed = mapper.readValue(usersInputStream, new TypeReference<List<Map<String, Object>>>() {
             });
         } catch (IOException e) {
-            throw new SpExceptions.SystemException("Loading Users failed." + e.getMessage());
+            throw new SpExceptions.SystemException("Loading Users failed.", e);
         }
-        for (AssetHolder assetHolder : assetHolders) {
+        for (Map<String, Object> map : parsed) {
             User user = new User();
-            user.setId(assetHolder.getId());
-            user.setAssetHolder(assetHolder);
+            user.setId((String) map.get("id"));
+            user.setName((String) map.get("name"));
+            user.setAddress((Map<String, String>) map.get("address"));
+            user.setContactDetails(Map.of("email", (String) map.get("email"), "phone", (String) map.get("phone")));
+            user.setContactPreferences((Map<String, Boolean>) map.get("contact_preferences"));
             user.setPassword("123456");
             user.setAdmin(false);
             user.setAvatar("https://cdn-icons-png.flaticon.com/512/149/149071.png");
@@ -86,7 +91,7 @@ public class ImportMockDataImpl implements ImportMockData {
                     "hasRead", false,
                     "issuedDate", now,
                     "validUntil", now.plusYears(100),
-                    "title", user.getAssetHolder().getName() + ", your account has been activated",
+                    "title", user.getName() + ", your account has been activated",
                     "message", "If you encounter any issues using our system, please feel free to contact us.")
             );
             contactService.insertInboxMessageToUser(Map.of(
@@ -103,10 +108,19 @@ public class ImportMockDataImpl implements ImportMockData {
         admin.setId("admin");
         admin.setPassword("admin");
         admin.setAdmin(true);
+        admin.setAdminLevel(1);
         userService.insertUser(admin);
         permissionConfigService.insertPermissionConfig(new PermissionConfig("admin"));
+
+        User root = new User();
+        root.setId("root");
+        root.setPassword("root");
+        root.setAdmin(true);
+        root.setAdminLevel(0);
+        userService.insertUser(root);
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public void importAssets(InputStream typesInputStream, InputStream assetsInputStream) {
         List<AssetType> types = null;
@@ -117,17 +131,17 @@ public class ImportMockDataImpl implements ImportMockData {
             assets = mapper.readValue(assetsInputStream, new TypeReference<List<Asset>>() {
             });
         } catch (IOException e) {
-            throw new SpExceptions.SystemException("Loading Assets failed." + e.getMessage());
+            throw new SpExceptions.SystemException("Loading Assets failed.", e);
         }
         for (AssetType type : types) {
             assetService.insertAssetType(type);
         }
         for (Asset asset : assets) {
-            asset.setOwnerId("$" + asset.getOwnerId());
             assetService.insertAsset(asset);
         }
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public void importWarnings(InputStream warningsInputStream) {
         try {
@@ -148,10 +162,11 @@ public class ImportMockDataImpl implements ImportMockData {
                 }
             }
         } catch (Exception e) {
-            throw new SpExceptions.SystemException("Loading Warnings failed." + e.getMessage());
+            throw new SpExceptions.SystemException("Loading Warnings failed.", e);
         }
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public void importTemplates(InputStream notificationTemplatesInputStream) {
         try {
@@ -187,7 +202,7 @@ public class ImportMockDataImpl implements ImportMockData {
                 }
             }
         } catch (IOException e) {
-            throw new SpExceptions.SystemException("Loading Templates failed." + e.getMessage());
+            throw new SpExceptions.SystemException("Loading Templates failed.", e);
         }
     }
 }

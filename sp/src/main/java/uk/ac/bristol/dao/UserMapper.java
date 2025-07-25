@@ -12,15 +12,12 @@ import java.util.Map;
 @Mapper
 public interface UserMapper {
 
+    // selecting
+
     List<User> selectUsers(@Param("filterString") String filterString,
                            @Param("orderList") List<Map<String, String>> orderList,
                            @Param("limit") Integer limit,
                            @Param("offset") Integer offset);
-
-    List<User> selectUsersPuttingAssetHoldersTableMain(@Param("filterString") String filterString,
-                                                       @Param("orderList") List<Map<String, String>> orderList,
-                                                       @Param("limit") Integer limit,
-                                                       @Param("offset") Integer offset);
 
     List<User> selectUsersWithoutAssociation(@Param("filterString") String filterString,
                                              @Param("orderList") List<Map<String, String>> orderList,
@@ -38,13 +35,19 @@ public interface UserMapper {
 
     Long selectUserRowIdByUserId(@Param("id") String id);
 
+    // grouping
+
     List<UserWithAssets> groupUsersWithOwnedAssetsByWarningId(@Param("limit") Integer limit,
                                                               @Param("cursor") Long cursor,
                                                               @Param("warningId") Long warningId,
                                                               @Param("getDiff") boolean getDiff,
                                                               @Param("newArea") String newAreaAsJson);
 
-    int countUsers(@Param("filterString") String filterString);
+    // counting
+
+    long countUsers(@Param("filterString") String filterString);
+
+    // write & delete
 
     int insertUser(User user);
 
@@ -52,11 +55,29 @@ public interface UserMapper {
 
     int updateUserPasswordByUserId(User user);
 
-    int deleteUserByAssetHolderIDs(@Param("ids") String[] assetHolderIds);
+    int deleteUserByUserIds(@Param("ids") List<String> ids);
 
-    int deleteUserByAssetHolderIDs(@Param("ids") List<String> assetHolderIds);
+    /* address */
 
-    int deleteUserByIds(@Param("ids") String[] ids);
+    List<Map<String, String>> selectAddressByUserId(@Param("id") String userId);
 
-    int deleteUserByIds(@Param("ids") List<String> ids);
+    boolean upsertAddressByUserId(@Param("id") String uid, Map<String, String> map);
+
+    int deleteAddressByUserIds(@Param("ids") List<String> ids);
+
+    /* contact details */
+
+    List<Map<String, String>> selectContactDetailsByUserId(@Param("id") String userId);
+
+    boolean upsertContactDetailsByUserId(@Param("id") String uid, Map<String, String> map);
+
+    int deleteContactDetailsByUserIds(@Param("ids") List<String> ids);
+
+    /* contact preference */
+
+    List<Map<String, Boolean>> selectContactPreferencesByUserId(@Param("id") String userId);
+
+    boolean upsertContactPreferencesByUserId(@Param("id") String uid, Map<String, Boolean> map);
+
+    int deleteContactPreferencesByUserIds(@Param("ids") List<String> ids);
 }

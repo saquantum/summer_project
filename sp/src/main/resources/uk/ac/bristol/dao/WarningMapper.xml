@@ -82,6 +82,44 @@
         where asset_id = #{assetId};
     </select>
 
+    <select id="testWarningExistence" resultType="java.lang.Boolean">
+        select count(*) > 0
+        from weather_warnings
+        where warning_id = #{id};
+    </select>
+
+    <select id="testWarningDetailDiff" resultType="java.lang.Boolean">
+        select case
+                   when
+                       warning_weather_type != #{weatherType}
+                   or warning_level != #{warningLevel}
+            or warning_head_line != #{warningHeadLine}
+            or warning_valid_from != #{validFrom}
+            or warning_valid_to != #{validTo}
+            or warning_impact != #{warningImpact}
+            or warning_likelihood != #{warningLikelihood}
+            or warning_affected_areas != #{affectedAreas}
+            or warning_what_to_expect != #{whatToExpect}
+            or warning_further_details != #{warningFurtherDetails}
+            then true
+            else false
+        end
+        from weather_warnings
+        where warning_id =
+        #{id}
+    </select>
+
+    <select id="testWarningAreaDiff" resultType="java.lang.Boolean">
+        select case
+                   when
+                       warning_area != ST_Multi(ST_GeomFromGeoJSON(#{areaAsJson}))
+                       then true
+                   else false
+                   end
+        from weather_warnings
+        where warning_id = #{id}
+    </select>
+
     <insert id="insertWarning">
         insert into weather_warnings (warning_id,
                                       warning_weather_type,
@@ -136,41 +174,4 @@
             #{id}
         </foreach>
     </delete>
-
-    <select id="testWarningExists" resultType="java.lang.Boolean">
-        select count(*) > 0 from weather_warnings where warning_id = #{id};
-    </select>
-    
-    <select id="testWarningDetailDiff" resultType="java.lang.Boolean">
-        select
-            case
-                when
-                    warning_weather_type != #{weatherType}
-                    or warning_level != #{warningLevel}
-                    or warning_head_line != #{warningHeadLine}
-                    or warning_valid_from != #{validFrom}
-                    or warning_valid_to != #{validTo}
-                    or warning_impact != #{warningImpact}
-                    or warning_likelihood != #{warningLikelihood}
-                    or warning_affected_areas != #{affectedAreas}
-                    or warning_what_to_expect != #{whatToExpect}
-                    or warning_further_details != #{warningFurtherDetails}
-                then true
-                else false
-            end
-        from weather_warnings
-        where warning_id = #{id}
-    </select>
-
-    <select id="testWarningAreaDiff" resultType="java.lang.Boolean">
-        select
-            case
-                when
-                    warning_area != ST_Multi(ST_GeomFromGeoJSON(#{areaAsJson}))
-                then true
-                else false
-        end
-        from weather_warnings
-        where warning_id = #{id}
-    </select>
 </mapper>

@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.PermissionConfigMapper;
+import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.PermissionConfig;
 import uk.ac.bristol.service.PermissionConfigService;
 import uk.ac.bristol.util.QueryTool;
@@ -22,7 +23,7 @@ public class PermissionConfigServiceImpl implements PermissionConfigService {
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<PermissionConfig> getAllPermissionConfigs(Map<String, Object> filters,
+    public List<PermissionConfig> getPermissionConfigs(Map<String, Object> filters,
                                                           List<Map<String, String>> orderList,
                                                           Integer limit,
                                                           Integer offset) {
@@ -34,18 +35,16 @@ public class PermissionConfigServiceImpl implements PermissionConfigService {
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<PermissionConfig> getPermissionConfigByUserId(String userId) {
+    public PermissionConfig getPermissionConfigByUserId(String userId) {
         List<PermissionConfig> configs = permissionConfigMapper.selectPermissionConfigByUserId(userId);
         if (configs == null || configs.isEmpty()) {
             permissionConfigMapper.insertPermissionConfig(new PermissionConfig(userId));
         }
-        return permissionConfigMapper.selectPermissionConfigByUserId(userId);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-    @Override
-    public List<PermissionConfig> getPermissionConfigByAssetHolderId(String assetHolderId) {
-        return permissionConfigMapper.selectPermissionConfigByAssetHolderId(assetHolderId);
+        List<PermissionConfig> list = permissionConfigMapper.selectPermissionConfigByUserId(userId);
+        if (list.size() != 1) {
+            throw new SpExceptions.SystemException("Found " + list.size() + " permission configs for user " + userId);
+        }
+        return list.get(0);
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)

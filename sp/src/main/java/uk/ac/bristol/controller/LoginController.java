@@ -1,10 +1,6 @@
 package uk.ac.bristol.controller;
 
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import uk.ac.bristol.exception.SpExceptions;
-import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.service.ContactService;
 import uk.ac.bristol.service.TokenBlacklistService;
@@ -14,7 +10,6 @@ import uk.ac.bristol.util.JwtUtil;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/api")
@@ -33,12 +28,8 @@ public class LoginController {
 
     @PostMapping("/login")
     public ResponseBody login(@RequestBody User user, HttpServletResponse response) {
-        User u = userService.login(user);
-        if (u == null) return new ResponseBody(Code.BUSINESS_ERR, null, "The username or password is incorrect.");
-        JwtUtil.bindJWTAsCookie(response, u.getToken());
-        u.setPassword(null);
-        u.setToken(null);
-        return new ResponseBody(Code.SUCCESS, u);
+        JwtUtil.bindJWTAsCookie(response, userService.login(user));
+        return new ResponseBody(Code.SUCCESS, null);
     }
 
     @PostMapping("/register/email/code")
@@ -48,40 +39,7 @@ public class LoginController {
 
     @PostMapping("/register")
     public ResponseBody register(@RequestBody Map<String, String> body) {
-        String id = body.get("id");
-        String password = body.get("password");
-        String repassword = body.get("repassword");
-        String name = body.get("name");
-        String email = body.get("email");
-        String phone = body.get("phone");
-
-        if (id == null || id.isBlank()
-                || password == null || password.isBlank()
-                || repassword == null || repassword.isBlank()
-                || name == null || name.isBlank()
-                || email == null || email.isBlank()
-                || phone == null || phone.isBlank()) {
-            throw new SpExceptions.BadRequestException("Key fields missing during registration.");
-        }
-
-        if (!password.matches("^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?~`]+$")) {
-            throw new SpExceptions.BusinessException("Invalid password: empty or contains improper characters");
-        }
-
-        if (!password.equals(repassword)) {
-            throw new SpExceptions.BadRequestException("Two passwords don't match.");
-        }
-
-        AssetHolder ah = new AssetHolder();
-        ah.setName(name);
-        ah.setEmail(email);
-        ah.setPhone(phone);
-        User user = new User();
-        user.setId(id);
-        user.setPassword(password);
-        user.setAssetHolder(ah);
-
-        userService.registerNewUser(user);
+        userService.registerNewUser(body);
         return new ResponseBody(Code.SUCCESS, null, "Success.");
     }
 
@@ -97,15 +55,7 @@ public class LoginController {
 
     @PostMapping("/email/password")
     public ResponseBody resetPasswordUpdatePassword(@RequestBody Map<String, String> body) {
-        String password = body.get("password");
-        if (password == null || !password.matches("^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?~`]+$")) {
-            throw new SpExceptions.BusinessException("Invalid password: empty or contains improper characters");
-        }
-        if (password.length() < 6 || password.length() > 20) {
-            throw new SpExceptions.BusinessException("The length of password should be between 6 and 20 characters");
-        }
-
-        userService.updatePasswordByEmail(body.get("email"), password);
+        userService.updateUserPasswordByEmail(body.get("email"), body.get("password"));
         return new ResponseBody(Code.SUCCESS, null, "Success.");
     }
 

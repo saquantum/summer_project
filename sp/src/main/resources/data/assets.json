@@ -2002,7 +2002,7 @@
   {
     "name": "Test Asset 1",
     "type_id": "type_006",
-    "owner_id": "user_051",
+    "owner_id": "ZR",
     "location": {
       "type": "MultiPolygon",
       "coordinates": [
@@ -2041,7 +2041,7 @@
   {
     "name": "Test Asset 2",
     "type_id": "type_002",
-    "owner_id": "user_052",
+    "owner_id": "YCJ",
     "location": {
       "type": "MultiPolygon",
       "coordinates": [
@@ -2080,7 +2080,7 @@
   {
     "name": "Test Asset 3",
     "type_id": "type_005",
-    "owner_id": "user_053",
+    "owner_id": "YZH",
     "location": {
       "type": "MultiPolygon",
       "coordinates": [

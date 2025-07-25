@@ -64,12 +64,12 @@ public class ContactServiceImpl implements ContactService {
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public void sendNotificationsToUser(Warning warning, UserWithAssets uwa) {
-        Map<String, Object> contactPreferences = uwa.getUser().getAssetHolder().getContactPreferences();
+        Map<String, Boolean> contactPreferences = uwa.getUser().getContactPreferences();
 
         Map<String, Object> emailNotification = formatNotification(warning, uwa, "email");
         if (contactPreferences.get("email").equals(Boolean.TRUE)) {
             asyncEmailSender.sendEmailToAddress(
-                    uwa.getUser().getAssetHolder().getEmail(),
+                    uwa.getUser().getContactDetails().get("email"),
                     emailNotification
             );
         }
@@ -144,8 +144,8 @@ public class ContactServiceImpl implements ContactService {
     private String fillInVariablesWithValues(String content, User user, Asset asset) {
         return content
                 .replace("{{asset-model}}", asset.getName())
-                .replace("{{contact_name}}", user.getAssetHolder().getName())
-                .replace("{{post_town}}", user.getAssetHolder().getAddress().get("city"));
+                .replace("{{contact_name}}", user.getName())
+                .replace("{{post_town}}", user.getAddress().get("city"));
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -158,13 +158,8 @@ public class ContactServiceImpl implements ContactService {
         String uid = claims.get("unsubscribe-email-uid").toString();
 
         User user = userService.getUserByUserId(uid);
-        AssetHolder ah = user.getAssetHolder();
-        if (ah == null) {
-            throw new SpExceptions.BadRequestException("The user has no active asset holder details");
-        }
-
-        ah.getContactPreferences().put("email", false);
-        userService.updateAssetHolder(ah);
+        user.getContactPreferences().put("email", false);
+        userService.updateUser(user);
         return new ResponseBody(Code.DELETE_OK, null, "Successfully unsubscribed email for user " + uid);
     }
 
@@ -276,8 +271,12 @@ public class ContactServiceImpl implements ContactService {
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<Template> getNotificationTemplateById(Long id) {
-        return contactMapper.selectNotificationTemplateById(id);
+    public Template getNotificationTemplateById(Long id) {
+        List<Template> list = contactMapper.selectNotificationTemplateById(id);
+        if (list.size() != 1) {
+            throw new SpExceptions.GetMethodException("Get " + list.size() + " templates with id " + id);
+        }
+        return list.get(0);
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)

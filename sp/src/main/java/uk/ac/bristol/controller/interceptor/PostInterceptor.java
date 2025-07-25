@@ -1,7 +1,6 @@
 package uk.ac.bristol.controller.interceptor;
 
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -35,7 +34,7 @@ public class PostInterceptor implements HandlerInterceptor {
 
         String keyHeader = request.getHeader("Idempotency-Key");
         if (keyHeader == null || keyHeader.isEmpty()) {
-            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write("Missing Idempotency-Key header");
             return false;
         }
@@ -43,14 +42,14 @@ public class PostInterceptor implements HandlerInterceptor {
         try {
             UUID.fromString(keyHeader);
         } catch (IllegalArgumentException e) {
-            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write("Invalid UUID format");
             return false;
         }
 
         String redisKey = "uuid:" + keyHeader;
         if (redisTemplate.hasKey(redisKey)) {
-            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setStatus(HttpServletResponse.SC_CONFLICT);
             response.getWriter().write("Identical POST key detected, your request has been declined");
             return false;
         }
