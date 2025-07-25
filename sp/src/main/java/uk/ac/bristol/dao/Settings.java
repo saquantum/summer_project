@@ -32,4 +32,6 @@ public interface Settings {
     void createPermissionConfigs(@Param("tableName") String tableName);
 
     void createUserInboxes(@Param("tableName") String tableName);
+
+    void createImageStorage(@Param("tableName") String tableName);
 }

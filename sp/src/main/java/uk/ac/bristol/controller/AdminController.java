@@ -1,15 +1,19 @@
 package uk.ac.bristol.controller;
 
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.FilterDTO;
 import uk.ac.bristol.pojo.PermissionConfig;
 import uk.ac.bristol.pojo.Template;
 import uk.ac.bristol.service.ContactService;
+import uk.ac.bristol.service.ImageStorageService;
 import uk.ac.bristol.service.MetaDataService;
 import uk.ac.bristol.service.PermissionConfigService;
 import uk.ac.bristol.util.QueryTool;
 
+import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -21,11 +25,13 @@ public class AdminController {
     private final MetaDataService metaDataService;
     private final PermissionConfigService permissionConfigService;
     private final ContactService contactService;
+    private final ImageStorageService imageStorageService;
 
-    public AdminController(MetaDataService metaDataService, PermissionConfigService permissionConfigService, ContactService contactService) {
+    public AdminController(MetaDataService metaDataService, PermissionConfigService permissionConfigService, ContactService contactService, ImageStorageService imageStorageService) {
         this.metaDataService = metaDataService;
         this.permissionConfigService = permissionConfigService;
         this.contactService = contactService;
+        this.imageStorageService = imageStorageService;
     }
 
     @GetMapping("/metadata")
@@ -147,5 +153,36 @@ public class AdminController {
     @PutMapping("/permission")
     public ResponseBody updatePermissionConfig(@RequestBody PermissionConfig permissionConfig) {
         return new ResponseBody(Code.UPDATE_OK, permissionConfigService.updatePermissionConfigByUserId(permissionConfig));
+    }
+
+    @PostMapping("/image")
+    public ResponseBody uploadImage(@RequestParam("cid") String cid, @RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return new ResponseBody(Code.SUCCESS, null, "No image insert to database!");
+        }
+
+        try {
+//            byte[] bytes = file.getBytes();
+//            String base64Image = Base64.getEncoder().encodeToString(bytes);
+            String contentType = file.getContentType(); // 例：image/png
+            String base64Image = "data:" + contentType + ";base64," +
+                    Base64.getEncoder().encodeToString(file.getBytes());
+
+            imageStorageService.insertImage(cid, base64Image);
+
+            return new ResponseBody(Code.SUCCESS, null, "Image insert to database!");
+        } catch (IOException e) {
+            return new ResponseBody(Code.SYSTEM_ERR, null, "Upload image error!");
+        }
+    }
+
+    @DeleteMapping("/image")
+    public ResponseBody deleteImage(@RequestParam("cid") String cid) {
+        try {
+            imageStorageService.deleteImage(cid);
+            return new ResponseBody(Code.SUCCESS, null, "delete image success!");
+        } catch (Exception e) {
+            return new ResponseBody(Code.SYSTEM_ERR, null, "delete failed: " + e.getMessage());
+        }
     }
 }

@@ -18,6 +18,7 @@
         drop table if exists templates cascade;
         drop table if exists permission_configs cascade;
         drop table if exists inboxes cascade;
+        drop table if exists image_storage cascade;
     </update>
 
     <update id="createTableMetaData">
@@ -275,6 +276,17 @@
             inbox_valid_until timestamp without time zone not null,
             inbox_title       text                        not null,
             inbox_message     text                        not null
+        );
+
+        <include refid="initTableMetaData"/>
+    </update>
+
+    <update id="createImageStorage">
+        create table if not exists image_storage
+        (
+        id                     serial primary key,
+        image_cid              text unique not null,
+        image_content          text not null
         );
 
         <include refid="initTableMetaData"/>
