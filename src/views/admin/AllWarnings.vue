@@ -74,7 +74,6 @@ const getRowClass = (row: TableRow) => {
 
 const setWarningLevelStyle = (level: string): Style => {
   const style = { weight: 2, fillOpacity: 0.4, color: '', fillColor: '' }
-  console.log(level)
   if (level.includes('YELLOW')) {
     style.color = '#cc9900'
     style.fillColor = '#ffff00'

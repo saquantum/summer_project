@@ -35,14 +35,22 @@ export const useUserStore = defineStore(
     }
 
     const getUsers = async (func: string, obj: UserSearchBody) => {
-      const res = await adminSearchUsersService(func, obj)
-      users.value = res.data
+      try {
+        const res = await adminSearchUsersService(func, obj)
+        users.value = res.data
+      } catch (e) {
+        console.error(e)
+      }
     }
 
     const getUserInfo = async () => {
       if (!user.value) return
-      const { data } = await userGetInfoService(user.value.id)
-      user.value = data
+      try {
+        const { data } = await userGetInfoService(user.value.id)
+        user.value = data
+      } catch (e) {
+        console.error(e)
+      }
     }
 
     const updateUser = (obj: User) => {

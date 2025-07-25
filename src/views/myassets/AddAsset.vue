@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import request from '@/utils/request'
 import { useAssetStore, useUserStore } from '@/stores/index.ts'
 import { adminGetUserInfoService } from '@/api/admin'
@@ -205,7 +205,6 @@ const searchLocation = async (address: string) => {
     form.value.locations = []
     form.value.locations.push(multiPolygon.geometry as MultiPolygon)
   }
-  console.log(form.value.locations)
 }
 
 const disabledAfterToday = (time: Date) => {
@@ -340,16 +339,6 @@ const reset = () => {
     }
   }
 }
-
-watch(
-  () => form.value.locations,
-  (newVal) => {
-    console.log(newVal)
-  },
-  {
-    deep: true
-  }
-)
 
 onMounted(() => {
   if (!userStore.user?.admin && userStore.user?.id) {

@@ -27,7 +27,8 @@ vi.mock('@/stores', () => ({
 vi.mock('@/utils/formUtils', () => ({
   createAssetHolderRules: vi.fn(() => [
     { required: true, message: 'Please input username', trigger: 'blur' }
-  ])
+  ]),
+  trimForm: vi.fn()
 }))
 
 // Mock Element Plus - partial mock approach

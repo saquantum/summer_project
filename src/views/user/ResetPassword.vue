@@ -42,8 +42,8 @@ const handleSendEmail = async () => {
 
 const handleVerify = async () => {
   try {
-    const res = await userEmailVerificationService(form.value)
-    console.log(res)
+    await userEmailVerificationService(form.value)
+
     resetFormVisible.value = true
   } catch (e) {
     console.error(e)

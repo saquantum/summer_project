@@ -44,16 +44,15 @@ const triggerDelete = (row: AssetTableItem) => {
 const handleDelete = async () => {
   dialogVisible.value = true
   if (deleteId.value.length === 0) return
-  const res = await adminDeleteAssetService(deleteId.value)
+  await adminDeleteAssetService(deleteId.value)
   deleteId.value = []
-  console.log(res)
+
   await fetchTableData()
   dialogVisible.value = false
 }
 
 const tableRowClassName = (scope: { row: AssetTableItem }) => {
   const warningLevel = scope.row.warningLevel
-  console.log(warningLevel)
   if (warningLevel === 'RED') {
     return 'warning-red'
   } else if (warningLevel === 'YELLOW') {

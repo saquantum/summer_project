@@ -34,15 +34,18 @@ const rules = {
 // reset password
 
 const handleSendEmail = async () => {
-  const res = await userGetEmailService(form.value.email)
-  console.log(res)
-  codeVisible.value = true
+  try {
+    await userGetEmailService(form.value.email)
+    codeVisible.value = true
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 const handleVerify = async () => {
   try {
-    const res = await userEmailVerificationService(form.value)
-    console.log(res)
+    await userEmailVerificationService(form.value)
+
     resetFormVisible.value = true
   } catch (e) {
     console.error(e)
@@ -51,8 +54,8 @@ const handleVerify = async () => {
 
 const handleConfirm = async () => {
   try {
-    const res = await userResetPasswordService(form.value)
-    console.log(res)
+    await userResetPasswordService(form.value)
+
     router.push('/login')
   } catch (e) {
     console.error(e)

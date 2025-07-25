@@ -17,6 +17,11 @@ import {
   trimForm,
   usernameRules
 } from '@/utils/formUtils'
+
+const router = useRouter()
+const userStore = useUserStore()
+const assetStore = useAssetStore()
+
 const loginFormRef = ref()
 const registerFormRef = ref()
 
@@ -45,10 +50,54 @@ const stepStatus = ref({
 
 const editingStep = ref<number | null>(null)
 
+const registerForm = ref({
+  id: '',
+  firstName: '',
+  lastName: '',
+  name: '',
+  email: '',
+  phone: '',
+  password: '',
+  repassword: ''
+})
+
+const rules = {
+  // customize rules here
+  username: [
+    { required: true, message: 'Please input username', trigger: 'blur' }
+  ],
+  id: usernameRules,
+  password: passwordRules,
+  repassword: createRepasswordRules(() => registerForm.value.password || ''),
+  firstName: firstNameRules,
+  lastName: lastNameRules,
+  email: emailRules,
+  phone: phoneRules
+}
+
+const login = async () => {
+  // form validation
+  try {
+    await loginFormRef.value.validate()
+  } catch {
+    return
+  }
+
+  try {
+    // get importance asset value after login
+    await userStore.getUser(loginForm.value)
+    await assetStore.getAssetTypes()
+    router.push('/')
+  } catch (e) {
+    loginForm.value.password = ''
+    console.error(e)
+  }
+}
+
+// register function
 const confirmEmail = async () => {
   try {
     await registerFormRef.value.validateField('email')
-    console.log('Email valid:', registerForm.value.email)
   } catch {
     return
   }
@@ -81,32 +130,29 @@ const getStepTitleClass = (step: number) => {
   }
 }
 
-const registerForm = ref({
-  id: '',
-  firstName: '',
-  lastName: '',
-  name: '',
-  email: '',
-  phone: '',
-  password: '',
-  repassword: ''
-})
+const resetRegister = () => {
+  registerForm.value = {
+    id: '',
+    firstName: '',
+    lastName: '',
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    repassword: ''
+  }
 
-const rules = {
-  // customize rules here
-  username: [
-    { required: true, message: 'Please input username', trigger: 'blur' }
-  ],
-  id: usernameRules,
-  password: passwordRules,
-  repassword: createRepasswordRules(() => registerForm.value.password || ''),
-  firstName: firstNameRules,
-  lastName: lastNameRules,
-  email: emailRules,
-  phone: phoneRules
+  currentStep.value = 1
+  openSteps.value = ['1']
+  stepStatus.value = {
+    1: false,
+    2: false,
+    3: false
+  }
 }
 
 const register = async () => {
+  // form validation
   trimForm(registerForm.value)
   try {
     await registerFormRef.value.validate()
@@ -114,52 +160,15 @@ const register = async () => {
     return
   }
 
+  // register and reset value
   try {
     registerForm.value.name = `${registerForm.value.firstName} ${registerForm.value.lastName}`
-    console.log(registerForm.value)
-    const res = await userRegisterService(registerForm.value)
-    console.log(res)
+    await userRegisterService(registerForm.value)
     ElMessage.success('success')
     isRegister.value = false
-    registerForm.value = {
-      id: '',
-      firstName: '',
-      lastName: '',
-      name: '',
-      email: '',
-      phone: '',
-      password: '',
-      repassword: ''
-    }
-
-    currentStep.value = 1
-    openSteps.value = ['1']
-    stepStatus.value = {
-      1: false,
-      2: false,
-      3: false
-    }
+    resetRegister()
   } catch (e) {
     console.error(e)
-  }
-}
-
-const router = useRouter()
-const userStore = useUserStore()
-const assetStore = useAssetStore()
-const login = async () => {
-  try {
-    await loginFormRef.value.validate()
-  } catch {
-    return
-  }
-
-  try {
-    await userStore.getUser(loginForm.value)
-    await assetStore.getAssetTypes()
-    router.push('/')
-  } catch {
-    loginForm.value.password = ''
   }
 }
 
@@ -169,6 +178,8 @@ watch(isRegister, () => {
     password: '',
     email: ''
   }
+
+  resetRegister()
 })
 
 defineExpose({ currentStep })

@@ -109,12 +109,7 @@ const rules = {
   'assetHolder.address.postcode': postcodeRules
 }
 
-const handleAvatarSuccess: UploadProps['onSuccess'] = (
-  response,
-  uploadFile
-) => {
-  console.log(response)
-  console.log(uploadFile)
+const handleAvatarSuccess: UploadProps['onSuccess'] = (response) => {
   if (userStore.user && response.data.url) {
     imageUrl.value = response.data.url
     ElMessage.success('Upload success')
@@ -180,17 +175,12 @@ const submit = async () => {
         name: `${form.value.firstName} ${form.value.lastName}`
       }
     }
-    console.log(submitData)
 
     if (user.value.admin) {
       await adminUpdateUserInfoService([submitData])
     } else {
       if (currentUser.value?.id) {
-        const res = await userUpdateInfoService(
-          currentUser.value.id,
-          submitData
-        )
-        console.log(res)
+        await userUpdateInfoService(currentUser.value.id, submitData)
       }
     }
 
@@ -209,17 +199,15 @@ const loadUserData = async () => {
   try {
     if (!user.value.admin) {
       currentUser.value = userStore.user
-      console.log(userStore.user)
     } else {
       const id = (userStore.proxyId || route.query.id) as string
-      console.log(id)
+
       const res = await adminGetUserInfoService(id)
-      console.log(res)
+
       currentUser.value = res.data
     }
 
     imageUrl.value = currentUser.value?.avatar ?? ''
-    console.log(imageUrl.value)
 
     if (!currentUser.value?.assetHolder) throw new Error('User does not exist')
     const arr = currentUser.value.assetHolder.name.split(' ')

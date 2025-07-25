@@ -74,11 +74,12 @@ const submit = async () => {
   }
   try {
     form.value.assetHolder.name = `${form.value.firstName} ${form.value.lastName}`
-    console.log(form.value)
-    const res = await adminInsertUserService([form.value])
-    console.log(res)
+
+    await adminInsertUserService([form.value])
+
     ElMessage.success('Successfully add an user')
-  } catch {
+  } catch (e) {
+    console.error(e)
     ElMessage.error('Server Error')
   }
 }

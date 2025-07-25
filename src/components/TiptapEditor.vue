@@ -158,8 +158,6 @@ function debounce(fn: (_arg: string) => void, delay = 300) {
   }
 }
 
-const fileList = ref<File[]>([])
-
 const getLink = () => {
   linkUrl.value = ''
   if (!editor.value) return
@@ -200,12 +198,7 @@ const handleCommand = (command: string) => {
   editor.value.chain().focus().toggleHeading({ level }).run()
 }
 
-const handleUploadSuccess: UploadProps['onSuccess'] = (
-  response,
-  uploadFile
-) => {
-  console.log(response)
-  console.log(uploadFile)
+const handleUploadSuccess: UploadProps['onSuccess'] = (response) => {
   if (response.data?.url && editor.value)
     editor.value.chain().focus().setImage({ src: response.data.url }).run()
 }
@@ -313,10 +306,6 @@ watch(content, async (newValue) => {
   if (editor.value && newValue !== editor.value.getHTML()) {
     editor.value.commands.setContent(newValue)
   }
-})
-
-watch(fileList, (newVal) => {
-  console.log(newVal)
 })
 
 defineExpose({ renderedHTML, compiledHTML })

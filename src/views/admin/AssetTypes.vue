@@ -28,7 +28,6 @@ const addAssetType = async () => {
 }
 
 const triggerEdit = async (row: AssetType) => {
-  console.log(row)
   editDialogVisible.value = true
   form.value.id = row.id
 }

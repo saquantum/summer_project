@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { adminSendMessageService } from '@/api/admin'
 import { useUserStore } from '@/stores'
-import { createAssetHolderRules } from '@/utils/formUtils'
+import { createAssetHolderRules, trimForm } from '@/utils/formUtils'
 import { ElMessage } from 'element-plus'
 import type { FormItemRule } from 'element-plus'
 import { computed, ref } from 'vue'
@@ -91,6 +91,18 @@ const handleSend = async () => {
   form.value.body = renderedHTML.value
 
   isLoading.value = true
+
+  trimForm(form.value)
+  try {
+    await formRef.value.validate()
+  } catch (fields) {
+    if (fields) {
+      const firstErrorField = Object.keys(fields)[0]
+      formRef.value.scrollToField(firstErrorField)
+      return
+    }
+  }
+
   try {
     await adminSendMessageService(form.value)
     ElMessage.success('Message send')

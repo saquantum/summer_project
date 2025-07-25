@@ -5,7 +5,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible'])
-console.log(props.visible)
 const visible = computed({
   get: () => props.visible,
   set: (val) => emit('update:visible', val)

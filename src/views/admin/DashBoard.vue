@@ -38,7 +38,6 @@ onMounted(async () => {
     limit: 5
   } as UserSearchBody)
   users.value = res.data
-  console.log(res)
 
   mapChart = echarts.init(document.getElementById('main'))
   mapChart.showLoading()

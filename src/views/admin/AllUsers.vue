@@ -147,7 +147,6 @@ const submit = async () => {
     p.canUpdateAssetFields = checkboxOptions.value[3].value
     p.canDeleteAsset = checkboxOptions.value[4].value
     p.canUpdateProfile = checkboxOptions.value[5].value
-    console.log(p)
     await adminUpdatePermissionService(p)
   }
 }

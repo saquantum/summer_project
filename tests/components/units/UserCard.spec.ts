@@ -223,16 +223,19 @@ describe('UserCard', () => {
     await flushPromises()
 
     const component = wrapper.vm as unknown as {
-      beforeAvatarUpload: (_file: { size: number }) => boolean
+      beforeAvatarUpload: (_file: { size: number; type: string }) => boolean
     }
 
-    // Test large file rejection
-    const largeMockFile = { size: 6 * 1024 * 1024 }
+    // Test large file rejection (6MB > 5MB limit)
+    const largeMockFile = {
+      size: 6 * 1024 * 1024,
+      type: 'image/jpeg'
+    }
     const result = component.beforeAvatarUpload(largeMockFile)
 
     expect(result).toBe(false)
     expect(vi.mocked(ElMessage.error)).toHaveBeenCalledWith(
-      'Avatar picture size can not exceed 2MB!'
+      'Avatar file size cannot exceed 5MB!'
     )
   })
 
@@ -241,11 +244,14 @@ describe('UserCard', () => {
     await flushPromises()
 
     const component = wrapper.vm as unknown as {
-      beforeAvatarUpload: (_file: { size: number }) => boolean
+      beforeAvatarUpload: (_file: { size: number; type: string }) => boolean
     }
 
-    // Test valid file acceptance
-    const validMockFile = { size: 1 * 1024 * 1024 }
+    // Test valid file acceptance (4MB < 5MB limit, valid image type)
+    const validMockFile = {
+      size: 4 * 1024 * 1024,
+      type: 'image/jpeg'
+    }
     const result = component.beforeAvatarUpload(validMockFile)
 
     expect(result).toBe(true)

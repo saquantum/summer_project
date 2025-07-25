@@ -136,17 +136,6 @@ export const postcodeRules = [
   }
 ]
 
-export const trimForm = (obj: object) => {
-  Object.keys(obj).forEach((key) => {
-    const value = (obj as Record<string, unknown>)[key]
-    if (typeof value === 'string') {
-      ;(obj as Record<string, unknown>)[key] = value.trim()
-    } else if (typeof value === 'object' && value !== null) {
-      trimForm(value)
-    }
-  })
-}
-
 export const codeRules = [
   {
     required: true,
@@ -195,3 +184,14 @@ export const createAssetHolderRules = (admin: boolean) => [
     trigger: 'blur'
   }
 ]
+
+export const trimForm = (obj: object) => {
+  Object.keys(obj).forEach((key) => {
+    const value = (obj as Record<string, unknown>)[key]
+    if (typeof value === 'string') {
+      ;(obj as Record<string, unknown>)[key] = value.trim()
+    } else if (typeof value === 'object' && value !== null) {
+      trimForm(value)
+    }
+  })
+}

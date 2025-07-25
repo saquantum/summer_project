@@ -435,7 +435,6 @@ describe('InboxView', () => {
 
       // Check if back button exists
       const backButton = wrapper.find('[data-test="back-button"]')
-      console.log(backButton)
       expect(backButton.exists()).toBe(true)
     })
   })

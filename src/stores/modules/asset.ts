@@ -48,8 +48,12 @@ export const useAssetStore = defineStore(
     )
 
     const getAssetTypes = async () => {
-      const res = await getAssetTypesService()
-      assetTypes.value = res.data
+      try {
+        const res = await getAssetTypesService()
+        assetTypes.value = res.data
+      } catch (e) {
+        console.error(e)
+      }
     }
 
     const getUserAssets = async (admin: boolean, id: string) => {
@@ -73,7 +77,6 @@ export const useAssetStore = defineStore(
     const getAllAssets = async (obj: AssetSearchBody) => {
       try {
         const res = await adminSearchAssetService(obj)
-        console.log(obj, res)
         allAssets.value = res.data
         allAssets.value.forEach(
           (item) => (item.maxWarning = getMaxWarningLevel(item.warnings))

@@ -208,7 +208,6 @@ const finishOneShape = async () => {
    * find current polygon, modify on it
    */
 
-  console.log(currentPolygon.value)
   const m = map
   const layers = saveLayer
   if (!m || !layers) return
@@ -261,7 +260,6 @@ const finishOneShape = async () => {
         convexHull.geometry.coordinates[0]
       )
     }
-    console.log(polygons.value)
 
     polygons.value.forEach((polygon) => {
       const layer = L.geoJSON(polygon)
@@ -297,7 +295,6 @@ const finishOnePolygon = () => {
       const fixed = rewind(currentPolygon.value, {
         reverse: true
       }) as Polygon
-      console.log(fixed)
       polygons.value[focusedIndex.value] = fixed
       focusedIndex.value = polygons.value.length
     }
@@ -317,7 +314,6 @@ const endDrawing = async () => {
 
   // Create MultiPolygon from polygons array
   const multiPolygon = createMultiPolygonFromPolygons(polygons.value)
-  console.log(multiPolygon)
   emit('update:locations', [multiPolygon])
   if (props.asset) {
     const newAsset: Asset = {
@@ -361,7 +357,6 @@ const cancelDrawing = () => {
   layers.forEach((layer) => layer.addTo(m))
   // clear points, turn off click
   points = []
-  console.log(points)
   m.off('click', handleClick)
 }
 
@@ -464,8 +459,6 @@ onMounted(async () => {
   // Store all layers for later use
   saveLayer.length = 0 // Clear existing layers
   saveLayer.push(...layers)
-
-  console.log(saveLayer)
 
   // Fit bounds to all layers
   if (layers.length > 0 && map) {
