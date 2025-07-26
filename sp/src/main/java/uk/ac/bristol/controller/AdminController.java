@@ -6,10 +6,7 @@ import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.FilterDTO;
 import uk.ac.bristol.pojo.PermissionConfig;
 import uk.ac.bristol.pojo.Template;
-import uk.ac.bristol.service.ContactService;
-import uk.ac.bristol.service.ImageStorageService;
-import uk.ac.bristol.service.MetaDataService;
-import uk.ac.bristol.service.PermissionConfigService;
+import uk.ac.bristol.service.*;
 import uk.ac.bristol.util.QueryTool;
 
 import java.io.IOException;
@@ -27,7 +24,7 @@ public class AdminController {
     private final ContactService contactService;
     private final ImageStorageService imageStorageService;
 
-    public AdminController(MetaDataService metaDataService, PermissionConfigService permissionConfigService, ContactService contactService, ImageStorageService imageStorageService) {
+    public AdminController(MetaDataService metaDataService, PermissionConfigService permissionConfigService, ContactService contactService, ImageStorageService imageStorageService, PermissionGroupService permissionGroupService) {
         this.metaDataService = metaDataService;
         this.permissionConfigService = permissionConfigService;
         this.contactService = contactService;

@@ -268,7 +268,7 @@
         (
         id       serial primary key,
         group_id int references permission_groups (group_id) on delete cascade,
-        user_id  int not null
+        user_id  text not null
         );
 
         <include refid="initTableMetaData"/>
@@ -298,6 +298,8 @@
         description text,
         created_at timestamp default current_timestamp,
         updated_at timestamp default current_timestamp
+            );
+
         <include refid="initTableMetaData"/>
     </update>
 
