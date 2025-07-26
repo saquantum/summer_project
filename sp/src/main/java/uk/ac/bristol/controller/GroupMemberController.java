@@ -8,7 +8,7 @@ import uk.ac.bristol.service.GroupMemberService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/group-members")
+@RequestMapping("/api")
 public class GroupMemberController {
 
     private final GroupMemberService groupMemberService;
@@ -18,17 +18,17 @@ public class GroupMemberController {
         this.groupMemberService = groupMemberService;
     }
 
-    @PostMapping
+    @PostMapping("/group-members")
     public void addGroupMember(@RequestBody GroupMember groupMember) {
         groupMemberService.addGroupMember(groupMember);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/group-members/{id}")
     public void deleteGroupMember(@PathVariable Integer id) {
         groupMemberService.removeGroupMemberById(id);
     }
 
-    @PutMapping
+    @PutMapping("/group-members")
     public void updateGroupMember(@RequestBody GroupMember groupMember) {
         groupMemberService.updateGroupMember(groupMember);
     }
