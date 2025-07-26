@@ -18,19 +18,26 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.controller.Code;
 import uk.ac.bristol.controller.ResponseBody;
 import uk.ac.bristol.dao.ContactMapper;
+import uk.ac.bristol.dao.ImageStorageMapper;
 import uk.ac.bristol.dao.MetaDataMapper;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
 import uk.ac.bristol.service.ContactService;
+import uk.ac.bristol.service.ImageStorageService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
 import uk.ac.bristol.util.QueryTool;
 
+import javax.activation.DataHandler;
 import javax.mail.MessagingException;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.util.ByteArrayDataSource;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class ContactServiceImpl implements ContactService {
@@ -376,19 +383,52 @@ class AsyncEmailSender {
     @Value("${app.base-url}")
     private String baseURL;
 
+    private final ImageStorageMapper imageStorageMapper;
+
+    AsyncEmailSender(ImageStorageMapper imageStorageMapper) {
+        this.imageStorageMapper = imageStorageMapper;
+    }
+
     @Async("notificationExecutor")
     public void sendEmailToAddress(String toEmailAddress, Map<String, Object> notification) {
         if (notification == null) {
             throw new SpExceptions.SystemException("Failed to send email because notification is null");
         }
 
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper mmh;
         try {
-            mmh = new MimeMessageHelper(message, true, "UTF-8");
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper mmh = new MimeMessageHelper(message, true, "UTF-8");;
             mmh.setFrom(from);
             mmh.setTo(toEmailAddress);
             mmh.setSubject(notification.get("title").toString());
+
+            String html = notification.get("body").toString();
+            Pattern cidPattern = Pattern.compile("cid:([a-zA-Z0-9._-]+)");
+            Matcher matcher = cidPattern.matcher(html);
+
+            Set<String> cidSet = new HashSet<>();
+            while (matcher.find()) {
+                cidSet.add(matcher.group(1));
+            }
+
+            if (!cidSet.isEmpty()) {
+                for (String cid : cidSet) {
+                    String base64Data = imageStorageMapper.selectImage(cid);
+
+                    Pattern pattern = Pattern.compile("data:(.+?);base64,(.+)");
+                    Matcher matcher1 = pattern.matcher(base64Data);
+                    if (!matcher1.matches()) {
+                        throw new IllegalArgumentException("Invalid base64 pic format: " + base64Data);
+                    }
+
+                    String contentType = matcher1.group(1);
+                    String base64Body = matcher1.group(2);
+                    byte[] imageData = Base64.getDecoder().decode(base64Body);
+
+                    ByteArrayDataSource dataSource = new ByteArrayDataSource(imageData, contentType);
+                    mmh.addInline(cid, dataSource);
+                }
+            }
 
             Map<String, Object> claims = new HashMap<>();
             claims.put("unsubscribe-email-uid", notification.get("toUserId").toString());
@@ -402,7 +442,7 @@ class AsyncEmailSender {
                     "    <title>Document</title>\n" +
                     "</head>\n" +
                     "<body>\n" +
-                    notification.get("body").toString()
+                    html
                     + "<br>"
                     + "<br>"
                     + "To unsubscribe email notifications, click the link below:"
