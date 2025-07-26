@@ -31,7 +31,7 @@ public interface ContactService {
 
     List<Template> getNotificationTemplateByTypes(Template template);
 
-    List<Template> getNotificationTemplateById(Long id);
+    Template getNotificationTemplateById(Long id);
 
     int insertNotificationTemplate(Template templates);
 
@@ -48,6 +48,8 @@ public interface ContactService {
     List<Map<String, Object>> getUserInboxMessagesByUserId(String userId);
 
     int insertInboxMessageToUser(Map<String, Object> message);
+
+    int insertInboxMessageToUsersByFilter(Map<String, Object> filters, Map<String, Object> message);
 
     int updateInboxMessageByUserId(Map<String, Object> message);
 

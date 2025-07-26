@@ -18,19 +18,26 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.controller.Code;
 import uk.ac.bristol.controller.ResponseBody;
 import uk.ac.bristol.dao.ContactMapper;
+import uk.ac.bristol.dao.ImageStorageMapper;
 import uk.ac.bristol.dao.MetaDataMapper;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
 import uk.ac.bristol.service.ContactService;
+import uk.ac.bristol.service.ImageStorageService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
 import uk.ac.bristol.util.QueryTool;
 
+import javax.activation.DataHandler;
 import javax.mail.MessagingException;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.util.ByteArrayDataSource;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class ContactServiceImpl implements ContactService {
@@ -64,12 +71,12 @@ public class ContactServiceImpl implements ContactService {
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public void sendNotificationsToUser(Warning warning, UserWithAssets uwa) {
-        Map<String, Object> contactPreferences = uwa.getUser().getAssetHolder().getContactPreferences();
+        Map<String, Boolean> contactPreferences = uwa.getUser().getContactPreferences();
 
         Map<String, Object> emailNotification = formatNotification(warning, uwa, "email");
         if (contactPreferences.get("email").equals(Boolean.TRUE)) {
             asyncEmailSender.sendEmailToAddress(
-                    uwa.getUser().getAssetHolder().getEmail(),
+                    uwa.getUser().getContactDetails().get("email"),
                     emailNotification
             );
         }
@@ -144,8 +151,8 @@ public class ContactServiceImpl implements ContactService {
     private String fillInVariablesWithValues(String content, User user, Asset asset) {
         return content
                 .replace("{{asset-model}}", asset.getName())
-                .replace("{{contact_name}}", user.getAssetHolder().getName())
-                .replace("{{post_town}}", user.getAssetHolder().getAddress().get("city"));
+                .replace("{{contact_name}}", user.getName())
+                .replace("{{post_town}}", user.getAddress().get("city"));
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -158,13 +165,8 @@ public class ContactServiceImpl implements ContactService {
         String uid = claims.get("unsubscribe-email-uid").toString();
 
         User user = userService.getUserByUserId(uid);
-        AssetHolder ah = user.getAssetHolder();
-        if (ah == null) {
-            throw new SpExceptions.BadRequestException("The user has no active asset holder details");
-        }
-
-        ah.getContactPreferences().put("email", false);
-        userService.updateAssetHolder(ah);
+        user.getContactPreferences().put("email", false);
+        userService.updateUser(user);
         return new ResponseBody(Code.DELETE_OK, null, "Successfully unsubscribed email for user " + uid);
     }
 
@@ -276,8 +278,12 @@ public class ContactServiceImpl implements ContactService {
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<Template> getNotificationTemplateById(Long id) {
-        return contactMapper.selectNotificationTemplateById(id);
+    public Template getNotificationTemplateById(Long id) {
+        List<Template> list = contactMapper.selectNotificationTemplateById(id);
+        if (list.size() != 1) {
+            throw new SpExceptions.GetMethodException("Get " + list.size() + " templates with id " + id);
+        }
+        return list.get(0);
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -336,6 +342,11 @@ public class ContactServiceImpl implements ContactService {
         return contactMapper.insertInboxMessageToUser(message);
     }
 
+    @Override
+    public int insertInboxMessageToUsersByFilter(Map<String, Object> filters, Map<String, Object> message) {
+        return contactMapper.insertInboxMessageToUsersByFilter(QueryTool.formatFilters(filters), message);
+    }
+
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int updateInboxMessageByUserId(Map<String, Object> message) {
@@ -372,19 +383,52 @@ class AsyncEmailSender {
     @Value("${app.base-url}")
     private String baseURL;
 
+    private final ImageStorageMapper imageStorageMapper;
+
+    AsyncEmailSender(ImageStorageMapper imageStorageMapper) {
+        this.imageStorageMapper = imageStorageMapper;
+    }
+
     @Async("notificationExecutor")
     public void sendEmailToAddress(String toEmailAddress, Map<String, Object> notification) {
         if (notification == null) {
             throw new SpExceptions.SystemException("Failed to send email because notification is null");
         }
 
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper mmh;
         try {
-            mmh = new MimeMessageHelper(message, true, "UTF-8");
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper mmh = new MimeMessageHelper(message, true, "UTF-8");;
             mmh.setFrom(from);
             mmh.setTo(toEmailAddress);
             mmh.setSubject(notification.get("title").toString());
+
+            String html = notification.get("body").toString();
+            Pattern cidPattern = Pattern.compile("cid:([a-zA-Z0-9._-]+)");
+            Matcher matcher = cidPattern.matcher(html);
+
+            Set<String> cidSet = new HashSet<>();
+            while (matcher.find()) {
+                cidSet.add(matcher.group(1));
+            }
+
+            if (!cidSet.isEmpty()) {
+                for (String cid : cidSet) {
+                    String base64Data = imageStorageMapper.selectImage(cid);
+
+                    Pattern pattern = Pattern.compile("data:(.+?);base64,(.+)");
+                    Matcher matcher1 = pattern.matcher(base64Data);
+                    if (!matcher1.matches()) {
+                        throw new IllegalArgumentException("Invalid base64 pic format: " + base64Data);
+                    }
+
+                    String contentType = matcher1.group(1);
+                    String base64Body = matcher1.group(2);
+                    byte[] imageData = Base64.getDecoder().decode(base64Body);
+
+                    ByteArrayDataSource dataSource = new ByteArrayDataSource(imageData, contentType);
+                    mmh.addInline(cid, dataSource);
+                }
+            }
 
             Map<String, Object> claims = new HashMap<>();
             claims.put("unsubscribe-email-uid", notification.get("toUserId").toString());
@@ -398,7 +442,7 @@ class AsyncEmailSender {
                     "    <title>Document</title>\n" +
                     "</head>\n" +
                     "<body>\n" +
-                    notification.get("body").toString()
+                    html
                     + "<br>"
                     + "<br>"
                     + "To unsubscribe email notifications, click the link below:"

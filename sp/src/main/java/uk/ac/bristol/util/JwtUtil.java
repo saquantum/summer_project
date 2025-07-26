@@ -103,6 +103,22 @@ public final class JwtUtil {
             return false;
         }
     }
+
+    public static long getRemainingSeconds(String jwt) {
+        try {
+            Claims claims = parseJWT(jwt);
+            long now = System.currentTimeMillis();
+            long exp = claims.getExpiration().getTime();
+            return Math.max(0, (exp - now) / 1000);
+        } catch (Exception e) {
+            System.err.println("Failed to parse JWT in getRemainingSeconds: " + e.getMessage());
+            return -1;
+        }
+    }
+
+    public static long getExpirePeriod() {
+        return expirePeriod;
+    }
 }
 
 @Component

@@ -111,25 +111,6 @@
         <include refid="ResultMaps.filtering"/>
     </select>
 
-    <select id="selectAssetTypes" resultMap="ResultMaps.AssetTypeMap">
-        select *
-        from asset_types
-        <include refid="ResultMaps.filtering"/>
-        <include refid="ResultMaps.orderAndPage"/>
-    </select>
-
-    <insert id="insertAssetType">
-        insert into asset_types (asset_type_type_id,
-                                 asset_type_name,
-                                 asset_type_description)
-        values (#{id}, #{name}, #{description});
-    </insert>
-
-    <insert id="insertAssetTypeAutoId">
-        insert into asset_types (asset_type_name, asset_type_description)
-        values (#{name}, #{description});
-    </insert>
-
     <insert id="insertAsset">
         insert into assets (asset_id,
                             asset_name,
@@ -181,15 +162,6 @@
                 #{installedAt}, #{lastInspection}, #{lastModified});
     </insert>
 
-    <update id="updateAssetType">
-        update asset_types
-        <set>
-            <if test="name != null and name != ''">asset_type_name = #{name},</if>
-            <if test="description != null and description != ''">asset_type_description = #{description},</if>
-        </set>
-        where asset_type_type_id = #{id};
-    </update>
-
     <update id="updateAsset">
         update assets
         <set>
@@ -207,17 +179,45 @@
         where asset_id = #{id};
     </update>
 
-    <delete id="deleteAssetTypeByIDs">
-        delete
-        from asset_types
-        where asset_type_type_id in
-        <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
-    </delete>
-
     <delete id="deleteAssetByIDs">
         delete
         from assets
         where asset_id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
+    </delete>
+
+    <select id="selectAssetTypes" resultMap="ResultMaps.AssetTypeMap">
+        select *
+        from asset_types
+        <include refid="ResultMaps.filtering"/>
+        <include refid="ResultMaps.orderAndPage"/>
+    </select>
+
+    <insert id="insertAssetType">
+        insert into asset_types (asset_type_type_id,
+                                 asset_type_name,
+                                 asset_type_description)
+        values (#{id}, #{name}, #{description});
+    </insert>
+
+    <insert id="insertAssetTypeAutoId">
+        insert into asset_types (asset_type_name, asset_type_description)
+        values (#{name}, #{description});
+    </insert>
+
+    <update id="updateAssetType">
+        update asset_types
+        <set>
+            <if test="name != null and name != ''">asset_type_name = #{name},</if>
+            <if test="description != null and description != ''">asset_type_description = #{description},</if>
+        </set>
+        where asset_type_type_id = #{id};
+    </update>
+
+    <delete id="deleteAssetTypeByIDs">
+        delete
+        from asset_types
+        where asset_type_type_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 </mapper>

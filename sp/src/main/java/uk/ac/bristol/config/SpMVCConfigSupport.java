@@ -8,7 +8,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
-import uk.ac.bristol.controller.interceptor.SpInterceptor;
+import uk.ac.bristol.controller.interceptor.NonAdminInterceptor;
+import uk.ac.bristol.controller.interceptor.PostInterceptor;
 
 import java.util.concurrent.Executor;
 
@@ -17,7 +18,10 @@ import java.util.concurrent.Executor;
 public class SpMVCConfigSupport extends WebMvcConfigurationSupport {
 
     @Autowired
-    SpInterceptor spInterceptor;
+    NonAdminInterceptor nonAdminInterceptor;
+
+    @Autowired
+    PostInterceptor postInterceptor;
 
     // redirect URI resources
     @Override
@@ -27,11 +31,11 @@ public class SpMVCConfigSupport extends WebMvcConfigurationSupport {
 
     @Override
     protected void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(spInterceptor)
-                .addPathPatterns("/api/user/**")
-                .addPathPatterns("/api/asset/**")
-                .addPathPatterns("/api/warning/**")
+        registry.addInterceptor(nonAdminInterceptor)
                 .addPathPatterns("/api/admin/**");
+
+        registry.addInterceptor(postInterceptor)
+                .addPathPatterns("/api/**");
     }
 
     @Bean("notificationExecutor")

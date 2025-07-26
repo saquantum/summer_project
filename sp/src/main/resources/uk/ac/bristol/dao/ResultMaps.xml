@@ -11,7 +11,7 @@
     </resultMap>
 
     <resultMap id="AddressMap" type="java.util.Map">
-        <id property="assetHolderId" column="address_id"/>
+        <id property="id" column="address_id"/>
         <result property="street" column="address_street"/>
         <result property="city" column="address_city"/>
         <result property="postcode" column="address_postcode"/>
@@ -19,7 +19,7 @@
     </resultMap>
 
     <resultMap id="ContactPreferencesMap" type="java.util.Map">
-        <id property="assetHolderId" column="contact_preferences_id"/>
+        <id property="id" column="contact_preferences_id"/>
         <result property="email" column="contact_preferences_email"/>
         <result property="phone" column="contact_preferences_phone"/>
         <result property="post" column="contact_preferences_post"/>
@@ -28,25 +28,27 @@
         <result property="telegram" column="contact_preferences_telegram"/>
     </resultMap>
 
-    <resultMap id="AssetHolderMap" type="uk.ac.bristol.pojo.AssetHolder">
-        <id property="id" column="asset_holder_id"/>
-        <result property="name" column="asset_holder_name"/>
-        <result property="email" column="asset_holder_email"/>
-        <result property="phone" column="asset_holder_phone"/>
-        <result property="addressId" column="asset_holder_address_id"/>
-        <result property="contactPreferencesId" column="asset_holder_contact_preferences_id"/>
-        <result property="lastModified" column="asset_holder_last_modified"/>
-
-        <association property="address" javaType="java.util.Map" resultMap="AddressMap"/>
-        <association property="contactPreferences" javaType="java.util.Map" resultMap="ContactPreferencesMap"/>
+    <resultMap id="ContactDetailsMap" type="java.util.Map">
+        <id property="id" column="contact_details_id"/>
+        <result property="email" column="contact_details_email"/>
+        <result property="phone" column="contact_details_phone"/>
+        <result property="post" column="contact_details_post"/>
+        <result property="whatsapp" column="contact_details_whatsapp"/>
+        <result property="discord" column="contact_details_discord"/>
+        <result property="telegram" column="contact_details_telegram"/>
     </resultMap>
 
     <resultMap id="UserMap" type="uk.ac.bristol.pojo.User">
         <id property="id" column="user_id"/>
-        <result property="assetHolderId" column="user_asset_holder_id"/>
-        <result property="avatar" column="user_avatar"/>
         <result property="admin" column="user_is_admin"/>
-        <association property="assetHolder" javaType="uk.ac.bristol.pojo.AssetHolder" resultMap="AssetHolderMap"/>
+        <result property="adminLevel" column="user_admin_level"/>
+        <result property="avatar" column="user_avatar"/>
+        <result property="name" column="user_name"/>
+        <result property="lastModified" column="user_last_modified"/>
+
+        <association property="address" javaType="java.util.Map" resultMap="AddressMap"/>
+        <association property="contactPreferences" javaType="java.util.Map" resultMap="ContactPreferencesMap"/>
+        <association property="contactDetails" javaType="java.util.Map" resultMap="ContactDetailsMap"/>
         <association property="permissionConfig" javaType="uk.ac.bristol.pojo.PermissionConfig" resultMap="PermissionConfigMap"/>
     </resultMap>
 

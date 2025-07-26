@@ -1,48 +1,32 @@
 package uk.ac.bristol.service;
 
-import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.pojo.UserWithAssets;
 import uk.ac.bristol.pojo.UserWithExtraColumns;
-import uk.ac.bristol.pojo.UserGroupDTO;
 
 import java.util.List;
 import java.util.Map;
 
 public interface UserService {
 
-    User login(User user);
+    String login(User user);
 
-    List<User> getAllUsers(Map<String, Object> filters,
-                           List<Map<String, String>> orderList,
-                           Integer limit,
-                           Integer offset);
+    List<User> getUsers(Map<String, Object> filters,
+                        List<Map<String, String>> orderList,
+                        Integer limit,
+                        Integer offset);
 
-    List<User> getAllUsersWithAssetHolder(Map<String, Object> filters,
-                                          List<Map<String, String>> orderList,
-                                          Integer limit,
-                                          Integer offset);
+    List<User> getUnauthorisedUsers(Map<String, Object> filters,
+                                    List<Map<String, String>> orderList,
+                                    Integer limit,
+                                    Integer offset);
 
-    List<User> getAllUnauthorisedUsersWithAssetHolder(Map<String, Object> filters,
-                                                      List<Map<String, String>> orderList,
-                                                      Integer limit,
-                                                      Integer offset);
-
-    List<Map<String, Object>> getAllAssetHoldersWithAssetIds(Map<String, Object> filters,
-                                                             List<Map<String, String>> orderList,
-                                                             Integer limit,
-                                                             Integer offset);
-
-    List<UserWithExtraColumns> getAllUsersWithAccumulator(String function,
-                                                          String column,
-                                                          Map<String, Object> filters,
-                                                          List<Map<String, String>> orderList,
-                                                          Integer limit,
-                                                          Integer offset);
-
-    List<UserGroupDTO> getGroupedUsers(String groupBy);
-
-    User getUserByAssetHolderId(String aid);
+    List<UserWithExtraColumns> getUsersWithAccumulator(String function,
+                                                       String column,
+                                                       Map<String, Object> filters,
+                                                       List<Map<String, String>> orderList,
+                                                       Integer limit,
+                                                       Integer offset);
 
     User getUserByUserId(String uid);
 
@@ -58,29 +42,27 @@ public interface UserService {
                                                               boolean getDiff,
                                                               String newAreaAsJson);
 
-    int countUsersWithFilter(Map<String, Object> filters);
+    long countUsersWithFilter(Map<String, Object> filters);
 
     boolean compareUserLastModified(String uid, Long timestamp);
 
+    boolean upsertAddress(User user);
+
+    boolean upsertContactDetails(User user);
+
+    boolean upsertContactPreferences(User user);
+
     int insertUser(User user);
 
-    void registerNewUser(User user);
+    int insertUserBatch(List<User> list);
+
+    void registerNewUser(Map<String, String> data);
 
     int updateUser(User user);
 
-    int updateAssetHolder(AssetHolder assetHolder);
+    int updateUserBatch(List<User> list);
 
-    int updatePasswordByEmail(String email, String password);
-
-    int deleteUserByUserIds(String[] ids);
+    int updateUserPasswordByEmail(String email, String password);
 
     int deleteUserByUserIds(List<String> ids);
-
-    int deleteUserByAssetHolderIds(String[] ids);
-
-    int deleteUserByAssetHolderIds(List<String> ids);
-
-    int deleteAssetHolderByAssetHolderIds(String[] ids);
-
-    int deleteAssetHolderByAssetHolderIds(List<String> ids);
 }

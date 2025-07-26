@@ -79,7 +79,7 @@ public class WarningServiceImpl implements WarningService {
         for (Warning warning : parsedWarnings) {
             s++;
             // 1. new warning: send notifications
-            if (!warningMapper.testWarningExists(warning.getId())) {
+            if (!warningMapper.testWarningExistence(warning.getId())) {
                 warningsToNotify.add(warning);
                 warningMapper.insertWarning(warning);
                 metaDataMapper.increaseTotalCountByTableName("weather_warnings", 1);
@@ -92,6 +92,7 @@ public class WarningServiceImpl implements WarningService {
             // 3. warning area updated: send notifications to assets not intersecting with it beforehand
             else if (warningMapper.testWarningAreaDiff(warning.getId(), warning.getAreaAsJson())) {
                 handleGroupedUsersWithRespectToPagination(warning, true);
+                warningMapper.updateWarning(warning);
             } else {
                 s--;
             }
@@ -117,7 +118,7 @@ public class WarningServiceImpl implements WarningService {
         do {
             List<UserWithAssets> list = userService.groupUsersWithOwnedAssetsByWarningId(limit, cursor, warning.getId(), getDiff, warning.getAreaAsJson());
             length = list.size();
-            if(length == 0) break;
+            if (length == 0) break;
             for (UserWithAssets uwa : list) {
                 contactService.sendNotificationsToUser(warning, uwa);
             }

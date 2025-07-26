@@ -7,6 +7,7 @@ spring.application.name: sp
 app:
   base-url: https://localhost:8080
   http-only: false
+  pagination-limit: 1000
 
 spring:
   datasource:

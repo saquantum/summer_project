@@ -1,7 +1,7 @@
 package uk.ac.bristol.controller;
 
 import org.springframework.web.bind.annotation.*;
-import uk.ac.bristol.advice.UserAID;
+import uk.ac.bristol.advice.UserIdentificationExecution;
 import uk.ac.bristol.advice.UserUID;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.FilterDTO;
@@ -31,52 +31,39 @@ public class NotificationController {
 
     /* ---------------- Inbox ---------------- */
 
+    @UserIdentificationExecution
     @GetMapping("/user/uid/{uid}/inbox")
-    public ResponseBody userGetMyInboxMessagesByUID(HttpServletResponse response,
-                                                    HttpServletRequest request,
-                                                    @UserUID @PathVariable String uid) {
+    public ResponseBody getMyInboxMessagesByUID(HttpServletResponse response,
+                                                HttpServletRequest request,
+                                                @UserUID @PathVariable String uid) {
         return new ResponseBody(Code.SELECT_OK, contactService.getUserInboxMessagesByUserId(uid));
     }
 
-    @GetMapping("/user/aid/{aid}/inbox")
-    public ResponseBody userGetMyInboxMessagesByAID(HttpServletResponse response,
-                                                    HttpServletRequest request,
-                                                    @UserAID @PathVariable String aid) {
-        return new ResponseBody(Code.SELECT_OK, contactService.getUserInboxMessagesByUserId(aid));
+    @GetMapping("/admin/user/uid/{uid}/inbox")
+    public ResponseBody getUserInboxMessagesByUID(HttpServletResponse response,
+                                                  HttpServletRequest request,
+                                                  @UserUID @PathVariable String uid) {
+        return new ResponseBody(Code.SELECT_OK, contactService.getUserInboxMessagesByUserId(uid));
     }
 
+    @UserIdentificationExecution
     @PutMapping("/user/uid/{uid}/inbox/{rowId}")
-    public ResponseBody userSetInboxMessageReadByRowIdWithUID(HttpServletResponse response,
-                                                              HttpServletRequest request,
-                                                              @UserUID @PathVariable String uid,
-                                                              @PathVariable long rowId) {
-        contactService.updateInboxMessageByUserId(Map.of("rowId", rowId, "hasRead", true));
+    public ResponseBody setMyInboxMessageReadByRowIdWithUID(HttpServletResponse response,
+                                                            HttpServletRequest request,
+                                                            @UserUID @PathVariable String uid,
+                                                            @PathVariable long rowId,
+                                                            @RequestParam(required = false, value = "has-read") Boolean read) {
+        boolean hasRead = read != null ? read : true;
+        contactService.updateInboxMessageByUserId(Map.of("rowId", rowId, "userId", uid, "hasRead", hasRead));
         return new ResponseBody(Code.UPDATE_OK, null);
     }
 
-    @PutMapping("/user/aid/{aid}/inbox/{rowId}")
-    public ResponseBody userSetInboxMessageReadByRowIdWithAID(HttpServletResponse response,
-                                                              HttpServletRequest request,
-                                                              @UserAID @PathVariable String aid,
-                                                              @PathVariable long rowId) {
-        contactService.updateInboxMessageByUserId(Map.of("rowId", rowId, "hasRead", true));
-        return new ResponseBody(Code.UPDATE_OK, null);
-    }
-
+    @UserIdentificationExecution
     @DeleteMapping("/user/uid/{uid}/inbox/{rowId}")
-    public ResponseBody userDeleteInboxMessageByRowIdWithUID(HttpServletResponse response,
-                                                              HttpServletRequest request,
-                                                              @UserAID @PathVariable String uid,
-                                                              @PathVariable long rowId) {
-        contactService.deleteInboxMessageByFilter(Map.of("inbox_row_id", rowId));
-        return new ResponseBody(Code.DELETE_OK, null);
-    }
-
-    @DeleteMapping("/user/aid/{aid}/inbox/{rowId}")
-    public ResponseBody userDeleteInboxMessageByRowIdWithAID(HttpServletResponse response,
-                                                             HttpServletRequest request,
-                                                             @UserAID @PathVariable String aid,
-                                                             @PathVariable long rowId) {
+    public ResponseBody deleteMyInboxMessageByRowIdWithUID(HttpServletResponse response,
+                                                           HttpServletRequest request,
+                                                           @UserUID @PathVariable String uid,
+                                                           @PathVariable long rowId) {
         contactService.deleteInboxMessageByFilter(Map.of("inbox_row_id", rowId));
         return new ResponseBody(Code.DELETE_OK, null);
     }
@@ -93,9 +80,32 @@ public class NotificationController {
                 "userId", userId,
                 "hasRead", false,
                 "issuedDate", now,
-                "validUntil", now.plus(Duration.ofMillis(validDuration)),
+                "validUntil", now.plus(Duration.ofMinutes(validDuration)),
                 "title", title,
                 "message", body)
+        );
+        return new ResponseBody(Code.SUCCESS, n, "Successfully sent " + n + " inbox messages.");
+    }
+
+    // TODO: split inbox tables into 2 tables: user-specific messages and common messages visible to all users.
+    // A problem: users registered later should receive the same old messages?
+
+    @PostMapping("/admin/notify/inbox/all")
+    public ResponseBody sendInboxMessageToUsersByFilter(@RequestBody Map<String, Object> message) {
+        Map<String, Object> filter = (Map<String, Object>) message.get("filters");
+        String title = (String) message.get("title");
+        String body = (String) message.get("body");
+        Long validDuration = Long.valueOf((Integer) message.get("duration"));
+
+        LocalDateTime now = LocalDateTime.now();
+        int n = contactService.insertInboxMessageToUsersByFilter(
+                filter,
+                Map.of(
+                        "hasRead", false,
+                        "issuedDate", now,
+                        "validUntil", now.plus(Duration.ofMinutes(validDuration)),
+                        "title", title,
+                        "message", body)
         );
         return new ResponseBody(Code.SUCCESS, n, "Successfully sent " + n + " inbox messages.");
     }
