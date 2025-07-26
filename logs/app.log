@@ -2209,3 +2209,5 @@ Bailey Estate, postcode=NG5 1HT, assetHolderId=$user_047}, contactPreferencesId=
 2025-07-22T17:58:14.636523600	[User{id='user_017', password='123456', passwordPlainText='null', assetHolderId='null', assetHolder=null, admin=false, token='null'}]	login
 2025-07-22T17:58:21.435355300	[User{id='admin', password='admin', passwordPlainText='null', assetHolderId='null', assetHolder=null, admin=false, token='null'}]	login
 2025-07-26T16:49:37.316814800	[]	deleteOutDatedInboxMessages
+2025-07-26T16:50:10.732689600	[]	deleteOutDatedInboxMessages
+null	2025-07-26T20:13:30.103861500	uk.ac.bristol.service.impl.ContactServiceImpl.deleteOutDatedInboxMessages[]	
