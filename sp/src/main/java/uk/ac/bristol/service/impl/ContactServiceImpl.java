@@ -3,8 +3,13 @@ package uk.ac.bristol.service.impl;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import io.jsonwebtoken.Claims;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.mail.SimpleMailMessage;
@@ -29,10 +34,17 @@ import uk.ac.bristol.util.JwtUtil;
 import uk.ac.bristol.util.QueryTool;
 
 import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileTypeMap;
+import javax.activation.URLDataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.util.ByteArrayDataSource;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -74,6 +86,9 @@ public class ContactServiceImpl implements ContactService {
         Map<String, Boolean> contactPreferences = uwa.getUser().getContactPreferences();
 
         Map<String, Object> emailNotification = formatNotification(warning, uwa, "email");
+
+        System.out.println("sending---------------------------");
+
         if (contactPreferences.get("email").equals(Boolean.TRUE)) {
             asyncEmailSender.sendEmailToAddress(
                     uwa.getUser().getContactDetails().get("email"),
@@ -383,12 +398,6 @@ class AsyncEmailSender {
     @Value("${app.base-url}")
     private String baseURL;
 
-    private final ImageStorageMapper imageStorageMapper;
-
-    AsyncEmailSender(ImageStorageMapper imageStorageMapper) {
-        this.imageStorageMapper = imageStorageMapper;
-    }
-
     @Async("notificationExecutor")
     public void sendEmailToAddress(String toEmailAddress, Map<String, Object> notification) {
         if (notification == null) {
@@ -396,63 +405,80 @@ class AsyncEmailSender {
         }
 
         try {
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper mmh = new MimeMessageHelper(message, true, "UTF-8");;
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper mmh = new MimeMessageHelper(message, true, "UTF-8");
             mmh.setFrom(from);
             mmh.setTo(toEmailAddress);
             mmh.setSubject(notification.get("title").toString());
 
             String html = notification.get("body").toString();
-            Pattern cidPattern = Pattern.compile("cid:([a-zA-Z0-9._-]+)");
-            Matcher matcher = cidPattern.matcher(html);
 
-            Set<String> cidSet = new HashSet<>();
-            while (matcher.find()) {
-                cidSet.add(matcher.group(1));
+            System.out.println(html);
+
+            Map<String, String> cidMap = new HashMap<>();
+            Document doc = Jsoup.parse(html);
+            Elements images = doc.select("img[src^=http]");
+
+            for (Element img : images) {
+                String src = img.attr("src");
+                String cid = UUID.randomUUID().toString();
+                cidMap.put(src, cid);
+                img.attr("src", "cid:" + cid);
             }
 
-            if (!cidSet.isEmpty()) {
-                for (String cid : cidSet) {
-                    String base64Data = imageStorageMapper.selectImage(cid);
+            for (Map.Entry<String, String> entry : cidMap.entrySet()) {
+                String imageUrl = entry.getKey();
+                String cid = entry.getValue();
 
-                    Pattern pattern = Pattern.compile("data:(.+?);base64,(.+)");
-                    Matcher matcher1 = pattern.matcher(base64Data);
-                    if (!matcher1.matches()) {
-                        throw new IllegalArgumentException("Invalid base64 pic format: " + base64Data);
-                    }
-
-                    String contentType = matcher1.group(1);
-                    String base64Body = matcher1.group(2);
-                    byte[] imageData = Base64.getDecoder().decode(base64Body);
-
-                    ByteArrayDataSource dataSource = new ByteArrayDataSource(imageData, contentType);
-                    mmh.addInline(cid, dataSource);
+                URL url = new URL(imageUrl);
+                DataSource dataSource = new URLDataSource(url);
+                try (InputStream in = dataSource.getInputStream()) {
+                    System.out.println("Image content length: " + in.available());
                 }
+                System.out.println("cid " + cid);
+
+                InputStreamSource resource = () -> dataSource.getInputStream();
+
+                String contentType = "image/png";
+
+                mmh.addInline(cid, resource, contentType);
             }
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            mmh.getMimeMessage().writeTo(out);
+            System.out.println(out.toString("UTF-8"));
+
+            String modifiedHtml = doc.body().html();
 
             Map<String, Object> claims = new HashMap<>();
             claims.put("unsubscribe-email-uid", notification.get("toUserId").toString());
             claims.put("action", "unsubscribe-email");
             String unsubscribeUrl = baseURL + "/user/notify/email/unsubscribe?token=" + JwtUtil.generateJWT(claims);
-            mmh.setText("<!DOCTYPE html>\n" +
+
+            String finalHtml = "<!DOCTYPE html>\n" +
                     "<html lang=\"en\">\n" +
                     "<head>\n" +
                     "    <meta charset=\"UTF-8\">\n" +
                     "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-                    "    <title>Document</title>\n" +
+                    "    <title>Email</title>\n" +
                     "</head>\n" +
                     "<body>\n" +
-                    html
-                    + "<br>"
-                    + "<br>"
-                    + "To unsubscribe email notifications, click the link below:"
-                    + "<br>"
-                    + "<a href=\"" + unsubscribeUrl + "\">unsubscribe</a>"
-                    + "</body>\n" +
-                    "</html>", true);
+                    modifiedHtml +
+                    "<br><br>" +
+                    "To unsubscribe email notifications, click the link below:" +
+                    "<br>" +
+                    "<a href=\"" + unsubscribeUrl + "\">unsubscribe</a>" +
+                    "</body>\n" +
+                    "</html>";
+
+            mmh.setText(finalHtml, true);
+
+            System.out.println(finalHtml);
             mailSender.send(message);
         } catch (MessagingException e) {
             throw new SpExceptions.SystemException("Failed to send email using mime message helper");
+        } catch (IOException e) {
+            throw new SpExceptions.SystemException("Failed to download image for embedding: " + e.getMessage());
         }
     }
 }
