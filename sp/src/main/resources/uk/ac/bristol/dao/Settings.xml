@@ -110,7 +110,7 @@
         create table if not exists contact_details
         (
             contact_details_id       varchar(100) primary key references users (user_id) on update cascade,
-            contact_details_email    varchar(50) not null unique,
+            contact_details_email    varchar(50) not null,
             contact_details_phone    varchar(30) not null,
             contact_details_post     varchar(100),
             contact_details_whatsapp varchar(30),

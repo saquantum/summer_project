@@ -112,7 +112,7 @@
     <select id="testWarningAreaDiff" resultType="java.lang.Boolean">
         select case
                    when
-                       warning_area != ST_Multi(ST_GeomFromGeoJSON(#{areaAsJson}))
+                       not ST_Equals(warning_area, ST_Multi(ST_GeomFromGeoJSON(#{areaAsJson})))
                        then true
                    else false
                    end
