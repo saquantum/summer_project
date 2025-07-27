@@ -275,16 +275,16 @@
     </update>
 
     <update id="createGroupPermissions">
-        create table if not exists group_permissions
+        create table if not exists permission_group_permissions
         (
-        id              serial primary key,
-        group_id        int references permission_groups (group_id) on delete cascade,
-        permission_a    boolean default false,
-        permission_b    boolean default false,
-        permission_c    boolean default false,
-        permission_d    boolean default false,
-        permission_e    boolean default false,
-        permission_f    boolean default false
+        id                           serial primary key,
+        group_id                     int references permission_groups (group_id) on delete cascade,
+        can_create_asset             boolean default false,
+        can_set_polygon_on_create    boolean default false,
+        can_update_asset_fields      boolean default false,
+        can_update_asset_polygon     boolean default false,
+        can_delete_asset             boolean default false,
+        can_update_profile           boolean default false
         );
 
         <include refid="initTableMetaData"/>
