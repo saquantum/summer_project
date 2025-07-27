@@ -38,13 +38,17 @@ import javax.activation.DataSource;
 import javax.activation.FileTypeMap;
 import javax.activation.URLDataSource;
 import javax.mail.MessagingException;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -406,10 +410,13 @@ class AsyncEmailSender {
 
         try {
             MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper mmh = new MimeMessageHelper(message, true, "UTF-8");
-            mmh.setFrom(from);
-            mmh.setTo(toEmailAddress);
-            mmh.setSubject(notification.get("title").toString());
+            message.setFrom(from);
+            message.setRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(toEmailAddress));
+            message.setSubject(notification.get("title").toString());
+
+            MimeMultipart multipart = new MimeMultipart("related");
+
+            MimeBodyPart htmlPart = new MimeBodyPart();
 
             String html = notification.get("body").toString();
 
@@ -426,29 +433,7 @@ class AsyncEmailSender {
                 img.attr("src", "cid:" + cid);
             }
 
-            for (Map.Entry<String, String> entry : cidMap.entrySet()) {
-                String imageUrl = entry.getKey();
-                String cid = entry.getValue();
-
-                URL url = new URL(imageUrl);
-                DataSource dataSource = new URLDataSource(url);
-                try (InputStream in = dataSource.getInputStream()) {
-                    System.out.println("Image content length: " + in.available());
-                }
-                System.out.println("cid " + cid);
-
-                InputStreamSource resource = () -> dataSource.getInputStream();
-
-                String contentType = "image/png";
-
-                mmh.addInline(cid, resource, contentType);
-            }
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            mmh.getMimeMessage().writeTo(out);
-            System.out.println(out.toString("UTF-8"));
-
-            String modifiedHtml = doc.body().html();
+            String modifiedHtml = doc.html();
 
             Map<String, Object> claims = new HashMap<>();
             claims.put("unsubscribe-email-uid", notification.get("toUserId").toString());
@@ -471,9 +456,61 @@ class AsyncEmailSender {
                     "</body>\n" +
                     "</html>";
 
-            mmh.setText(finalHtml, true);
+            htmlPart.setContent(finalHtml, "text/html; charset=UTF-8");
 
-            System.out.println(finalHtml);
+            multipart.addBodyPart(htmlPart);
+
+            for (Map.Entry<String, String> entry : cidMap.entrySet()) {
+                MimeBodyPart imagePart = new MimeBodyPart();
+
+                String imageUrl = entry.getKey();
+                String cid = entry.getValue();
+
+                URL url = new URL(imageUrl);
+                URLConnection connection = url.openConnection();
+                String contentType = connection.getContentType();
+                if (contentType == null) {
+                    contentType = "image/png";
+                }
+
+                String fileName = "image.png";
+                String path = url.getPath();
+                int lastSlash = path.lastIndexOf('/');
+                if (lastSlash >= 0 && lastSlash < path.length() - 1) {
+                    fileName = path.substring(lastSlash + 1);
+                }
+
+                try (InputStream inputStream = connection.getInputStream();
+                     ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+
+                    byte[] data = new byte[1024];
+                    int nRead;
+                    while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
+                        buffer.write(data, 0, nRead);
+                    }
+                    buffer.flush();
+                    byte[] imageBytes = buffer.toByteArray();
+
+                    DataSource ds = new ByteArrayDataSource(imageBytes, contentType);
+
+                    imagePart.setDataHandler(new DataHandler(ds));
+                    imagePart.setHeader("Content-ID", "<" + cid + ">");
+                    imagePart.setDisposition(MimeBodyPart.INLINE);
+                    imagePart.setFileName(fileName);
+
+                    multipart.addBodyPart(imagePart);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            message.setContent(multipart);
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            message.writeTo(out);
+            System.out.println(out.toString("UTF-8"));
+
             mailSender.send(message);
         } catch (MessagingException e) {
             throw new SpExceptions.SystemException("Failed to send email using mime message helper");
