@@ -59,6 +59,10 @@ public class ImportMockDataImpl implements ImportMockData {
         settings.createNotificationTemplates("templates");
         settings.createPermissionConfigs("permission_configs");
         settings.createUserInboxes("inboxes");
+        settings.createPermissionGroups("permission_groups");
+        settings.createGroupPermissions("group_permissions");
+        settings.createGroupMembers("group_members");
+        settings.createImageStorage("image_storage");
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -189,7 +193,7 @@ public class ImportMockDataImpl implements ImportMockData {
                             template.setSeverity(severity);
                             template.setContactChannel(channel);
                             template.setTitle(warningType + templates.get(idx).get("title").toString());
-                            template.setBody(templates.get(idx).get("body").toString());
+                            template.setBody("<h3>Dear {{contact_name}}:</h3><p></p><img src=\"https://s3.bmp.ovh/imgs/2025/07/22/e8f6d4e43207e112.png\" loading=\"lazy\" style=\"display: block; height: auto; margin: 1.5rem 0; max-width: 100%; max-height: 100%;\"><p><br></p><p>Protect your asset. If it sent by SMS, keep it short. If it is sent by email, insert helpful images and links.</p><p><br><a rel=\"noopener noreferrer nofollow\" href=\" \" style=\"color: #409eff; text-decoration: underline; font-weight: bold;\"><strong> Click This Link</strong></a></p>");
 
                             if (!contactService.getNotificationTemplateByTypes(template).isEmpty()) {
                                 contactService.updateNotificationTemplateMessageByTypes(template);

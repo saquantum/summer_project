@@ -8,7 +8,7 @@ import uk.ac.bristol.service.PermissionGroupService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/groups")
+@RequestMapping("/api")
 public class PermissionGroupController {
 
     private final PermissionGroupService permissionGroupService;
@@ -28,7 +28,7 @@ public class PermissionGroupController {
         return permissionGroupService.getGroupById(groupId);
     }
 
-    @PostMapping
+    @PostMapping("/group")
     public void createGroup(@RequestBody PermissionGroup group) {
         permissionGroupService.addGroup(group);
     }

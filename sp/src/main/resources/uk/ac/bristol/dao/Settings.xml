@@ -18,6 +18,10 @@
         drop table if exists templates cascade;
         drop table if exists permission_configs cascade;
         drop table if exists inboxes cascade;
+        drop table if exists group_members cascade;
+        drop table if exists group_permissions cascade;
+        drop table if exists permission_groups cascade;
+        drop table if exists image_storage cascade;
     </update>
 
     <update id="createTableMetaData">
@@ -106,7 +110,7 @@
         create table if not exists contact_details
         (
             contact_details_id       varchar(100) primary key references users (user_id) on update cascade,
-            contact_details_email    varchar(50) not null unique,
+            contact_details_email    varchar(50) not null,
             contact_details_phone    varchar(30) not null,
             contact_details_post     varchar(100),
             contact_details_whatsapp varchar(30),
@@ -254,6 +258,57 @@
             inbox_valid_until timestamp without time zone not null,
             inbox_title       text                        not null,
             inbox_message     text                        not null
+        );
+
+        <include refid="initTableMetaData"/>
+    </update>
+
+    <update id="createGroupMembers">
+        create table if not exists group_members
+        (
+        id       serial primary key,
+        group_id int references permission_groups (group_id) on delete cascade,
+        user_id  text not null
+        );
+
+        <include refid="initTableMetaData"/>
+    </update>
+
+    <update id="createGroupPermissions">
+        create table if not exists permission_group_permissions
+        (
+        id                           serial primary key,
+        group_id                     int references permission_groups (group_id) on delete cascade,
+        can_create_asset             boolean default false,
+        can_set_polygon_on_create    boolean default false,
+        can_update_asset_fields      boolean default false,
+        can_update_asset_polygon     boolean default false,
+        can_delete_asset             boolean default false,
+        can_update_profile           boolean default false
+        );
+
+        <include refid="initTableMetaData"/>
+    </update>
+
+    <update id="createPermissionGroups">
+        create table if not exists permission_groups
+        (
+        group_id   serial primary key,
+        group_name varchar(100) not null,
+        description text,
+        created_at timestamp default current_timestamp,
+        updated_at timestamp default current_timestamp
+            );
+
+        <include refid="initTableMetaData"/>
+    </update>
+
+    <update id="createImageStorage">
+        create table if not exists image_storage
+        (
+        id                     serial primary key,
+        image_cid              text unique not null,
+        image_content          text not null
         );
 
         <include refid="initTableMetaData"/>

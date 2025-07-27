@@ -3,7 +3,7 @@ package uk.ac.bristol.pojo;
 public class GroupMember {
     private Integer id;
     private Integer groupId;
-    private Integer userId;
+    private String userId;
 
     public Integer getId() {
         return id;
@@ -21,11 +21,11 @@ public class GroupMember {
         this.groupId = groupId;
     }
 
-    public Integer getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Integer userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 }
