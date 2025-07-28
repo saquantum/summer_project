@@ -7,8 +7,8 @@
     <select id="selectAllNotificationTemplates" resultMap="ResultMaps.TemplateMap">
         select *
         from templates
-        <include refid="ResultMaps.filtering"/>
-        <include refid="ResultMaps.orderAndPage"/>
+        <include refid="QueryBlocks.filtering"/>
+        <include refid="QueryBlocks.orderAndPage"/>
     </select>
 
     <select id="selectNotificationTemplateById" resultMap="ResultMaps.TemplateMap">
@@ -126,7 +126,7 @@
                #{message.title},
                #{message.message}
         from users
-        <include refid="ResultMaps.filtering"/>
+        <include refid="QueryBlocks.filtering"/>
     </insert>
 
     <update id="updateInboxMessageByUserId">
@@ -153,7 +153,7 @@
 
     <delete id="deleteInboxMessageByFilter">
         delete from inboxes
-        <include refid="ResultMaps.filtering"/>
+        <include refid="QueryBlocks.filtering"/>
     </delete>
 
     <delete id="deleteOutDatedInboxMessages">

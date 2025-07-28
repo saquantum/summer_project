@@ -20,8 +20,8 @@
                ST_AsGeoJSON(warning_area) as warning_area
         from weather_warnings
         where now() between warning_valid_from and warning_valid_to
-        <include refid="ResultMaps.combinedFiltering"/>
-        <include refid="ResultMaps.orderAndPage"/>
+        <include refid="QueryBlocks.combinedFiltering"/>
+        <include refid="QueryBlocks.orderAndPage"/>
     </select>
     
     <select id="selectAllWarningsIncludingOutdated" resultMap="ResultMaps.WarningMap">
@@ -39,8 +39,8 @@
                warning_update_description,
                ST_AsGeoJSON(warning_area) as warning_area
         from weather_warnings
-        <include refid="ResultMaps.filtering"/>
-        <include refid="ResultMaps.orderAndPage"/>
+        <include refid="QueryBlocks.filtering"/>
+        <include refid="QueryBlocks.orderAndPage"/>
     </select>
 
     <select id="selectWarningById" resultMap="ResultMaps.WarningMap">

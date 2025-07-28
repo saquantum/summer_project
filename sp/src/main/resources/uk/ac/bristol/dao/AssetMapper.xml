@@ -20,8 +20,8 @@
         from assets
                  left join asset_types
                            on asset_type_type_id = asset_type_id
-        <include refid="ResultMaps.filtering"/>
-        <include refid="ResultMaps.orderAndPage"/>
+        <include refid="QueryBlocks.filtering"/>
+        <include refid="QueryBlocks.orderAndPage"/>
     </select>
 
     <select id="selectAssetsWithWarnings" resultMap="ResultMaps.AssetWithWarningsMap">
@@ -58,8 +58,8 @@
                               now() between warning_valid_from and warning_valid_to
                  left join asset_types
                            on asset_type_type_id = asset_type_id
-        <include refid="ResultMaps.filtering"/>
-        <include refid="ResultMaps.orderAndPage"/>
+        <include refid="QueryBlocks.filtering"/>
+        <include refid="QueryBlocks.orderAndPage"/>
     </select>
 
     <select id="selectAssetsWithWarningsPuttingWarningsTableMain" resultMap="ResultMaps.AssetWithWarningsMap">
@@ -96,8 +96,8 @@
                               now() between warning_valid_from and warning_valid_to
                  left join asset_types
                            on asset_type_type_id = asset_type_id
-        <include refid="ResultMaps.filtering"/>
-        <include refid="ResultMaps.orderAndPage"/>
+        <include refid="QueryBlocks.filtering"/>
+        <include refid="QueryBlocks.orderAndPage"/>
     </select>
 
     <select id="countAssetsWithWarnings" resultType="int">
@@ -108,7 +108,7 @@
                               now() between warning_valid_from and warning_valid_to
                  left join asset_types
                            on asset_type_type_id = asset_type_id
-        <include refid="ResultMaps.filtering"/>
+        <include refid="QueryBlocks.filtering"/>
     </select>
 
     <insert id="insertAsset">
@@ -189,8 +189,8 @@
     <select id="selectAssetTypes" resultMap="ResultMaps.AssetTypeMap">
         select *
         from asset_types
-        <include refid="ResultMaps.filtering"/>
-        <include refid="ResultMaps.orderAndPage"/>
+        <include refid="QueryBlocks.filtering"/>
+        <include refid="QueryBlocks.orderAndPage"/>
     </select>
 
     <insert id="insertAssetType">
