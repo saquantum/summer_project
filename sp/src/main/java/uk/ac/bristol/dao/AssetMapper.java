@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Param;
 import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.AssetType;
 import uk.ac.bristol.pojo.AssetWithWeatherWarnings;
+import uk.ac.bristol.pojo.FilterItemDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -12,22 +13,22 @@ import java.util.Map;
 @Mapper
 public interface AssetMapper {
 
-    List<Asset> selectAssets(@Param("filterString") String filterString,
+    List<Asset> selectAssets(@Param("filterList") List<FilterItemDTO> filterList,
                              @Param("orderList") List<Map<String, String>> orderList,
                              @Param("limit") Integer limit,
                              @Param("offset") Integer offset);
 
-    List<AssetWithWeatherWarnings> selectAssetsWithWarnings(@Param("filterString") String filterString,
+    List<AssetWithWeatherWarnings> selectAssetsWithWarnings(@Param("filterList") List<FilterItemDTO> filterList,
                                                             @Param("orderList") List<Map<String, String>> orderList,
                                                             @Param("limit") Integer limit,
                                                             @Param("offset") Integer offset);
 
-    List<AssetWithWeatherWarnings> selectAssetsWithWarningsPuttingWarningsTableMain(@Param("filterString") String filterString,
+    List<AssetWithWeatherWarnings> selectAssetsWithWarningsPuttingWarningsTableMain(@Param("filterList") List<FilterItemDTO> filterList,
                                                                                     @Param("orderList") List<Map<String, String>> orderList,
                                                                                     @Param("limit") Integer limit,
                                                                                     @Param("offset") Integer offset);
 
-    int countAssetsWithWarnings(@Param("filterString") String filterString);
+    int countAssetsWithWarnings(@Param("filterList") List<FilterItemDTO> filterList);
 
     int insertAsset(Asset asset);
 
@@ -43,7 +44,7 @@ public interface AssetMapper {
 
     /* asset types */
 
-    List<AssetType> selectAssetTypes(@Param("filterString") String filterString,
+    List<AssetType> selectAssetTypes(@Param("filterList") List<FilterItemDTO> filterList,
                                      @Param("orderList") List<Map<String, String>> orderList,
                                      @Param("limit") Integer limit,
                                      @Param("offset") Integer offset);

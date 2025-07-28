@@ -2,6 +2,7 @@ package uk.ac.bristol.dao;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import uk.ac.bristol.pojo.FilterItemDTO;
 import uk.ac.bristol.pojo.Template;
 
 import java.util.List;
@@ -12,7 +13,7 @@ public interface ContactMapper {
 
     /* templates */
 
-    List<Template> selectAllNotificationTemplates(@Param("filterString") String filterString,
+    List<Template> selectAllNotificationTemplates(@Param("filterList") List<FilterItemDTO> filterList,
                                                   @Param("orderList") List<Map<String, String>> orderList,
                                                   @Param("limit") Integer limit,
                                                   @Param("offset") Integer offset);
@@ -39,11 +40,12 @@ public interface ContactMapper {
 
     int insertInboxMessageToUser(Map<String, Object> message);
 
-    int insertInboxMessageToUsersByFilter(@Param("filterString") String filterString, @Param("message") Map<String, Object> message);
+    int insertInboxMessageToUsersByFilter(@Param("filterList") List<FilterItemDTO> filterList,
+                                          @Param("message") Map<String, Object> message);
 
     int updateInboxMessageByUserId(Map<String, Object> message);
 
-    int deleteInboxMessageByFilter(@Param("filterString") String filterString);
+    int deleteInboxMessageByFilter(@Param("filterList") List<FilterItemDTO> filterList);
 
     int deleteOutDatedInboxMessages();
 

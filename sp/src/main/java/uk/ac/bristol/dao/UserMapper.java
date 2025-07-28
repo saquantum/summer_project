@@ -2,6 +2,7 @@ package uk.ac.bristol.dao;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import uk.ac.bristol.pojo.FilterItemDTO;
 import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.pojo.UserWithAssets;
 import uk.ac.bristol.pojo.UserWithExtraColumns;
@@ -14,19 +15,19 @@ public interface UserMapper {
 
     // selecting
 
-    List<User> selectUsers(@Param("filterString") String filterString,
+    List<User> selectUsers(@Param("filterList") List<FilterItemDTO> filterList,
                            @Param("orderList") List<Map<String, String>> orderList,
                            @Param("limit") Integer limit,
                            @Param("offset") Integer offset);
 
-    List<User> selectUsersWithoutAssociation(@Param("filterString") String filterString,
+    List<User> selectUsersWithoutAssociation(@Param("filterList") List<FilterItemDTO> filterList,
                                              @Param("orderList") List<Map<String, String>> orderList,
                                              @Param("limit") Integer limit,
                                              @Param("offset") Integer offset);
 
     List<UserWithExtraColumns> selectUsersWithAccumulator(@Param("function") String function,
                                                           @Param("column") String column,
-                                                          @Param("filterString") String filterString,
+                                                          @Param("filterList") List<FilterItemDTO> filterList,
                                                           @Param("orderList") List<Map<String, String>> orderList,
                                                           @Param("limit") Integer limit,
                                                           @Param("offset") Integer offset);
@@ -45,7 +46,7 @@ public interface UserMapper {
 
     // counting
 
-    long countUsers(@Param("filterString") String filterString);
+    long countUsers(@Param("filterList") List<FilterItemDTO> filterList);
 
     // write & delete
 

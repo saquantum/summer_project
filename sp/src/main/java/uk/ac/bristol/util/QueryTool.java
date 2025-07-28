@@ -5,10 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.ac.bristol.controller.Code;
 import uk.ac.bristol.exception.SpExceptions;
-import uk.ac.bristol.pojo.Asset;
-import uk.ac.bristol.pojo.FilterDTO;
-import uk.ac.bristol.pojo.PermissionConfig;
-import uk.ac.bristol.pojo.User;
+import uk.ac.bristol.pojo.*;
 import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.MetaDataService;
 import uk.ac.bristol.service.PermissionConfigService;
@@ -26,35 +23,28 @@ public final class QueryTool {
         throw new IllegalStateException("Utility class");
     }
 
-    private static String formatFilterValue(Object value) {
-        if (value == null) {
-            throw new IllegalArgumentException("Null values are not allowed in filters");
-        }
-        if (value instanceof Boolean) {
-            return (Boolean) value ? "true" : "false";
-        }
-        if (value instanceof Number) {
-            return value.toString();
-        }
-        return "'" + value.toString() + "'";
-    }
-
-    public static String formatFilters(Map<String, Object> filters) {
+    public static List<FilterItemDTO> formatFilters(Map<String, Object> filters) {
         if (filters == null || filters.isEmpty()) {
-            return null;
+            return new ArrayList<>();
         }
 
-        List<String> result = new ArrayList<>();
+        List<FilterItemDTO> filterList = new ArrayList<>();
+
         for (Map.Entry<String, Object> entry : filters.entrySet()) {
             String column = entry.getKey();
             Object condition = entry.getValue();
 
             if (!(condition instanceof Map)) {
-                result.add(column + " = " + formatFilterValue(condition));
+                filterList.add(FilterItemDTO.eq(column, condition));
                 continue;
             }
 
-            Map<String, Object> conditionMap = (Map<String, Object>) condition;
+            Map<String, Object> conditionMap;
+            try {
+                conditionMap = (Map<String, Object>) condition;
+            } catch (ClassCastException e) {
+                throw new IllegalArgumentException("Invalid condition expression");
+            }
 
             if (!conditionMap.containsKey("op")) {
                 throw new IllegalArgumentException("Filter conditions must contain operator");
@@ -62,47 +52,38 @@ public final class QueryTool {
             String operator = (String) conditionMap.get("op");
 
             if ("like".equalsIgnoreCase(operator)) {
-                if (!conditionMap.containsKey("val")) {
-                    throw new IllegalArgumentException("Like conditions must have a value");
-                }
-                if (conditionMap.get("val") == null) {
+                Object val = conditionMap.get("val");
+                if (val == null) {
                     throw new IllegalArgumentException("Value of like conditions must not be null");
                 }
-                result.add("lower(" + column + ") like lower(" + formatFilterValue(conditionMap.get("val")) + ")");
+                filterList.add(FilterItemDTO.like(column, val));
             } else if ("range".equalsIgnoreCase(operator)) {
                 Object min = conditionMap.get("min");
                 Object max = conditionMap.get("max");
-
-                if (min != null && max != null) {
-                    result.add(column + " >= " + formatFilterValue(min) +
-                            " and " + column + " <= " + formatFilterValue(max));
-                } else if (min != null) {
-                    result.add(column + " >= " + formatFilterValue(min));
-                } else if (max != null) {
-                    result.add(column + " <= " + formatFilterValue(max));
-                } else {
+                if (min == null && max == null) {
                     throw new IllegalArgumentException("Range conditions must have a min or a max value");
                 }
+                filterList.add(FilterItemDTO.range(column, min, max));
             } else if ("in".equalsIgnoreCase(operator)) {
-                if (!conditionMap.containsKey("list") || conditionMap.get("list") == null) {
+                List<Object> list;
+                try {
+                    list = (List<Object>) conditionMap.get("list");
+                } catch (ClassCastException e) {
+                    throw new IllegalArgumentException("In conditions must have a correctly formatted list of values");
+                }
+                if (list == null || list.isEmpty()) {
                     throw new IllegalArgumentException("In conditions must have a list of values");
                 }
-                List<Object> list = (List<Object>) conditionMap.get("list");
-                List<String> values = new ArrayList<>();
-                for (Object o : list) {
-                    values.add(formatFilterValue(o));
-                }
-                result.add(column + " in (" + String.join(",", values) + ")");
+                filterList.add(FilterItemDTO.in(column, list));
             } else if ("notNull".equalsIgnoreCase(operator)) {
-                result.add(column + " is not null");
+                filterList.add(FilterItemDTO.isNull(column));
             } else if ("isNull".equalsIgnoreCase(operator)) {
-                result.add(column + " is null");
+                filterList.add(FilterItemDTO.notNull(column));
             } else {
-                throw new IllegalArgumentException("Only 'like', 'range' and 'in' are supported operators");
+                throw new IllegalArgumentException("Only 'like', 'range', 'in', 'notNull' and 'isNull' are currently supported operators");
             }
         }
-
-        return String.join(" and ", result);
+        return filterList;
     }
 
     public static List<Map<String, String>> getOrderList(List<String> items) {

@@ -1,6 +1,5 @@
 package uk.ac.bristol.controller.filter;
 
-import org.springframework.stereotype.Component;
 import uk.ac.bristol.controller.Code;
 import uk.ac.bristol.service.TokenBlacklistService;
 import uk.ac.bristol.util.JwtUtil;
@@ -14,7 +13,6 @@ import java.io.IOException;
  * <a href="https://qiita.com/rion0726ittoti/items/895b1feaa827c21488ad">filter</a>
  */
 
-@Component
 public class TokenFilter implements Filter {
 
     private final TokenBlacklistService tokenBlacklistService;

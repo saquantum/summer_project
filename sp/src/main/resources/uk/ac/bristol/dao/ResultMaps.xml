@@ -138,17 +138,54 @@
         <result property="message" column="inbox_message"/>
     </resultMap>
 
+    <sql id="filteringWithList">
+        <foreach collection="filterList" item="item" separator="and">
+            <choose>
+                <when test="item.op == 'is'">
+                    ${item.column} = #{item.val}
+                </when>
+                <when test="item.op == 'like'">
+                    lower(${item.column}) like lower(#{item.val})
+                </when>
+                <when test="item.op == 'range'">
+                    <if test="item.min != null and item.max != null">
+                        ${item.column} between #{item.min} and #{item.max}
+                    </if>
+                    <if test="item.min != null and item.max == null">
+                        ${item.column} &gt;= #{item.min}
+                    </if>
+                    <if test="item.min == null and item.max != null">
+                        ${item.column} &lt;= #{item.max}
+                    </if>
+                </when>
+                <when test="item.op == 'in'">
+                    ${item.column} in
+                    <foreach collection="item.list" item="val" open="(" separator="," close=")">
+                        #{val}
+                    </foreach>
+                </when>
+                <when test="item.op == 'isNull'">
+                    ${item.column} is null
+                </when>
+                <when test="item.op == 'notNull'">
+                    ${item.column} is not null
+                </when>
+            </choose>
+        </foreach>
+    </sql>
+
     <sql id="filtering">
         <where>
-            <if test="filterString != null and filterString != '' ">
-                ${filterString}
+            <if test="filterList != null and filterList.size() > 0">
+                <include refid="ResultMaps.filteringWithList"/>
             </if>
         </where>
     </sql>
 
     <sql id="combinedFiltering">
-        <if test="filterString != null and filterString != '' ">
-            and ${filterString}
+        <if test="filterList != null and filterList.size() > 0">
+            and
+            <include refid="ResultMaps.filteringWithList"/>
         </if>
     </sql>
 
