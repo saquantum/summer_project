@@ -167,7 +167,7 @@
     </select>
 
     <select id="countUsers" resultType="java.lang.Long">
-        select count(*)
+        select count(distinct user_id)
         from users
                  left join address
                            on user_id = address_id
