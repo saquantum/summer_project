@@ -2,6 +2,7 @@ package uk.ac.bristol.dao;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import uk.ac.bristol.pojo.TableColumnPair;
 
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ public interface MetaDataMapper {
 
     Set<String> selectAllRegisteredTableNames();
 
-    Set<String> filterRegisteredColumnsInTables(@Param("tableNames") List<String> tableNames,
-                                                @Param("columnNames") List<String> columnNames);
+    Set<String> selectAllRegisteredColumnNames();
+
+    List<TableColumnPair> selectTableColumnPairs();
 }

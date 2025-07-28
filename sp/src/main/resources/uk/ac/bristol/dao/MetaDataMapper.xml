@@ -26,17 +26,21 @@
     </update>
 
     <select id="selectAllRegisteredTableNames" resultType="java.lang.String">
-        select table_name
+        select distinct table_name
         from information_schema.tables
         where table_schema = 'public'
           and table_type = 'BASE TABLE';
     </select>
 
-    <select id="filterRegisteredColumnsInTables" resultType="java.lang.String">
-        select distinct column_name from information_schema.columns where table_schema = 'public'
-        and table_name in
-        <foreach collection="tableNames" item="tableName" separator="," open="(" close=")">#{tableName}</foreach>
-        and column_name in
-        <foreach collection="columnNames" item="columnName" separator="," open="(" close=")">#{columnName}</foreach>
+    <select id="selectAllRegisteredColumnNames" resultType="java.lang.String">
+        select distinct column_name
+        from information_schema.columns
+        where table_schema = 'public';
+    </select>
+
+    <select id="selectTableColumnPairs" resultType="uk.ac.bristol.pojo.TableColumnPair">
+        select table_name as tableName, column_name as columnName
+        from information_schema.columns
+        where table_schema = 'public';
     </select>
 </mapper>

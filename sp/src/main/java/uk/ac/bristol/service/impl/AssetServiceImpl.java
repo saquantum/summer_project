@@ -56,13 +56,19 @@ public class AssetServiceImpl implements AssetService {
                                                                 Integer limit,
                                                                 Integer offset) {
         List<Map<String, String>> list = QueryTool.filterOrderList(orderList, "assets", "weather_warnings");
-
-        if (list.isEmpty() || metaDataMapper.filterRegisteredColumnsInTables(List.of("weather_warnings"), List.of(list.get(0).get("column"))).isEmpty()) {
+        boolean hasWeatherWarningColumn = list.stream()
+                .map(item -> item.get("column"))
+                .anyMatch(column -> {
+                    String table = QueryTool.inversedColumnTableMap.get(column);
+                    return "weather_warnings".equals(table);
+                });
+        if (!hasWeatherWarningColumn) {
             return assetMapper.selectAssetsWithWarnings(
                     QueryTool.formatFilters(filters),
                     list,
                     limit, offset);
         }
+
         return assetMapper.selectAssetsWithWarningsPuttingWarningsTableMain(
                 QueryTool.formatFilters(filters),
                 list,

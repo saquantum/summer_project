@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public final class QueryTool {
 
@@ -23,10 +24,39 @@ public final class QueryTool {
         throw new IllegalStateException("Utility class");
     }
 
+    // used in filters. blacklisted columns are not allowed in filters
+    public final static Set<String> registeredColumns;
+
+    // used in order list.
+    public final static Map<String, Set<String>> registeredTableColumnMap;
+    public final static Map<String, String> inversedColumnTableMap = new HashMap<>();;
+
+    static {
+        registeredColumns = QueryToolConfig.metaDataService.getAllRegisteredColumnNamesWithBlacklist(
+                List.of("user_password", "user_password_plaintext")
+        );
+        registeredTableColumnMap = QueryToolConfig.metaDataService.getAllTableColumnMapsWithBlacklist(
+                Set.of("user_password", "user_password_plaintext")
+        );
+        for (Map.Entry<String, Set<String>> entry : registeredTableColumnMap.entrySet()) {
+            String table = entry.getKey();
+            for (String column : entry.getValue()) {
+                inversedColumnTableMap.putIfAbsent(column, table);
+            }
+        }
+    }
+
     public static List<FilterItemDTO> formatFilters(Map<String, Object> filters) {
         if (filters == null || filters.isEmpty()) {
             return new ArrayList<>();
         }
+
+        // check columns from the filter are valid
+        filters.forEach((key, value) -> {
+            if (!registeredColumns.contains(key)) {
+                throw new IllegalArgumentException("Column Not Found");
+            }
+        });
 
         List<FilterItemDTO> filterList = new ArrayList<>();
 
@@ -34,11 +64,13 @@ public final class QueryTool {
             String column = entry.getKey();
             Object condition = entry.getValue();
 
+            // eq condition
             if (!(condition instanceof Map)) {
                 filterList.add(FilterItemDTO.eq(column, condition));
                 continue;
             }
 
+            // other mapped conditions
             Map<String, Object> conditionMap;
             try {
                 conditionMap = (Map<String, Object>) condition;
@@ -97,11 +129,40 @@ public final class QueryTool {
         List<Map<String, String>> list = new ArrayList<>();
         for (int i = 0; i < items.length; i += 2) {
             Map<String, String> map = new HashMap<>();
+            if (!"asc".equalsIgnoreCase(items[i + 1]) && !"desc".equalsIgnoreCase(items[i + 1])) {
+                throw new IllegalArgumentException("getOrderList: direction must be asc or desc");
+            }
             map.put("column", items[i]);
             map.put("direction", items[i + 1]);
             list.add(map);
         }
         return list;
+    }
+
+    public static List<Map<String, String>> filterOrderList(List<Map<String, String>> originalList, String... tablesAndColumns) {
+        if (originalList == null || originalList.isEmpty() || tablesAndColumns == null || tablesAndColumns.length == 0) {
+            return null;
+        }
+
+        // 1. separate tables and permitted temporarily registered columns from input
+        Set<String> tables = new HashSet<>();
+        Set<String> columns = new HashSet<>();
+        for (String s : tablesAndColumns) {
+            if (registeredTableColumnMap.containsKey(s)) {
+                tables.add(s);
+            } else {
+                columns.add(s);
+            }
+        }
+
+        // 2. filter columns using two sets
+        return originalList.stream()
+                .filter(item -> {
+                    String column = item.get("column");
+                    String table = inversedColumnTableMap.get(column);
+                    return (table != null && tables.contains(table)) || columns.contains(column);
+                })
+                .collect(Collectors.toList());
     }
 
     public static boolean userIdentityVerification(HttpServletResponse response, HttpServletRequest request, String uid) {
@@ -135,42 +196,6 @@ public final class QueryTool {
             return false;
         }
         return Objects.equals(user.getId(), asset.getOwnerId());
-    }
-
-    // if any table are inserted or deleted during runtime, should consider modify this setup
-    private final static Set<String> registeredTables = QueryToolConfig.metaDataService.getAllRegisteredTableNames();
-
-    public static List<Map<String, String>> filterOrderList(List<Map<String, String>> originalList, String... tablesAndColumns) {
-        if (originalList == null || originalList.isEmpty() || tablesAndColumns == null || tablesAndColumns.length == 0) {
-            return null;
-        }
-
-        // 1. separate tables and permitted columns from input
-        Set<String> tables = new HashSet<>();
-        Set<String> columns = new HashSet<>();
-        for (String s : tablesAndColumns) {
-            if (registeredTables.contains(s)) {
-                tables.add(s);
-            } else {
-                columns.add(s);
-            }
-        }
-
-        // 2. get columns that belong to given tables
-        Set<String> registeredColumns = QueryToolConfig.metaDataService.filterRegisteredColumnsInTables(
-                new ArrayList<>(tables),
-                originalList.stream().map(item -> item.get("column")).toList());
-
-        // 3. filter columns using two filters
-        List<Map<String, String>> result = new ArrayList<>();
-        for (Map<String, String> item : originalList) {
-            String column = item.get("column");
-            if (registeredColumns.contains(column) || columns.contains(column)) {
-                result.add(item);
-            }
-        }
-
-        return result;
     }
 
     public static PermissionConfig getUserPermissions(String uid) {

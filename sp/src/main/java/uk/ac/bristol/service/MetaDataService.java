@@ -12,5 +12,7 @@ public interface MetaDataService {
 
     Set<String> getAllRegisteredTableNames();
 
-    Set<String> filterRegisteredColumnsInTables(List<String> tableNames, List<String> columnNames);
+    Set<String> getAllRegisteredColumnNamesWithBlacklist(List<String> blacklist);
+
+    Map<String, Set<String>> getAllTableColumnMapsWithBlacklist(Set<String> blacklist);
 }

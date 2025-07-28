@@ -196,8 +196,7 @@ public class UserController {
 
     @RequestMapping(value = "/admin/user/uid/{uid}", method = RequestMethod.HEAD)
     public void headUserLastModifiedByUID(HttpServletResponse response,
-                                          HttpServletRequest request,
-                                          @UserUID @PathVariable String uid,
+                                          @PathVariable String uid,
                                           @RequestParam(value = "time", required = true) Long timestamp) {
         boolean b = userService.compareUserLastModified(uid, timestamp);
         response.setHeader("last-modified", Boolean.toString(b));
