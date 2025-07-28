@@ -61,3 +61,6 @@ To boot up front-end you need to first install `Node.js`, `npm` and `pnpm`. Once
 
 When back-end and front-end are both ready, access `http://localhost:5173`.
 
+### Document
+
+A sketch documentation on the implementation of back-end service is visible at [here](document/backend.pdf).
