@@ -18,27 +18,30 @@ export interface Address {
   assetHolderId?: string
 }
 
-export interface AssetHolder {
-  id?: string
-  name: string
+export interface ContactDetails {
+  discord?: string
   email: string
   phone: string
-  addressId?: string
-  address: Address
-  contactPreferencesId?: string
-  lastModified?: number
-  contact_preferences: ContactPreferences
+  post?: string
+  telegram?: string
+  whatsapp?: string
 }
 
 export interface User {
   id: string
   password: string | null
-  assetHolderId?: string | null
-  assetHolder?: AssetHolder | null
+
   admin: boolean
-  token: string | null
-  permissionConfig: Permission
+  adminLevel: number
   avatar: string
+  name: string
+  permissionConfig: Permission
+
+  address: Address
+
+  contactDetails: ContactDetails
+
+  contactPreferences: ContactPreferences
 }
 
 export interface LoginForm {
@@ -49,13 +52,21 @@ export interface LoginForm {
 
 export interface UserInfoForm {
   id: string
-  password: string | null
+  password?: string | null
   repassword?: string
+  admin?: boolean
+  adminLevel?: number
+  avatar?: string
+  name?: string
   firstName?: string
   lastName?: string
-  avatar?: string
-  assetHolderId?: string | null
-  assetHolder: AssetHolder
+  permissionConfig?: Permission
+
+  address: Address
+
+  contactDetails: ContactDetails
+
+  contactPreferences: ContactPreferences
 }
 
 export interface UserItem {

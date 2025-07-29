@@ -2,10 +2,14 @@
 
 describe('Change password', () => {
   beforeEach(() => {
-    cy.visit('/login')
-    cy.get('input[placeholder="Username"]').type('user_017')
-    cy.get('input[placeholder="Password"]').type('123456')
-    cy.get('.button').contains('Sign in').click()
+    cy.request({
+      method: 'POST',
+      url: 'api/test/reset',
+      headers: {
+        'X-Idempotent-Post': 'true'
+      }
+    })
+    cy.login('user_017', '123456')
     cy.visit('/user/profile')
     cy.contains('Change password').click()
 
@@ -13,13 +17,6 @@ describe('Change password', () => {
       console.log('Intercepted:', req)
       req.reply({ code: 200, message: 'success' })
     }).as('verifyCode')
-  })
-
-  afterEach(() => {
-    cy.request('POST', 'api/email/password', {
-      email: 'finley01@example.org',
-      password: '123456'
-    })
   })
 
   it('renders code input and send OTP button', () => {

@@ -37,6 +37,7 @@ onMounted(async () => {
     orderList: 'accumulation, desc',
     limit: 5
   } as UserSearchBody)
+  console.log(res)
   users.value = res.data
 
   mapChart = echarts.init(document.getElementById('main'))

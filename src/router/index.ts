@@ -5,22 +5,22 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/login',
-      component: () => import('@/views/login/LoginPage.vue'),
+      path: '/',
+      component: () => import('@/views/layout/BlankLayout.vue'),
       children: [
         {
           path: '/recover',
           component: () => import('@/components/cards/RecoverCard.vue')
         },
         {
-          path: '',
+          path: '/login',
           component: () => import('@/components/cards/LoginCard.vue')
         }
       ]
     },
     {
       path: '/',
-      component: () => import('@/views/layout/LayoutContainer.vue'),
+      component: () => import('@/views/layout/DefaultLayout.vue'),
       children: [
         {
           path: 'assets',
@@ -79,6 +79,14 @@ const router = createRouter({
           component: () => import('@/views/admin/AssetTypes.vue')
         },
         {
+          path: 'product-preview',
+          component: () => import('@/views/ProductPreview.vue')
+        },
+        {
+          path: 'asset-preview',
+          component: () => import('@/views/AssetPreview.vue')
+        },
+        {
           path: 'admin/message/send',
           component: () => import('@/views/admin/SendMessage.vue')
         },
@@ -93,8 +101,20 @@ const router = createRouter({
         {
           path: 'security/verify-mail',
           component: () => import('@/views/user/ResetPassword.vue')
+        },
+        {
+          path: 'admin/message/template/manage',
+          component: () => import('@/views/admin/AllTemplates.vue')
+        },
+        {
+          path: 'admin/users/permission',
+          component: () => import('@/views/admin/AcessControl.vue')
         }
       ]
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      component: () => import('@/views/[...all].vue')
     }
   ]
 })

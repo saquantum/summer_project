@@ -48,7 +48,7 @@ describe('LoginCard.vue', () => {
     const wrapper = mount(LoginCard)
     await wrapper.find('input[placeholder*="username" i]').setValue('testuser')
     await wrapper.find('input[placeholder*="password" i]').setValue('testpass')
-    await wrapper.find('button.button').trigger('click')
+    await wrapper.find('[data-test="loginButton"]').trigger('click')
     await flushPromises()
     expect(pushMock).toHaveBeenCalled() // router.push should be called
   })

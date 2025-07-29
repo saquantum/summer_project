@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import {
-  adminDeleteUserService,
-  adminGetPermissionByUIDService,
-  adminGetUsersTotalService,
-  adminUpdatePermissionService
-} from '@/api/admin'
+import { adminDeleteUserService, adminGetUsersTotalService } from '@/api/admin'
 import { useRouter } from 'vue-router'
 import type { Permission, UserItem, UserSearchBody } from '@/types'
 import { useUserStore } from '@/stores'
@@ -28,7 +23,7 @@ const userTable = computed(() => {
   if (!userStore.users || userStore.users.length <= 0) return []
   return userStore.users.map((item: UserItem) => ({
     uid: item.user.id,
-    name: item.user.assetHolder?.name ?? 'Null',
+    name: item.user.name ?? 'Null',
     assets: item.user.id,
     count: item.accumulation,
     role: item.user.admin ? 'admin' : 'user',
@@ -48,14 +43,13 @@ const handleEdit = (row: TableRow) => {
   router.push({ path: '/admin/user/detail', query: { id: row.uid } })
 }
 
-const handleDelete = async (row: TableRow) => {
-  console.log(row)
-  try {
-    await adminDeleteUserService(deleteId.value)
-    fetchTableData()
-  } catch (e) {
-    console.error(e)
-  }
+const handleDelete = async () => {
+  if (deleteId.value.length === 0) return
+  await adminDeleteUserService(deleteId.value)
+  deleteId.value = []
+
+  await fetchTableData()
+  dialogVisible.value = false
 }
 
 const fetchTableData = async () => {
@@ -105,9 +99,17 @@ const handleSortChange = (sort: { prop: string; order: string | null }) => {
 const dialogVisible = ref(false)
 const deleteId = ref<string[]>([])
 
-const triggerDelete = (row: TableRow) => {
+const triggerDelete = (rows: TableRow[]) => {
   dialogVisible.value = true
-  deleteId.value.push(row.uid)
+  rows.forEach((element) => {
+    deleteId.value.push(element.uid)
+  })
+}
+
+const mutipleSelection = ref<TableRow[]>([])
+const handleSelectionChange = (val: TableRow[]) => {
+  console.log(val)
+  mutipleSelection.value = val
 }
 
 const permissionFields = [
@@ -135,22 +137,6 @@ function getPermission(uid: string) {
   return user?.permission
 }
 
-const permission = ref<Permission[] | null>(null)
-const checkboxOptions = ref<{ label: string; value: boolean }[]>([])
-
-const submit = async () => {
-  if (permission.value && permission.value.length > 0) {
-    const p = permission.value[0]
-    p.canCreateAsset = checkboxOptions.value[0].value
-    p.canSetPolygonOnCreate = checkboxOptions.value[1].value
-    p.canUpdateAssetPolygon = checkboxOptions.value[2].value
-    p.canUpdateAssetFields = checkboxOptions.value[3].value
-    p.canDeleteAsset = checkboxOptions.value[4].value
-    p.canUpdateProfile = checkboxOptions.value[5].value
-    await adminUpdatePermissionService(p)
-  }
-}
-
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
@@ -174,22 +160,6 @@ const handleSizeChange = (size: number) => {
 }
 
 onMounted(async () => {
-  if (userStore.user) {
-    const res = await adminGetPermissionByUIDService(userStore.user.id)
-    permission.value = res.data
-  }
-
-  if (permission.value && permission.value.length > 0) {
-    const p = permission.value[0]
-    checkboxOptions.value = [
-      { label: 'Add new asset', value: p.canCreateAsset },
-      { label: 'Add polygon', value: p.canSetPolygonOnCreate },
-      { label: 'Update polygon', value: p.canUpdateAssetPolygon },
-      { label: 'Update basic information', value: p.canUpdateAssetFields },
-      { label: 'Delete asset', value: p.canDeleteAsset },
-      { label: 'Update profile', value: p.canUpdateProfile }
-    ]
-  }
   fetchTableData()
 })
 </script>
@@ -208,17 +178,10 @@ onMounted(async () => {
     ></SortTool>
   </div>
 
-  <div>
-    <h3>Access control</h3>
-    <el-checkbox
-      v-for="(item, index) in checkboxOptions"
-      :key="index"
-      :label="item.label"
-      v-model="item.value"
-    />
-    <div>
-      <el-button @click="submit">Submit</el-button>
-    </div>
+  <div v-show="mutipleSelection.length > 0">
+    <el-button type="danger" @click="triggerDelete(mutipleSelection)"
+      >Delete</el-button
+    >
   </div>
 
   <div class="collapse-wrapper">
@@ -230,8 +193,10 @@ onMounted(async () => {
     style="width: 100%"
     @sort-change="handleSortChange"
     :default-sort="multiSort[0] || {}"
+    @selection-change="handleSelectionChange"
     class="table"
   >
+    <el-table-column type="selection"> </el-table-column>
     <el-table-column
       v-for="(item, index) in columns"
       :key="index"
@@ -266,7 +231,7 @@ onMounted(async () => {
           text
           type="danger"
           size="small"
-          @click="triggerDelete(scope.row)"
+          @click="triggerDelete([scope.row])"
           >Delete</el-button
         >
       </template>

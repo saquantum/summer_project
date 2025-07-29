@@ -116,6 +116,9 @@ const handleBackToAdmin = () => {
       <el-menu-item index="/admin/user/add">
         <span>Add User</span>
       </el-menu-item>
+      <el-menu-item index="/admin/users/permission">
+        <span>Access Control</span>
+      </el-menu-item>
     </el-sub-menu>
 
     <el-sub-menu index="2">
@@ -161,10 +164,18 @@ const handleBackToAdmin = () => {
       </el-menu-item>
     </el-sub-menu>
 
-    <el-menu-item index="/admin/message/template">
-      <el-icon><CopyDocument /></el-icon>
-      <span>Message Template</span>
-    </el-menu-item>
+    <el-sub-menu index="4">
+      <template #title>
+        <el-icon><CopyDocument /></el-icon>
+        <span>Message Template</span>
+      </template>
+      <el-menu-item index="/admin/message/template/manage">
+        <span>Manage Template</span>
+      </el-menu-item>
+      <el-menu-item index="/admin/message/template">
+        <span>Edit Template</span>
+      </el-menu-item>
+    </el-sub-menu>
 
     <el-menu-item index="/admin/message/send">
       <el-icon><MessageBox /></el-icon>

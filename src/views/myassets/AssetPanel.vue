@@ -5,41 +5,25 @@ import { ref, watch, computed } from 'vue'
 import { useUserStore, useAssetStore } from '@/stores/index.ts'
 import type { AssetWithWarnings } from '@/types'
 import { useResponsiveAction } from '@/composables/useResponsiveAction'
+import WarningLegend from '@/components/WarningLegend.vue'
 const assetStore = useAssetStore()
 const userStore = useUserStore()
 const router = useRouter()
 
 // filter value
+
+const filters = ref({
+  assetName: '',
+  warningLevel: '',
+  assetType: ''
+})
+
 const assetName = ref('')
 const assetWarningLevel = ref('')
 const assetType = ref('')
 
 // filtered assets
 const currentAssets = ref<AssetWithWarnings[] | []>([])
-
-// select value
-const warningLevelOptions = [
-  {
-    value: 'NO',
-    label: 'No Warning',
-    text: 'No Warning'
-  },
-  {
-    value: 'YELLOW',
-    label: 'Yellow Warning',
-    text: 'Yellow Warning'
-  },
-  {
-    value: 'AMBER',
-    label: 'Amber Warning',
-    text: 'Amber Warning'
-  },
-  {
-    value: 'RED',
-    label: 'Red Warning',
-    text: 'Red Warning'
-  }
-]
 
 // page change
 const currentPage = ref(1)
@@ -76,9 +60,9 @@ const searchDetailVisible = ref(false)
 
 const clearFilters = () => {
   searchDetailVisible.value = false
-  assetName.value = ''
-  assetType.value = ''
-  assetWarningLevel.value = ''
+  filters.value.assetName = ''
+  filters.value.assetType = ''
+  filters.value.warningLevel = ''
 }
 
 onMounted(async () => {
@@ -103,34 +87,34 @@ onMounted(async () => {
 })
 
 watch(
-  [assetName, assetWarningLevel, assetType],
+  [filters],
   async () => {
     if (!assetStore.userAssets || assetStore.userAssets.length === 0) return
     currentAssets.value = assetStore.userAssets
       .filter((item) => {
         let matchLevel = false
         if (
-          assetWarningLevel.value &&
+          filters.value.warningLevel &&
           item.maxWarning &&
-          item.maxWarning.warningLevel === assetWarningLevel.value
+          item.maxWarning.warningLevel === filters.value.warningLevel
         ) {
           matchLevel = true
         } else if (
-          assetWarningLevel.value &&
-          assetWarningLevel.value.includes('NO') &&
+          filters.value.warningLevel &&
+          filters.value.warningLevel.includes('NO') &&
           !item.maxWarning
         ) {
           matchLevel = true
-        } else if (!assetWarningLevel.value) {
+        } else if (!filters.value.warningLevel) {
           matchLevel = true
         }
-        const matchName = assetName.value
+        const matchName = filters.value.assetName
           ? item.asset.name
               ?.toLowerCase()
-              .includes(assetName.value.toLowerCase())
+              .includes(filters.value.assetName.toLowerCase())
           : true
-        const matchType = assetType.value
-          ? item.asset.typeId === assetType.value
+        const matchType = filters.value.assetType
+          ? item.asset.typeId === filters.value.assetType
           : true
         return matchName && matchLevel && matchType
       })
@@ -142,6 +126,7 @@ watch(
     currentPage.value = 1
   },
   {
+    deep: true,
     immediate: true
   }
 )
@@ -181,64 +166,15 @@ defineExpose({
   <!-- assets filter -->
   <div class="search-bar">
     <TestSearch
-      v-model:input="assetName"
       v-model:visible="searchDetailVisible"
-      @search="searchDetailVisible = false"
+      v-model:filters="filters"
       @clearFilters="clearFilters"
     >
-      <el-select
-        v-model="assetWarningLevel"
-        placeholder="Select warning level"
-        :teleported="false"
-        clearable
-      >
-        <el-option
-          v-for="item in warningLevelOptions"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
-        ></el-option>
-      </el-select>
-
-      <el-select
-        v-model="assetType"
-        placeholder="Select Asset Type"
-        :teleported="false"
-        clearable
-      >
-        <el-option
-          v-for="item in assetStore.typeOptions"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
-        ></el-option>
-      </el-select>
     </TestSearch>
   </div>
 
   <!-- warning legend -->
-  <div class="legend">
-    <span
-      class="legend-item warning-low"
-      title="No meteorological warning for this asset."
-      >● No Warning</span
-    >
-    <span
-      class="legend-item warning-medium"
-      title="Yellow: Be aware. Severe weather is possible. Plan ahead and check for updates."
-      >● Yellow Warning</span
-    >
-    <span
-      class="legend-item warning-high"
-      title="Amber: Be prepared. There is an increased likelihood of impacts from severe weather, which could potentially disrupt your plans."
-      >● Amber Warning</span
-    >
-    <span
-      class="legend-item warning-severe"
-      title="Red: Take action. Dangerous weather is expected. Avoid dangerous areas and follow official advice."
-      >● Red Warning</span
-    >
-  </div>
+  <WarningLegend v-if="!isMobile" />
   <!-- cards for assets -->
   <div class="assets-container">
     <h3 v-if="assetStore.userAssets?.length === 0">You don't have any asset</h3>
@@ -413,20 +349,6 @@ defineExpose({
   width: 240px;
 }
 
-.legend {
-  display: flex;
-  gap: 18px;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 10px;
-  font-size: 15px;
-}
-.legend-item {
-  display: flex;
-  align-items: center;
-  font-weight: 500;
-  gap: 4px;
-}
 .warning-low {
   color: green;
 }

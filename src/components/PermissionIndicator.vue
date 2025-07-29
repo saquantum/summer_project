@@ -1,15 +1,20 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const props = defineProps({
-  status: {
-    type: Boolean,
-    default: false
-  },
-  field: String
-})
+type PermissionField =
+  | 'canCreateAsset'
+  | 'canSetPolygonOnCreate'
+  | 'canUpdateAssetFields'
+  | 'canUpdateAssetPolygon'
+  | 'canDeleteAsset'
+  | 'canUpdateProfile'
 
-const permissionDescriptions = {
+const props = defineProps<{
+  status: boolean
+  field: PermissionField
+}>()
+
+const permissionDescriptions: Record<PermissionField, string> = {
   canCreateAsset: 'create assets',
   canSetPolygonOnCreate: 'set polygon on creation',
   canUpdateAssetFields: 'update asset fields',

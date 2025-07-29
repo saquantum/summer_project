@@ -222,7 +222,7 @@ const mockData = {
   post_town: 'London'
 }
 
-function addLinkInlineStyle(html: string): string {
+function addInlineStyle(html: string): string {
   const htmlWithLinkStyle = html.replace(
     /<a\b([^>]*)>/g,
     '<a$1 style="color: #409eff; text-decoration: underline; font-weight: bold;">'
@@ -274,16 +274,15 @@ const renderedHTML = computed(() => {
   try {
     let htmlWithStyle
     if (parseHtml.value) {
-      htmlWithStyle = addLinkInlineStyle(
+      htmlWithStyle = addInlineStyle(
         restoreEscapedHtmlExceptCode(content.value)
       )
     } else {
-      htmlWithStyle = addLinkInlineStyle(content.value)
+      htmlWithStyle = addInlineStyle(content.value)
     }
 
     // sanitize html code
     return DOMPurify.sanitize(htmlWithStyle)
-    // return rawHtml
   } catch (e) {
     console.error(e)
     return '<p style="color:red">Syntax Error!</p>'

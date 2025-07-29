@@ -3,12 +3,16 @@ import { ref, onMounted, watch, computed, onBeforeUnmount, nextTick } from 'vue'
 
 import {
   adminDeleteTemplateByIdService,
+  adminGetTemplateByIdService,
   adminGetTemplateByTypesService,
   adminUpdateTemplateByIdService
 } from '@/api/admin'
 import { useAssetStore } from '@/stores'
 import type { Template } from '@/types'
 import { ElMessage } from 'element-plus'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
 
 const assetStore = useAssetStore()
 
@@ -81,19 +85,18 @@ const submit = async () => {
   form.value.body = renderedHTML.value
   try {
     await adminUpdateTemplateByIdService(form.value)
-    sessionStorage.removeItem('form-data')
     isDirty.value = false
-    lastSavedTime.value = new Date()
-    ElMessage.success('Template update')
+    console.log(renderedHTML.value)
+    ElMessage.success('Template updated successfully')
   } catch (e) {
     console.error(e)
+    ElMessage.error('Failed to update template')
   }
 }
 
 // Auto-save and user experience management
 const isDirty = ref(false)
 const isInitializing = ref(true)
-const lastSavedTime = ref<Date | null>(null)
 
 // Delete confirm dialog
 const dialogVisible = ref(false)
@@ -106,44 +109,43 @@ const triggerDelete = () => {
 
 const handleDelete = async () => {
   await adminDeleteTemplateByIdService(deleteId.value)
-  sessionStorage.removeItem('form-data')
   dialogVisible.value = false
 }
 
 // Smart beforeunload handling
 const handleBeforeUnload = (e: BeforeUnloadEvent) => {
   // Only warn if there are unsaved changes that haven't been submitted
-  if (isDirty.value && sessionStorage.getItem('form-data')) {
+  if (isDirty.value) {
     e.preventDefault()
     e.returnValue = 'You have unsaved changes. Are you sure you want to leave?'
   }
 }
 
 onMounted(async () => {
-  const saved = sessionStorage.getItem('form-data')
-  if (saved) {
-    // Load saved form data
-    const savedData = JSON.parse(saved)
-    Object.assign(form.value, savedData)
-
-    // Update dropdown values to match saved data
-    if (savedData.assetTypeId) assetType.value = savedData.assetTypeId
-    if (savedData.warningType) warningType.value = savedData.warningType
-    if (savedData.severity) warningLevel.value = savedData.severity
-    if (savedData.contactChannel)
-      contactChannel.value = savedData.contactChannel
+  const id = route.query.id as string
+  console.log(id)
+  let template: Template
+  if (typeof id === 'string') {
+    console.log(id)
+    const res = await adminGetTemplateByIdService(id)
+    template = res.data[0]
+    if (template) {
+      assetType.value = template.assetTypeId
+      warningType.value = template.warningType
+      warningLevel.value = template.severity
+      contactChannel.value = template.contactChannel
+    }
   } else {
-    // No saved data, fetch template with current dropdown values
     const res = await adminGetTemplateByTypesService(
       assetType.value,
       warningType.value,
       warningLevel.value,
       contactChannel.value
     )
-    const template = res.data[0]
-    if (template) {
-      form.value = res.data[0]
-    }
+    template = res.data[0]
+  }
+  if (template) {
+    form.value = template
   }
 
   // Now that initialization is complete, enable the watch
@@ -182,8 +184,6 @@ watch(
     const template = res.data[0]
     if (template) {
       form.value = res.data[0]
-      // Clear saved data since we're switching to a new template
-      sessionStorage.removeItem('form-data')
     }
   },
   {
@@ -193,18 +193,10 @@ watch(
 
 watch(
   form,
-  (newVal) => {
+  () => {
     if (isInitializing.value) return
 
-    console.log(newVal)
-    const newData = JSON.stringify(newVal)
-
-    // Auto-save to sessionStorage
-    sessionStorage.setItem('form-data', newData)
     isDirty.value = true
-
-    // Optional: Show auto-save indicator
-    console.log('Auto-saved to sessionStorage')
   },
   { deep: true }
 )
@@ -254,17 +246,6 @@ watch(
 
   <div>Title</div>
   <el-input v-model="form.title"></el-input>
-
-  <!-- Save status indicator -->
-  <div v-if="isDirty" style="color: orange; font-size: 12px; margin: 8px 0">
-    📝 Auto-saved to session (click Submit to save permanently)
-  </div>
-  <div
-    v-else-if="lastSavedTime"
-    style="color: green; font-size: 12px; margin: 8px 0"
-  >
-    ✅ Saved at {{ lastSavedTime.toLocaleTimeString() }}
-  </div>
 
   <div style="display: flex; gap: 24px; align-items: flex-start">
     <TiptapEditor ref="editorRef" v-model:content="form.body" />

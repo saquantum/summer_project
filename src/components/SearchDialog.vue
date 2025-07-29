@@ -14,7 +14,7 @@ const visible = computed({
 <template>
   <div>
     <el-dialog v-model="visible" title="Tips" width="500">
-      <FilterSearch></FilterSearch>
+      <TestSearch></TestSearch>
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="visible = false">Cancel</el-button>

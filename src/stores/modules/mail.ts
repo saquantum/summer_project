@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import type { Mail } from '@/types'
 import { useUserStore } from './user'
 import { getMailService } from '@/api/mail'
@@ -9,6 +9,10 @@ export const useMailStore = defineStore(
   () => {
     const mails = ref<Mail[]>([])
 
+    const unreadMails = computed(() => {
+      if (!mails.value || mails.value.length <= 0) return []
+      return mails.value.filter((mail) => !mail.hasRead)
+    })
     const getMails = async () => {
       try {
         const userStore = useUserStore()
@@ -25,7 +29,7 @@ export const useMailStore = defineStore(
       }
     }
 
-    return { mails, getMails }
+    return { mails, unreadMails, getMails }
   },
   {
     persist: true

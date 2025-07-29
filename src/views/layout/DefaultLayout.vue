@@ -9,11 +9,12 @@ import {
   Lock
 } from '@element-plus/icons-vue'
 import { ref, watch, computed } from 'vue'
-import { useUserStore, useGlobalLogout } from '@/stores/index.ts'
+import { useUserStore, useGlobalLogout, useMailStore } from '@/stores/index.ts'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 
 const userStore = useUserStore()
+const mailStore = useMailStore()
 const router = useRouter()
 const route = useRoute()
 
@@ -67,6 +68,7 @@ watch(
       </router-link>
 
       <SideMenu
+        :visible="true"
         :showUserSideBar="showUserSideBar"
         :activeIndex="activeIndex"
       ></SideMenu>
@@ -106,7 +108,10 @@ watch(
           ></SideMenu>
         </el-drawer>
         <div class="header-right">
-          <el-badge is-dot class="icon-badge">
+          <el-badge
+            :is-dot="mailStore.unreadMails.length > 0"
+            class="icon-badge"
+          >
             <el-icon @click="handleMailClick" class="bell">
               <Message />
             </el-icon>
@@ -136,7 +141,6 @@ watch(
 
       <el-main>
         <router-view></router-view>
-        <CustomerService v-if="!userStore.user?.admin"></CustomerService>
         <SearchDialog v-model:visible="searchDialogVisible"></SearchDialog>
       </el-main>
     </el-container>
@@ -232,6 +236,11 @@ watch(
 @media (max-width: 768px) {
   .el-aside {
     display: none !important;
+  }
+
+  .el-main {
+    padding: 0;
+    padding-bottom: 50px;
   }
 }
 

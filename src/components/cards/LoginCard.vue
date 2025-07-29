@@ -3,7 +3,7 @@ import { User, Lock, Message, Phone } from '@element-plus/icons-vue'
 import { ref, watch } from 'vue'
 import { userRegisterService } from '@/api/user'
 import { useRouter } from 'vue-router'
-import { useAssetStore, useUserStore } from '@/stores/index.ts'
+import { useAssetStore, useMailStore, useUserStore } from '@/stores/index.ts'
 
 import { ElMessage } from 'element-plus'
 import type { LoginForm } from '@/types'
@@ -21,6 +21,7 @@ import {
 const router = useRouter()
 const userStore = useUserStore()
 const assetStore = useAssetStore()
+const mailStore = useMailStore()
 
 const loginFormRef = ref()
 const registerFormRef = ref()
@@ -87,6 +88,7 @@ const login = async () => {
     // get importance asset value after login
     await userStore.getUser(loginForm.value)
     await assetStore.getAssetTypes()
+    await mailStore.getMails()
     router.push('/')
   } catch (e) {
     loginForm.value.password = ''
@@ -226,7 +228,12 @@ defineExpose({ currentStep })
       </el-form-item>
 
       <el-form-item>
-        <el-button class="button" type="primary" @click="login">
+        <el-button
+          class="button"
+          type="primary"
+          @click="login"
+          data-test="loginButton"
+        >
           Sign in
         </el-button>
       </el-form-item>

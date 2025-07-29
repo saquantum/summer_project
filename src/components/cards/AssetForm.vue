@@ -1,15 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watchEffect } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useAssetStore, useUserStore } from '@/stores/index.ts'
 import { updateAssetByIdService } from '@/api/assets'
 
 import type { AssetInfoForm, AssetWithWarnings } from '@/types/asset'
 
-import {
-  adminGetUserInfoByAIDService,
-  adminGetUserInfoService,
-  adminUpdateAssetService
-} from '@/api/admin'
+import { adminUpdateAssetService } from '@/api/admin'
 import { createAssetHolderRules } from '@/utils/formUtils'
 import { ElMessage } from 'element-plus'
 
@@ -17,21 +13,6 @@ const props = defineProps<{ isEdit: boolean; item: AssetWithWarnings }>()
 
 const assetStore = useAssetStore()
 const userStore = useUserStore()
-
-const uid = ref('')
-
-const fetchUserId = async () => {
-  if (userStore.user && !userStore.user.admin) {
-    uid.value = userStore.user.id
-  } else {
-    try {
-      const res = await adminGetUserInfoByAIDService(props.item.asset.ownerId)
-      uid.value = res.data.id
-    } catch (error) {
-      console.error('Failed to fetch user info:', error)
-    }
-  }
-}
 
 const form = ref<AssetInfoForm>({
   id: '',
@@ -94,7 +75,7 @@ const descriptionsItem = computed(() => {
   if (!props.item) return []
 
   return [
-    { label: 'OwnerId', value: uid.value },
+    { label: 'OwnerId', value: props.item.asset.ownerId },
     { label: 'Name', value: props.item.asset.name },
     { label: 'Type', value: props.item.asset.type.name },
     { label: 'Capacity litres', value: props.item.asset.capacityLitres },
@@ -126,11 +107,6 @@ const disabledAfterToday = (time: Date) => {
 const submit = async () => {
   try {
     if (userStore.user && userStore.user.admin) {
-      const ownerId = form.value.ownerId
-      if (ownerId) {
-        const res = await adminGetUserInfoService(ownerId)
-        form.value.ownerId = res.data.assetHolderId as string
-      }
       await adminUpdateAssetService(form.value)
     } else if (userStore.user) {
       await updateAssetByIdService(userStore.user.id, form.value)
@@ -144,18 +120,7 @@ const submit = async () => {
 }
 
 onMounted(async () => {
-  await fetchUserId()
   form.value = assetToForm(props.item)
-  if (uid.value) {
-    form.value.ownerId = uid.value
-  }
-})
-
-// Watch for changes in user store or props and refetch user ID
-watchEffect(() => {
-  if (userStore.user || props.item?.asset?.ownerId) {
-    fetchUserId()
-  }
 })
 
 defineExpose({

@@ -1,11 +1,48 @@
 <script setup lang="ts">
+import { useAssetStore } from '@/stores'
 import { Filter } from '@element-plus/icons-vue'
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 
-const props = defineProps<{
-  input: string
-  visible: boolean
-}>()
+interface FilterType {
+  assetName: string
+  warningLevel: string
+  assetType: string
+}
+
+const assetStore = useAssetStore()
+
+const filters = defineModel<FilterType>('filters', {
+  default: () => ({
+    assetName: '',
+    warningLevel: '',
+    assetType: ''
+  })
+})
+const visible = defineModel<boolean>('visible', { default: false })
+
+// select value
+const warningLevelOptions = [
+  {
+    value: 'NO',
+    label: 'No Warning',
+    text: 'No Warning'
+  },
+  {
+    value: 'YELLOW',
+    label: 'Yellow Warning',
+    text: 'Yellow Warning'
+  },
+  {
+    value: 'AMBER',
+    label: 'Amber Warning',
+    text: 'Amber Warning'
+  },
+  {
+    value: 'RED',
+    label: 'Red Warning',
+    text: 'Red Warning'
+  }
+]
 
 const emit = defineEmits([
   'update:input',
@@ -13,16 +50,6 @@ const emit = defineEmits([
   'search',
   'clearFilters'
 ])
-
-const input = computed({
-  get: () => props.input,
-  set: (val: string) => emit('update:input', val)
-})
-
-const visible = computed({
-  get: () => props.visible,
-  set: (val: boolean) => emit('update:visible', val)
-})
 
 const detail = ref<boolean>(false)
 
@@ -50,12 +77,18 @@ const handleClickOutside = (e: MouseEvent) => {
 const tags = ref<string[]>([])
 
 const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Enter' && input.value.trim()) {
+  if (!filters.value) return
+
+  if (e.key === 'Enter' && filters.value.assetName.trim()) {
     e.preventDefault()
-    tags.value.push(input.value.trim())
-    fuzzySearch(input.value)
-    input.value = ''
-  } else if (e.key === 'Backspace' && !input.value && tags.value.length) {
+    tags.value.push(filters.value.assetName.trim())
+    fuzzySearch(filters.value.assetName)
+    filters.value.assetName = ''
+  } else if (
+    e.key === 'Backspace' &&
+    !filters.value.assetName &&
+    tags.value.length
+  ) {
     tags.value.pop()
   }
 }
@@ -111,7 +144,7 @@ defineExpose({})
         <input
           @click="focusInput"
           ref="inputRef"
-          v-model="input"
+          v-model="filters.assetName"
           @keydown="handleKeydown"
           class="tag-input"
           placeholder="Search assets..."
@@ -125,7 +158,33 @@ defineExpose({})
         </el-button></div
     ></template>
 
-    <slot></slot>
+    <el-select
+      v-model="filters.warningLevel"
+      placeholder="Select warning level"
+      :teleported="false"
+      clearable
+    >
+      <el-option
+        v-for="item in warningLevelOptions"
+        :key="item.value"
+        :label="item.label"
+        :value="item.value"
+      ></el-option>
+    </el-select>
+
+    <el-select
+      v-model="filters.assetType"
+      placeholder="Select Asset Type"
+      :teleported="false"
+      clearable
+    >
+      <el-option
+        v-for="item in assetStore.typeOptions"
+        :key="item.value"
+        :label="item.label"
+        :value="item.value"
+      ></el-option>
+    </el-select>
 
     <div style="margin-top: 20px">
       <el-button @click="emit('search')">Search</el-button>

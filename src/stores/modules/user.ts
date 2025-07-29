@@ -18,9 +18,9 @@ export const useUserStore = defineStore(
 
     const getUser = async (form: LoginForm) => {
       try {
-        const res = await userLoginService(form)
+        await userLoginService(form)
+        const res = await userGetInfoService(form.username)
         user.value = res.data
-        if (!user.value?.admin) getUserInfo()
         ElMessage.success('Success')
       } catch (e) {
         const status = (e as { response?: { status?: number } })?.response
@@ -44,7 +44,6 @@ export const useUserStore = defineStore(
     }
 
     const getUserInfo = async () => {
-      if (!user.value) return
       try {
         const { data } = await userGetInfoService(user.value.id)
         user.value = data

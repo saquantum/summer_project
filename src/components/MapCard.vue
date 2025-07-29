@@ -32,13 +32,16 @@ const props = withDefaults(
   defineProps<{
     mapId: string
     locations: MultiPolygon[]
-    mode: string
+    mode?: string
     styles?: Style[]
-    asset: Asset
-    display: boolean
+    asset?: Asset | null
+    display?: boolean
   }>(),
   {
-    styles: () => []
+    mode: 'convex',
+    styles: () => [],
+    asset: null,
+    display: false
   }
 )
 

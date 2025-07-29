@@ -41,60 +41,56 @@ const currentUser = ref<User | null>(null)
 const column = ref(2)
 
 const descriptionsItem = computed(() => {
-  if (!currentUser.value || !currentUser.value.assetHolder) return []
-  const arr = currentUser.value.assetHolder.name.split(' ')
+  if (!currentUser.value) return []
+  const arr = currentUser.value.name.split(' ')
   return [
     { label: 'User id', value: currentUser.value.id },
     { label: 'First name', value: arr[0] },
     { label: 'Last name', value: arr[1] },
-    { label: 'Email', value: currentUser.value.assetHolder.email ?? '' },
-    { label: 'Phone', value: currentUser.value.assetHolder.phone ?? '' },
+    { label: 'Email', value: currentUser.value.contactDetails.email ?? '' },
+    { label: 'Phone', value: currentUser.value.contactDetails.phone ?? '' },
     {
       label: 'Street',
-      value: currentUser.value.assetHolder.address?.street ?? ''
+      value: currentUser.value.address?.street ?? ''
     },
     {
       label: 'Postcode',
-      value: currentUser.value.assetHolder.address?.postcode ?? ''
+      value: currentUser.value.address?.postcode ?? ''
     },
     {
       label: 'City',
-      value: currentUser.value.assetHolder.address?.city ?? ''
+      value: currentUser.value.address?.city ?? ''
     },
     {
       label: 'Country',
-      value: currentUser.value.assetHolder.address?.country ?? ''
+      value: currentUser.value.address?.country ?? ''
     }
   ]
 })
 
 const form = ref<UserInfoForm>({
   id: '',
-  password: '',
-  repassword: '',
   firstName: '',
   lastName: '',
   avatar: '',
-  assetHolder: {
-    id: '',
-    name: '',
+  name: '',
+  contactDetails: {
     email: '',
-    phone: '',
-    address: {
-      street: '',
-      postcode: '',
-      city: '',
-      country: ''
-    },
-    contact_preferences: {
-      email: true,
-      phone: false,
-      whatsapp: false,
-      discord: false,
-      post: false,
-      telegram: false,
-      assetHolderId: ''
-    }
+    phone: ''
+  },
+  address: {
+    street: '',
+    postcode: '',
+    city: '',
+    country: ''
+  },
+  contactPreferences: {
+    email: false,
+    phone: false,
+    discord: false,
+    post: false,
+    whatsapp: false,
+    telegram: false
   }
 })
 const formRef = ref()
@@ -104,9 +100,9 @@ const imageUrl = ref('')
 const rules = {
   firstName: firstNameRules,
   lastName: lastNameRules,
-  'assetHolder.email': emailRules,
-  'assetHolder.phone': phoneRules,
-  'assetHolder.address.postcode': postcodeRules
+  email: emailRules,
+  phone: phoneRules,
+  'address.postcode': postcodeRules
 }
 
 const handleAvatarSuccess: UploadProps['onSuccess'] = (response) => {
@@ -128,32 +124,27 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
 const userToForm = (user: User): UserInfoForm => {
   return {
     id: user.id,
-    password: '',
-    repassword: '',
     firstName: '',
     lastName: '',
     avatar: user.avatar ?? '',
-    assetHolder: {
-      id: user.assetHolder?.id ?? '',
-      name: user.assetHolder?.name ?? '',
-      email: user.assetHolder?.email ?? '',
-      phone: user.assetHolder?.phone ?? '',
-      address: {
-        street: user.assetHolder?.address?.street ?? '',
-        postcode: user.assetHolder?.address?.postcode ?? '',
-        city: user.assetHolder?.address?.city ?? '',
-        country: user.assetHolder?.address?.country ?? '',
-        assetHolderId: user.assetHolderId as string
-      },
-      contact_preferences: {
-        assetHolderId: user.assetHolderId as string,
-        email: user.assetHolder?.contact_preferences.email ?? false,
-        phone: user.assetHolder?.contact_preferences.phone ?? false,
-        discord: user.assetHolder?.contact_preferences.discord ?? false,
-        post: user.assetHolder?.contact_preferences.post ?? false,
-        whatsapp: user.assetHolder?.contact_preferences.post ?? false,
-        telegram: user.assetHolder?.contact_preferences.post ?? false
-      }
+    name: user.name ?? '',
+    contactDetails: {
+      email: user.contactDetails.email,
+      phone: user.contactDetails.phone
+    },
+    address: {
+      street: user.address?.street ?? '',
+      postcode: user.address?.postcode ?? '',
+      city: user.address?.city ?? '',
+      country: user.address?.country ?? ''
+    },
+    contactPreferences: {
+      email: user.contactPreferences.email ?? false,
+      phone: user.contactPreferences.phone ?? false,
+      discord: user.contactPreferences.discord ?? false,
+      post: user.contactPreferences.post ?? false,
+      whatsapp: user.contactPreferences.post ?? false,
+      telegram: user.contactPreferences.post ?? false
     }
   }
 }
@@ -170,10 +161,7 @@ const submit = async () => {
   try {
     const submitData = {
       ...form.value,
-      assetHolder: {
-        ...form.value.assetHolder,
-        name: `${form.value.firstName} ${form.value.lastName}`
-      }
+      name: `${form.value.firstName} ${form.value.lastName}`
     }
 
     if (user.value.admin) {
@@ -209,8 +197,8 @@ const loadUserData = async () => {
 
     imageUrl.value = currentUser.value?.avatar ?? ''
 
-    if (!currentUser.value?.assetHolder) throw new Error('User does not exist')
-    const arr = currentUser.value.assetHolder.name.split(' ')
+    if (!currentUser.value) throw new Error('User does not exist')
+    const arr = currentUser.value.name.split(' ')
     form.value = userToForm(currentUser.value)
     form.value.firstName = arr[0]
     form.value.lastName = arr[1]
@@ -241,37 +229,34 @@ defineExpose({
     >
       {{ item.value }}</el-descriptions-item
     >
-    <el-descriptions-item
-      label="Contact preferences"
-      v-if="currentUser && currentUser.assetHolder"
-    >
+    <el-descriptions-item label="Contact preferences" v-if="currentUser">
       <el-checkbox
-        v-model="currentUser.assetHolder.contact_preferences.email"
+        v-model="currentUser.contactPreferences.email"
         :disabled="!props.isEdit"
         >Email</el-checkbox
       >
       <el-checkbox
-        v-model="currentUser.assetHolder.contact_preferences.phone"
+        v-model="currentUser.contactPreferences.phone"
         :disabled="!props.isEdit"
         >Phone</el-checkbox
       >
       <el-checkbox
-        v-model="currentUser.assetHolder.contact_preferences.discord"
+        v-model="currentUser.contactPreferences.discord"
         :disabled="!props.isEdit"
         >Discord</el-checkbox
       >
       <el-checkbox
-        v-model="currentUser.assetHolder.contact_preferences.post"
+        v-model="currentUser.contactPreferences.post"
         :disabled="!props.isEdit"
         >Post</el-checkbox
       >
       <el-checkbox
-        v-model="currentUser.assetHolder.contact_preferences.telegram"
+        v-model="currentUser.contactPreferences.telegram"
         :disabled="!props.isEdit"
         >Telegram</el-checkbox
       >
       <el-checkbox
-        v-model="currentUser.assetHolder.contact_preferences.whatsapp"
+        v-model="currentUser.contactPreferences.whatsapp"
         :disabled="!props.isEdit"
         >whatsapp</el-checkbox
       >
@@ -318,13 +303,13 @@ defineExpose({
     </el-row>
 
     <!-- email -->
-    <el-form-item label="EMAIL ADDRESS" prop="assetHolder.email">
-      <el-input v-model="form.assetHolder.email" />
+    <el-form-item label="EMAIL ADDRESS" prop="contactDetails.email">
+      <el-input v-model="form.contactDetails.email" />
     </el-form-item>
 
     <!-- phone -->
-    <el-form-item label="PHONE" prop="assetHolder.phone">
-      <el-input v-model="form.assetHolder.phone" />
+    <el-form-item label="PHONE" prop="contactDetails.phone">
+      <el-input v-model="form.contactDetails.phone" />
     </el-form-item>
 
     <!-- address -->
@@ -334,68 +319,52 @@ defineExpose({
           <el-form-item
             label="Street"
             label-width="100px"
-            prop="assetHolder.address.street"
+            prop="address.street"
           >
-            <el-input v-model="form.assetHolder.address.street" />
+            <el-input v-model="form.address.street" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item
             label="Post Code"
             label-width="100px"
-            prop="assetHolder.address.postCode"
+            prop="address.postCode"
           >
-            <el-input v-model="form.assetHolder.address.postcode" />
+            <el-input v-model="form.address.postcode" />
           </el-form-item>
         </el-col>
       </el-row>
 
       <el-row :gutter="20" style="width: 100%">
         <el-col :span="12">
-          <el-form-item
-            label="City"
-            label-width="100px"
-            prop="assetHolder.address.city"
-          >
-            <el-input v-model="form.assetHolder.address.city" />
+          <el-form-item label="City" label-width="100px" prop="address.city">
+            <el-input v-model="form.address.city" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item
             label="Country"
             label-width="100px"
-            prop="assetHolder.address.country"
+            prop="address.country"
           >
-            <el-input v-model="form.assetHolder.address.country" />
+            <el-input v-model="form.address.country" />
           </el-form-item>
         </el-col>
       </el-row>
     </el-form-item>
 
     <el-form-item label="Contact preferences">
+      <el-checkbox label="Email" v-model="form.contactPreferences.email" />
+      <el-checkbox label="Phone" v-model="form.contactPreferences.phone" />
+      <el-checkbox label="Discord" v-model="form.contactPreferences.discord" />
+      <el-checkbox label="Post" v-model="form.contactPreferences.post" />
       <el-checkbox
-        label="Email"
-        v-model="form.assetHolder.contact_preferences.email"
-      />
-      <el-checkbox
-        label="Phone"
-        v-model="form.assetHolder.contact_preferences.phone"
-      />
-      <el-checkbox
-        label="Discord"
-        v-model="form.assetHolder.contact_preferences.discord"
-      />
-      <el-checkbox
-        label="Post"
-        v-model="form.assetHolder.contact_preferences.post"
+        label="telegram"
+        v-model="form.contactPreferences.telegram"
       />
       <el-checkbox
         label="telegram"
-        v-model="form.assetHolder.contact_preferences.telegram"
-      />
-      <el-checkbox
-        label="telegram"
-        v-model="form.assetHolder.contact_preferences.whatsapp"
+        v-model="form.contactPreferences.whatsapp"
       />
     </el-form-item>
   </el-form>

@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import LayoutContainer from '@/views/layout/LayoutContainer.vue'
+import LayoutContainer from '@/views/layout/DefaultLayout.vue'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { ElMessage } from 'element-plus'

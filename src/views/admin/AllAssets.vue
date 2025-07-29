@@ -8,6 +8,7 @@ import {
 } from '@/api/admin'
 import { type AssetSearchBody, type AssetTableItem } from '@/types'
 import { useResponsiveAction } from '@/composables/useResponsiveAction'
+import AssetCard from '@/components/cards/AssetCard.vue'
 
 const assets = computed<AssetTableItem[]>(() =>
   assetStore.allAssets.map((item) => ({
@@ -36,13 +37,14 @@ const dialogVisible = ref(false)
 
 const deleteId = ref<string[]>([])
 
-const triggerDelete = (row: AssetTableItem) => {
+const triggerDelete = (rows: AssetTableItem[]) => {
   dialogVisible.value = true
-  deleteId.value.push(row.id)
+  rows.forEach((element) => {
+    deleteId.value.push(element.id)
+  })
 }
 
 const handleDelete = async () => {
-  dialogVisible.value = true
   if (deleteId.value.length === 0) return
   await adminDeleteAssetService(deleteId.value)
   deleteId.value = []
@@ -144,7 +146,6 @@ const handleSortChange = (sort: { prop: string; order: string | null }) => {
 const mutipleSelection = ref<AssetTableItem[]>([])
 const handleSelectionChange = (val: AssetTableItem[]) => {
   mutipleSelection.value = val
-  console.log(mutipleSelection)
 }
 
 const handlePageChange = (page: number) => {
@@ -158,19 +159,18 @@ const handleSizeChange = (size: number) => {
   fetchTableData()
 }
 
+// responsive design
+const paginationLayout = ref('total, prev, pager, next, sizes')
+
 useResponsiveAction((width) => {
   if (width < 576) {
-    console.log('Extra small screen, e.g., portrait phone')
-    handleSizeChange(5)
+    paginationLayout.value = 'total, prev, pager, next'
   } else if (width >= 576 && width < 768) {
-    handleSizeChange(10)
-    console.log('Small screen, e.g., landscape phone or small tablet')
+    paginationLayout.value = 'total, prev, pager, next'
   } else if (width >= 768 && width < 992) {
-    handleSizeChange(10)
-    console.log('Medium screen, e.g., tablets or small laptops')
+    paginationLayout.value = 'total, prev, pager, next, sizes'
   } else {
-    handleSizeChange(10)
-    console.log('Large screen, e.g., desktops or larger')
+    paginationLayout.value = 'total, prev, pager, next, sizes'
   }
 })
 
@@ -182,10 +182,10 @@ onMounted(async () => {
 <template>
   <div>
     <div class="search-wrapper">
-      <FilterSearch
+      <AssetSearch
         :fetch-table-data="fetchTableData"
         v-model:asset-search-body="assetSearchBody"
-      ></FilterSearch>
+      ></AssetSearch>
       <SortTool
         v-model:multi-sort="multiSort"
         :columns="columns"
@@ -195,13 +195,17 @@ onMounted(async () => {
 
     <div class="asset-list">
       <AssetCard
-        v-for="(item, index) in assets"
-        :key="index"
-        :asset="item"
-        :on-delete="triggerDelete"
-      ></AssetCard>
+        v-for="item in assetStore.allAssets"
+        :key="item.asset.id"
+        :item="item"
+      />
     </div>
 
+    <div v-show="mutipleSelection.length > 0">
+      <el-button type="danger" @click="triggerDelete(mutipleSelection)"
+        >Delete</el-button
+      >
+    </div>
     <el-table
       :data="assets"
       :row-class-name="tableRowClassName"
@@ -233,7 +237,7 @@ onMounted(async () => {
             text
             type="danger"
             size="small"
-            @click="triggerDelete(scope.row)"
+            @click="triggerDelete([scope.row])"
           >
             Delete
           </el-button>
@@ -243,10 +247,11 @@ onMounted(async () => {
 
     <el-pagination
       background
-      layout="total, prev, pager, next, sizes"
+      :layout="paginationLayout"
       :current-page="currentPage"
       :page-size="pageSize"
       :total="total"
+      :pager-count="3"
       @current-change="handlePageChange"
       @size-change="handleSizeChange"
     />
@@ -275,7 +280,6 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 16px;
 }
 
 :deep(.el-table .warning-red) {
@@ -297,6 +301,16 @@ onMounted(async () => {
 @media (min-width: 768px) {
   .asset-list {
     display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .el-pagination {
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow-x: auto;
+    justify-content: center;
+    display: flex;
   }
 }
 </style>

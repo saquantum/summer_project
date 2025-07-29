@@ -53,9 +53,6 @@ export const adminGetUserInfoService = (
   return request.get(`/admin/user/uid/${id}`)
 }
 
-export const adminGetUserInfoByAIDService = (aid: string) =>
-  request.get(`/admin/user/aid/${aid}`)
-
 export const adminInsertUserService = (
   users: UserInfoForm[]
 ): Promise<ApiResponse> => request.post('/admin/user', users)
@@ -96,6 +93,9 @@ export const adminGetTemplateByTypesService = (
       channel: channel
     }
   })
+
+export const adminGetTemplateByIdService = (id: string) =>
+  request.get(`/admin/template/id/${id}`)
 
 export const adminUpdateTemplateByIdService = (template: Template) =>
   request.put('/admin/template/id', template)
@@ -179,7 +179,7 @@ export const adminGetAllPermissionService = (): Promise<
 
 export const adminGetPermissionByUIDService = (
   id: string
-): Promise<ApiResponse<Permission[]>> => request.get(`/admin/permission/${id}`)
+): Promise<ApiResponse<Permission>> => request.get(`/admin/permission/${id}`)
 
 export const adminUpdatePermissionService = (
   permission: Permission

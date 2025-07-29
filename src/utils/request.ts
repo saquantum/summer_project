@@ -9,6 +9,7 @@ const instance = axios.create({
 // URLs that don't need idempotency keys
 const EXCLUDE_IDEMPOTENCY_PATHS = [
   '/login',
+  '/logout',
   '/email/code',
   '/auth/refresh',
   '/email/verification',

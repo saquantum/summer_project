@@ -2,7 +2,6 @@
 
 describe('LayoutContainer', () => {
   beforeEach(() => {
-    // Login first if needed
     cy.visit('/login')
     cy.get('input[placeholder="Username"]').type('user_017')
     cy.get('input[placeholder="Password"]').type('123456')

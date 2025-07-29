@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { adminDeleteTemplateByIdService } from '@/api/admin'
 import { useRouter } from 'vue-router'
 import { useTemplateStore } from '@/stores'
+import type { Template } from '@/types'
 
 interface TableRow {
   id: number
@@ -22,8 +23,17 @@ const columns = ref([
   { prop: 'contactChannel', label: 'Channel' }
 ])
 
-const handleEdit = (row: TableRow) => {
-  router.push({ path: '/admin/templates/detail', query: { id: row.id } })
+const handleEdit = (row: Template) => {
+  router.push({
+    path: '/admin/message/template',
+    query: {
+      id: row.id,
+      assetTypeId: row.assetTypeId,
+      warningType: row.warningType,
+      severity: row.severity,
+      contactChannel: row.contactChannel
+    }
+  })
 }
 
 const handleDelete = async (row: TableRow) => {
