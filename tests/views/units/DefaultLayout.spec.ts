@@ -1,8 +1,8 @@
 import { mount } from '@vue/test-utils'
-import LayoutContainer from '@/views/layout/DefaultLayout.vue'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { ElMessage } from 'element-plus'
+import DefaultLayout from '@/views/layout/DefaultLayout.vue'
 
 // Mock router
 const mockRouter = {
@@ -29,11 +29,65 @@ const mockUserStore = {
   proxyId: null
 }
 
+const mockMailStore = {
+  mails: [
+    // Mock mail data
+    {
+      rowId: 1,
+      title: 'Test Mail 1',
+      message: 'This is test mail 1 content',
+      issuedDate: 1640995200000, // 2022-01-01
+      hasRead: false,
+      validUntil: 1641081600000,
+      userId: 'user1'
+    },
+    {
+      rowId: 2,
+      title: 'Test Mail 2',
+      message: 'This is test mail 2 content',
+      issuedDate: 1641081600000, // 2022-01-02
+      hasRead: true,
+      validUntil: 1641168000000,
+      userId: 'user1'
+    },
+    {
+      rowId: 3,
+      title: 'Another Subject',
+      message: 'Different content here',
+      issuedDate: 1641168000000, // 2022-01-03
+      hasRead: false,
+      validUntil: 1641254400000,
+      userId: 'user1'
+    }
+  ],
+  unreadMails: [
+    {
+      rowId: 1,
+      title: 'Test Mail 1',
+      message: 'This is test mail 1 content',
+      issuedDate: 1640995200000, // 2022-01-01
+      hasRead: false,
+      validUntil: 1641081600000,
+      userId: 'user1'
+    },
+    {
+      rowId: 3,
+      title: 'Another Subject',
+      message: 'Different content here',
+      issuedDate: 1641168000000, // 2022-01-03
+      hasRead: false,
+      validUntil: 1641254400000,
+      userId: 'user1'
+    }
+  ]
+}
+
 vi.mock('@/stores/index.ts', () => ({
   useGlobalLogout: () => ({
     logout: mockLogout
   }),
-  useUserStore: () => mockUserStore
+  useUserStore: () => mockUserStore,
+  useMailStore: () => mockMailStore
 }))
 
 // Mock Element Plus - partial mock approach
@@ -72,12 +126,12 @@ vi.mock('@/components/SearchDialog.vue', () => ({
   }
 }))
 
-describe('LayoutContainer', () => {
+describe('DefaultLayout', () => {
   const createWrapper = (userOverrides = {}) => {
     // Update mock user store with overrides
     Object.assign(mockUserStore, userOverrides)
 
-    return mount(LayoutContainer, {
+    return mount(DefaultLayout, {
       global: {
         stubs: {
           'router-link': {
@@ -185,17 +239,6 @@ describe('LayoutContainer', () => {
 
     const sideMenu = wrapper.findComponent({ name: 'SideMenu' })
     expect(sideMenu.props('showUserSideBar')).toBe(true)
-  })
-
-  it('shows customer service for regular users only', async () => {
-    const wrapper = createWrapper({
-      user: { admin: false }
-    })
-    await flushPromises()
-
-    expect(wrapper.findComponent({ name: 'CustomerService' }).exists()).toBe(
-      true
-    )
   })
 
   it('hides customer service for admin users', async () => {

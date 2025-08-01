@@ -19,7 +19,8 @@ vi.mock('@/stores/index.ts', () => ({
     getUser: vi.fn(),
     getUserInfo: vi.fn()
   }),
-  useAssetStore: () => ({ getAssetTypes: vi.fn() })
+  useAssetStore: () => ({ getAssetTypes: vi.fn() }),
+  useMailStore: () => ({ getMails: vi.fn() })
 }))
 vi.mock('@/api/user', () => ({
   userCheckEmailService: vi.fn(),

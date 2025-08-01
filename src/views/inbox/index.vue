@@ -34,7 +34,7 @@ const mailDetailVisible = ref(false)
 const currentMails = ref<Mail[]>([])
 
 const currentPageMails = computed(() => {
-  if (!currentMails.value || currentMails.value.length === 0) return
+  if (!currentMails.value || currentMails.value.length === 0) return []
   const start = (currentPage.value - 1) * pageSize
   const end = start + pageSize
   const arr = currentMails.value.slice(start, end)
@@ -134,7 +134,7 @@ useResponsiveAction((width) => {
       v-if="(!isWideScreen && !mailDetailVisible) || isWideScreen"
       class="mail-list-panel"
     >
-      <el-card>
+      <el-card shadow="never">
         <template #header>
           <div class="header-container">
             <span class="header">Inbox</span>
@@ -144,10 +144,8 @@ useResponsiveAction((width) => {
                 v-model="searchKeyword"
                 style="max-width: 300px"
               >
-                <template #append>
-                  <el-popover>
-                    <el-button :icon="Search"></el-button>
-                  </el-popover>
+                <template #prefix>
+                  <el-icon><Search /></el-icon>
                 </template>
               </el-input>
             </div>
@@ -159,19 +157,33 @@ useResponsiveAction((width) => {
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item @click="filter = 'all'">
-                      <el-icon v-if="filter === 'all'" style="margin-right: 4px"
-                        ><Check
-                      /></el-icon>
-                      All</el-dropdown-item
-                    >
+                      <span
+                        style="
+                          display: inline-block;
+                          width: 18px;
+                          text-align: center;
+                          margin-right: 4px;
+                        "
+                      >
+                        <el-icon v-if="filter === 'all'"><Check /></el-icon>
+                        <span v-else style="visibility: hidden"><Check /></span>
+                      </span>
+                      All
+                    </el-dropdown-item>
                     <el-dropdown-item @click="filter = 'unread'">
-                      <el-icon
-                        v-if="filter === 'unread'"
-                        style="margin-right: 4px"
-                        ><Check
-                      /></el-icon>
-                      Unread</el-dropdown-item
-                    >
+                      <span
+                        style="
+                          display: inline-block;
+                          width: 18px;
+                          text-align: center;
+                          margin-right: 4px;
+                        "
+                      >
+                        <el-icon v-if="filter === 'unread'"><Check /></el-icon>
+                        <span v-else style="visibility: hidden"><Check /></span>
+                      </span>
+                      Unread
+                    </el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -184,52 +196,112 @@ useResponsiveAction((width) => {
                       Sort by
                     </div>
                     <el-dropdown-item @click="sort = 'date'">
-                      <el-icon v-if="sort === 'date'" style="margin-right: 4px"
-                        ><Check /></el-icon
-                      >Date</el-dropdown-item
-                    >
-                    <el-dropdown-item @click="sort = 'subject'"
-                      ><el-icon
-                        v-if="sort === 'subject'"
-                        style="margin-right: 4px"
-                        ><Check /></el-icon
-                      >Subject</el-dropdown-item
-                    >
+                      <span
+                        style="
+                          display: inline-block;
+                          width: 18px;
+                          text-align: center;
+                          margin-right: 4px;
+                        "
+                      >
+                        <el-icon v-if="sort === 'date'"><Check /></el-icon>
+                        <span v-else style="visibility: hidden"><Check /></span>
+                      </span>
+                      Date
+                    </el-dropdown-item>
+                    <el-dropdown-item @click="sort = 'subject'">
+                      <span
+                        style="
+                          display: inline-block;
+                          width: 18px;
+                          text-align: center;
+                          margin-right: 4px;
+                        "
+                      >
+                        <el-icon v-if="sort === 'subject'"><Check /></el-icon>
+                        <span v-else style="visibility: hidden"><Check /></span>
+                      </span>
+                      Subject
+                    </el-dropdown-item>
                     <div style="padding: 8px 16px; font-weight: bold">
                       Sort order
                     </div>
                     <div v-if="sort === 'date'">
-                      <el-dropdown-item @click="sortOrder = 'asc'"
-                        ><el-icon
-                          v-if="sortOrder === 'asc'"
-                          style="margin-right: 4px"
-                          ><Check /></el-icon
-                        >Oldest on top</el-dropdown-item
-                      >
-                      <el-dropdown-item @click="sortOrder = 'desc'"
-                        ><el-icon
-                          v-if="sortOrder === 'desc'"
-                          style="margin-right: 4px"
-                          ><Check /></el-icon
-                        >Newest on top</el-dropdown-item
-                      >
+                      <el-dropdown-item @click="sortOrder = 'asc'">
+                        <span
+                          style="
+                            display: inline-block;
+                            width: 18px;
+                            text-align: center;
+                            margin-right: 4px;
+                          "
+                        >
+                          <el-icon v-if="sortOrder === 'asc'"
+                            ><Check
+                          /></el-icon>
+                          <span v-else style="visibility: hidden"
+                            ><Check
+                          /></span>
+                        </span>
+                        Oldest on top
+                      </el-dropdown-item>
+                      <el-dropdown-item @click="sortOrder = 'desc'">
+                        <span
+                          style="
+                            display: inline-block;
+                            width: 18px;
+                            text-align: center;
+                            margin-right: 4px;
+                          "
+                        >
+                          <el-icon v-if="sortOrder === 'desc'"
+                            ><Check
+                          /></el-icon>
+                          <span v-else style="visibility: hidden"
+                            ><Check
+                          /></span>
+                        </span>
+                        Newest on top
+                      </el-dropdown-item>
                     </div>
 
                     <div v-if="sort === 'subject'">
-                      <el-dropdown-item @click="sortOrder = 'asc'"
-                        ><el-icon
-                          v-if="sortOrder === 'asc'"
-                          style="margin-right: 4px"
-                          ><Check /></el-icon
-                        >A-Z</el-dropdown-item
-                      >
-                      <el-dropdown-item @click="sortOrder = 'desc'"
-                        ><el-icon
-                          v-if="sortOrder === 'desc'"
-                          style="margin-right: 4px"
-                          ><Check /></el-icon
-                        >Z-A</el-dropdown-item
-                      >
+                      <el-dropdown-item @click="sortOrder = 'asc'">
+                        <span
+                          style="
+                            display: inline-block;
+                            width: 18px;
+                            text-align: center;
+                            margin-right: 4px;
+                          "
+                        >
+                          <el-icon v-if="sortOrder === 'asc'"
+                            ><Check
+                          /></el-icon>
+                          <span v-else style="visibility: hidden"
+                            ><Check
+                          /></span>
+                        </span>
+                        A-Z
+                      </el-dropdown-item>
+                      <el-dropdown-item @click="sortOrder = 'desc'">
+                        <span
+                          style="
+                            display: inline-block;
+                            width: 18px;
+                            text-align: center;
+                            margin-right: 4px;
+                          "
+                        >
+                          <el-icon v-if="sortOrder === 'desc'"
+                            ><Check
+                          /></el-icon>
+                          <span v-else style="visibility: hidden"
+                            ><Check
+                          /></span>
+                        </span>
+                        Z-A
+                      </el-dropdown-item>
                     </div>
                   </el-dropdown-menu>
                 </template>
@@ -237,6 +309,22 @@ useResponsiveAction((width) => {
             </div>
           </div>
         </template>
+
+        <!-- Empty state message -->
+        <div v-if="currentPageMails.length === 0" class="empty-state">
+          <div class="empty-content">
+            <el-icon size="48" color="#c0c4cc">
+              <Search />
+            </el-icon>
+            <p>
+              {{
+                searchKeyword
+                  ? 'No messages found matching your search'
+                  : 'No messages in your inbox'
+              }}
+            </p>
+          </div>
+        </div>
 
         <div
           v-for="mail in currentPageMails"
@@ -282,7 +370,7 @@ useResponsiveAction((width) => {
     </div>
     <!-- big screen detail -->
     <div v-if="isWideScreen && selectedMail" class="mail-detail-panel">
-      <el-card>
+      <el-card shadow="never">
         <template #header>
           <div>
             <h3>{{ selectedMail?.title }}</h3>
@@ -301,6 +389,7 @@ useResponsiveAction((width) => {
     </div>
     <!-- small screen detail -->
     <el-card
+      shadow="never"
       v-if="!isWideScreen && mailDetailVisible"
       class="mail-detail-panel"
     >
@@ -329,24 +418,55 @@ useResponsiveAction((width) => {
 .mail-layout {
   display: flex;
   flex-direction: column;
-  width: 100vw;
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   min-height: 80vh;
 }
+
 /* .mail-list-panel {
-  flex: 1 1 0%;
+  min-width: 396px !important;
 } */
+
+.mail-list-panel .el-card {
+  min-width: 396px !important;
+}
+
+@media (max-width: 991px) {
+  /* .mail-list-panel {
+    width: 100% !important;
+  }
+  .mail-list-panel .el-card {
+    min-width: unset !important;
+    width: 100% !important;
+    /* max-width: 500px !important; */
+  /* } */
+  .mail-list-panel {
+    margin-top: 10px;
+  }
+
+  .mail-detail-panel {
+    max-width: none !important;
+  }
+}
+
 .mail-detail-panel {
   flex: 1 1 0%;
   min-width: 350px;
   max-width: 500px;
 }
-@media (min-width: 900px) {
+
+@media (min-width: 992px) {
   .mail-layout {
     flex-direction: row;
     align-items: flex-start;
-    width: 90vw;
+    width: 100%;
+  }
+
+  .mail-list-panel .el-card {
+    min-width: none !important;
+    max-width: 400px !important;
+    width: 100% !important;
   }
 }
 
@@ -372,7 +492,7 @@ useResponsiveAction((width) => {
 }
 
 .mail-item {
-  width: 356px;
+  width: 100%;
   height: 80px;
   display: flex;
   align-items: center;
@@ -389,10 +509,12 @@ useResponsiveAction((width) => {
   background: #f5faff;
 }
 .mail-content {
-  width: 316px;
+  flex: 1;
+  min-width: 0; /* Allow text truncation */
 }
 .mail-actions {
   width: 44px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -415,5 +537,24 @@ useResponsiveAction((width) => {
   color: #888;
   font-size: 13px;
   margin-left: 8px;
+}
+
+.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  padding: 40px 20px;
+}
+
+.empty-content {
+  text-align: center;
+  color: #909399;
+}
+
+.empty-content p {
+  margin-top: 16px;
+  font-size: 14px;
+  color: #909399;
 }
 </style>

@@ -61,7 +61,7 @@ const handleCardClick = () => {
 </script>
 
 <template>
-  <div class="asset-card" @click="handleCardClick">
+  <div class="asset-card-inner" @click="handleCardClick">
     <!-- Asset image/icon area -->
     <div class="asset-image-container">
       <MapCard
@@ -125,7 +125,7 @@ const handleCardClick = () => {
 </template>
 
 <style scoped lang="scss">
-.asset-card {
+.asset-card-inner {
   display: flex;
   align-items: stretch;
   background: #fff;
@@ -169,7 +169,7 @@ const handleCardClick = () => {
     border-radius: 10px;
     font-size: 10px;
     font-weight: bold;
-    z-index: 999999;
+    z-index: 400;
 
     &.warning-no {
       background: green;
@@ -247,7 +247,7 @@ const handleCardClick = () => {
 
 // Mobile responsive
 @media (max-width: 768px) {
-  .asset-card {
+  .asset-card-inner {
     margin-bottom: 6px;
     height: 140px;
   }
@@ -283,7 +283,7 @@ const handleCardClick = () => {
 
 // Extra small screen responsive
 @media (max-width: 480px) {
-  .asset-card {
+  .asset-card-inner {
     height: 140px;
     margin-bottom: 4px;
   }

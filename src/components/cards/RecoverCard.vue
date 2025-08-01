@@ -10,6 +10,7 @@ import {
 import {
   codeRules,
   createRepasswordRules,
+  emailRules,
   passwordRules
 } from '@/utils/formUtils'
 const router = useRouter()
@@ -26,17 +27,38 @@ const formRef = ref()
 const codeVisible = ref(false)
 const resetFormVisible = ref(false)
 const rules = {
+  email: emailRules,
   password: passwordRules,
   repassword: createRepasswordRules(() => form.value.password || ''),
   code: codeRules
 }
 
-// reset password
+// count down for send button
+const sendDisabled = ref(false)
+const countdown = ref(0)
+let timer: ReturnType<typeof setInterval> | null = null
 
+// reset password
 const handleSendEmail = async () => {
+  try {
+    await formRef.value.validateField('email')
+  } catch {
+    return
+  }
+
   try {
     await userGetEmailService(form.value.email)
     codeVisible.value = true
+    sendDisabled.value = true
+    countdown.value = 30
+    timer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) {
+        sendDisabled.value = false
+        clearInterval(timer!)
+        timer = null
+      }
+    }, 1000)
   } catch (e) {
     console.error(e)
   }
@@ -90,13 +112,15 @@ const handleConfirm = async () => {
         <el-input
           v-model="form.code"
           :prefix-icon="Lock"
-          placeholder="Enter code code"
+          placeholder="Enter OTP code"
           maxlength="6"
         />
       </el-form-item>
 
       <el-form-item>
-        <el-button @click="handleSendEmail">Send</el-button>
+        <el-button @click="handleSendEmail" :disabled="sendDisabled">
+          {{ sendDisabled ? `Send (${countdown})` : 'Send' }}
+        </el-button>
         <el-button @click="handleVerify" v-if="codeVisible">Verify</el-button>
       </el-form-item>
 

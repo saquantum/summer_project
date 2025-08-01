@@ -23,6 +23,7 @@ import {
   validateAvatarFile,
   getUploadUrl
 } from '@/config/upload'
+import { useResponsiveAction } from '@/composables/useResponsiveAction'
 const route = useRoute()
 const props = defineProps<{ isEdit: boolean }>()
 
@@ -208,12 +209,22 @@ const loadUserData = async () => {
   }
 }
 
+// responsive design
+useResponsiveAction((width) => {
+  if (width < 992) {
+    column.value = 1
+  } else {
+    column.value = 2
+  }
+})
+
 onMounted(async () => {
   await loadUserData()
 })
 
 defineExpose({
-  submit
+  submit,
+  form
 })
 </script>
 
@@ -268,7 +279,7 @@ defineExpose({
     :model="form"
     label-position="top"
     label-width="auto"
-    style="max-width: 600px"
+    class="form-class"
     :rules="rules"
   >
     <!-- Avatar upload -->
@@ -370,4 +381,11 @@ defineExpose({
   </el-form>
 </template>
 
-<style scoped></style>
+<style scoped>
+.form-class {
+  max-width: 600px;
+  margin: 0 auto;
+  overflow: hidden;
+  padding: 10px;
+}
+</style>

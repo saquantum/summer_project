@@ -78,6 +78,7 @@ export const useAssetStore = defineStore(
       try {
         const res = await adminSearchAssetService(obj)
         allAssets.value = res.data
+        if (!allAssets.value || allAssets.value.length <= 0) return
         allAssets.value.forEach(
           (item) => (item.maxWarning = getMaxWarningLevel(item.warnings))
         )

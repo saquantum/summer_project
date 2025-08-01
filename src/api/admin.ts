@@ -191,4 +191,4 @@ export const adminUpdatePermissionService = (
  */
 
 export const adminSendMessageService = (obj: object) =>
-  request.post('/admin/notify/inbox', obj)
+  request.post('/admin/notify/inbox/all', obj)

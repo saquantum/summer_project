@@ -79,14 +79,6 @@ const router = createRouter({
           component: () => import('@/views/admin/AssetTypes.vue')
         },
         {
-          path: 'product-preview',
-          component: () => import('@/views/ProductPreview.vue')
-        },
-        {
-          path: 'asset-preview',
-          component: () => import('@/views/AssetPreview.vue')
-        },
-        {
           path: 'admin/message/send',
           component: () => import('@/views/admin/SendMessage.vue')
         },

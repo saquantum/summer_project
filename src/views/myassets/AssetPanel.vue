@@ -18,10 +18,6 @@ const filters = ref({
   assetType: ''
 })
 
-const assetName = ref('')
-const assetWarningLevel = ref('')
-const assetType = ref('')
-
 // filtered assets
 const currentAssets = ref<AssetWithWarnings[] | []>([])
 
@@ -32,7 +28,6 @@ const handlePageChange = (page: number) => {
   currentPage.value = page
 }
 
-const addAssetVisible = ref(false)
 const currentPageAssets = computed(() => {
   if (!currentAssets.value || currentAssets.value.length === 0) return
   const start = (currentPage.value - 1) * pageSize
@@ -154,9 +149,7 @@ useResponsiveAction((width) => {
 })
 
 defineExpose({
-  assetWarningLevel,
-  assetName,
-  assetType,
+  filters,
   currentAssets,
   currentPageAssets
 })
@@ -176,7 +169,7 @@ defineExpose({
   <!-- warning legend -->
   <WarningLegend v-if="!isMobile" />
   <!-- cards for assets -->
-  <div class="assets-container">
+  <div class="assets-container" v-if="!isMobile">
     <h3 v-if="assetStore.userAssets?.length === 0">You don't have any asset</h3>
     <div class="card-grid">
       <el-card
@@ -225,24 +218,31 @@ defineExpose({
         </template>
       </el-card>
     </div>
-
-    <el-pagination
-      :current-page="currentPage"
-      :page-size="pageSize"
-      :total="currentAssets.length"
-      layout="prev, pager, next"
-      @current-change="handlePageChange"
-      style="
-        display: flex;
-        justify-content: center;
-        text-align: center;
-        margin-top: 20px;
-        position: relative;
-        z-index: 2000;
-      "
-    />
-    <AddAsset v-model:visible="addAssetVisible"></AddAsset>
   </div>
+
+  <div class="asset-list" v-else>
+    <AssetCard
+      v-for="item in currentPageAssets"
+      :key="item.asset.id"
+      :item="item"
+    />
+  </div>
+
+  <el-pagination
+    :current-page="currentPage"
+    :page-size="pageSize"
+    :total="currentAssets.length"
+    layout="prev, pager, next"
+    @current-change="handlePageChange"
+    style="
+      display: flex;
+      justify-content: center;
+      text-align: center;
+      margin-top: 20px;
+      position: relative;
+      z-index: 2000;
+    "
+  />
 </template>
 
 <style scoped>
@@ -260,6 +260,12 @@ defineExpose({
 .assets-container {
   padding: 16px;
   min-height: 100vh;
+}
+
+.asset-list {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .card-grid {

@@ -75,7 +75,6 @@ instance.interceptors.request.use(
       } else {
         config.headers['X-Idempotent-Post'] = true
       }
-      console.log(config)
     }
     return config
   },

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { adminSendMessageService } from '@/api/admin'
-import { useUserStore } from '@/stores'
-import { createAssetHolderRules, trimForm } from '@/utils/formUtils'
+import { trimForm } from '@/utils/formUtils'
 import { ElMessage } from 'element-plus'
 import type { FormItemRule } from 'element-plus'
 import { computed, ref } from 'vue'
@@ -13,19 +12,32 @@ const form = ref({
   body: ''
 })
 
-const userStore = useUserStore()
-
-const rules = {
-  userId: createAssetHolderRules(userStore.user?.admin ?? false),
-  title: [
-    { required: true, message: 'Please input title', trigger: 'blur' },
-    {
-      min: 1,
-      max: 100,
-      message: 'Title must be 1-100 characters',
-      trigger: 'blur'
-    }
-  ],
+const rules = computed(() => ({
+  userId: sendToAll.value
+    ? []
+    : [
+        {
+          required: true,
+          message: 'Please input username',
+          trigger: 'blur'
+        },
+        {
+          validator: (
+            rule: FormItemRule,
+            value: string,
+            callback: (_error?: Error) => void
+          ) => {
+            const ids = form.value.userId.split(',')
+            if (!ids) {
+              callback(new Error('Invalid format'))
+            } else {
+              callback()
+            }
+          },
+          trigger: 'blur'
+        }
+      ],
+  title: [{ required: true, message: 'Please input title', trigger: 'blur' }],
   duration: [
     {
       validator: (
@@ -35,7 +47,6 @@ const rules = {
       ) => {
         const durationValue = parseInt(durationInput.value, 10)
         if (!durationInput.value) {
-          // Empty is allowed (defaults to 9999999)
           callback()
           return
         }
@@ -54,7 +65,9 @@ const rules = {
       trigger: 'blur'
     }
   ]
-}
+}))
+
+const sendToAll = ref(false)
 
 // Separate string field for duration input to avoid the 0 display issue
 const durationInput = ref('')
@@ -103,8 +116,27 @@ const handleSend = async () => {
     }
   }
 
+  let requestBody
+  if (sendToAll.value) {
+    requestBody = {
+      ...form.value,
+      filters: {}
+    }
+  } else {
+    const ids = form.value.userId.replace(/\s+/g, '').split(',')
+    requestBody = {
+      ...form.value,
+      filters: {
+        user_id: {
+          op: 'in',
+          list: ids
+        }
+      }
+    }
+  }
+
   try {
-    await adminSendMessageService(form.value)
+    await adminSendMessageService(requestBody)
     ElMessage.success('Message send')
   } catch (e) {
     console.error(e)
@@ -126,7 +158,7 @@ const handleSend = async () => {
     <el-form-item label="Username" prop="userId">
       <el-input
         v-model="form.userId"
-        placeholder="Please input username"
+        placeholder="Split username with ','"
       ></el-input>
     </el-form-item>
     <el-form-item label="Duration" prop="duration">
@@ -143,6 +175,10 @@ const handleSend = async () => {
         v-model="form.title"
         placeholder="Please input title"
       ></el-input>
+    </el-form-item>
+
+    <el-form-item label="Send to all" prop="sendToAll">
+      <el-checkbox v-model="sendToAll"></el-checkbox>
     </el-form-item>
   </el-form>
 

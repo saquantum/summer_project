@@ -10,8 +10,9 @@ import { type AssetSearchBody, type AssetTableItem } from '@/types'
 import { useResponsiveAction } from '@/composables/useResponsiveAction'
 import AssetCard from '@/components/cards/AssetCard.vue'
 
-const assets = computed<AssetTableItem[]>(() =>
-  assetStore.allAssets.map((item) => ({
+const assets = computed<AssetTableItem[]>(() => {
+  if (!assetStore.allAssets || assetStore.allAssets.length <= 0) return []
+  return assetStore.allAssets.map((item) => ({
     id: item.asset.id,
     name: item.asset.name,
     type: item.asset.type?.name ?? 'NULL',
@@ -23,7 +24,7 @@ const assets = computed<AssetTableItem[]>(() =>
     assetHolderId: item.asset.ownerId,
     warningLevel: item.warnings[0]?.warningLevel ?? 'NULL'
   }))
-)
+})
 
 const router = useRouter()
 const assetStore = useAssetStore()

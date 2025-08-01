@@ -6,7 +6,7 @@ import { updateAssetByIdService } from '@/api/assets'
 import type { AssetInfoForm, AssetWithWarnings } from '@/types/asset'
 
 import { adminUpdateAssetService } from '@/api/admin'
-import { createAssetHolderRules } from '@/utils/formUtils'
+import { createUserRules } from '@/utils/formUtils'
 import { ElMessage } from 'element-plus'
 
 const props = defineProps<{ isEdit: boolean; item: AssetWithWarnings }>()
@@ -30,7 +30,7 @@ const form = ref<AssetInfoForm>({
 const formRef = ref()
 
 const rules = {
-  ownerId: createAssetHolderRules(userStore.user?.admin ?? false),
+  ownerId: createUserRules(userStore.user?.admin ?? false),
   name: [
     { required: true, message: 'Please input asset name', trigger: 'blur' }
   ],

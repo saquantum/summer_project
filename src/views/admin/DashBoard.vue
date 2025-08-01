@@ -34,7 +34,7 @@ const handleResize = () => {
 
 onMounted(async () => {
   const res = await adminSearchUsersService('count', {
-    orderList: 'accumulation, desc',
+    orderList: 'accumulation,desc',
     limit: 5
   } as UserSearchBody)
   console.log(res)

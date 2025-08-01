@@ -5,34 +5,38 @@ import { flushPromises } from '@vue/test-utils'
 import { ElMessage } from 'element-plus'
 import * as userApi from '@/api/user'
 import * as adminApi from '@/api/admin'
+import type { Permission } from '@/types'
 
 // Mock stores
 const mockUserStore = {
   user: {
-    id: 'test-user-id',
-    avatar: 'test-avatar-url',
+    id: 'mock-user-id-1',
+    password: null,
     admin: false,
-    assetHolderId: 'test-asset-holder-id',
-    assetHolder: {
-      id: 'test-asset-holder-id',
-      name: 'John Doe',
+    adminLevel: 1,
+    avatar: 'https://example.com/avatar.png',
+    name: 'John Doe',
+    permissionConfig: {} as Permission,
+    address: {
+      country: 'Mock Country',
+      city: 'Mock City',
+      street: '123 Mock St',
+      postcode: '00000'
+    },
+    contactDetails: {
       email: 'john.doe@example.com',
       phone: '+1234567890',
-      address: {
-        street: '123 Test St',
-        postcode: '12345',
-        city: 'Test City',
-        country: 'Test Country'
-      },
-      contact_preferences: {
-        email: true,
-        phone: false,
-        whatsapp: false,
-        discord: false,
-        post: false,
-        telegram: false,
-        assetHolderId: 'test-asset-holder-id'
-      }
+      discord: 'mockdiscord',
+      telegram: 'mocktelegram',
+      whatsapp: 'mockwhatsapp'
+    },
+    contactPreferences: {
+      email: true,
+      phone: true,
+      whatsapp: false,
+      discord: false,
+      post: false,
+      telegram: false
     }
   },
   proxyId: null,
@@ -104,40 +108,33 @@ describe('UserCard', () => {
       code: 200,
       message: 'Success',
       data: {
-        id: 'admin-id',
+        id: 'mock-user-id',
         password: null,
-        admin: true,
-        avatar: 'admin-avatar-url',
-        assetHolderId: 'admin-asset-holder-id',
-        token: null,
-        permissionConfig: {
-          userId: 'admin-id',
-          canCreateAsset: true,
-          canSetPolygonOnCreate: true,
-          canUpdateAssetFields: true,
-          canUpdateAssetPolygon: true,
-          canDeleteAsset: true,
-          canUpdateProfile: true
+        admin: false,
+        adminLevel: 1,
+        avatar: 'https://example.com/avatar.png',
+        name: 'Mock User',
+        permissionConfig: {} as Permission,
+        address: {
+          country: 'Mock Country',
+          city: 'Mock City',
+          street: '123 Mock St',
+          postcode: '00000'
         },
-        assetHolder: {
-          id: 'admin-asset-holder-id',
-          name: 'Admin User',
-          email: 'admin@test.com',
+        contactDetails: {
+          email: 'mockuser@example.com',
           phone: '+1234567890',
-          address: {
-            street: '123 Admin St',
-            city: 'Admin City',
-            country: 'Admin Country',
-            postcode: '12345'
-          },
-          contact_preferences: {
-            email: true,
-            phone: false,
-            whatsapp: false,
-            discord: false,
-            post: false,
-            telegram: false
-          }
+          discord: 'mockdiscord',
+          telegram: 'mocktelegram',
+          whatsapp: 'mockwhatsapp'
+        },
+        contactPreferences: {
+          email: true,
+          phone: true,
+          whatsapp: false,
+          discord: false,
+          post: false,
+          telegram: false
         }
       }
     })
@@ -292,7 +289,7 @@ describe('UserCard', () => {
     const component = wrapper.vm as unknown as {
       userToForm: (_user: typeof mockUserStore.user) => {
         id: string
-        assetHolder: {
+        contactDetails: {
           email: string
           phone: string
         }
@@ -302,11 +299,11 @@ describe('UserCard', () => {
     const formData = component.userToForm(mockUserStore.user)
 
     expect(formData.id).toBe(mockUserStore.user.id)
-    expect(formData.assetHolder.email).toBe(
-      mockUserStore.user.assetHolder.email
+    expect(formData.contactDetails.email).toBe(
+      mockUserStore.user.contactDetails.email
     )
-    expect(formData.assetHolder.phone).toBe(
-      mockUserStore.user.assetHolder.phone
+    expect(formData.contactDetails.phone).toBe(
+      mockUserStore.user.contactDetails.phone
     )
   })
 
@@ -354,8 +351,8 @@ describe('UserCard', () => {
       ...mockUserStore,
       user: {
         ...mockUserStore.user,
-        assetHolder: {
-          ...mockUserStore.user.assetHolder,
+        contactDetails: {
+          ...mockUserStore.user.contactDetails,
           name: '', // Invalid - empty name
           email: '', // Invalid - empty email
           phone: '' // Invalid - empty phone
@@ -430,72 +427,20 @@ describe('UserCard', () => {
     expect(wrapper.text()).toContain('+1234567890')
   })
 
-  it('updates form data when user data changes', async () => {
+  it('display form data when in edit mode', async () => {
     const wrapper = createWrapper({ isEdit: true })
     await flushPromises()
 
-    // Change user data
-    const component = wrapper.vm as unknown as {
-      form: {
-        firstName: string
-        lastName: string
-        assetHolder: {
-          email: string
-          phone: string
-        }
-      }
-    }
+    const form = wrapper.vm.form
 
-    expect(component.form.firstName).toBe('John')
-    expect(component.form.lastName).toBe('Doe')
-    expect(component.form.assetHolder.email).toBe('john.doe@example.com')
-    expect(component.form.assetHolder.phone).toBe('+1234567890')
+    expect(form.firstName).toBe('John')
+    expect(form.lastName).toBe('Doe')
+    expect(form.contactDetails.email).toBe('john.doe@example.com')
+    expect(form.contactDetails.phone).toBe('+1234567890')
   })
 
   it('handles admin user form submission', async () => {
     mockUserStore.user.admin = true
-    vi.mocked(adminApi.adminGetUserInfoService).mockResolvedValue({
-      code: 200,
-      message: 'Success',
-      data: {
-        id: 'admin-user-id',
-        password: null,
-        avatar: 'admin-avatar-url',
-        admin: true,
-        token: null,
-        assetHolderId: 'admin-asset-holder-id',
-        permissionConfig: {
-          userId: 'admin-user-id',
-          canCreateAsset: true,
-          canSetPolygonOnCreate: true,
-          canUpdateAssetFields: true,
-          canUpdateAssetPolygon: true,
-          canDeleteAsset: true,
-          canUpdateProfile: true
-        },
-        assetHolder: {
-          id: 'admin-asset-holder-id',
-          name: 'Admin User',
-          email: 'admin@example.com',
-          phone: '+9876543210',
-          address: {
-            street: '456 Admin St',
-            postcode: '54321',
-            city: 'Admin City',
-            country: 'Admin Country'
-          },
-          contact_preferences: {
-            email: true,
-            phone: true,
-            whatsapp: false,
-            discord: false,
-            post: false,
-            telegram: false,
-            assetHolderId: 'admin-asset-holder-id'
-          }
-        }
-      }
-    })
 
     const wrapper = createWrapper({ isEdit: true })
     await flushPromises()

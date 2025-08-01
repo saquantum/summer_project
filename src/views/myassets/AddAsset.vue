@@ -10,7 +10,7 @@ import { ElMessage } from 'element-plus'
 import type { ComponentPublicInstance } from 'vue'
 import type MapCard from '@/components/MapCard.vue'
 import type { AssetForm, NominatimResult } from '@/types'
-import { createAssetHolderRules, trimForm } from '@/utils/formUtils'
+import { createUserRules, trimForm } from '@/utils/formUtils'
 
 // user store
 const userStore = useUserStore()
@@ -151,7 +151,7 @@ const formRef = ref<InstanceType<
 > | null>(null)
 
 const rules = {
-  username: createAssetHolderRules(userStore.user?.admin ?? false),
+  username: createUserRules(userStore.user?.admin ?? false),
   name: [
     { required: true, message: 'Please input asset name', trigger: 'blur' }
   ],
