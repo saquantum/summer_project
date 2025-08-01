@@ -27,7 +27,8 @@
     </select>
 
     <select id="selectUsersWithAccumulator" resultMap="ResultMaps.UserWithExtraColumnsMap">
-        select user_id,
+        select user_row_id,
+               user_id,
                user_is_admin,
                user_admin_level,
                user_avatar,
@@ -69,7 +70,8 @@
                  left join assets
                            on user_id = asset_owner_id
         <include refid="QueryBlocks.filtering"/>
-        group by user_id,
+        group by user_row_id,
+                 user_id,
                  user_is_admin,
                  user_admin_level,
                  user_avatar,

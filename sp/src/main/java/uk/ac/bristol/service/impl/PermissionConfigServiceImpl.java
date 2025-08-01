@@ -24,12 +24,20 @@ public class PermissionConfigServiceImpl implements PermissionConfigService {
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public List<PermissionConfig> getPermissionConfigs(Map<String, Object> filters,
-                                                          List<Map<String, String>> orderList,
-                                                          Integer limit,
-                                                          Integer offset) {
+                                                       List<Map<String, String>> orderList,
+                                                       Integer limit,
+                                                       Integer offset) {
         return permissionConfigMapper.selectAllPermissionConfigs(
                 QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList(orderList, "permission_configs"),
+                QueryTool.filterOrderList("permission_config_row_id", orderList, "permission_configs"),
+                limit, offset);
+    }
+
+    @Override
+    public List<PermissionConfig> getCursoredPermissionConfigs(Long lastConfigRowId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
+        return permissionConfigMapper.selectAllPermissionConfigs(
+                QueryTool.formatCursoredDeepPageFilters("permission_config_row_id", lastConfigRowId, filters),
+                QueryTool.filterOrderList("permission_config_row_id", orderList, "permission_configs"),
                 limit, offset);
     }
 

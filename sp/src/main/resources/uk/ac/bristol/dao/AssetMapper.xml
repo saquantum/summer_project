@@ -5,7 +5,8 @@
 
 <mapper namespace="uk.ac.bristol.dao.AssetMapper">
     <select id="selectAssets" resultMap="ResultMaps.AssetMap">
-        select asset_id,
+        select asset_row_id,
+               asset_id,
                asset_name,
                asset_type_id,
                asset_owner_id,
@@ -25,7 +26,8 @@
     </select>
 
     <select id="selectAssetsWithWarnings" resultMap="ResultMaps.AssetWithWarningsMap">
-        select asset_id,
+        select asset_row_id,
+               asset_id,
                asset_name,
                asset_type_id,
                asset_owner_id,
@@ -63,7 +65,8 @@
     </select>
 
     <select id="selectAssetsWithWarningsPuttingWarningsTableMain" resultMap="ResultMaps.AssetWithWarningsMap">
-        select asset_id,
+        select asset_row_id,
+               asset_id,
                asset_name,
                asset_type_id,
                asset_owner_id,
@@ -101,7 +104,7 @@
     </select>
 
     <select id="countAssetsWithWarnings" resultType="int">
-        select count(distinct asset_id)
+        select count(distinct asset_row_id)
         from assets
                  left join weather_warnings
                            on ST_Intersects(asset_location, warning_area) and

@@ -1,6 +1,7 @@
 package uk.ac.bristol.pojo;
 
 public class AssetType {
+    private Long rowId;
     private String id;
     private String name;
     private String description;
@@ -12,6 +13,14 @@ public class AssetType {
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 '}';
+    }
+
+    public Long getRowId() {
+        return rowId;
+    }
+
+    public void setRowId(Long rowId) {
+        this.rowId = rowId;
     }
 
     public String getId() {

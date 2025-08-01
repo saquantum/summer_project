@@ -8,6 +8,7 @@ app:
   base-url: https://sp.zr17.fun
   http-only: true
   pagination-limit: 1000
+  pagination-max-page: 50
 
 spring:
   datasource:

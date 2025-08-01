@@ -7,15 +7,27 @@ import java.util.Map;
 
 public interface WarningService {
 
-    List<Warning> getAllWarnings(Map<String, Object> filters,
-                                 List<Map<String, String>> orderList,
-                                 Integer limit,
-                                 Integer offset);
+    List<Warning> getWarnings(Map<String, Object> filters,
+                              List<Map<String, String>> orderList,
+                              Integer limit,
+                              Integer offset);
 
-    List<Warning> getAllWarningsIncludingOutdated(Map<String, Object> filters,
-                                                  List<Map<String, String>> orderList,
-                                                  Integer limit,
-                                                  Integer offset);
+    List<Warning> getCursoredWarnings(Long lastWarningRowId,
+                                      Map<String, Object> filters,
+                                      List<Map<String, String>> orderList,
+                                      Integer limit,
+                                      Integer offset);
+
+    List<Warning> getWarningsIncludingOutdated(Map<String, Object> filters,
+                                               List<Map<String, String>> orderList,
+                                               Integer limit,
+                                               Integer offset);
+
+    List<Warning> getCursoredWarningsIncludingOutdated(Long lastWarningRowId,
+                                                       Map<String, Object> filters,
+                                                       List<Map<String, String>> orderList,
+                                                       Integer limit,
+                                                       Integer offset);
 
     List<Warning> getWarningById(Long id);
 

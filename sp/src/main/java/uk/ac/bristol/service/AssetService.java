@@ -19,6 +19,12 @@ public interface AssetService {
                                                          Integer limit,
                                                          Integer offset);
 
+    List<AssetWithWeatherWarnings> getCursoredAssetsWithWarnings(Long lastAssetRowId,
+                                                                 Map<String, Object> filters,
+                                                                 List<Map<String, String>> orderList,
+                                                                 Integer limit,
+                                                                 Integer offset);
+
     Asset getAssetById(String id);
 
     AssetWithWeatherWarnings getAssetWithWarningsById(String id);
@@ -37,6 +43,12 @@ public interface AssetService {
                                   List<Map<String, String>> orderList,
                                   Integer limit,
                                   Integer offset);
+
+    List<AssetType> getCursoredAssetTypes(Long lastAssetTypeRowId,
+                                          Map<String, Object> filters,
+                                          List<Map<String, String>> orderList,
+                                          Integer limit,
+                                          Integer offset);
 
     List<String> getAssetIdsIntersectingWithGivenWarning(Long id);
 

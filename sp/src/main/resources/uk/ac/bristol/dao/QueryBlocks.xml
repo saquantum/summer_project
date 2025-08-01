@@ -9,26 +9,55 @@
         <foreach collection="filterList" item="item" separator="and">
             <choose>
                 <when test="item.op == 'is'">
-                    ${item.column} = #{item.val}
+                    <choose>
+                        <when test="item.dataType == 'date'">
+                            ${item.column} = #{item.val, jdbcType=DATE}
+                        </when>
+                        <otherwise>
+                            ${item.column} = #{item.val}
+                        </otherwise>
+                    </choose>
                 </when>
                 <when test="item.op == 'like'">
                     lower(${item.column}) like lower(#{item.val})
                 </when>
                 <when test="item.op == 'range'">
-                    <if test="item.min != null and item.max != null">
-                        ${item.column} between #{item.min} and #{item.max}
-                    </if>
-                    <if test="item.min != null and item.max == null">
-                        ${item.column} &gt;= #{item.min}
-                    </if>
-                    <if test="item.min == null and item.max != null">
-                        ${item.column} &lt;= #{item.max}
-                    </if>
+                    <choose>
+                        <when test="item.dataType == 'date'">
+                            <if test="item.min != null and item.max != null">
+                                ${item.column} between #{item.min, jdbcType=DATE} and #{item.max, jdbcType=DATE}
+                            </if>
+                            <if test="item.min != null and item.max == null">
+                                ${item.column} &gt;= #{item.min, jdbcType=DATE}
+                            </if>
+                            <if test="item.min == null and item.max != null">
+                                ${item.column} &lt;= #{item.max, jdbcType=DATE}
+                            </if>
+                        </when>
+                        <otherwise>
+                            <if test="item.min != null and item.max != null">
+                                ${item.column} between #{item.min} and #{item.max}
+                            </if>
+                            <if test="item.min != null and item.max == null">
+                                ${item.column} &gt;= #{item.min}
+                            </if>
+                            <if test="item.min == null and item.max != null">
+                                ${item.column} &lt;= #{item.max}
+                            </if>
+                        </otherwise>
+                    </choose>
                 </when>
                 <when test="item.op == 'in'">
                     ${item.column} in
                     <foreach collection="item.list" item="val" open="(" separator="," close=")">
-                        #{val}
+                        <choose>
+                            <when test="item.dataType == 'date'">
+                                #{val, jdbcType=DATE}
+                            </when>
+                            <otherwise>
+                                #{val}
+                            </otherwise>
+                        </choose>
                     </foreach>
                 </when>
                 <when test="item.op == 'isNull'">

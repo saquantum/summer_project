@@ -29,20 +29,29 @@ public final class QueryTool {
 
     // used in order list.
     public final static Map<String, Set<String>> registeredTableColumnMap;
-    public final static Map<String, String> inversedColumnTableMap = new HashMap<>();;
+    public final static Map<String, ColumnTriple> columnAsKeyMap = new HashMap<>();
 
     static {
+        Set<String> columnBlacklist = Set.of(
+                "user_password",
+                "user_password_plaintext",
+                "user_row_id",
+                "asset_row_id"
+        );
+
         registeredColumns = QueryToolConfig.metaDataService.getAllRegisteredColumnNamesWithBlacklist(
-                List.of("user_password", "user_password_plaintext")
+                List.copyOf(columnBlacklist)
         );
-        registeredTableColumnMap = QueryToolConfig.metaDataService.getAllTableColumnMapsWithBlacklist(
-                Set.of("user_password", "user_password_plaintext")
+        List<ColumnTriple> list = QueryToolConfig.metaDataService.getAllTableColumnMapsWithBlacklist(
+                columnBlacklist
         );
-        for (Map.Entry<String, Set<String>> entry : registeredTableColumnMap.entrySet()) {
-            String table = entry.getKey();
-            for (String column : entry.getValue()) {
-                inversedColumnTableMap.putIfAbsent(column, table);
-            }
+        registeredTableColumnMap = list.stream()
+                .collect(Collectors.groupingBy(
+                        ColumnTriple::getTableName,
+                        Collectors.mapping(ColumnTriple::getColumnName, Collectors.toSet())
+                ));
+        for (ColumnTriple item : list) {
+            columnAsKeyMap.putIfAbsent(item.getColumnName(), item);
         }
     }
 
@@ -108,9 +117,9 @@ public final class QueryTool {
                 }
                 filterList.add(FilterItemDTO.in(column, list));
             } else if ("notNull".equalsIgnoreCase(operator)) {
-                filterList.add(FilterItemDTO.isNull(column));
-            } else if ("isNull".equalsIgnoreCase(operator)) {
                 filterList.add(FilterItemDTO.notNull(column));
+            } else if ("isNull".equalsIgnoreCase(operator)) {
+                filterList.add(FilterItemDTO.isNull(column));
             } else {
                 throw new IllegalArgumentException("Only 'like', 'range', 'in', 'notNull' and 'isNull' are currently supported operators");
             }
@@ -118,30 +127,54 @@ public final class QueryTool {
         return filterList;
     }
 
+    public static List<FilterItemDTO> formatCursoredDeepPageFilters(String mainTableRowIdName, Long lastRowId, Map<String, Object> filters) {
+        if (mainTableRowIdName == null || lastRowId == null) {
+            return formatFilters(filters);
+        }
+
+        List<FilterItemDTO> result = new ArrayList<>();
+        result.add(FilterItemDTO.range(mainTableRowIdName, lastRowId + 1L, null));
+        result.addAll(formatFilters(filters));
+        return result;
+    }
+
     public static List<Map<String, String>> getOrderList(List<String> items) {
-        if (items == null || items.isEmpty()) return null;
-        return getOrderList(items.toArray(String[]::new));
+        return buildOrderList(items);
     }
 
     public static List<Map<String, String>> getOrderList(String... items) {
-        if (items == null || items.length == 0) return null;
-        if (items.length % 2 != 0) throw new IllegalArgumentException("getOrderList: items length must be even");
+        return buildOrderList(Arrays.asList(items));
+    }
+
+    private static List<Map<String, String>> buildOrderList(List<String> items) {
+        if (items == null || items.isEmpty()) return List.of();
+        if (items.size() % 2 != 0) {
+            throw new IllegalArgumentException("Order list length must be even (column-direction pairs)");
+        }
         List<Map<String, String>> list = new ArrayList<>();
-        for (int i = 0; i < items.length; i += 2) {
-            Map<String, String> map = new HashMap<>();
-            if (!"asc".equalsIgnoreCase(items[i + 1]) && !"desc".equalsIgnoreCase(items[i + 1])) {
-                throw new IllegalArgumentException("getOrderList: direction must be asc or desc");
+        for (int i = 0; i < items.size(); i += 2) {
+            String column = items.get(i).trim();
+            String direction = items.get(i + 1).trim().toLowerCase();
+
+            if (column.isBlank()) {
+                throw new IllegalArgumentException("getOrderList: column name must not be empty");
             }
-            map.put("column", items[i]);
-            map.put("direction", items[i + 1]);
-            list.add(map);
+
+            if (!"asc".equals(direction) && !"desc".equals(direction)) {
+                throw new IllegalArgumentException("getOrderList: direction must be 'asc' or 'desc'");
+            }
+            list.add(Map.of("column", column, "direction", direction));
         }
         return list;
     }
 
-    public static List<Map<String, String>> filterOrderList(List<Map<String, String>> originalList, String... tablesAndColumns) {
+    public static List<Map<String, String>> filterOrderList(String mainTableRowIdName, List<Map<String, String>> originalList, String... tablesAndColumns) {
+        if (mainTableRowIdName == null) {
+            throw new SpExceptions.SystemException("The name of main table's row ID must not be null during query, a method from the service layer is wrong.");
+        }
+
         if (originalList == null || originalList.isEmpty() || tablesAndColumns == null || tablesAndColumns.length == 0) {
-            return null;
+            return List.of(Map.of("column", mainTableRowIdName, "direction", "asc"));
         }
 
         // 1. separate tables and permitted temporarily registered columns from input
@@ -155,14 +188,22 @@ public final class QueryTool {
             }
         }
 
-        // 2. filter columns using two sets
-        return originalList.stream()
+        // 2. filter columns using two sets and exclude the row id
+        List<Map<String, String>> filtered = originalList.stream()
                 .filter(item -> {
                     String column = item.get("column");
-                    String table = inversedColumnTableMap.get(column);
+                    if (mainTableRowIdName.equalsIgnoreCase(column)) return false;
+                    ColumnTriple triple = columnAsKeyMap.get(column);
+                    String table = triple == null ? null : triple.getTableName();
                     return (table != null && tables.contains(table)) || columns.contains(column);
                 })
-                .collect(Collectors.toList());
+                .toList();
+
+        // 3. insert row id to leftmost
+        List<Map<String, String>> result = new ArrayList<>();
+        result.add(Map.of("column", mainTableRowIdName, "direction", "asc"));
+        result.addAll(filtered);
+        return result;
     }
 
     public static boolean userIdentityVerification(HttpServletResponse response, HttpServletRequest request, String uid) {
@@ -216,13 +257,24 @@ public final class QueryTool {
     }
 
     public static String formatPaginationLimit(FilterDTO filter) {
-        if (filter != null && filter.hasLimit()) {
+        if (filter == null) return null;
+        if (filter.hasLimit()) {
+            boolean hasInvalidOffset = filter.hasOffset() && (filter.getOffset() / filter.getLimit()) + 1 > Code.PAGINATION_MAX_PAGE;
+            // 1. has limit and invalid offset -> wrong
+            if (hasInvalidOffset) {
+                throw new IllegalArgumentException("Max page exceeded, no page jumping is allowed. Please switch to the deep page endpoints.");
+            }
+            // 2. has limit, and has valid offset or no offset -> examine limit
             if (filter.getLimit() > Code.PAGINATION_MAX_LIMIT) {
                 filter.setLimit(Code.PAGINATION_MAX_LIMIT);
-                return "The pagination limit you provided is too large and has been replaced by" + Code.PAGINATION_MAX_LIMIT;
+                return "The pagination limit you provided is too large and has been replaced by " + Code.PAGINATION_MAX_LIMIT;
             } else {
                 return null;
             }
+        }
+        // 3. no limit but has offset -> wrong
+        if (!filter.hasLimit() && filter.hasOffset()) {
+            throw new IllegalArgumentException("Raw use of offset without limit is not allowed.");
         }
         return null;
     }

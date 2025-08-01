@@ -33,7 +33,7 @@ public class AssetController {
                                          @RequestParam(required = false) List<String> orderList,
                                          @RequestParam(required = false) Integer limit,
                                          @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
+        FilterDTO filter = new FilterDTO(limit, offset);
         String message = QueryTool.formatPaginationLimit(filter);
         User user = userService.getUserByUserId(uid);
         List<AssetWithWeatherWarnings> assets = assetService.getAssetsWithWarningsByOwnerId(
@@ -49,7 +49,7 @@ public class AssetController {
                                              @RequestParam(required = false) List<String> orderList,
                                              @RequestParam(required = false) Integer limit,
                                              @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
+        FilterDTO filter = new FilterDTO(limit, offset);
         String message = QueryTool.formatPaginationLimit(filter);
         User user = userService.getUserByUserId(uid);
         List<AssetWithWeatherWarnings> assets = assetService.getAssetsWithWarningsByOwnerId(
@@ -122,7 +122,7 @@ public class AssetController {
     public ResponseBody getAllAssetsWithWarnings(@RequestParam(required = false) List<String> orderList,
                                                  @RequestParam(required = false) Integer limit,
                                                  @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
+        FilterDTO filter = new FilterDTO(limit, offset);
         String message = QueryTool.formatPaginationLimit(filter);
         return new ResponseBody(Code.SELECT_OK, assetService.getAssetsWithWarnings(
                 null,
@@ -132,13 +132,12 @@ public class AssetController {
         ), message);
     }
 
+    @PostSearchEndpoint
     @PostMapping("/admin/asset/search")
     public ResponseBody getAllAssetsWithWarnings(@RequestBody FilterDTO filter) {
-        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
-            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
-        }
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, assetService.getAssetsWithWarnings(
+        return new ResponseBody(Code.SELECT_OK, assetService.getCursoredAssetsWithWarnings(
+                filter.getLastRowId(),
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),
@@ -215,7 +214,7 @@ public class AssetController {
     public ResponseBody getAllAssetTypes(@RequestParam(required = false) List<String> orderList,
                                          @RequestParam(required = false) Integer limit,
                                          @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
+        FilterDTO filter = new FilterDTO(limit, offset);
         String message = QueryTool.formatPaginationLimit(filter);
         return new ResponseBody(Code.SELECT_OK, assetService.getAssetTypes(
                 null,
@@ -225,13 +224,12 @@ public class AssetController {
         ), message);
     }
 
+    @PostSearchEndpoint
     @PostMapping("/asset/type/search")
     public ResponseBody getAllAssetTypes(@RequestBody FilterDTO filter) {
-        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
-            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
-        }
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, assetService.getAssetTypes(
+        return new ResponseBody(Code.SELECT_OK, assetService.getCursoredAssetTypes(
+                filter.getLastRowId(),
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),

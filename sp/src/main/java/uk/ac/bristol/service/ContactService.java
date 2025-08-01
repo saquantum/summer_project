@@ -24,10 +24,16 @@ public interface ContactService {
 
     ResponseBody registerGenerateCode(String email);
 
-    List<Template> getAllNotificationTemplates(Map<String, Object> filters,
-                                               List<Map<String, String>> orderList,
-                                               Integer limit,
-                                               Integer offset);
+    List<Template> getNotificationTemplates(Map<String, Object> filters,
+                                            List<Map<String, String>> orderList,
+                                            Integer limit,
+                                            Integer offset);
+
+    List<Template> getCursoredNotificationTemplates(Long lastTemplateId,
+                                                    Map<String, Object> filters,
+                                                    List<Map<String, String>> orderList,
+                                                    Integer limit,
+                                                    Integer offset);
 
     List<Template> getNotificationTemplateByTypes(Template template);
 

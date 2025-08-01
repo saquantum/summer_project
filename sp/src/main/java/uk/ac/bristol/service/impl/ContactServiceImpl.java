@@ -9,12 +9,10 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamSource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -23,27 +21,22 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.controller.Code;
 import uk.ac.bristol.controller.ResponseBody;
 import uk.ac.bristol.dao.ContactMapper;
-import uk.ac.bristol.dao.ImageStorageMapper;
 import uk.ac.bristol.dao.MetaDataMapper;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
 import uk.ac.bristol.service.ContactService;
-import uk.ac.bristol.service.ImageStorageService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
 import uk.ac.bristol.util.QueryTool;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
-import javax.activation.FileTypeMap;
-import javax.activation.URLDataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,8 +45,6 @@ import java.net.URLConnection;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class ContactServiceImpl implements ContactService {
@@ -279,13 +270,21 @@ public class ContactServiceImpl implements ContactService {
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<Template> getAllNotificationTemplates(Map<String, Object> filters,
-                                                      List<Map<String, String>> orderList,
-                                                      Integer limit,
-                                                      Integer offset) {
+    public List<Template> getNotificationTemplates(Map<String, Object> filters,
+                                                   List<Map<String, String>> orderList,
+                                                   Integer limit,
+                                                   Integer offset) {
         return contactMapper.selectAllNotificationTemplates(
                 QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList(orderList, "templates"),
+                QueryTool.filterOrderList("template_id", orderList, "templates"),
+                limit, offset);
+    }
+
+    @Override
+    public List<Template> getCursoredNotificationTemplates(Long lastTemplateId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
+        return contactMapper.selectAllNotificationTemplates(
+                QueryTool.formatCursoredDeepPageFilters("template_id", lastTemplateId, filters),
+                QueryTool.filterOrderList("template_id", orderList, "templates"),
                 limit, offset);
     }
 

@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Asset {
+    private Long rowId;
     private String id;
     private String name;
     @JsonAlias("type_id")
@@ -49,6 +50,14 @@ public class Asset {
                 ", lastInspection=" + lastInspection +
                 ", lastModified=" + lastModified +
                 '}';
+    }
+
+    public Long getRowId() {
+        return rowId;
+    }
+
+    public void setRowId(Long rowId) {
+        this.rowId = rowId;
     }
 
     public String getId() {

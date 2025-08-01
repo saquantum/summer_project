@@ -16,6 +16,12 @@ public interface UserService {
                         Integer limit,
                         Integer offset);
 
+    List<User> getCursoredUsers(Long lastUserRowId,
+                                Map<String, Object> filters,
+                                List<Map<String, String>> orderList,
+                                Integer limit,
+                                Integer offset);
+
     List<User> getUnauthorisedUsers(Map<String, Object> filters,
                                     List<Map<String, String>> orderList,
                                     Integer limit,
@@ -27,6 +33,14 @@ public interface UserService {
                                                        List<Map<String, String>> orderList,
                                                        Integer limit,
                                                        Integer offset);
+
+    List<UserWithExtraColumns> getCursoredUsersWithAccumulator(String function,
+                                                               String column,
+                                                               Long lastUserRowId,
+                                                               Map<String, Object> filters,
+                                                               List<Map<String, String>> orderList,
+                                                               Integer limit,
+                                                               Integer offset);
 
     User getUserByUserId(String uid);
 
