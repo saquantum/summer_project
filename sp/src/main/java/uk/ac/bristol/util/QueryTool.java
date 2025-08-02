@@ -143,11 +143,12 @@ public final class QueryTool {
     }
 
     public static List<Map<String, String>> getOrderList(String... items) {
+        if (items == null || items.length == 0) return new ArrayList<>();
         return buildOrderList(Arrays.asList(items));
     }
 
     private static List<Map<String, String>> buildOrderList(List<String> items) {
-        if (items == null || items.isEmpty()) return List.of();
+        if (items == null || items.isEmpty()) return new ArrayList<>();
         if (items.size() % 2 != 0) {
             throw new IllegalArgumentException("Order list length must be even (column-direction pairs)");
         }
@@ -174,7 +175,7 @@ public final class QueryTool {
         }
 
         if (originalList == null || originalList.isEmpty() || tablesAndColumns == null || tablesAndColumns.length == 0) {
-            return List.of(Map.of("column", mainTableRowIdName, "direction", "asc"));
+            return new ArrayList<>(List.of(Map.of("column", mainTableRowIdName, "direction", "asc")));
         }
 
         // 1. separate tables and permitted temporarily registered columns from input
