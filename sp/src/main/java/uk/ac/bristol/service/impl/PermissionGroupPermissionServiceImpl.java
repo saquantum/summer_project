@@ -7,6 +7,8 @@ import uk.ac.bristol.dao.PermissionGroupPermissionMapper;
 import uk.ac.bristol.pojo.PermissionGroupPermission;
 import uk.ac.bristol.service.PermissionGroupPermissionService;
 
+import java.util.List;
+
 @Service
 public class PermissionGroupPermissionServiceImpl implements PermissionGroupPermissionService {
 
@@ -18,7 +20,7 @@ public class PermissionGroupPermissionServiceImpl implements PermissionGroupPerm
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public PermissionGroupPermission getPermissionsByGroupId(Long groupId) {
+    public List<PermissionGroupPermission> getPermissionsByGroupId(Long groupId) {
         return permissionGroupPermissionMapper.selectPermissionsByGroupId(groupId);
     }
 

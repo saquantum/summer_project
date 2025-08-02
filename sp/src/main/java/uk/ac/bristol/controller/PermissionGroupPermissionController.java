@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.bristol.pojo.PermissionGroupPermission;
 import uk.ac.bristol.service.PermissionGroupPermissionService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api")
 public class PermissionGroupPermissionController {
@@ -17,7 +19,7 @@ public class PermissionGroupPermissionController {
     }
 
     @GetMapping("/group-permissions/{groupId}")
-    public PermissionGroupPermission getPermissionsByGroupId(@PathVariable Long groupId) {
+    public List<PermissionGroupPermission> getPermissionsByGroupId(@PathVariable Long groupId) {
         return permissionGroupPermissionService.getPermissionsByGroupId(groupId);
     }
 
