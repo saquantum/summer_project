@@ -3,7 +3,9 @@ package uk.ac.bristol.service.impl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import uk.ac.bristol.dao.GroupMemberMapper;
 import uk.ac.bristol.dao.PermissionGroupMapper;
+import uk.ac.bristol.dao.PermissionGroupPermissionMapper;
 import uk.ac.bristol.pojo.PermissionGroup;
 import uk.ac.bristol.service.PermissionGroupService;
 
@@ -12,10 +14,18 @@ import java.util.List;
 @Service
 public class PermissionGroupServiceImpl implements PermissionGroupService {
 
-    private final PermissionGroupMapper permissionGroupMapper;
+    private static final Long DEFAULT_GROUP_ID = 1L;
 
-    public PermissionGroupServiceImpl(PermissionGroupMapper permissionGroupMapper) {
+    private final PermissionGroupMapper permissionGroupMapper;
+    private final PermissionGroupPermissionMapper permissionGroupPermissionMapper;
+    private final GroupMemberMapper groupMemberMapper;
+
+    public PermissionGroupServiceImpl(PermissionGroupMapper permissionGroupMapper,
+                                      PermissionGroupPermissionMapper permissionGroupPermissionMapper,
+                                      GroupMemberMapper groupMemberMapper) {
         this.permissionGroupMapper = permissionGroupMapper;
+        this.permissionGroupPermissionMapper = permissionGroupPermissionMapper;
+        this.groupMemberMapper = groupMemberMapper;
     }
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
@@ -45,6 +55,21 @@ public class PermissionGroupServiceImpl implements PermissionGroupService {
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public void deleteGroup(Long groupId) {
+
+        if (DEFAULT_GROUP_ID.equals(groupId)) {
+            throw new IllegalArgumentException("cannot delete");
+        }
+
+        List<String> userIds = groupMemberMapper.findUserIdsByGroupId(groupId);
+        if (userIds != null && !userIds.isEmpty()) {
+            for (String userId : userIds) {
+
+                groupMemberMapper.updateUserGroup(userId, DEFAULT_GROUP_ID);
+            }
+        }
+
+        permissionGroupPermissionMapper.deletePermissions(groupId);
+
         permissionGroupMapper.deleteGroup(groupId);
     }
 }

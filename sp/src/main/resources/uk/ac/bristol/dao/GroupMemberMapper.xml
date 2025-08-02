@@ -27,4 +27,12 @@
         WHERE group_id = #{groupId}
     </select>
 
+    <select id="findUserIdsByGroupId" resultType="string">
+        SELECT user_id FROM group_members WHERE group_id = #{groupId}
+    </select>
+
+    <update id="updateUserGroup">
+        UPDATE group_members SET group_id = #{newGroupId} WHERE user_id = #{userId}
+    </update>
+
 </mapper>

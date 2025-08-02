@@ -2,9 +2,11 @@ package uk.ac.bristol.service;
 
 import uk.ac.bristol.pojo.PermissionGroupPermission;
 
+import java.util.List;
+
 public interface PermissionGroupPermissionService {
 
-    PermissionGroupPermission getPermissionsByGroupId(Long groupId);
+    List<PermissionGroupPermission> getPermissionsByGroupId(Long groupId);
 
     void addPermissions(PermissionGroupPermission permissions);
 
