@@ -5,7 +5,17 @@
 
 <mapper namespace="uk.ac.bristol.dao.PermissionGroupPermissionMapper">
 
-    <select id="selectPermissionsByGroupId" parameterType="long" resultType="uk.ac.bristol.pojo.PermissionGroupPermission">
+    <resultMap id="PermissionGroupPermissionMap" type="uk.ac.bristol.pojo.PermissionGroupPermission">
+        <result property="groupId" column="group_id"/>
+        <result property="canCreateAsset" column="can_create_asset"/>
+        <result property="canSetPolygonOnCreate" column="can_set_polygon_on_create"/>
+        <result property="canUpdateAssetFields" column="can_update_asset_fields"/>
+        <result property="canUpdateAssetPolygon" column="can_update_asset_polygon"/>
+        <result property="canDeleteAsset" column="can_delete_asset"/>
+        <result property="canUpdateProfile" column="can_update_profile"/>
+    </resultMap>
+
+    <select id="selectPermissionsByGroupId" parameterType="long" resultMap="PermissionGroupPermissionMap">
         SELECT * FROM permission_group_permissions WHERE group_id = #{groupId}
     </select>
 
