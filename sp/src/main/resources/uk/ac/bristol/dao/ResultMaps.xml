@@ -40,6 +40,7 @@
 
     <resultMap id="UserMap" type="uk.ac.bristol.pojo.User">
         <id property="id" column="user_id"/>
+        <result property="rowId" column="user_row_id"/>
         <result property="admin" column="user_is_admin"/>
         <result property="adminLevel" column="user_admin_level"/>
         <result property="avatar" column="user_avatar"/>
@@ -60,12 +61,14 @@
 
     <resultMap id="AssetTypeMap" type="uk.ac.bristol.pojo.AssetType">
         <id property="id" column="asset_type_type_id"/>
+        <result property="rowId" column="asset_type_row_id"/>
         <result property="name" column="asset_type_name"/>
         <result property="description" column="asset_type_description"/>
     </resultMap>
 
     <resultMap id="AssetMap" type="uk.ac.bristol.pojo.Asset">
         <id property="id" column="asset_id"/>
+        <result property="rowId" column="asset_row_id"/>
         <result property="name" column="asset_name"/>
         <result property="typeId" column="asset_type_id"/>
         <result property="ownerId" column="asset_owner_id"/>
@@ -120,6 +123,7 @@
 
     <resultMap id="PermissionConfigMap" type="uk.ac.bristol.pojo.PermissionConfig">
         <id property="userId" column="permission_config_user_id"/>
+        <result property="rowId" column="permission_config_row_id"/>
         <result property="canCreateAsset" column="permission_config_can_create_asset"/>
         <result property="canSetPolygonOnCreate" column="permission_config_can_set_polygon_on_create"/>
         <result property="canUpdateAssetFields" column="permission_config_can_update_asset_fields"/>

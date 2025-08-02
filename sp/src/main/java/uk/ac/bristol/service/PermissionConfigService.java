@@ -8,9 +8,15 @@ import java.util.Map;
 public interface PermissionConfigService {
 
     List<PermissionConfig> getPermissionConfigs(Map<String, Object> filters,
-                                                   List<Map<String, String>> orderList,
-                                                   Integer limit,
-                                                   Integer offset);
+                                                List<Map<String, String>> orderList,
+                                                Integer limit,
+                                                Integer offset);
+
+    List<PermissionConfig> getCursoredPermissionConfigs(Long lastConfigRowId,
+                                                        Map<String, Object> filters,
+                                                        List<Map<String, String>> orderList,
+                                                        Integer limit,
+                                                        Integer offset);
 
     PermissionConfig getPermissionConfigByUserId(String userId);
 

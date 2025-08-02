@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class User {
+    private Long rowId;
     private String id;
     private String password;
     private String passwordPlainText;
@@ -37,6 +38,13 @@ public class User {
     public static final Set<String> addressDetails = Set.of("street", "city", "postcode", "country");
     public static final Set<String> contactOptions = Set.of("email", "phone", "post", "whatsapp", "discord", "telegram");
 
+    public Long getRowId() {
+        return rowId;
+    }
+
+    public void setRowId(Long rowId) {
+        this.rowId = rowId;
+    }
 
     public String getId() {
         return id;

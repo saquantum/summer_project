@@ -1,6 +1,7 @@
 package uk.ac.bristol.pojo;
 
 public class PermissionConfig {
+    private Long rowId;
     private String userId;
     private Boolean canCreateAsset;
     private Boolean canSetPolygonOnCreate;
@@ -37,6 +38,14 @@ public class PermissionConfig {
                 ", canDeleteAsset=" + canDeleteAsset +
                 ", canUpdateProfile=" + canUpdateProfile +
                 '}';
+    }
+
+    public Long getRowId() {
+        return rowId;
+    }
+
+    public void setRowId(Long rowId) {
+        this.rowId = rowId;
     }
 
     public String getUserId() {

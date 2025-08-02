@@ -236,7 +236,8 @@
     <update id="createPermissionConfigs">
         create table if not exists permission_configs
         (
-            permission_config_user_id                   varchar(100) primary key references users(user_id) on update cascade on delete cascade,
+            permission_config_row_id                    bigserial primary key,
+            permission_config_user_id                   varchar(100) not null unique references users (user_id) on update cascade on delete cascade,
             permission_config_can_create_asset          boolean default false,
             permission_config_can_set_polygon_on_create boolean default false,
             permission_config_can_update_asset_fields   boolean default true,

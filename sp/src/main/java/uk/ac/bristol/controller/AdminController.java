@@ -2,7 +2,7 @@ package uk.ac.bristol.controller;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import uk.ac.bristol.exception.SpExceptions;
+import uk.ac.bristol.advice.PostSearchEndpoint;
 import uk.ac.bristol.pojo.FilterDTO;
 import uk.ac.bristol.pojo.PermissionConfig;
 import uk.ac.bristol.pojo.Template;
@@ -45,9 +45,9 @@ public class AdminController {
     public ResponseBody getAllTemplates(@RequestParam(required = false) List<String> orderList,
                                         @RequestParam(required = false) Integer limit,
                                         @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
+        FilterDTO filter = new FilterDTO(limit, offset);
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, contactService.getAllNotificationTemplates(
+        return new ResponseBody(Code.SELECT_OK, contactService.getNotificationTemplates(
                 null,
                 QueryTool.getOrderList(orderList),
                 filter.getLimit(),
@@ -55,13 +55,12 @@ public class AdminController {
         ), message);
     }
 
+    @PostSearchEndpoint
     @PostMapping("/template/search")
     public ResponseBody getAllTemplates(@RequestBody FilterDTO filter) {
-        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
-            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
-        }
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, contactService.getAllNotificationTemplates(
+        return new ResponseBody(Code.SELECT_OK, contactService.getCursoredNotificationTemplates(
+                filter.getLastRowId(),
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),
@@ -113,7 +112,7 @@ public class AdminController {
     public ResponseBody getAllPermissions(@RequestParam(required = false) List<String> orderList,
                                           @RequestParam(required = false) Integer limit,
                                           @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
+        FilterDTO filter = new FilterDTO(limit, offset);
         String message = QueryTool.formatPaginationLimit(filter);
         return new ResponseBody(Code.SELECT_OK, permissionConfigService.getPermissionConfigs(
                 null,
@@ -123,13 +122,12 @@ public class AdminController {
         ), message);
     }
 
+    @PostSearchEndpoint
     @PostMapping("/permission/search")
     public ResponseBody getAllPermissions(@RequestBody FilterDTO filter) {
-        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
-            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
-        }
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, permissionConfigService.getPermissionConfigs(
+        return new ResponseBody(Code.SELECT_OK, permissionConfigService.getCursoredPermissionConfigs(
+                filter.getLastRowId(),
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),

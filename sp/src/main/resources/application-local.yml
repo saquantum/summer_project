@@ -8,6 +8,7 @@ app:
   base-url: https://localhost:8080
   http-only: false
   pagination-limit: 1000
+  pagination-max-page: 10
 
 spring:
   datasource:

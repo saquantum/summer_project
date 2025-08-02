@@ -38,8 +38,10 @@
         where table_schema = 'public';
     </select>
 
-    <select id="selectTableColumnPairs" resultType="uk.ac.bristol.pojo.TableColumnPair">
-        select table_name as tableName, column_name as columnName
+    <select id="selectTableColumnPairs" resultType="uk.ac.bristol.pojo.ColumnTriple">
+        select table_name as tableName,
+               column_name as columnName,
+               data_type as dataType
         from information_schema.columns
         where table_schema = 'public';
     </select>

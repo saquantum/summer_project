@@ -1,10 +1,15 @@
 package uk.ac.bristol.pojo;
 
+import uk.ac.bristol.util.QueryTool;
+
+import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 public class FilterItemDTO {
     private String column;
     private String op;
+    private String dataType = "";
     private Object val;
     private Object min;
     private Object max;
@@ -79,20 +84,45 @@ public class FilterItemDTO {
     private FilterItemDTO(String column, String op, Object val) {
         this.column = column;
         this.op = op;
-        this.val = val;
+        if (QueryTool.columnAsKeyMap.containsKey(column) && "date".equalsIgnoreCase(QueryTool.columnAsKeyMap.get(column).getDataType()) && val instanceof String) {
+            this.val = Date.valueOf((String) val);
+            this.dataType = "date";
+        } else {
+            this.val = val;
+        }
     }
 
     private FilterItemDTO(String column, String op, Object min, Object max) {
         this.column = column;
         this.op = op;
-        this.min = min;
-        this.max = max;
+        if (QueryTool.columnAsKeyMap.containsKey(column) && "date".equalsIgnoreCase(QueryTool.columnAsKeyMap.get(column).getDataType())) {
+            if ((min != null && !(min instanceof String)) || (max != null && !(max instanceof String))) {
+                throw new IllegalArgumentException("min and max must be both strings to be parsed into date");
+            }
+            this.min = min == null ? null : Date.valueOf((String) min);
+            this.max = max == null ? null : Date.valueOf((String) max);
+            this.dataType = "date";
+        } else {
+            this.min = min;
+            this.max = max;
+        }
     }
 
     private FilterItemDTO(String column, String op, List<Object> list) {
         this.column = column;
-        this.list = list;
         this.op = op;
+        if (QueryTool.columnAsKeyMap.containsKey(column) && "date".equalsIgnoreCase(QueryTool.columnAsKeyMap.get(column).getDataType())) {
+            this.list = new ArrayList<>();
+            for (Object o : list) {
+                if (!(o instanceof String)) {
+                    throw new IllegalArgumentException("list must contain strings in order to be parsed into date");
+                }
+                this.list.add(Date.valueOf((String) o));
+            }
+            this.dataType = "date";
+        } else {
+            this.list = list;
+        }
     }
 
     public String getColumn() {
@@ -101,6 +131,10 @@ public class FilterItemDTO {
 
     public String getOp() {
         return op;
+    }
+
+    public String getDataType() {
+        return dataType;
     }
 
     public Object getVal() {

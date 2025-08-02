@@ -1,6 +1,7 @@
 package uk.ac.bristol.controller;
 
 import org.springframework.web.bind.annotation.*;
+import uk.ac.bristol.advice.PostSearchEndpoint;
 import uk.ac.bristol.advice.UserIdentificationExecution;
 import uk.ac.bristol.advice.UserUID;
 import uk.ac.bristol.exception.SpExceptions;
@@ -94,7 +95,7 @@ public class UserController {
     public ResponseBody getAllUsers(@RequestParam(required = false) List<String> orderList,
                                     @RequestParam(required = false) Integer limit,
                                     @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
+        FilterDTO filter = new FilterDTO(limit, offset);
         String message = QueryTool.formatPaginationLimit(filter);
         return new ResponseBody(Code.SELECT_OK, userService.getUsers(
                 null,
@@ -104,13 +105,12 @@ public class UserController {
         ), message);
     }
 
+    @PostSearchEndpoint
     @PostMapping("/admin/user/all/search")
     public ResponseBody getAllUsers(@RequestBody FilterDTO filter) {
-        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
-            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
-        }
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, userService.getUsers(
+        return new ResponseBody(Code.SELECT_OK, userService.getCursoredUsers(
+                filter.getLastRowId(),
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),
@@ -122,7 +122,7 @@ public class UserController {
     public ResponseBody getAllUnauthorisedUsers(@RequestParam(required = false) List<String> orderList,
                                                 @RequestParam(required = false) Integer limit,
                                                 @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
+        FilterDTO filter = new FilterDTO(limit, offset);
         String message = QueryTool.formatPaginationLimit(filter);
         return new ResponseBody(Code.SELECT_OK, userService.getUnauthorisedUsers(
                 null,
@@ -131,11 +131,9 @@ public class UserController {
         ), message);
     }
 
+    @PostSearchEndpoint
     @PostMapping("/admin/user/unauthorised/search")
     public ResponseBody getAllUnauthorisedUsers(@RequestBody FilterDTO filter) {
-        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
-            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
-        }
         String message = QueryTool.formatPaginationLimit(filter);
         return new ResponseBody(Code.SELECT_OK, userService.getUnauthorisedUsers(
                 filter.getFilters(),
@@ -156,7 +154,7 @@ public class UserController {
                                                    @RequestParam(required = false) List<String> orderList,
                                                    @RequestParam(required = false) Integer limit,
                                                    @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
+        FilterDTO filter = new FilterDTO(limit, offset);
         String message = QueryTool.formatPaginationLimit(filter);
         return new ResponseBody(Code.SELECT_OK, userService.getUsersWithAccumulator(
                 function, column,
@@ -167,15 +165,15 @@ public class UserController {
         ), message);
     }
 
+    @PostSearchEndpoint
     @PostMapping("/admin/user/accumulate/search")
     public ResponseBody getAllUsersWithAccumulator(@RequestParam String function,
                                                    @RequestParam String column,
                                                    @RequestBody FilterDTO filter) {
-        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
-            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
-        }
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, userService.getUsersWithAccumulator(function, column,
+        return new ResponseBody(Code.SELECT_OK, userService.getCursoredUsersWithAccumulator(
+                function, column,
+                filter.getLastRowId(),
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),

@@ -37,25 +37,41 @@ public class WarningServiceImpl implements WarningService {
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<Warning> getAllWarnings(Map<String, Object> filters,
-                                        List<Map<String, String>> orderList,
-                                        Integer limit,
-                                        Integer offset) {
+    public List<Warning> getWarnings(Map<String, Object> filters,
+                                     List<Map<String, String>> orderList,
+                                     Integer limit,
+                                     Integer offset) {
         return warningMapper.selectAllWarnings(
                 QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList(orderList, "weather_warnings"),
+                QueryTool.filterOrderList("warning_id", orderList, "weather_warnings"),
+                limit, offset);
+    }
+
+    @Override
+    public List<Warning> getCursoredWarnings(Long lastWarningRowId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
+        return warningMapper.selectAllWarnings(
+                QueryTool.formatCursoredDeepPageFilters("warning_id", lastWarningRowId, filters),
+                QueryTool.filterOrderList("warning_id", orderList, "weather_warnings"),
                 limit, offset);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<Warning> getAllWarningsIncludingOutdated(Map<String, Object> filters,
-                                                         List<Map<String, String>> orderList,
-                                                         Integer limit,
-                                                         Integer offset) {
+    public List<Warning> getWarningsIncludingOutdated(Map<String, Object> filters,
+                                                      List<Map<String, String>> orderList,
+                                                      Integer limit,
+                                                      Integer offset) {
         return warningMapper.selectAllWarningsIncludingOutdated(
                 QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList(orderList, "weather_warnings"),
+                QueryTool.filterOrderList("warning_id", orderList, "weather_warnings"),
+                limit, offset);
+    }
+
+    @Override
+    public List<Warning> getCursoredWarningsIncludingOutdated(Long lastWarningRowId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
+        return warningMapper.selectAllWarningsIncludingOutdated(
+                QueryTool.formatCursoredDeepPageFilters("warning_id", lastWarningRowId, filters),
+                QueryTool.filterOrderList("warning_id", orderList, "weather_warnings"),
                 limit, offset);
     }
 

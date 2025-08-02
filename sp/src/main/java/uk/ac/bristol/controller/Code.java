@@ -7,15 +7,21 @@ import javax.annotation.PostConstruct;
 
 @Component
 public class Code {
+
     @Value("${app.pagination-limit}")
     private int paginationLimit;
+
+    @Value("${app.pagination-max-page}")
+    private int paginationMaxPage;
 
     @PostConstruct
     private void init() {
         PAGINATION_MAX_LIMIT = this.paginationLimit;
+        PAGINATION_MAX_PAGE = this.paginationMaxPage;
     }
 
     public static int PAGINATION_MAX_LIMIT;
+    public static int PAGINATION_MAX_PAGE;
 
     public static final int SUCCESS = 20000;
     public static final int INSERT_ERR = 20010;
