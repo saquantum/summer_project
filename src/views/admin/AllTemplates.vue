@@ -27,11 +27,7 @@ const handleEdit = (row: Template) => {
   router.push({
     path: '/admin/message/template',
     query: {
-      id: row.id,
-      assetTypeId: row.assetTypeId,
-      warningType: row.warningType,
-      severity: row.severity,
-      contactChannel: row.contactChannel
+      id: row.id
     }
   })
 }

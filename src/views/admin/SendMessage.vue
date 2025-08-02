@@ -182,9 +182,23 @@ const handleSend = async () => {
     </el-form-item>
   </el-form>
 
-  <div class="editor-container">
-    <TiptapEditor ref="editorRef" v-model:content="form.body" />
-    <div class="message-preview">
+  <div style="display: flex; gap: 24px; align-items: stretch; flex-wrap: wrap">
+    <div style="flex: 1; min-width: 300px; height: 564px">
+      <TiptapEditor ref="editorRef" v-model:content="form.body" />
+    </div>
+    <div
+      class="message-preview"
+      style="
+        border: 1px solid #ccc;
+        padding: 1rem;
+        margin-top: 0;
+        height: 564px;
+        min-width: 300px;
+        flex: 1;
+        background-color: white;
+        overflow-y: auto;
+      "
+    >
       <div v-html="renderedHTML"></div>
     </div>
   </div>
@@ -201,21 +215,6 @@ const handleSend = async () => {
 </template>
 
 <style scoped>
-.editor-container {
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
-}
-
-.message-preview {
-  border: 1px solid #ccc;
-  padding: 1rem;
-  margin-top: 0;
-  min-height: 524px;
-  min-width: 500px;
-  background-color: white;
-}
-
 .send-button-container {
   margin-top: 1rem;
 }

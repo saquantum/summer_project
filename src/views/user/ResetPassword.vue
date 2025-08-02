@@ -13,15 +13,17 @@ import {
   createRepasswordRules,
   passwordRules
 } from '@/utils/formUtils'
+import CodeUtil from '@/utils/codeUtil'
 const userStore = useUserStore()
 
 const { logout } = useGlobalLogout()
 
+const formRef = ref()
 const form = ref({
   code: '',
   password: '',
   repassword: '',
-  email: userStore.user?.assetHolder?.email || ''
+  email: userStore.user?.contactDetails?.email || ''
 })
 
 const rules = {
@@ -30,11 +32,33 @@ const rules = {
   code: codeRules
 }
 
+// count down for send button
+const sendDisabled = ref(false)
+const countdown = ref(0)
+let timer: ReturnType<typeof setInterval> | null = null
+
 const resetFormVisible = ref(false)
 
+// reset password
 const handleSendEmail = async () => {
   try {
+    await formRef.value.validateField('code')
+  } catch {
+    return
+  }
+
+  try {
     await userGetEmailService(form.value.email)
+    sendDisabled.value = true
+    countdown.value = 30
+    timer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) {
+        sendDisabled.value = false
+        clearInterval(timer!)
+        timer = null
+      }
+    }, 1000)
   } catch (e) {
     console.error(e)
   }
@@ -42,8 +66,10 @@ const handleSendEmail = async () => {
 
 const handleVerify = async () => {
   try {
-    await userEmailVerificationService(form.value)
-
+    const res = await userEmailVerificationService(form.value)
+    if (CodeUtil.isBusinessError(res.code)) {
+      throw new Error('Invalid code')
+    }
     resetFormVisible.value = true
   } catch (e) {
     console.error(e)
@@ -64,7 +90,7 @@ const handleConfirm = async () => {
   <div>For your account safety, we need to verify your email</div>
   <div>
     OTP code will send to your email
-    {{ userStore.user?.assetHolder?.email }}
+    {{ userStore.user?.contactDetails?.email }}
   </div>
   <el-form
     :model="form"
@@ -79,7 +105,9 @@ const handleConfirm = async () => {
     </el-form-item>
 
     <el-form-item>
-      <el-button @click="handleSendEmail">Send OTP code</el-button>
+      <el-button @click="handleSendEmail" :disabled="sendDisabled">
+        {{ sendDisabled ? `Send (${countdown})` : 'Send' }}
+      </el-button>
       <el-button @click="handleVerify">Verify</el-button>
     </el-form-item>
   </el-form>

@@ -192,3 +192,9 @@ export const adminUpdatePermissionService = (
 
 export const adminSendMessageService = (obj: object) =>
   request.post('/admin/notify/inbox/all', obj)
+
+/**
+ * meta data
+ */
+
+export const adminGetMetaDateService = () => request.get('/admin/metadata')

@@ -1,38 +1,36 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import * as echarts from 'echarts'
 import type { ECharts } from 'echarts'
 import ukmap from '@/assets/ukmap.json'
 import type { GeoJSONSourceInput } from 'echarts/types/src/coord/geo/geoTypes.js'
-import { adminSearchUsersService } from '@/api/admin'
+import { adminGetMetaDateService, adminSearchUsersService } from '@/api/admin'
 import type { UserItem, UserSearchBody } from '@/types'
-
+import LineChart from '@/components/charts/LineChart.vue'
+import RingGauge from '@/components/charts/RingGauge.vue'
+import { Location, User, Message, ChatLineRound } from '@element-plus/icons-vue'
 let mapChart: ECharts | null = null
-let barChart: ECharts | null = null
-let lineChart: ECharts | null = null
-let nightingaleChart: ECharts | null = null
 
 const users = ref<UserItem[]>([])
 
-const userLabels = computed(() => {
-  if (users.value.length <= 0) return []
-  return users.value.map((item) => item.user.id)
-})
-
-const userAssetNumbers = computed(() => {
-  if (users.value.length <= 0) return []
-  return users.value.map((item) => item.accumulation)
-})
 const handleResize = () => {
-  if (mapChart && barChart && lineChart && nightingaleChart) {
+  if (mapChart) {
     mapChart.resize()
-    barChart.resize()
-    lineChart.resize()
-    nightingaleChart.resize()
   }
 }
 
+const userCount = ref()
+const assetCount = ref()
+
 onMounted(async () => {
+  const res1 = await adminGetMetaDateService()
+
+  const user = res1.data.find((item) => item.tableName === 'users')
+  const asset = res1.data.find((item) => item.tableName === 'assets')
+
+  userCount.value = user.totalCount
+  assetCount.value = asset.totalCount
+
   const res = await adminSearchUsersService('count', {
     orderList: 'accumulation,desc',
     limit: 5
@@ -74,6 +72,14 @@ onMounted(async () => {
     geo: {
       map: 'UK',
       roam: true,
+      // Adjust map position and size within canvas
+      left: '0%', // Left margin
+      right: '0%', // Right margin
+      top: '5%', // Top margin
+      bottom: '5%', // Bottom margin
+      // Or use layoutCenter and layoutSize for precise control
+      layoutCenter: ['50%', '50%'],
+      layoutSize: '80%', // Make map occupy 80% of canvas, reduce whitespace
       itemStyle: {
         areaColor: '#e7e8ea',
         borderColor: '#999'
@@ -99,110 +105,6 @@ onMounted(async () => {
   mapChart.hideLoading()
   mapChart.setOption(option)
 
-  barChart = echarts.init(document.getElementById('barChart'))
-
-  const barOption = {
-    title: {
-      text: 'User Assets'
-    },
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        // Use axis to trigger tooltip
-        type: 'shadow' // 'shadow' as default; can also be 'line' or 'shadow'
-      }
-    },
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '3%',
-      containLabel: true
-    },
-    xAxis: {
-      type: 'value',
-      boundaryGap: [0, 0.01]
-    },
-    yAxis: {
-      type: 'category',
-      data: userLabels.value
-    },
-    series: [
-      {
-        name: 'Total',
-        type: 'bar',
-        data: userAssetNumbers.value
-      }
-    ]
-  }
-
-  barChart.setOption(barOption)
-
-  // line chart
-  lineChart = echarts.init(document.getElementById('lineChart'))
-  const lineOption = {
-    title: {
-      text: 'User Change'
-    },
-    xAxis: {
-      type: 'category',
-      data: [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec'
-      ]
-    },
-    yAxis: {
-      type: 'value'
-    },
-    series: [
-      {
-        data: [820, 932, 901, 934, 1290, 1330, 1320, 1440, 1550, 1666, 1777],
-        type: 'line',
-        smooth: true
-      }
-    ]
-  }
-  lineChart.setOption(lineOption)
-
-  // nightingale chart
-  nightingaleChart = echarts.init(document.getElementById('nightingaleChart'))
-  const nightingaleOption = {
-    title: {
-      text: 'User Distribution in the UK'
-    },
-    legend: {
-      show: false
-    },
-    series: [
-      {
-        name: 'Nightingale Chart',
-        type: 'pie',
-        radius: [10, 60],
-        center: ['50%', '50%'],
-        roseType: 'area',
-        itemStyle: {
-          borderRadius: 0
-        },
-        data: [
-          { value: 40, name: 'England' },
-          { value: 38, name: 'Scotland' },
-          { value: 32, name: 'Wales' },
-          { value: 30, name: 'Northern Ireland' }
-        ]
-      }
-    ]
-  }
-  nightingaleChart.setOption(nightingaleOption)
-
   window.addEventListener('resize', handleResize)
 })
 
@@ -212,25 +114,51 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <el-row style="height: 100%">
-    <el-col :span="6">
-      <div class="middle-container">
-        <div id="barChart" class="map-container"></div>
-        <div id="lineChart" class="map-container"></div>
-        <div id="nightingaleChart" class="map-container"></div>
-      </div>
-    </el-col>
-    <el-col :span="12">
-      <div class="middle-container">
-        <div style="display: flex; justify-content: center">
-          <WarningCard></WarningCard>
-        </div>
-        <div id="main" class="map-container"></div>
-      </div>
-    </el-col>
+  <div style="display: flex; gap: 10px; flex-wrap: wrap">
+    <LineChart :count="userCount" id="user" title="User Statistics">
+      <template #icon>
+        <el-icon style="font-size: 18px; color: #409eff">
+          <User />
+        </el-icon>
+      </template>
+    </LineChart>
+    <LineChart :count="assetCount" id="asset" title="Asset Statistics">
+      <template #icon>
+        <el-icon style="font-size: 18px; color: #409eff">
+          <Location />
+        </el-icon>
+      </template>
+    </LineChart>
+  </div>
 
-    <el-col :span="6"> </el-col>
-  </el-row>
+  <!-- Map and Dashboard Layout -->
+  <div class="map-dashboard-container">
+    <!-- Left Side: Map Area -->
+    <div class="map-section">
+      <div id="main" class="map-container"></div>
+    </div>
+
+    <!-- Right Side: Dashboard Area -->
+    <div class="dashboard-section">
+      <RingGauge
+        id="email-sent"
+        title="Email Sent"
+        :value="75"
+        :max="100"
+        unit="%"
+      >
+        <template #icon>
+          <el-icon><Message /></el-icon>
+        </template>
+      </RingGauge>
+
+      <RingGauge id="sms-sent" title="SMS Sent" :value="65" :max="100" unit="%">
+        <template #icon>
+          <el-icon><ChatLineRound /></el-icon>
+        </template>
+      </RingGauge>
+    </div>
+  </div>
 </template>
 
 <style>
@@ -240,13 +168,67 @@ onBeforeUnmount(() => {
   flex-direction: column;
   justify-content: center;
 }
+
 .map-container {
-  /* border: 1px solid black; */
+  border: 1px solid black;
   padding: 16px 0;
   display: flex;
   justify-content: center;
-
   flex: 1;
   min-height: 0;
+  height: 100%;
+}
+
+/* Responsive Layout */
+.map-dashboard-container {
+  display: flex;
+  gap: 20px;
+  height: 650px;
+}
+
+.map-section {
+  flex: 3;
+  min-height: 0;
+}
+
+.dashboard-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Small Screen Responsive - Below 768px */
+@media (max-width: 768px) {
+  .map-dashboard-container {
+    flex-direction: column;
+    height: auto;
+    gap: 20px;
+  }
+
+  .map-section {
+    flex: none;
+    height: 800px;
+  }
+
+  .dashboard-section {
+    flex: none;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
+/* Smaller Screen - Below 576px */
+@media (max-width: 576px) {
+  .dashboard-section {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .map-section {
+    height: 800px;
+  }
 }
 </style>

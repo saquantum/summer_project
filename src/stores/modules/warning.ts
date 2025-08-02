@@ -14,17 +14,18 @@ export const useWarningStore = defineStore(
 
     const getAllWarnings = async () => {
       const res = await adminGetAllWarningsService()
-      allWarnings.value = res.data
+      if (res.data && res.data.length > 0) allWarnings.value = res.data
     }
     const getAllLiveWarnings = async () => {
       const res = await adminGetAllLiveWarningsService()
-      liveWarnings.value = res.data
+      if (res.data && res.data.length > 0) liveWarnings.value = res.data
     }
-    const outdatedWarnings = computed(() =>
-      allWarnings.value.filter(
+    const outdatedWarnings = computed(() => {
+      if (!allWarnings.value || allWarnings.value.length <= 0) return []
+      return allWarnings.value.filter(
         (item) => !liveWarnings.value.some((live) => live.id === item.id)
       )
-    )
+    })
     return {
       getAllWarnings,
       getAllLiveWarnings,

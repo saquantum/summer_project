@@ -40,17 +40,18 @@ export const useAssetStore = defineStore(
 
     const assetTypes = ref<AssetType[]>([])
 
-    const typeOptions = computed(() =>
-      assetTypes.value.map((item) => ({
+    const typeOptions = computed(() => {
+      if (!assetTypes.value || assetTypes.value.length <= 0) return []
+      return assetTypes.value.map((item) => ({
         label: item.name,
         value: item.id
       }))
-    )
+    })
 
     const getAssetTypes = async () => {
       try {
         const res = await getAssetTypesService()
-        assetTypes.value = res.data
+        if (res.data) assetTypes.value = res.data
       } catch (e) {
         console.error(e)
       }
@@ -77,7 +78,7 @@ export const useAssetStore = defineStore(
     const getAllAssets = async (obj: AssetSearchBody) => {
       try {
         const res = await adminSearchAssetService(obj)
-        allAssets.value = res.data
+        if (res.data) allAssets.value = res.data
         if (!allAssets.value || allAssets.value.length <= 0) return
         allAssets.value.forEach(
           (item) => (item.maxWarning = getMaxWarningLevel(item.warnings))

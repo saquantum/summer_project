@@ -53,11 +53,6 @@ const contactChannelOptions = [
   }
 ]
 
-const warningType = ref('Rain')
-const warningLevel = ref('YELLOW')
-const assetType = ref('type_001')
-const contactChannel = ref('Email')
-
 const editorRef = ref()
 const allowedVariables = ['asset-model', 'contact_name', 'post_town']
 
@@ -71,18 +66,29 @@ const compiledHTML = computed(() => {
   return editorRef.value.compiledHTML
 })
 
+const plainText = computed(() => {
+  if (!editorRef.value) return ''
+  return editorRef.value.plainText
+})
+
 const form = ref<Template>({
   id: 0,
-  assetTypeId: '',
-  warningType: '',
-  severity: '',
-  contactChannel: '',
+  assetTypeId: 'type_001',
+  warningType: 'Rain',
+  severity: 'YELLOW',
+  contactChannel: 'Email',
   title: '',
   body: ''
 })
 
 const submit = async () => {
-  form.value.body = renderedHTML.value
+  // set platform that can receive html format content.
+  if (form.value.contactChannel === 'Email') {
+    form.value.body = renderedHTML.value
+  } else {
+    form.value.body = plainText.value
+  }
+
   try {
     await adminUpdateTemplateByIdService(form.value)
     isDirty.value = false
@@ -128,25 +134,28 @@ onMounted(async () => {
   if (typeof id === 'string') {
     console.log(id)
     const res = await adminGetTemplateByIdService(id)
-    template = res.data[0]
+    console.log(res)
+    template = res.data
+    console.log(template)
     if (template) {
-      assetType.value = template.assetTypeId
-      warningType.value = template.warningType
-      warningLevel.value = template.severity
-      contactChannel.value = template.contactChannel
+      form.value.assetTypeId = template.assetTypeId
+      form.value.warningType = template.warningType
+      form.value.severity = template.severity
+      form.value.contactChannel = template.contactChannel
     }
   } else {
     const res = await adminGetTemplateByTypesService(
-      assetType.value,
-      warningType.value,
-      warningLevel.value,
-      contactChannel.value
+      form.value.assetTypeId,
+      form.value.warningType,
+      form.value.severity,
+      form.value.contactChannel
     )
     template = res.data[0]
   }
   if (template) {
     form.value = template
   }
+  console.log(form.value)
 
   // Now that initialization is complete, enable the watch
   await nextTick()
@@ -162,39 +171,39 @@ onBeforeUnmount(() => {
 })
 
 watch(
-  [warningType, warningLevel, assetType, contactChannel],
-  async ([
-    newWarningType,
-    newWarningLevel,
-    newAssetType,
-    newContactChannel
-  ]) => {
-    // Don't fetch new template during initialization
-    if (isInitializing.value) {
-      return
-    }
+  () => ({ ...form.value }),
+  async (newForm, oldForm) => {
+    console.log('watch triggered', {
+      newForm,
+      oldForm,
+      isInitializing: isInitializing.value
+    })
 
-    // User changed dropdown, fetch new template
-    const res = await adminGetTemplateByTypesService(
-      newAssetType,
-      newWarningType,
-      newWarningLevel,
-      newContactChannel
-    )
-    const template = res.data[0]
-    if (template) {
-      form.value = res.data[0]
-    }
-  },
-  {
-    immediate: false // Don't run immediately, let onMounted handle initial load
-  }
-)
-
-watch(
-  form,
-  () => {
     if (isInitializing.value) return
+
+    // Check if dropdown values changed (not title/body changes)
+    if (
+      oldForm &&
+      (newForm.warningType !== oldForm.warningType ||
+        newForm.severity !== oldForm.severity ||
+        newForm.assetTypeId !== oldForm.assetTypeId ||
+        newForm.contactChannel !== oldForm.contactChannel)
+    ) {
+      console.log('dropdown changed, fetching template')
+      // User changed dropdown, fetch new template
+      const res = await adminGetTemplateByTypesService(
+        newForm.assetTypeId,
+        newForm.warningType,
+        newForm.severity,
+        newForm.contactChannel
+      )
+      const template = res.data[0]
+      if (template) {
+        form.value = template
+        isDirty.value = false // Reset dirty state after loading new template
+        return // Don't set dirty if we just loaded a template
+      }
+    }
 
     isDirty.value = true
   },
@@ -208,7 +217,7 @@ watch(
     <li v-for="item in allowedVariables" :key="item">{{ item }}</li>
   </ul>
 
-  <el-select v-model="warningType">
+  <el-select v-model="form.warningType">
     <el-option
       v-for="item in warningTypeOption"
       :key="item.value"
@@ -217,7 +226,7 @@ watch(
     ></el-option>
   </el-select>
 
-  <el-select v-model="contactChannel">
+  <el-select v-model="form.contactChannel">
     <el-option
       v-for="item in contactChannelOptions"
       :key="item.value"
@@ -226,7 +235,7 @@ watch(
     ></el-option>
   </el-select>
 
-  <el-select v-model="assetType" placeholder="Please choose asset type">
+  <el-select v-model="form.assetTypeId" placeholder="Please choose asset type">
     <el-option
       v-for="item in assetStore.typeOptions"
       :key="item.value"
@@ -235,7 +244,7 @@ watch(
     />
   </el-select>
 
-  <el-select v-model="warningLevel" placeholder="Select warning level">
+  <el-select v-model="form.severity" placeholder="Select warning level">
     <el-option
       v-for="item in warningLevelOptions"
       :key="item.value"
@@ -247,16 +256,21 @@ watch(
   <div>Title</div>
   <el-input v-model="form.title"></el-input>
 
-  <div style="display: flex; gap: 24px; align-items: flex-start">
-    <TiptapEditor ref="editorRef" v-model:content="form.body" />
+  <div style="display: flex; gap: 24px; align-items: stretch; flex-wrap: wrap">
+    <div style="flex: 1; min-width: 300px; height: 564px">
+      <TiptapEditor ref="editorRef" v-model:content="form.body" />
+    </div>
     <div
       class="preview"
       style="
         border: 1px solid #ccc;
         padding: 1rem;
         margin-top: 0;
-        min-height: 524px;
+        height: 564px;
+        min-width: 300px;
+        flex: 1;
         background-color: white;
+        overflow-y: auto;
       "
     >
       <div v-html="compiledHTML"></div>

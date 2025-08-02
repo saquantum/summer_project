@@ -422,6 +422,7 @@ useResponsiveAction((width) => {
   max-width: 1200px;
   margin: 0 auto;
   min-height: 80vh;
+  margin-top: 10px;
 }
 
 /* .mail-list-panel {
@@ -441,9 +442,6 @@ useResponsiveAction((width) => {
     width: 100% !important;
     /* max-width: 500px !important; */
   /* } */
-  .mail-list-panel {
-    margin-top: 10px;
-  }
 
   .mail-detail-panel {
     max-width: none !important;

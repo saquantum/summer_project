@@ -34,7 +34,7 @@ const handleCommand = (command: string) => {
 }
 
 const handleMailClick = () => {
-  if (userStore.user?.admin) router.push('/admin/message')
+  if (userStore.user?.admin) router.push('/admin/message/send')
   else router.push('/message')
 }
 
@@ -200,7 +200,6 @@ watch(
 
         &:hover {
           color: #409eff;
-          transform: scale(1.2);
         }
       }
     }
