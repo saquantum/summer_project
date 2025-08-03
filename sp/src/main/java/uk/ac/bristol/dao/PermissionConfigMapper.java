@@ -11,10 +11,12 @@ import java.util.Map;
 @Mapper
 public interface PermissionConfigMapper {
 
-    List<PermissionConfig> selectAllPermissionConfigs(@Param("filterList") List<FilterItemDTO> filterList,
+    List<PermissionConfig> selectPermissionConfigs(@Param("filterList") List<FilterItemDTO> filterList,
                                                       @Param("orderList") List<Map<String, String>> orderList,
                                                       @Param("limit") Integer limit,
                                                       @Param("offset") Integer offset);
+
+    List<Map<String, Object>> selectPermissionConfigAnchor(@Param("rowId") Long rowId);
 
     List<PermissionConfig> selectPermissionConfigByUserId(@Param("userId") String userId);
 

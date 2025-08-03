@@ -25,7 +25,7 @@
         <include refid="QueryBlocks.orderAndPage"/>
     </select>
 
-    <select id="selectAssetsWithWarnings" resultMap="ResultMaps.AssetWithWarningsMap">
+    <sql id="selectAssetsWithWarnings">
         select asset_row_id,
                asset_id,
                asset_name,
@@ -60,8 +60,19 @@
                               now() between warning_valid_from and warning_valid_to
                  left join asset_types
                            on asset_type_type_id = asset_type_id
+    </sql>
+
+    <select id="selectAssetsWithWarnings" resultMap="ResultMaps.AssetWithWarningsMap">
+        <include refid="selectAssetsWithWarnings"/>
         <include refid="QueryBlocks.filtering"/>
         <include refid="QueryBlocks.orderAndPage"/>
+    </select>
+
+    <select id="selectAssetWithWarningsAnchor" resultType="java.util.Map">
+        <include refid="selectAssetsWithWarnings"/>
+        where asset_row_id = #{rowId}
+        order by asset_row_id asc
+        limit 1 offset 0
     </select>
 
     <select id="selectAssetsWithWarningsPuttingWarningsTableMain" resultMap="ResultMaps.AssetWithWarningsMap">
@@ -194,6 +205,14 @@
         from asset_types
         <include refid="QueryBlocks.filtering"/>
         <include refid="QueryBlocks.orderAndPage"/>
+    </select>
+
+    <select id="selectAssetTypeAnchor" resultType="java.util.Map">
+        select *
+        from asset_types
+        where asset_type_row_id = #{rowId}
+        order by asset_type_row_id asc
+        limit 1 offset 0
     </select>
 
     <insert id="insertAssetType">

@@ -67,15 +67,24 @@ public class UserServiceImpl implements UserService {
                                Integer offset) {
         return userMapper.selectUsers(
                 QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "permission_configs"),
+                QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "permission_configs"),
                 limit, offset);
     }
 
     @Override
     public List<User> getCursoredUsers(Long lastUserRowId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
+        Map<String, Object> anchor = null;
+        if (lastUserRowId != null) {
+            List<Map<String, Object>> list = userMapper.selectUserAnchor(lastUserRowId);
+            if (list.size() != 1) {
+                throw new SpExceptions.GetMethodException("Found " + list.size() + " anchors using user row id " + lastUserRowId);
+            }
+            anchor = list.get(0);
+        }
+        List<Map<String, String>> formattedOrderList = QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "permission_configs");
         return userMapper.selectUsers(
-                QueryTool.formatCursoredDeepPageFilters("user_row_id", lastUserRowId, filters),
-                QueryTool.filterOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "permission_configs"),
+                QueryTool.formatCursoredDeepPageFilters(filters, anchor, formattedOrderList),
+                formattedOrderList,
                 limit, offset);
     }
 
@@ -91,7 +100,7 @@ public class UserServiceImpl implements UserService {
         filters.put("user_is_admin", false);
         return userMapper.selectUsers(
                 QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "permission_configs"),
+                QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "permission_configs"),
                 limit, offset);
     }
 
@@ -107,7 +116,7 @@ public class UserServiceImpl implements UserService {
             return userMapper.selectUsersWithAccumulator(
                     function, column,
                     QueryTool.formatFilters(filters),
-                    QueryTool.filterOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "permission_configs", "accumulation"),
+                    QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "permission_configs", "accumulation"),
                     limit, offset);
         }
         throw new SpExceptions.GetMethodException("function " + function + " is not supported at current stage");
@@ -116,10 +125,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserWithExtraColumns> getCursoredUsersWithAccumulator(String function, String column, Long lastUserRowId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
         if ("count".equalsIgnoreCase(function)) {
+            Map<String, Object> anchor = null;
+            if (lastUserRowId != null) {
+                List<Map<String, Object>> list = userMapper.selectUserWithAccumulatorAnchor(function, column, lastUserRowId);
+                if (list.size() != 1) {
+                    throw new SpExceptions.GetMethodException("Found " + list.size() + " anchors using user row id " + lastUserRowId);
+                }
+                anchor = list.get(0);
+            }
+            List<Map<String, String>> formattedOrderList = QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "permission_configs", "accumulation");
             return userMapper.selectUsersWithAccumulator(
                     function, column,
-                    QueryTool.formatCursoredDeepPageFilters("user_row_id", lastUserRowId, filters),
-                    QueryTool.filterOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "permission_configs", "accumulation"),
+                    QueryTool.formatCursoredDeepPageFilters(filters, anchor, formattedOrderList),
+                    formattedOrderList,
                     limit, offset);
         }
         throw new SpExceptions.GetMethodException("function " + function + " is not supported at current stage");

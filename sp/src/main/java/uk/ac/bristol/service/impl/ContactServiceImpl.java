@@ -274,17 +274,26 @@ public class ContactServiceImpl implements ContactService {
                                                    List<Map<String, String>> orderList,
                                                    Integer limit,
                                                    Integer offset) {
-        return contactMapper.selectAllNotificationTemplates(
+        return contactMapper.selectNotificationTemplates(
                 QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList("template_id", orderList, "templates"),
+                QueryTool.formatOrderList("template_id", orderList, "templates"),
                 limit, offset);
     }
 
     @Override
     public List<Template> getCursoredNotificationTemplates(Long lastTemplateId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
-        return contactMapper.selectAllNotificationTemplates(
-                QueryTool.formatCursoredDeepPageFilters("template_id", lastTemplateId, filters),
-                QueryTool.filterOrderList("template_id", orderList, "templates"),
+        Map<String, Object> anchor = null;
+        if (lastTemplateId != null) {
+            List<Map<String, Object>> list = contactMapper.selectNotificationTemplateAnchor(lastTemplateId);
+            if (list.size() != 1) {
+                throw new SpExceptions.GetMethodException("Found " + list.size() + " anchors using template id " + lastTemplateId);
+            }
+            anchor = list.get(0);
+        }
+        List<Map<String, String>> formattedOrderList = QueryTool.formatOrderList("template_id", orderList, "templates");
+        return contactMapper.selectNotificationTemplates(
+                QueryTool.formatCursoredDeepPageFilters(filters, anchor, formattedOrderList),
+                formattedOrderList,
                 limit, offset);
     }
 

@@ -45,7 +45,7 @@ public class AssetServiceImpl implements AssetService {
                                  Integer offset) {
         return assetMapper.selectAssets(
                 QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList("asset_row_id", orderList, "assets"),
+                QueryTool.formatOrderList("asset_row_id", orderList, "assets"),
                 limit, offset);
     }
 
@@ -55,7 +55,7 @@ public class AssetServiceImpl implements AssetService {
                                                                 List<Map<String, String>> orderList,
                                                                 Integer limit,
                                                                 Integer offset) {
-        List<Map<String, String>> list = QueryTool.filterOrderList("asset_row_id", orderList, "assets", "weather_warnings");
+        List<Map<String, String>> list = QueryTool.formatOrderList("asset_row_id", orderList, "assets", "weather_warnings");
         boolean hasWeatherWarningColumn = list.stream()
                 .map(item -> item.get("column"))
                 .anyMatch(column -> {
@@ -77,9 +77,18 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public List<AssetWithWeatherWarnings> getCursoredAssetsWithWarnings(Long lastAssetRowId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
+        Map<String, Object> anchor = null;
+        if (lastAssetRowId != null) {
+            List<Map<String, Object>> list = assetMapper.selectAssetWithWarningsAnchor(lastAssetRowId);
+            if (list.size() != 1) {
+                throw new SpExceptions.GetMethodException("Found " + list.size() + " anchors using asset row id " + lastAssetRowId);
+            }
+            anchor = list.get(0);
+        }
+        List<Map<String, String>> formattedOrderList = QueryTool.formatOrderList("asset_row_id", orderList, "assets", "weather_warnings");
         return assetMapper.selectAssetsWithWarnings(
-                QueryTool.formatCursoredDeepPageFilters("asset_row_id", lastAssetRowId, filters),
-                QueryTool.filterOrderList("asset_row_id", orderList, "assets", "weather_warnings"),
+                QueryTool.formatCursoredDeepPageFilters(filters, anchor, formattedOrderList),
+                formattedOrderList,
                 limit, offset);
     }
 
@@ -115,7 +124,7 @@ public class AssetServiceImpl implements AssetService {
                                           Integer offset) {
         return assetMapper.selectAssets(
                 QueryTool.formatFilters(Map.of("asset_owner_id", ownerId)),
-                QueryTool.filterOrderList("asset_row_id", orderList, "assets"),
+                QueryTool.formatOrderList("asset_row_id", orderList, "assets"),
                 limit, offset);
     }
 
@@ -127,7 +136,7 @@ public class AssetServiceImpl implements AssetService {
                                                                          Integer offset) {
         return assetMapper.selectAssetsWithWarnings(
                 QueryTool.formatFilters(Map.of("asset_owner_id", ownerId)),
-                QueryTool.filterOrderList("asset_row_id", orderList, "assets", "asset_types", "weather_warnings"),
+                QueryTool.formatOrderList("asset_row_id", orderList, "assets", "asset_types", "weather_warnings"),
                 limit, offset);
     }
 
@@ -139,15 +148,24 @@ public class AssetServiceImpl implements AssetService {
                                          Integer offset) {
         return assetMapper.selectAssetTypes(
                 QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList("asset_type_row_id", orderList, "asset_types"),
+                QueryTool.formatOrderList("asset_type_row_id", orderList, "asset_types"),
                 limit, offset);
     }
 
     @Override
     public List<AssetType> getCursoredAssetTypes(Long lastAssetTypeRowId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
+        Map<String, Object> anchor = null;
+        if (lastAssetTypeRowId != null) {
+            List<Map<String, Object>> list = assetMapper.selectAssetTypeAnchor(lastAssetTypeRowId);
+            if (list.size() != 1) {
+                throw new SpExceptions.GetMethodException("Found " + list.size() + " anchors using asset type row id " + lastAssetTypeRowId);
+            }
+            anchor = list.get(0);
+        }
+        List<Map<String, String>> formattedOrderList = QueryTool.formatOrderList("asset_type_row_id", orderList, "asset_types");
         return assetMapper.selectAssetTypes(
-                QueryTool.formatCursoredDeepPageFilters("asset_type_row_id", lastAssetTypeRowId, filters),
-                QueryTool.filterOrderList("asset_type_row_id", orderList, "asset_types"),
+                QueryTool.formatCursoredDeepPageFilters(filters, anchor, formattedOrderList),
+                formattedOrderList,
                 limit, offset);
     }
 

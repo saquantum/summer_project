@@ -23,6 +23,8 @@ public interface AssetMapper {
                                                             @Param("limit") Integer limit,
                                                             @Param("offset") Integer offset);
 
+    List<Map<String, Object>> selectAssetWithWarningsAnchor(@Param("rowId") Long rowId);
+
     List<AssetWithWeatherWarnings> selectAssetsWithWarningsPuttingWarningsTableMain(@Param("filterList") List<FilterItemDTO> filterList,
                                                                                     @Param("orderList") List<Map<String, String>> orderList,
                                                                                     @Param("limit") Integer limit,
@@ -48,6 +50,8 @@ public interface AssetMapper {
                                      @Param("orderList") List<Map<String, String>> orderList,
                                      @Param("limit") Integer limit,
                                      @Param("offset") Integer offset);
+
+    List<Map<String, Object>> selectAssetTypeAnchor(@Param("rowId") Long rowId);
 
     int insertAssetType(AssetType assetType);
 

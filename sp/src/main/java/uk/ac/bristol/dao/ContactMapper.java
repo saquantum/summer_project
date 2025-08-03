@@ -13,10 +13,12 @@ public interface ContactMapper {
 
     /* templates */
 
-    List<Template> selectAllNotificationTemplates(@Param("filterList") List<FilterItemDTO> filterList,
+    List<Template> selectNotificationTemplates(@Param("filterList") List<FilterItemDTO> filterList,
                                                   @Param("orderList") List<Map<String, String>> orderList,
                                                   @Param("limit") Integer limit,
                                                   @Param("offset") Integer offset);
+
+    List<Map<String, Object>> selectNotificationTemplateAnchor(@Param("rowId") Long rowId);
 
     List<Template> selectNotificationTemplateByTypes(Template template);
 

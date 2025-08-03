@@ -20,6 +20,8 @@ public interface UserMapper {
                            @Param("limit") Integer limit,
                            @Param("offset") Integer offset);
 
+    List<Map<String, Object>> selectUserAnchor(@Param("rowId") Long rowId);
+
     List<User> selectUsersWithoutAssociation(@Param("filterList") List<FilterItemDTO> filterList,
                                              @Param("orderList") List<Map<String, String>> orderList,
                                              @Param("limit") Integer limit,
@@ -31,6 +33,10 @@ public interface UserMapper {
                                                           @Param("orderList") List<Map<String, String>> orderList,
                                                           @Param("limit") Integer limit,
                                                           @Param("offset") Integer offset);
+
+    List<Map<String, Object>> selectUserWithAccumulatorAnchor(@Param("function") String function,
+                                                              @Param("column") String column,
+                                                              @Param("rowId") Long rowId);
 
     String selectPasswordByUserId(@Param("id") String id);
 

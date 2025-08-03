@@ -27,17 +27,26 @@ public class PermissionConfigServiceImpl implements PermissionConfigService {
                                                        List<Map<String, String>> orderList,
                                                        Integer limit,
                                                        Integer offset) {
-        return permissionConfigMapper.selectAllPermissionConfigs(
+        return permissionConfigMapper.selectPermissionConfigs(
                 QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList("permission_config_row_id", orderList, "permission_configs"),
+                QueryTool.formatOrderList("permission_config_row_id", orderList, "permission_configs"),
                 limit, offset);
     }
 
     @Override
     public List<PermissionConfig> getCursoredPermissionConfigs(Long lastConfigRowId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
-        return permissionConfigMapper.selectAllPermissionConfigs(
-                QueryTool.formatCursoredDeepPageFilters("permission_config_row_id", lastConfigRowId, filters),
-                QueryTool.filterOrderList("permission_config_row_id", orderList, "permission_configs"),
+        Map<String, Object> anchor = null;
+        if (lastConfigRowId != null) {
+            List<Map<String, Object>> list = permissionConfigMapper.selectPermissionConfigAnchor(lastConfigRowId);
+            if (list.size() != 1) {
+                throw new SpExceptions.GetMethodException("Found " + list.size() + " anchors using permission config row id " + lastConfigRowId);
+            }
+            anchor = list.get(0);
+        }
+        List<Map<String, String>> formattedOrderList = QueryTool.formatOrderList("permission_config_row_id", orderList, "permission_configs");
+        return permissionConfigMapper.selectPermissionConfigs(
+                QueryTool.formatCursoredDeepPageFilters(filters, anchor, formattedOrderList),
+                formattedOrderList,
                 limit, offset);
     }
 

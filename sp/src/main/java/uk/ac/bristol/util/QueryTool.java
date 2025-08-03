@@ -127,13 +127,60 @@ public final class QueryTool {
         return filterList;
     }
 
-    public static List<FilterItemDTO> formatCursoredDeepPageFilters(String mainTableRowIdName, Long lastRowId, Map<String, Object> filters) {
-        if (mainTableRowIdName == null || lastRowId == null) {
+
+    private static String wrapValue(Object val) {
+        if (val == null) {
+            throw new IllegalArgumentException("To wrap a value it must not be null");
+        }
+        if (val instanceof String) {
+            return "'" + val.toString().replace("'", "''") + "'";
+        }
+        if (val instanceof java.sql.Date) {
+            return "'" + ((java.sql.Date) val).toLocalDate().toString() + "'";
+        }
+        if (val instanceof java.util.Date) {
+            return "'" + new java.sql.Timestamp(((java.util.Date) val).getTime()).toString() + "'";
+        }
+        return val.toString();
+    }
+
+    // NOTICE: formatOrderList should always insert row id of main table to the rightmost and only then this method works correctly
+    // maybe we want to diminish this tight coupling...
+    public static List<FilterItemDTO> formatCursoredDeepPageFilters(Map<String, Object> filters,
+                                                                    Map<String, Object> anchor,
+                                                                    List<Map<String, String>> formattedOrderList) {
+        if (anchor == null || anchor.isEmpty() || formattedOrderList == null || formattedOrderList.isEmpty()) {
             return formatFilters(filters);
         }
 
         List<FilterItemDTO> result = new ArrayList<>();
-        result.add(FilterItemDTO.range(mainTableRowIdName, lastRowId + 1L, null));
+
+        List<String> cursorConditionParts = new ArrayList<>();
+        for (int i = 0; i < formattedOrderList.size(); i++) {
+            Map<String, String> item = formattedOrderList.get(i);
+            String column = item.get("column");
+            String direction = item.get("direction");
+
+            try {
+                List<String> subParts = new ArrayList<>();
+                for (int j = 0; j < i; j++) {
+                    String col = formattedOrderList.get(j).get("column");
+                    String val = wrapValue(anchor.get(col));
+                    subParts.add(col + " = " + val);
+                }
+
+                String anchorVal = wrapValue(anchor.get(column));
+                String op = "asc".equalsIgnoreCase(direction) ? " > " : " < ";
+                subParts.add(column + op + anchorVal);
+
+                cursorConditionParts.add("(" + String.join(" and ", subParts) + ")");
+            } catch (IllegalArgumentException e) {
+                throw new SpExceptions.SystemException("A column is found from the formatted order list," +
+                        " but failed to be found from the anchor," +
+                        " which indicates the joint tables of the query does not match permitted tables when formatting order list");
+            }
+        }
+        result.add(FilterItemDTO.raw(String.join(" or ", cursorConditionParts)));
         result.addAll(formatFilters(filters));
         return result;
     }
@@ -169,7 +216,9 @@ public final class QueryTool {
         return list;
     }
 
-    public static List<Map<String, String>> filterOrderList(String mainTableRowIdName, List<Map<String, String>> originalList, String... tablesAndColumns) {
+    public static List<Map<String, String>> formatOrderList(String mainTableRowIdName,
+                                                            List<Map<String, String>> originalList,
+                                                            String... tablesAndColumns) {
         if (mainTableRowIdName == null) {
             throw new SpExceptions.SystemException("The name of main table's row ID must not be null during query, a method from the service layer is wrong.");
         }
@@ -200,10 +249,9 @@ public final class QueryTool {
                 })
                 .toList();
 
-        // 3. insert row id to leftmost
-        List<Map<String, String>> result = new ArrayList<>();
+        // 3. insert row id to rightmost
+        List<Map<String, String>> result = new ArrayList<>(filtered);
         result.add(Map.of("column", mainTableRowIdName, "direction", "asc"));
-        result.addAll(filtered);
         return result;
     }
 
