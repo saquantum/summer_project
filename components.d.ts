@@ -14,6 +14,7 @@ declare module 'vue' {
     AssetForm: typeof import('./src/components/cards/AssetForm.vue')['default']
     AssetGrid: typeof import('./src/components/AssetGrid.vue')['default']
     AssetSearch: typeof import('./src/components/search/AssetSearch.vue')['default']
+    BarChart: typeof import('./src/components/charts/BarChart.vue')['default']
     ConfirmDialog: typeof import('./src/components/dialog/ConfirmDialog.vue')['default']
     copy: typeof import('./src/components/cards/AssetCardHorizontal copy.vue')['default']
     CropperDialog: typeof import('./src/components/dialog/CropperDialog.vue')['default']

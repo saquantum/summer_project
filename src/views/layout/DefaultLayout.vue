@@ -220,11 +220,9 @@ watch(
   }
 
   .el-main {
-    /* 为主内容区域也预留滚动条空间，保持整体布局稳定 */
     scrollbar-gutter: stable;
-    /* 明确设置滚动行为 */
     overflow-y: auto;
-    height: calc(100vh - 60px); /* 减去header高度 */
+    height: calc(100vh - 60px);
   }
 
   .el-footer {
@@ -251,7 +249,7 @@ watch(
   }
 
   .el-main {
-    padding: 0;
+    padding: 0px, 2px;
     padding-bottom: 50px;
   }
 }

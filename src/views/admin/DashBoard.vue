@@ -7,8 +7,8 @@ import type { GeoJSONSourceInput } from 'echarts/types/src/coord/geo/geoTypes.js
 import { adminGetMetaDateService, adminSearchUsersService } from '@/api/admin'
 import type { UserItem, UserSearchBody } from '@/types'
 import LineChart from '@/components/charts/LineChart.vue'
-import RingGauge from '@/components/charts/RingGauge.vue'
-import { Location, User, Message, ChatLineRound } from '@element-plus/icons-vue'
+import BarChart from '@/components/charts/BarChart.vue'
+import { Location, User, Message } from '@element-plus/icons-vue'
 let mapChart: ECharts | null = null
 
 const users = ref<UserItem[]>([])
@@ -42,43 +42,49 @@ onMounted(async () => {
   mapChart.showLoading()
   echarts.registerMap('UK', ukmap as GeoJSONSourceInput)
 
-  function randomPieSeries(center: number[], radius: number) {
-    const data = ['A', 'B', 'C', 'D'].map((t) => {
-      return {
-        value: Math.round(Math.random() * 100),
-        name: 'Category ' + t
-      }
-    })
-    return {
-      type: 'pie',
-      coordinateSystem: 'geo',
-      tooltip: {
-        formatter: '{b}: {c} ({d}%)'
-      },
-      label: {
-        show: false
-      },
-      labelLine: {
-        show: false
-      },
-      animationDuration: 0,
-      radius,
-      center,
-      data
-    }
-  }
+  // Scatter plot data - UK cities data points
+  const scatterData = [
+    [-0.1276, 51.5072, 85], // London - [longitude, latitude, value]
+    [-3.1883, 55.9533, 62], // Edinburgh
+    [-1.2577, 51.752, 45], // Oxford
+    [-2.2426, 53.4808, 73], // Manchester
+    [-1.4701, 53.3811, 58], // Sheffield
+    [-1.8904, 52.4862, 39] // Birmingham
+  ]
 
   const option = {
+    tooltip: {
+      trigger: 'item',
+      formatter: function (params: {
+        seriesType: string
+        name: string
+        value: number[]
+      }) {
+        if (params.seriesType === 'effectScatter') {
+          return `${params.name}<br/>Value: ${params.value[2]}`
+        }
+        return params.name
+      }
+    },
+    legend: {
+      show: true,
+      data: ['UK Cities Data'],
+      left: 'center',
+      top: '10px',
+      textStyle: {
+        color: '#333'
+      }
+    },
     geo: {
       map: 'UK',
       roam: true,
       // Adjust map position and size within canvas
       left: '0%', // Left margin
       right: '0%', // Right margin
-      top: '5%', // Top margin
+      top: '15%', // Top margin - increased to make space for legend
       bottom: '5%', // Bottom margin
       // Or use layoutCenter and layoutSize for precise control
-      layoutCenter: ['50%', '50%'],
+      layoutCenter: ['50%', '55%'], // Adjusted center to account for legend
       layoutSize: '80%', // Make map occupy 80% of canvas, reduce whitespace
       itemStyle: {
         areaColor: '#e7e8ea',
@@ -90,15 +96,81 @@ onMounted(async () => {
         }
       }
     },
-    tooltip: {},
-    legend: {
-      show: true
-    },
     series: [
-      randomPieSeries([-0.1276, 51.5072], 15), // London
-      randomPieSeries([-3.1883, 55.9533], 20), // Edinburgh
-      randomPieSeries([-1.2577, 51.752], 25), // Oxford
-      randomPieSeries([-2.2426, 53.4808], 18) // Manchester
+      {
+        name: 'UK Cities Data', // Add name for legend
+        type: 'effectScatter',
+        coordinateSystem: 'geo',
+        geoIndex: 0,
+        symbolSize: function (params: number[]) {
+          // Adjust scatter point size based on value
+          return (params[2] / 100) * 20 + 8
+        },
+        itemStyle: {
+          color: '#409eff',
+          opacity: 0.8
+        },
+        emphasis: {
+          itemStyle: {
+            color: '#ff6b6b',
+            opacity: 1
+          }
+        },
+        encode: {
+          tooltip: 2
+        },
+        data: scatterData.map((item, index) => {
+          const cityNames = [
+            'London',
+            'Edinburgh',
+            'Oxford',
+            'Manchester',
+            'Sheffield',
+            'Birmingham'
+          ]
+          const value = item[2]
+
+          // Conditional animation settings based on value
+          let rippleConfig = {}
+          if (value > 70) {
+            // High value cities - fast, large ripples
+            rippleConfig = {
+              period: 2,
+              scale: 4
+            }
+          } else if (value > 50) {
+            // Medium value cities - normal ripples
+            rippleConfig = {
+              period: 3,
+              scale: 3
+            }
+          } else {
+            // Low value cities - slow, small ripples
+            rippleConfig = {
+              period: 6,
+              scale: 2
+            }
+          }
+
+          return {
+            name: cityNames[index],
+            value: item,
+            // Add conditional properties to each data point
+            itemStyle: {
+              color:
+                value > 70 ? '#ff4757' : value > 50 ? '#ffa502' : '#409eff',
+              opacity: 0.8
+            },
+            emphasis: {
+              itemStyle: {
+                color: '#ff6b6b',
+                opacity: 1
+              }
+            },
+            rippleEffect: rippleConfig
+          }
+        })
+      }
     ]
   }
 
@@ -114,7 +186,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div style="display: flex; gap: 10px; flex-wrap: wrap">
+  <div class="stats-container">
     <LineChart :count="userCount" id="user" title="User Statistics">
       <template #icon>
         <el-icon style="font-size: 18px; color: #409eff">
@@ -123,6 +195,13 @@ onBeforeUnmount(() => {
       </template>
     </LineChart>
     <LineChart :count="assetCount" id="asset" title="Asset Statistics">
+      <template #icon>
+        <el-icon style="font-size: 18px; color: #409eff">
+          <Location />
+        </el-icon>
+      </template>
+    </LineChart>
+    <LineChart :count="assetCount" id="asset-copy" title="Asset Statistics">
       <template #icon>
         <el-icon style="font-size: 18px; color: #409eff">
           <Location />
@@ -140,23 +219,16 @@ onBeforeUnmount(() => {
 
     <!-- Right Side: Dashboard Area -->
     <div class="dashboard-section">
-      <RingGauge
-        id="email-sent"
-        title="Email Sent"
-        :value="75"
-        :max="100"
-        unit="%"
-      >
+      <BarChart id="contact-preference" title="Contact preference">
         <template #icon>
           <el-icon><Message /></el-icon>
         </template>
-      </RingGauge>
-
-      <RingGauge id="sms-sent" title="SMS Sent" :value="65" :max="100" unit="%">
+      </BarChart>
+      <BarChart id="contact-preference-copy" title="Contact preference">
         <template #icon>
-          <el-icon><ChatLineRound /></el-icon>
+          <el-icon><Message /></el-icon>
         </template>
-      </RingGauge>
+      </BarChart>
     </div>
   </div>
 </template>
@@ -167,6 +239,14 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+.stats-container {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  align-items: stretch;
 }
 
 .map-container {
@@ -196,6 +276,11 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-height: 0;
+}
+
+.dashboard-section :deep(.bar-chart-card) {
+  flex: 1;
 }
 
 /* Small Screen Responsive - Below 768px */
@@ -229,6 +314,25 @@ onBeforeUnmount(() => {
 
   .map-section {
     height: 800px;
+  }
+
+  .stats-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+/* Extra responsive styles for stats container */
+@media (max-width: 1200px) {
+  .stats-container {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-container {
+    gap: 10px;
+    justify-content: center;
   }
 }
 </style>

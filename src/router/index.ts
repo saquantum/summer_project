@@ -1,3 +1,4 @@
+import { useUserStore } from '@/stores'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -117,29 +118,29 @@ Navigation Guards, enable when deploying
 3. based on path redirecting it
 */
 
-// router.beforeEach((to) => {
-//   const userStore = useUserStore()
-//   const isLoggedIn = userStore.user !== null
-//   const isAdmin = isLoggedIn && userStore.user?.admin === true
+router.beforeEach((to) => {
+  const userStore = useUserStore()
+  const isLoggedIn = userStore.user !== null
+  const isAdmin = isLoggedIn && userStore.user?.admin === true
 
-//   if (to.path === '/recover') return true
+  if (to.path === '/recover') return true
 
-//   if (!isLoggedIn && to.path !== '/login') {
-//     return '/login'
-//   }
+  if (!isLoggedIn && to.path !== '/login') {
+    return '/login'
+  }
 
-//   if (to.path === '/') {
-//     if (!isLoggedIn) return '/login'
-//     return isAdmin ? '/admin/dashboard' : '/assets'
-//   }
+  if (to.path === '/') {
+    if (!isLoggedIn) return '/login'
+    return isAdmin ? '/admin/dashboard' : '/assets'
+  }
 
-//   if (isLoggedIn && to.path === '/login') {
-//     return isAdmin ? '/admin/dashboard' : '/assets'
-//   }
+  if (isLoggedIn && to.path === '/login') {
+    return isAdmin ? '/admin/dashboard' : '/assets'
+  }
 
-//   if (!isAdmin && to.path.startsWith('/admin')) {
-//     return '/assets'
-//   }
-// })
+  if (!isAdmin && to.path.startsWith('/admin')) {
+    return '/assets'
+  }
+})
 
 export default router

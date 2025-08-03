@@ -86,7 +86,8 @@ onUnmounted(() => {
 
 <style scoped>
 .line-chart-card {
-  width: 375px;
+  min-width: 280px;
+  flex: 1;
   box-sizing: border-box;
 }
 
@@ -153,5 +154,28 @@ onUnmounted(() => {
 .chart-container {
   width: 100%;
   height: 100%;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .line-chart-card {
+    min-width: 250px;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .line-chart-card {
+    min-width: 200px;
+    width: 100%;
+  }
+
+  .card-content {
+    gap: 16px;
+  }
+
+  .count-number {
+    font-size: 24px;
+  }
 }
 </style>
