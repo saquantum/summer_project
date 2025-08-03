@@ -42,12 +42,6 @@ const resetFormVisible = ref(false)
 // reset password
 const handleSendEmail = async () => {
   try {
-    await formRef.value.validateField('code')
-  } catch {
-    return
-  }
-
-  try {
     await userGetEmailService(form.value.email)
     sendDisabled.value = true
     countdown.value = 30
@@ -65,6 +59,12 @@ const handleSendEmail = async () => {
 }
 
 const handleVerify = async () => {
+  try {
+    await formRef.value.validateField('code')
+  } catch {
+    return
+  }
+
   try {
     const res = await userEmailVerificationService(form.value)
     if (CodeUtil.isBusinessError(res.code)) {

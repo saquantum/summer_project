@@ -12,6 +12,9 @@ const form = ref({
   body: ''
 })
 
+// Separate string field for duration input to avoid the 0 display issue
+const durationInput = ref('')
+
 const rules = computed(() => ({
   userId: sendToAll.value
     ? []
@@ -45,16 +48,12 @@ const rules = computed(() => ({
         value: string,
         callback: (_error?: Error) => void
       ) => {
-        const durationValue = parseInt(durationInput.value, 10)
         if (!durationInput.value) {
           callback()
           return
         }
-        if (
-          isNaN(durationValue) ||
-          durationValue <= 0 ||
-          !Number.isInteger(durationValue)
-        ) {
+        const durationValue = parseFloat(durationInput.value)
+        if (durationValue <= 0 || !Number.isInteger(durationValue)) {
           callback(
             new Error('Please enter a valid duration (positive integer)')
           )
@@ -68,9 +67,6 @@ const rules = computed(() => ({
 }))
 
 const sendToAll = ref(false)
-
-// Separate string field for duration input to avoid the 0 display issue
-const durationInput = ref('')
 
 const editorRef = ref()
 const isLoading = ref(false)
@@ -90,7 +86,6 @@ const handleSend = async () => {
     try {
       await formRef.value.validate()
     } catch {
-      // Form validation failed, errors already shown by Element Plus
       return
     }
   }
@@ -158,6 +153,7 @@ const handleSend = async () => {
     <el-form-item label="Username" prop="userId">
       <el-input
         v-model="form.userId"
+        data-test="username-input"
         placeholder="Split username with ','"
       ></el-input>
     </el-form-item>
@@ -165,7 +161,8 @@ const handleSend = async () => {
       <el-input
         type="number"
         v-model="durationInput"
-        placeholder="Enter duration in minutes"
+        data-test="duration-input"
+        placeholder="Enter duration in minutes (integers only)"
         :min="1"
         step="1"
       ></el-input>
@@ -173,6 +170,7 @@ const handleSend = async () => {
     <el-form-item label="Title" prop="title">
       <el-input
         v-model="form.title"
+        data-test="title-input"
         placeholder="Please input title"
       ></el-input>
     </el-form-item>
@@ -183,10 +181,14 @@ const handleSend = async () => {
   </el-form>
 
   <div style="display: flex; gap: 24px; align-items: stretch; flex-wrap: wrap">
-    <div style="flex: 1; min-width: 300px; height: 564px">
+    <div
+      data-test="editor-container"
+      style="flex: 1; min-width: 300px; height: 564px"
+    >
       <TiptapEditor ref="editorRef" v-model:content="form.body" />
     </div>
     <div
+      data-test="message-preview"
       class="message-preview"
       style="
         border: 1px solid #ccc;
@@ -208,6 +210,7 @@ const handleSend = async () => {
       :loading="isLoading"
       :disabled="isLoading"
       type="primary"
+      data-test="send-button"
     >
       {{ isLoading ? 'Sending...' : 'Send' }}
     </el-button>

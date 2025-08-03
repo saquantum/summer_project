@@ -42,6 +42,10 @@ const submit = async () => {
     await adminUpdatePermissionService(p)
   }
 }
+
+const handleCancel = () => {
+  userCardRef.value.cancelEdit()
+}
 onMounted(async () => {
   const id = route.query.id
   if (typeof id === 'string') {
@@ -82,7 +86,7 @@ onMounted(async () => {
 
   <el-button @click="proxyUser" v-if="!isEdit"> Proxy as this user</el-button>
   <el-button @click="isEdit = true" v-if="!isEdit">Edit</el-button>
-  <el-button @click="isEdit = false" v-else>Cancel</el-button>
+  <el-button @click="handleCancel" v-else>Cancel</el-button>
   <el-button v-if="isEdit" @click="submit">Submit</el-button>
   <el-button type="danger" v-if="isEdit"> Delete </el-button>
 </template>

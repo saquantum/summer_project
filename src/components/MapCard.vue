@@ -363,54 +363,71 @@ const cancelDrawing = () => {
   m.off('click', handleClick)
 }
 
+const renderLayers = (m: L.Map) => {
+  if (!m) return
+
+  // Clear existing layers (except tile layer)
+  m.eachLayer((layer) => {
+    if (!(layer instanceof L.TileLayer)) {
+      m.removeLayer(layer)
+    }
+  })
+
+  if (!props.locations || props.locations.length === 0) return
+
+  // Create separate layers for each MultiPolygon
+  const layers: L.GeoJSON[] = []
+
+  props.locations.forEach((geometry, idx) => {
+    const feature: Feature = {
+      type: 'Feature',
+      geometry,
+      properties: { index: idx }
+    }
+
+    const layer = L.geoJSON(feature, {
+      style: () => {
+        if (props.styles?.length > 0 && props.styles[idx]) {
+          return props.styles[idx]
+        }
+        return {}
+      }
+    })
+
+    layer.addTo(m)
+    layers.push(layer)
+  })
+
+  // Store all layers for later use
+  saveLayer.length = 0 // Clear existing layers
+  saveLayer.push(...layers)
+
+  // Fit bounds to all layers
+  if (layers.length > 0) {
+    try {
+      const group = L.featureGroup(layers)
+      m.fitBounds(group.getBounds())
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  if (
+    props.locations[0] &&
+    JSON.stringify(props.locations[0]) !== JSON.stringify(DEFAULT_MULTIPOLYGON)
+  ) {
+    // conver multipolygon to polygon, this is only for asset
+    polygons.value = extractPolygonsFromMultiPolygon(props.locations[0])
+  }
+}
+
 watch(
   () => props.locations,
-  (newVal) => {
+  () => {
     const m = map
     if (!m) return
 
-    m.eachLayer((layer) => {
-      if (!(layer instanceof L.TileLayer)) {
-        m.removeLayer(layer)
-      }
-    })
-
-    if (!newVal || newVal.length === 0) return
-
-    // Create separate layers for each MultiPolygon
-    const layers: L.GeoJSON[] = []
-
-    props.locations.forEach((geometry, idx) => {
-      const feature: Feature = {
-        type: 'Feature',
-        geometry,
-        properties: { index: idx }
-      }
-
-      const layer = L.geoJSON(feature, {
-        style: () => {
-          if (props.styles?.length > 0 && props.styles[idx]) {
-            return props.styles[idx]
-          }
-          return {}
-        }
-      })
-
-      layer.addTo(m)
-      layers.push(layer)
-    })
-
-    // Fit bounds to all layers
-    if (layers.length > 0) {
-      try {
-        const group = L.featureGroup(layers)
-        m.fitBounds(group.getBounds())
-      } catch (e) {
-        console.error(e)
-      }
-    }
-
-    // highlightCurrentPolygon()
+    renderLayers(m)
   },
   {
     deep: true
@@ -433,55 +450,8 @@ onMounted(async () => {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map)
 
-  // Create separate layers for each MultiPolygon
-  const layers: L.GeoJSON[] = []
-
-  props.locations.forEach((geometry, idx) => {
-    const feature: Feature = {
-      type: 'Feature',
-      geometry,
-      properties: { index: idx }
-    }
-
-    const layer = L.geoJSON(feature, {
-      style: () => {
-        if (props.styles?.length > 0 && props.styles[idx]) {
-          return props.styles[idx]
-        }
-        return {}
-      }
-    })
-
-    if (map) {
-      layer.addTo(map)
-    }
-
-    layers.push(layer)
-  })
-
-  // Store all layers for later use
-  saveLayer.length = 0 // Clear existing layers
-  saveLayer.push(...layers)
-
-  // Fit bounds to all layers
-  if (layers.length > 0 && map) {
-    try {
-      const group = L.featureGroup(layers)
-      map.fitBounds(group.getBounds())
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
-  if (
-    props.locations[0] &&
-    JSON.stringify(props.locations[0]) !== JSON.stringify(DEFAULT_MULTIPOLYGON)
-  ) {
-    // conver multipolygon to polygon, this is only for asset
-    polygons.value = extractPolygonsFromMultiPolygon(props.locations[0])
-  }
-
-  // highlightCurrentPolygon()
+  // render layers using passed location
+  renderLayers(map)
 })
 
 onBeforeUnmount(() => {

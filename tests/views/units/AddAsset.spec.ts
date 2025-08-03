@@ -91,7 +91,7 @@ vi.mock('@/stores/index.ts', () => ({
 
 // Mock form utils
 vi.mock('@/utils/formUtils', () => ({
-  createAssetHolderRules: () => [
+  createUserRules: () => [
     { required: true, message: 'Username is required', trigger: 'blur' }
   ],
   trimForm: (form: any) => {

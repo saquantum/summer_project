@@ -2,7 +2,6 @@
 import { ref, onMounted, computed } from 'vue'
 import request from '@/utils/request'
 import { useAssetStore, useUserStore } from '@/stores/index.ts'
-import { adminGetUserInfoService } from '@/api/admin'
 import { userInsertAssetService } from '@/api/user'
 import { adminInsertAssetService } from '@/api/admin'
 import type { Feature, MultiPolygon } from 'geojson'
@@ -259,8 +258,8 @@ const userSubmit = async () => {
     }
   }
   form.value.location = form.value.locations[0] ?? ''
-  if (userStore.user?.assetHolderId) {
-    form.value.ownerId = userStore.user.assetHolderId
+  if (userStore.user) {
+    form.value.ownerId = userStore.user.id
   }
   form.value.capacityLitres = Number(form.value.capacityLitres)
 
@@ -274,7 +273,7 @@ const userSubmit = async () => {
     }
   }
   try {
-    if (userStore.user?.assetHolderId) {
+    if (userStore.user) {
       await userInsertAssetService(userStore.user?.id, form.value)
       ElMessage.success('Successfully add an asset')
     }
@@ -297,10 +296,7 @@ const adminSubmit = async () => {
   }
   form.value.location = form.value.locations[0] ?? ''
 
-  const res = await adminGetUserInfoService(form.value.username)
-  if (res.data.assetHolderId) {
-    form.value.ownerId = res.data.assetHolderId
-  }
+  form.value.ownerId = form.value.username
 
   form.value.capacityLitres = Number(form.value.capacityLitres)
   // if user did not set polygon, clear

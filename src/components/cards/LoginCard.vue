@@ -85,7 +85,7 @@ const login = async () => {
   }
 
   try {
-    // get importance asset value after login
+    // get necessary information after login
     await userStore.getUser(loginForm.value)
     await assetStore.getAssetTypes()
     await mailStore.getMails()

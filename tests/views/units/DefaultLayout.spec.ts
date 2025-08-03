@@ -336,7 +336,7 @@ describe('DefaultLayout', () => {
     const bellIcon = wrapper.find('.bell')
     await bellIcon.trigger('click')
 
-    expect(mockRouter.push).toHaveBeenCalledWith('/admin/message')
+    expect(mockRouter.push).toHaveBeenCalledWith('/admin/message/send')
   })
 
   it('opens search dialog when search button is clicked', async () => {

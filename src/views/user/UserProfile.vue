@@ -29,6 +29,10 @@ const handleEdit = () => {
   }
 }
 
+const handleCancel = () => {
+  userCardRef.value.cancelEdit()
+}
+
 const isDisabled = computed(() => {
   if (user.value.admin) {
     return false
@@ -61,7 +65,7 @@ defineExpose({
       }"
       >Edit</el-button
     >
-    <el-button @click="isEdit = false" v-else>Cancel</el-button>
+    <el-button @click="handleCancel" v-else>Cancel</el-button>
     <el-button v-if="isEdit" type="primary" @click="submit">Submit</el-button>
 
     <el-button v-if="!isEdit" @click="router.push('/security/verify-mail')">

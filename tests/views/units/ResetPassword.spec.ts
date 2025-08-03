@@ -44,7 +44,7 @@ vi.mock('@/stores/index.ts', () => ({
   }),
   useUserStore: () => ({
     user: {
-      assetHolder: {
+      contactDetails: {
         email: 'test@example.com'
       }
     }
@@ -116,7 +116,7 @@ describe('ResetPassword.vue', () => {
 
       const buttons = wrapper.findAll('button')
       expect(buttons.length).toBe(2)
-      expect(buttons[0].text()).toBe('Send OTP code')
+      expect(buttons[0].text()).toBe('Send')
       expect(buttons[1].text()).toBe('Verify')
     })
 
@@ -138,7 +138,7 @@ describe('ResetPassword.vue', () => {
       await nextTick()
 
       const buttons = wrapper.findAll('button')
-      const sendButton = buttons[0] // First button is "Send OTP code"
+      const sendButton = buttons[0] // First button is "Send"
       await sendButton.trigger('click')
       await nextTick()
 
@@ -180,7 +180,7 @@ describe('ResetPassword.vue', () => {
       const verifyButton = findButtonByText(wrapper, 'Verify')
       await verifyButton?.trigger('click')
       await nextTick()
-
+      await flushPromises()
       expect(mockUserEmailVerificationService).toHaveBeenCalledWith({
         code: '123456',
         password: '',
@@ -202,7 +202,7 @@ describe('ResetPassword.vue', () => {
       const verifyButton = findButtonByText(wrapper, 'Verify')
       await verifyButton?.trigger('click')
       await nextTick()
-
+      await flushPromises()
       // Should now show the reset password form
       expect(wrapper.text()).toContain('Reset your password')
 
@@ -230,7 +230,7 @@ describe('ResetPassword.vue', () => {
       expect(verifyButton).toBeDefined()
       await verifyButton!.trigger('click')
       await nextTick()
-
+      await flushPromises()
       expect(mockUserEmailVerificationService).toHaveBeenCalledWith({
         code: 'invalid',
         password: '',
@@ -259,7 +259,7 @@ describe('ResetPassword.vue', () => {
       const verifyButton = findButtonByText(wrapper, 'Verify')
       await verifyButton.trigger('click')
       await nextTick()
-
+      await flushPromises()
       // Check password reset form elements
       expect(wrapper.text()).toContain('Reset your password')
 
@@ -287,6 +287,7 @@ describe('ResetPassword.vue', () => {
       const verifyButton = findButtonByText(wrapper, 'Verify')
       await verifyButton.trigger('click')
       await nextTick()
+      await flushPromises()
 
       // Set new passwords
       const passwordInputs = wrapper.findAll('input[type="password"]')
@@ -323,6 +324,7 @@ describe('ResetPassword.vue', () => {
       const verifyButton = findButtonByText(wrapper, 'Verify')
       await verifyButton.trigger('click')
       await nextTick()
+      await flushPromises()
 
       // Set new passwords
       const passwordInputs = wrapper.findAll('input[type="password"]')
@@ -354,6 +356,7 @@ describe('ResetPassword.vue', () => {
       const verifyButton = findButtonByText(wrapper, 'Verify')
       await verifyButton.trigger('click')
       await nextTick()
+      await flushPromises()
 
       expect(mockUserEmailVerificationService).toHaveBeenCalledWith({
         code: '654321',
@@ -371,9 +374,10 @@ describe('ResetPassword.vue', () => {
       expect(wrapper.text()).toContain('test@example.com')
 
       // Verify that email is used in API calls
-      const sendButton = findButtonByText(wrapper, 'Send OTP code')
+      const sendButton = findButtonByText(wrapper, 'Send')
       await sendButton.trigger('click')
       await nextTick()
+      await flushPromises()
 
       expect(mockUserGetEmailService).toHaveBeenCalledWith('test@example.com')
     })
@@ -399,6 +403,7 @@ describe('ResetPassword.vue', () => {
       const verifyButton = findButtonByText(wrapper, 'Verify')
       await verifyButton.trigger('click')
       await nextTick()
+      await flushPromises()
 
       expect(
         wrapper.find('input[placeholder="Please input OTP code"]').exists()

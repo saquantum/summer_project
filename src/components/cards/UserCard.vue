@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useUserStore } from '@/stores/index.ts'
 import { userUpdateInfoService } from '@/api/user'
 import {
   adminGetUserInfoService,
   adminUpdateUserInfoService
 } from '@/api/admin'
-import { ElMessage, type UploadProps } from 'element-plus'
+import { ElMessage, type UploadFile } from 'element-plus'
 import type { User, UserInfoForm } from '@/types'
 import { useRoute } from 'vue-router'
 import {
@@ -97,6 +97,8 @@ const form = ref<UserInfoForm>({
 const formRef = ref()
 
 const imageUrl = ref('')
+const avatarFile = ref<File | null>(null)
+const previewUrl = ref('')
 
 const rules = {
   firstName: firstNameRules,
@@ -106,20 +108,55 @@ const rules = {
   'address.postcode': postcodeRules
 }
 
-const handleAvatarSuccess: UploadProps['onSuccess'] = (response) => {
-  if (userStore.user && response.data.url) {
-    imageUrl.value = response.data.url
-    ElMessage.success('Upload success')
-  }
-}
+// Handle file selection and create local preview
+const handleAvatarChange = (uploadFile: UploadFile) => {
+  const file = uploadFile.raw
+  if (!file) return
 
-const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
-  const validation = validateAvatarFile(rawFile)
+  const validation = validateAvatarFile(file)
   if (!validation.valid) {
     ElMessage.error(validation.message || 'File validation failed')
-    return false
+    return
   }
-  return true
+
+  // Save file reference
+  avatarFile.value = file
+
+  // Create local preview URL
+  if (previewUrl.value) {
+    URL.revokeObjectURL(previewUrl.value)
+  }
+  previewUrl.value = URL.createObjectURL(file)
+}
+
+// Upload avatar to server
+const uploadAvatarToServer = async (): Promise<string | null> => {
+  if (!avatarFile.value) return null
+
+  const formData = new FormData()
+  formData.append('file', avatarFile.value)
+
+  // Add other required upload data
+  const uploadData = getUploadData()
+  Object.entries(uploadData).forEach(([key, value]) => {
+    formData.append(key, value)
+  })
+
+  try {
+    const response = await fetch(getUploadUrl('avatar'), {
+      method: 'POST',
+      body: formData
+    })
+
+    const result = await response.json()
+    if (result.data?.url) {
+      return result.data.url
+    }
+    throw new Error('Upload failed')
+  } catch (error) {
+    console.error('Avatar upload error:', error)
+    throw error
+  }
 }
 
 const userToForm = (user: User): UserInfoForm => {
@@ -153,7 +190,23 @@ const userToForm = (user: User): UserInfoForm => {
 const submit = async () => {
   trimForm(form.value)
   try {
-    form.value.avatar = imageUrl.value
+    // If there's a new uploaded avatar, upload it to server first
+    if (avatarFile.value) {
+      try {
+        const avatarUrl = await uploadAvatarToServer()
+        if (avatarUrl) {
+          form.value.avatar = avatarUrl
+          imageUrl.value = avatarUrl
+        }
+      } catch {
+        ElMessage.error('Failed to upload avatar')
+        return
+      }
+    } else {
+      // If no new avatar, use current imageUrl
+      form.value.avatar = imageUrl.value
+    }
+
     await formRef.value.validate()
   } catch {
     return
@@ -176,6 +229,13 @@ const submit = async () => {
     ElMessage.success('Profile updated!')
     await userStore.getUserInfo()
     await loadUserData()
+
+    // Clean up local preview
+    if (previewUrl.value) {
+      URL.revokeObjectURL(previewUrl.value)
+      previewUrl.value = ''
+    }
+    avatarFile.value = null
 
     emit('update:isEdit', false)
   } catch (error) {
@@ -222,9 +282,27 @@ onMounted(async () => {
   await loadUserData()
 })
 
+// Clean up resources
+onUnmounted(() => {
+  if (previewUrl.value) {
+    URL.revokeObjectURL(previewUrl.value)
+  }
+})
+
+// Clean up when canceling edit
+const cancelEdit = () => {
+  if (previewUrl.value) {
+    URL.revokeObjectURL(previewUrl.value)
+    previewUrl.value = ''
+  }
+  avatarFile.value = null
+  emit('update:isEdit', false)
+}
+
 defineExpose({
   submit,
-  form
+  form,
+  cancelEdit
 })
 </script>
 
@@ -287,15 +365,20 @@ defineExpose({
       <div style="display: flex; align-items: center; gap: 16px">
         <el-upload
           class="avatar-uploader"
-          :action="getUploadUrl('avatar')"
-          :data="getUploadData()"
+          :auto-upload="false"
           :show-file-list="false"
-          :on-success="handleAvatarSuccess"
-          :before-upload="beforeAvatarUpload"
+          :on-change="handleAvatarChange"
+          accept="image/*"
         >
-          <el-avatar v-if="currentUser?.avatar" :src="imageUrl"></el-avatar>
+          <el-avatar
+            v-if="previewUrl || imageUrl"
+            :src="previewUrl || imageUrl"
+          ></el-avatar>
           <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
         </el-upload>
+        <div v-if="avatarFile" style="color: #409eff; font-size: 12px">
+          {{ avatarFile.name }} (Preview)
+        </div>
       </div>
     </el-form-item>
 
@@ -387,5 +470,27 @@ defineExpose({
   margin: 0 auto;
   overflow: hidden;
   padding: 10px;
+}
+
+.avatar-uploader {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.avatar-uploader:hover {
+  border-color: #409eff;
+}
+
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  text-align: center;
+  line-height: 178px;
 }
 </style>

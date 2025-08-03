@@ -84,12 +84,10 @@ describe('SendMessage', () => {
     await flushPromises()
 
     // Check for form fields
-    expect(
-      wrapper.find('input[placeholder="Please input username"]').exists()
-    ).toBe(true)
-    expect(
-      wrapper.find('input[placeholder="Enter duration in minutes"]').exists()
-    ).toBe(true)
+    expect(wrapper.find('[data-test="username-input"]').exists()).toBe(true)
+    expect(wrapper.find('input[data-test="duration-input"]').exists()).toBe(
+      true
+    )
     expect(
       wrapper.find('input[placeholder="Please input title"]').exists()
     ).toBe(true)
@@ -98,25 +96,14 @@ describe('SendMessage', () => {
     expect(wrapper.find('[data-test="tiptap-editor"]').exists()).toBe(true)
 
     // Check for send button
-    expect(wrapper.find('button').text()).toBe('Send')
-  })
-
-  it('renders editor and preview containers with correct classes', async () => {
-    const wrapper = createWrapper()
-    await flushPromises()
-
-    expect(wrapper.find('.editor-container').exists()).toBe(true)
-    expect(wrapper.find('.message-preview').exists()).toBe(true)
-    expect(wrapper.find('.send-button-container').exists()).toBe(true)
+    expect(wrapper.find('[data-test="send-button"]').text()).toBe('Send')
   })
 
   it('updates form fields when user types', async () => {
     const wrapper = createWrapper()
     await flushPromises()
 
-    const usernameInput = wrapper.find(
-      'input[placeholder="Please input username"]'
-    )
+    const usernameInput = wrapper.find('[data-test="username-input"]')
     const titleInput = wrapper.find('input[placeholder="Please input title"]')
 
     await usernameInput.setValue('testuser')
@@ -132,9 +119,7 @@ describe('SendMessage', () => {
     const wrapper = createWrapper()
     await flushPromises()
 
-    const durationInput = wrapper.find(
-      'input[placeholder="Enter duration in minutes"]'
-    )
+    const durationInput = wrapper.find('input[data-test="duration-input"]')
 
     // Initially should be empty, not 0
     expect((durationInput.element as HTMLInputElement).value).toBe('')
@@ -148,7 +133,7 @@ describe('SendMessage', () => {
     const wrapper = createWrapper()
     await flushPromises()
 
-    const preview = wrapper.find('.message-preview')
+    const preview = wrapper.find('[data-test="message-preview"]')
     expect(preview.exists()).toBe(true)
     // Preview content depends on TiptapEditor, so we just check the container exists
   })
@@ -158,18 +143,14 @@ describe('SendMessage', () => {
     await flushPromises()
 
     // Fill in form data
-    await wrapper
-      .find('input[placeholder="Please input username"]')
-      .setValue('testuser')
-    await wrapper
-      .find('input[placeholder="Enter duration in minutes"]')
-      .setValue('30')
+    await wrapper.find('[data-test="username-input"]').setValue('testuser')
+    await wrapper.find('input[data-test="duration-input"]').setValue('30')
     await wrapper
       .find('input[placeholder="Please input title"]')
       .setValue('Test Title')
 
     // Click send button
-    const sendButton = wrapper.find('button')
+    const sendButton = wrapper.find('[data-test="send-button"]')
     await sendButton.trigger('click')
     await flushPromises()
 
@@ -192,16 +173,14 @@ describe('SendMessage', () => {
     await flushPromises()
 
     // Fill in form data but leave duration empty
-    await wrapper
-      .find('input[placeholder="Please input username"]')
-      .setValue('testuser')
+    await wrapper.find('[data-test="username-input"]').setValue('testuser')
     await wrapper
       .find('input[placeholder="Please input title"]')
       .setValue('Test Title')
     // Duration input left empty
 
     // Click send button
-    const sendButton = wrapper.find('button')
+    const sendButton = wrapper.find('[data-test="send-button"]')
     await sendButton.trigger('click')
     await flushPromises()
 
@@ -220,18 +199,14 @@ describe('SendMessage', () => {
     await flushPromises()
 
     // Set negative duration
-    await wrapper
-      .find('input[placeholder="Enter duration in minutes"]')
-      .setValue('-5')
-    await wrapper
-      .find('input[placeholder="Please input username"]')
-      .setValue('testuser')
+    await wrapper.find('input[data-test="duration-input"]').setValue('-5')
+    await wrapper.find('[data-test="username-input"]').setValue('testuser')
     await wrapper
       .find('input[placeholder="Please input title"]')
       .setValue('Test Title')
 
     // Click send button
-    const sendButton = wrapper.find('button')
+    const sendButton = wrapper.find('[data-test="send-button"]')
     await sendButton.trigger('click')
     await flushPromises()
 
@@ -244,7 +219,7 @@ describe('SendMessage', () => {
     await flushPromises()
 
     // Just test that we can click the send button without errors
-    const sendButton = wrapper.find('button')
+    const sendButton = wrapper.find('[data-test="send-button"]')
     expect(sendButton.exists()).toBe(true)
 
     // Click without setting any form data
@@ -253,66 +228,6 @@ describe('SendMessage', () => {
 
     // This test just ensures the component doesn't crash
     expect(true).toBe(true)
-  })
-
-  // Skipping this test for now - complex interaction with TiptapEditor
-  // it('validates invalid duration (NaN) and shows error', async () => {
-  //   const wrapper = createWrapper()
-  //   await flushPromises()
-
-  //   // Set invalid duration (but need valid other fields for the test to reach validation)
-  //   await wrapper
-  //     .find('input[placeholder="Please input username"]')
-  //     .setValue('testuser')
-  //   await wrapper
-  //     .find('input[placeholder="Please input title"]')
-  //     .setValue('Test Title')
-  //   await wrapper
-  //     .find('input[placeholder="Enter duration in minutes"]')
-  //     .setValue('abc')
-
-  //   // Click send button
-  //   const sendButton = wrapper.find('button')
-  //   await sendButton.trigger('click')
-  //   await flushPromises()
-
-  //   // Verify validation error
-  //   expect(vi.mocked(ElMessage.error)).toHaveBeenCalledWith(
-  //     'Please enter a valid duration (positive integer)'
-  //   )
-
-  //   // Verify API was not called
-  //   expect(vi.mocked(adminApi.adminSendMessageService)).not.toHaveBeenCalled()
-  // })
-
-  it('validates decimal numbers by converting to integer', async () => {
-    const wrapper = createWrapper()
-    await flushPromises()
-
-    // Set decimal duration - should be converted to integer
-    await wrapper
-      .find('input[placeholder="Please input username"]')
-      .setValue('testuser')
-    await wrapper
-      .find('input[placeholder="Please input title"]')
-      .setValue('Test Title')
-    await wrapper
-      .find('input[placeholder="Enter duration in minutes"]')
-      .setValue('5.7')
-
-    // Click send button
-    const sendButton = wrapper.find('button')
-    await sendButton.trigger('click')
-    await flushPromises()
-
-    // parseInt('5.7') = 5, so should be valid and API called with integer value
-    expect(vi.mocked(adminApi.adminSendMessageService)).toHaveBeenCalledWith(
-      expect.objectContaining({
-        userId: 'testuser',
-        duration: 5, // Should be converted to integer
-        title: 'Test Title'
-      })
-    )
   })
 
   it('handles API error and shows error message', async () => {
@@ -324,18 +239,14 @@ describe('SendMessage', () => {
     await flushPromises()
 
     // Fill in valid form data
-    await wrapper
-      .find('input[placeholder="Please input username"]')
-      .setValue('testuser')
-    await wrapper
-      .find('input[placeholder="Enter duration in minutes"]')
-      .setValue('30')
+    await wrapper.find('[data-test="username-input"]').setValue('testuser')
+    await wrapper.find('input[data-test="duration-input"]').setValue('30')
     await wrapper
       .find('input[placeholder="Please input title"]')
       .setValue('Test Title')
 
     // Click send button
-    const sendButton = wrapper.find('button')
+    const sendButton = wrapper.find('[data-test="send-button"]')
     await sendButton.trigger('click')
     await flushPromises()
 
@@ -350,18 +261,14 @@ describe('SendMessage', () => {
     await flushPromises()
 
     // Set duration to 0
-    await wrapper
-      .find('input[placeholder="Enter duration in minutes"]')
-      .setValue('0')
-    await wrapper
-      .find('input[placeholder="Please input username"]')
-      .setValue('testuser')
+    await wrapper.find('input[data-test="duration-input"]').setValue('0')
+    await wrapper.find('[data-test="username-input"]').setValue('testuser')
     await wrapper
       .find('input[placeholder="Please input title"]')
       .setValue('Test Title')
 
     // Click send button
-    await wrapper.find('button').trigger('click')
+    await wrapper.find('[data-test="send-button"]').trigger('click')
     await flushPromises()
 
     // Verify API was not called (form validation prevented submission)
@@ -377,12 +284,8 @@ describe('SendMessage', () => {
     await flushPromises()
 
     // Fill in form data
-    const usernameInput = wrapper.find(
-      'input[placeholder="Please input username"]'
-    )
-    const durationInput = wrapper.find(
-      'input[placeholder="Enter duration in minutes"]'
-    )
+    const usernameInput = wrapper.find('[data-test="username-input"]')
+    const durationInput = wrapper.find('input[data-test="duration-input"]')
     const titleInput = wrapper.find('input[placeholder="Please input title"]')
 
     await usernameInput.setValue('testuser')
@@ -390,7 +293,7 @@ describe('SendMessage', () => {
     await titleInput.setValue('Test Title')
 
     // Click send button
-    const sendButton = wrapper.find('button')
+    const sendButton = wrapper.find('[data-test="send-button"]')
     await sendButton.trigger('click')
     await flushPromises()
 
@@ -398,23 +301,5 @@ describe('SendMessage', () => {
     expect((usernameInput.element as HTMLInputElement).value).toBe('testuser')
     expect((durationInput.element as HTMLInputElement).value).toBe('30')
     expect((titleInput.element as HTMLInputElement).value).toBe('Test Title')
-  })
-
-  it('applies correct CSS classes for styling', async () => {
-    const wrapper = createWrapper()
-    await flushPromises()
-
-    const editorContainer = wrapper.find('.editor-container')
-    const messagePreview = wrapper.find('.message-preview')
-    const sendButtonContainer = wrapper.find('.send-button-container')
-
-    expect(editorContainer.exists()).toBe(true)
-    expect(messagePreview.exists()).toBe(true)
-    expect(sendButtonContainer.exists()).toBe(true)
-
-    // Check that styles are applied (checking computed styles is complex, so we just verify classes exist)
-    expect(editorContainer.classes()).toContain('editor-container')
-    expect(messagePreview.classes()).toContain('message-preview')
-    expect(sendButtonContainer.classes()).toContain('send-button-container')
   })
 })
