@@ -81,11 +81,14 @@
     <update id="createAddress">
         create table if not exists address
         (
-            address_id       varchar(100) primary key references users (user_id) on update cascade,
-            address_street   varchar(100),
-            address_city     varchar(100),
-            address_postcode varchar(50),
-            address_country  varchar(100)
+            address_id                      varchar(100) primary key references users (user_id) on update cascade,
+            address_street                  varchar(100),
+            address_city                    varchar(100),
+            address_postcode                varchar(50),
+            address_country                 varchar(100),
+            address_postcode_country        varchar(100),
+            address_postcode_region         varchar(100),
+            address_postcode_admin_district varchar(100)
         );
 
         <include refid="initTableMetaData"/>

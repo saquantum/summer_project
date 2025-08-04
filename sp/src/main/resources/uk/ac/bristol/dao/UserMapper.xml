@@ -275,8 +275,11 @@
                              address_street,
                              address_city,
                              address_postcode,
-                             address_country)
-        values (#{id}, #{map.street}, #{map.city}, #{map.postcode}, #{map.country})
+                             address_country,
+                             address_postcode_country,
+                             address_postcode_region,
+                             address_postcode_admin_district)
+        values (#{id}, #{map.street}, #{map.city}, #{map.postcode}, #{map.country}, #{map.postcodeCountry}, #{map.postcodeRegion}, #{map.postcodeAdminDistrict})
         on conflict (address_id)
             do update
         <set>
@@ -284,6 +287,9 @@
             <if test="map.city != null and map.city != ''">address_city = #{map.city},</if>
             <if test="map.postcode != null and map.postcode != ''">address_postcode = #{map.postcode},</if>
             <if test="map.country != null and map.country != ''">address_country = #{map.country},</if>
+            <if test="map.postcodeCountry != null and map.postcodeCountry != ''">address_postcode_country = #{map.postcodeCountry},</if>
+            <if test="map.postcodeRegion != null and map.postcodeRegion != ''">address_postcode_region = #{map.postcodeRegion},</if>
+            <if test="map.postcodeAdminDistrict != null and map.postcodeAdminDistrict != ''">address_postcode_admin_district = #{map.postcodeAdminDistrict},</if>
         </set>
         returning xmax = 0 as inserted
     </select>

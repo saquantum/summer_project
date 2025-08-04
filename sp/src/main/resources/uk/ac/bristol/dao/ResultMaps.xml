@@ -16,6 +16,9 @@
         <result property="city" column="address_city"/>
         <result property="postcode" column="address_postcode"/>
         <result property="country" column="address_country"/>
+        <result property="postcodeCountry" column="address_postcode_country"/>
+        <result property="postcodeRegion" column="address_postcode_region"/>
+        <result property="postcodeAdminDistrict" column="address_postcode_admin_district"/>
     </resultMap>
 
     <resultMap id="ContactPreferencesMap" type="java.util.Map">
