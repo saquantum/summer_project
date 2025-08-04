@@ -417,7 +417,7 @@ watch(
   }
 
   .el-main {
-    padding: 0px, 2px;
+    padding: 0px 2px;
     padding-bottom: 50px;
   }
 }
