@@ -34,6 +34,10 @@ spring:
             port: 465
             fallback: false
 
+  redis:
+    host: 127.0.0.1
+    port: 6379
+
 mybatis:
   mapper-locations: classpath*:uk/ac/bristol/dao/*.xml
   type-aliases-package: uk.ac.bristol.pojo
