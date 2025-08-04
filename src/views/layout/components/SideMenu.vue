@@ -38,9 +38,9 @@ const handleBackToAdmin = () => {
   <!-- user interface -->
   <el-menu
     :default-active="props.activeIndex"
-    active-text-color="#ffd04b"
-    background-color="#528add"
-    text-color="#fff"
+    active-text-color="#0000"
+    background-color="#f2f2f3"
+    text-color="#000"
     router
     v-if="props.showUserSideBar"
     @select="handleMenuSelect"
@@ -48,6 +48,11 @@ const handleBackToAdmin = () => {
     <el-menu-item index="/user/profile" data-test="my-profile-side">
       <el-icon><User /></el-icon>
       <span>My Profile</span>
+    </el-menu-item>
+
+    <el-menu-item index="/message" data-test="message-side">
+      <el-icon><MessageBox /></el-icon>
+      <span>Message</span>
     </el-menu-item>
 
     <el-sub-menu index="1">
@@ -75,11 +80,6 @@ const handleBackToAdmin = () => {
       </el-menu-item>
     </el-sub-menu>
 
-    <el-menu-item index="/message" data-test="message-side">
-      <el-icon><MessageBox /></el-icon>
-      <span>Message</span>
-    </el-menu-item>
-
     <el-menu-item
       v-if="userStore.user?.admin"
       index="/"
@@ -93,9 +93,9 @@ const handleBackToAdmin = () => {
   <!-- admin interface -->
   <el-menu
     active-text-color="#ffd04b"
-    background-color="#528add"
+    background-color="#f2f2f3"
     :default-active="props.activeIndex"
-    text-color="#fff"
+    text-color="#000"
     router
     @select="handleMenuSelect"
     v-else
@@ -105,6 +105,25 @@ const handleBackToAdmin = () => {
       <span>Dashboard</span>
     </el-menu-item>
 
+    <el-menu-item index="/admin/message/send">
+      <el-icon><MessageBox /></el-icon>
+      <span>Send to Inbox</span>
+    </el-menu-item>
+
+    <el-sub-menu index="4">
+      <template #title>
+        <el-icon><CopyDocument /></el-icon>
+        <span>Message Template</span>
+      </template>
+      <el-menu-item index="/admin/message/template/manage">
+        <span>Manage Template</span>
+      </el-menu-item>
+      <el-menu-item index="/admin/message/template">
+        <span>Edit Template</span>
+      </el-menu-item>
+    </el-sub-menu>
+
+    <el-divider style="margin: 8px 0" />
     <el-sub-menu index="1">
       <template #title>
         <el-icon><User /></el-icon>
@@ -163,23 +182,5 @@ const handleBackToAdmin = () => {
         <span>Current Warning</span>
       </el-menu-item>
     </el-sub-menu>
-
-    <el-sub-menu index="4">
-      <template #title>
-        <el-icon><CopyDocument /></el-icon>
-        <span>Message Template</span>
-      </template>
-      <el-menu-item index="/admin/message/template/manage">
-        <span>Manage Template</span>
-      </el-menu-item>
-      <el-menu-item index="/admin/message/template">
-        <span>Edit Template</span>
-      </el-menu-item>
-    </el-sub-menu>
-
-    <el-menu-item index="/admin/message/send">
-      <el-icon><MessageBox /></el-icon>
-      <span>Send to Inbox</span>
-    </el-menu-item>
   </el-menu>
 </template>
