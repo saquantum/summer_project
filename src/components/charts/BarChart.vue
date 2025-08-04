@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, withDefaults, nextTick } from 'vue'
+import { onMounted, onUnmounted, nextTick } from 'vue'
 import * as echarts from 'echarts'
 import type { ECharts } from 'echarts'
 
@@ -166,7 +166,6 @@ onUnmounted(() => {
   height: 100%;
 }
 
-/* 响应式样式 */
 @media (max-width: 768px) {
   .bar-chart-card {
     min-width: 250px;

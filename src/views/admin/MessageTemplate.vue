@@ -45,11 +45,11 @@ const warningLevelOptions = [
 const contactChannelOptions = [
   {
     value: 'Email',
-    label: 'Email'
+    label: 'email'
   },
   {
-    value: 'SMS',
-    label: 'SMS'
+    value: 'Phone',
+    label: 'phone'
   }
 ]
 
@@ -76,14 +76,14 @@ const form = ref<Template>({
   assetTypeId: 'type_001',
   warningType: 'Rain',
   severity: 'YELLOW',
-  contactChannel: 'Email',
+  contactChannel: 'email',
   title: '',
   body: ''
 })
 
 const submit = async () => {
   // set platform that can receive html format content.
-  if (form.value.contactChannel === 'Email') {
+  if (form.value.contactChannel === 'email') {
     form.value.body = renderedHTML.value
   } else {
     form.value.body = plainText.value

@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import * as echarts from 'echarts'
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import type { ECharts } from 'echarts'
-import ukmap from '@/assets/ukmap.json'
-import type { GeoJSONSourceInput } from 'echarts/types/src/coord/geo/geoTypes.js'
-import { adminGetMetaDateService, adminSearchUsersService } from '@/api/admin'
-import type { UserItem, UserSearchBody } from '@/types'
+import { adminGetMetaDateService } from '@/api/admin'
 import LineChart from '@/components/charts/LineChart.vue'
 import BarChart from '@/components/charts/BarChart.vue'
 import { Location, User, Message } from '@element-plus/icons-vue'
+const loadUKMap = () => import('@/assets/ukmap.json')
+const loadECharts = () => import('echarts')
+
 let mapChart: ECharts | null = null
 
-const users = ref<UserItem[]>([])
+const isMapLoading = ref(true)
 
 const handleResize = () => {
   if (mapChart) {
@@ -19,202 +18,232 @@ const handleResize = () => {
   }
 }
 
-const userCount = ref()
-const assetCount = ref()
+const userCount = ref(0)
+const assetCount = ref(0)
 
-onMounted(async () => {
-  const res1 = await adminGetMetaDateService()
+// Separate data fetching logic
+const fetchDashboardData = async () => {
+  try {
+    const res = await adminGetMetaDateService()
 
-  const user = res1.data.find((item) => item.tableName === 'users')
-  const asset = res1.data.find((item) => item.tableName === 'assets')
+    const user = res.data.find(
+      (item: { tableName: string }) => item.tableName === 'users'
+    )
+    const asset = res.data.find(
+      (item: { tableName: string }) => item.tableName === 'assets'
+    )
 
-  userCount.value = user.totalCount
-  assetCount.value = asset.totalCount
+    userCount.value = user?.totalCount || 0
+    assetCount.value = asset?.totalCount || 0
+  } catch (error) {
+    console.error('Failed to fetch dashboard data:', error)
+  }
+}
 
-  const res = await adminSearchUsersService('count', {
-    orderList: 'accumulation,desc',
-    limit: 5
-  } as UserSearchBody)
-  console.log(res)
-  users.value = res.data
+// Asynchronously initialize map
+const initializeMap = async () => {
+  try {
+    // Load ECharts and map data in parallel
+    const [echarts, { default: ukmap }] = await Promise.all([
+      loadECharts(),
+      loadUKMap()
+    ])
 
-  mapChart = echarts.init(document.getElementById('main'))
-  mapChart.showLoading()
-  echarts.registerMap('UK', ukmap as GeoJSONSourceInput)
+    // Wait for DOM update to ensure element is rendered
+    await nextTick()
 
-  // Scatter plot data - UK cities data points
-  const scatterData = [
-    [-0.1276, 51.5072, 85], // London - [longitude, latitude, value]
-    [-3.1883, 55.9533, 62], // Edinburgh
-    [-1.2577, 51.752, 45], // Oxford
-    [-2.2426, 53.4808, 73], // Manchester
-    [-1.4701, 53.3811, 58], // Sheffield
-    [-1.8904, 52.4862, 39] // Birmingham
-  ]
+    // Set loading to false first to make container visible
+    isMapLoading.value = false
 
-  const option = {
-    tooltip: {
-      trigger: 'item',
-      formatter: function (params: {
-        seriesType: string
-        name: string
-        value: number[]
-      }) {
-        if (params.seriesType === 'effectScatter') {
-          return `${params.name}<br/>Value: ${params.value[2]}`
+    // Wait for DOM update after container becomes visible
+    await nextTick()
+
+    // Wait a short time to ensure DOM is fully rendered and styles are applied
+    await new Promise((resolve) => setTimeout(resolve, 200))
+
+    // Ensure DOM element exists
+    const container = document.getElementById('main')
+    if (!container) {
+      console.error('Map container not found')
+      return
+    }
+
+    // Check if container has valid dimensions
+    if (container.clientWidth === 0 || container.clientHeight === 0) {
+      console.error('Map container has zero dimensions:', {
+        width: container.clientWidth,
+        height: container.clientHeight
+      })
+      return
+    }
+
+    mapChart = echarts.init(container)
+    mapChart.showLoading()
+
+    // Register map
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    echarts.registerMap('UK', ukmap as any)
+
+    // Scatter plot data
+    const scatterData = [
+      [-0.1276, 51.5072, 85], // London
+      [-3.1883, 55.9533, 62], // Edinburgh
+      [-1.2577, 51.752, 45], // Oxford
+      [-2.2426, 53.4808, 73], // Manchester
+      [-1.4701, 53.3811, 58], // Sheffield
+      [-1.8904, 52.4862, 39] // Birmingham
+    ]
+
+    const cityNames = [
+      'London',
+      'Edinburgh',
+      'Oxford',
+      'Manchester',
+      'Sheffield',
+      'Birmingham'
+    ]
+
+    const option = {
+      tooltip: {
+        trigger: 'item',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        formatter: function (params: any) {
+          if (params.seriesType === 'effectScatter') {
+            return `${params.name}<br/>Value: ${params.value[2]}`
+          }
+          return params.name
         }
-        return params.name
-      }
-    },
-    legend: {
-      show: true,
-      data: ['UK Cities Data'],
-      left: 'center',
-      top: '10px',
-      textStyle: {
-        color: '#333'
-      }
-    },
-    geo: {
-      map: 'UK',
-      roam: true,
-      // Adjust map position and size within canvas
-      left: '0%', // Left margin
-      right: '0%', // Right margin
-      top: '15%', // Top margin - increased to make space for legend
-      bottom: '5%', // Bottom margin
-      // Or use layoutCenter and layoutSize for precise control
-      layoutCenter: ['50%', '55%'], // Adjusted center to account for legend
-      layoutSize: '80%', // Make map occupy 80% of canvas, reduce whitespace
-      itemStyle: {
-        areaColor: '#e7e8ea',
-        borderColor: '#999'
       },
-      emphasis: {
-        itemStyle: {
-          areaColor: '#c1e0ff'
+      legend: {
+        show: true,
+        data: ['UK Cities Data'],
+        left: 'center',
+        top: '10px',
+        textStyle: {
+          color: '#333'
         }
-      }
-    },
-    series: [
-      {
-        name: 'UK Cities Data', // Add name for legend
-        type: 'effectScatter',
-        coordinateSystem: 'geo',
-        geoIndex: 0,
-        symbolSize: function (params: number[]) {
-          // Adjust scatter point size based on value
-          return (params[2] / 100) * 20 + 8
-        },
+      },
+      geo: {
+        map: 'UK',
+        roam: true,
+        left: '0%',
+        right: '0%',
+        top: '10%',
+        bottom: '5%',
+        layoutCenter: ['44%', '50%'],
+        layoutSize: '100%',
         itemStyle: {
-          color: '#409eff',
-          opacity: 0.8
+          areaColor: '#e7e8ea',
+          borderColor: '#999'
         },
         emphasis: {
           itemStyle: {
-            color: '#ff6b6b',
-            opacity: 1
+            areaColor: '#c1e0ff'
           }
-        },
-        encode: {
-          tooltip: 2
-        },
-        data: scatterData.map((item, index) => {
-          const cityNames = [
-            'London',
-            'Edinburgh',
-            'Oxford',
-            'Manchester',
-            'Sheffield',
-            'Birmingham'
-          ]
-          const value = item[2]
+        }
+      },
+      series: [
+        {
+          type: 'effectScatter',
+          coordinateSystem: 'geo',
+          geoIndex: 0,
+          symbolSize: function (params: number[]) {
+            return (params[2] / 100) * 20 + 8
+          },
+          data: scatterData.map((item, index) => {
+            const value = item[2]
+            let rippleConfig = {}
 
-          // Conditional animation settings based on value
-          let rippleConfig = {}
-          if (value > 70) {
-            // High value cities - fast, large ripples
-            rippleConfig = {
-              period: 2,
-              scale: 4
+            if (value > 70) {
+              rippleConfig = { period: 2, scale: 4 }
+            } else if (value > 50) {
+              rippleConfig = { period: 3, scale: 3 }
+            } else {
+              rippleConfig = { period: 6, scale: 2 }
             }
-          } else if (value > 50) {
-            // Medium value cities - normal ripples
-            rippleConfig = {
-              period: 3,
-              scale: 3
-            }
-          } else {
-            // Low value cities - slow, small ripples
-            rippleConfig = {
-              period: 6,
-              scale: 2
-            }
-          }
 
-          return {
-            name: cityNames[index],
-            value: item,
-            // Add conditional properties to each data point
-            itemStyle: {
-              color:
-                value > 70 ? '#ff4757' : value > 50 ? '#ffa502' : '#409eff',
-              opacity: 0.8
-            },
-            emphasis: {
+            return {
+              name: cityNames[index],
+              value: item,
               itemStyle: {
-                color: '#ff6b6b',
-                opacity: 1
-              }
-            },
-            rippleEffect: rippleConfig
-          }
-        })
-      }
-    ]
-  }
+                color:
+                  value > 70 ? '#ff4757' : value > 50 ? '#ffa502' : '#409eff',
+                opacity: 0.8
+              },
+              emphasis: {
+                itemStyle: {
+                  color: '#ff6b6b',
+                  opacity: 1
+                }
+              },
+              rippleEffect: rippleConfig
+            }
+          })
+        }
+      ]
+    }
 
-  mapChart.hideLoading()
-  mapChart.setOption(option)
+    mapChart.hideLoading()
+    mapChart.setOption(option)
+  } catch (error) {
+    console.error('Failed to initialize map:', error)
+    isMapLoading.value = false
+  }
+}
+
+onMounted(() => {
+  initializeMap()
+  fetchDashboardData()
 
   window.addEventListener('resize', handleResize)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
+
+  if (mapChart) {
+    mapChart.dispose()
+    mapChart = null
+  }
 })
 </script>
 
 <template>
   <div class="stats-container">
-    <LineChart :count="userCount" id="user" title="User Statistics">
-      <template #icon>
-        <el-icon style="font-size: 18px; color: #409eff">
-          <User />
-        </el-icon>
-      </template>
-    </LineChart>
-    <LineChart :count="assetCount" id="asset" title="Asset Statistics">
-      <template #icon>
-        <el-icon style="font-size: 18px; color: #409eff">
-          <Location />
-        </el-icon>
-      </template>
-    </LineChart>
-    <LineChart :count="assetCount" id="asset-copy" title="Asset Statistics">
-      <template #icon>
-        <el-icon style="font-size: 18px; color: #409eff">
-          <Location />
-        </el-icon>
-      </template>
-    </LineChart>
+    <div class="stats-cards">
+      <LineChart :count="userCount" id="user" title="User Statistics">
+        <template #icon>
+          <el-icon style="font-size: 18px; color: #409eff">
+            <User />
+          </el-icon>
+        </template>
+      </LineChart>
+      <LineChart :count="assetCount" id="asset" title="Asset Statistics">
+        <template #icon>
+          <el-icon style="font-size: 18px; color: #409eff">
+            <Location />
+          </el-icon>
+        </template>
+      </LineChart>
+      <LineChart :count="assetCount" id="asset-copy" title="Asset Statistics">
+        <template #icon>
+          <el-icon style="font-size: 18px; color: #409eff">
+            <Location />
+          </el-icon>
+        </template>
+      </LineChart>
+    </div>
   </div>
 
   <!-- Map and Dashboard Layout -->
   <div class="map-dashboard-container">
     <!-- Left Side: Map Area -->
     <div class="map-section">
-      <div id="main" class="map-container"></div>
+      <div v-if="isMapLoading" class="map-loading">
+        <div class="loading-spinner"></div>
+        <p>Loading Map...</p>
+      </div>
+      <div v-show="!isMapLoading" id="main" class="map-container"></div>
     </div>
 
     <!-- Right Side: Dashboard Area -->
@@ -234,6 +263,36 @@ onBeforeUnmount(() => {
 </template>
 
 <style>
+.page-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 9999;
+}
+
+.page-loading .loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #409eff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+.page-loading p {
+  color: #666;
+  font-size: 16px;
+  margin: 0;
+}
+
 .middle-container {
   height: 100%;
   display: flex;
@@ -246,6 +305,14 @@ onBeforeUnmount(() => {
   gap: 15px;
   flex-wrap: wrap;
   margin-bottom: 20px;
+  align-items: stretch;
+}
+
+.stats-cards {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  width: 100%;
   align-items: stretch;
 }
 
@@ -283,6 +350,42 @@ onBeforeUnmount(() => {
   flex: 1;
 }
 
+.map-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #409eff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.map-loading p {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
+}
+
 /* Small Screen Responsive - Below 768px */
 @media (max-width: 768px) {
   .map-dashboard-container {
@@ -293,7 +396,7 @@ onBeforeUnmount(() => {
 
   .map-section {
     flex: none;
-    height: 800px;
+    height: 500px;
   }
 
   .dashboard-section {
@@ -313,7 +416,7 @@ onBeforeUnmount(() => {
   }
 
   .map-section {
-    height: 800px;
+    height: 500px;
   }
 
   .stats-container {

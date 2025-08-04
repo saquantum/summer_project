@@ -365,7 +365,7 @@ const cancelDrawing = () => {
 
 const renderLayers = (m: L.Map) => {
   if (!m) return
-
+  console.log(111)
   // Clear existing layers (except tile layer)
   m.eachLayer((layer) => {
     if (!(layer instanceof L.TileLayer)) {
@@ -458,6 +458,7 @@ onBeforeUnmount(() => {
   if (map) {
     map.remove()
     map = null
+    console.log('remove')
   }
 })
 

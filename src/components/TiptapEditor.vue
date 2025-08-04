@@ -16,7 +16,7 @@ import html from 'highlight.js/lib/languages/xml'
 import { ElMessage, type UploadProps } from 'element-plus'
 import Handlebars from 'handlebars'
 import DOMPurify from 'dompurify'
-import { getUploadData, getUploadUrl, validateImageFile } from '@/config/upload'
+import { getUploadData, getUploadUrl, validateImageFile } from '@/utils/upload'
 
 const lowlight = createLowlight(all)
 lowlight.register('html', html)

@@ -18,11 +18,7 @@ import {
   trimForm
 } from '@/utils/formUtils'
 import { Plus } from '@element-plus/icons-vue'
-import {
-  getUploadData,
-  validateAvatarFile,
-  getUploadUrl
-} from '@/config/upload'
+import { getUploadData, validateAvatarFile, getUploadUrl } from '@/utils/upload'
 import { useResponsiveAction } from '@/composables/useResponsiveAction'
 const route = useRoute()
 const props = defineProps<{ isEdit: boolean }>()
