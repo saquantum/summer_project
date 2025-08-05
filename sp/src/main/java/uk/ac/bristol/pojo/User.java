@@ -35,7 +35,7 @@ public class User {
                 '}';
     }
 
-    public static final Set<String> addressDetails = Set.of("street", "city", "postcode", "country");
+    public static final Set<String> addressDetails = Set.of("street", "city", "postcode", "country", "postcodeCountry", "postcodeRegion", "postcodeAdminDistrict");
     public static final Set<String> contactOptions = Set.of("email", "phone", "post", "whatsapp", "discord", "telegram");
 
     public Long getRowId() {

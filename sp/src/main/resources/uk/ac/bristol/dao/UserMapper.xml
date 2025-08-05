@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="uk.ac.bristol.dao.UserMapper">
-    <select id="selectUsers" resultMap="ResultMaps.UserMap">
+    <sql id="selectUsers">
         select *
         from users
                  left join address
@@ -15,8 +15,19 @@
                            on user_id = contact_preferences_id
                  left join permission_configs
                            on user_id = permission_config_user_id
+    </sql>
+
+    <select id="selectUsers" resultMap="ResultMaps.UserMap">
+        <include refid="selectUsers"/>
         <include refid="QueryBlocks.filtering"/>
         <include refid="QueryBlocks.orderAndPage"/>
+    </select>
+
+    <select id="selectUserAnchor" resultType="java.util.Map">
+        <include refid="selectUsers"/>
+        where user_row_id = #{rowId}
+        order by user_row_id asc
+        limit 1 offset 0
     </select>
 
     <select id="selectUsersWithoutAssociation" resultMap="ResultMaps.UserMap">
@@ -26,7 +37,7 @@
         <include refid="QueryBlocks.orderAndPage"/>
     </select>
 
-    <select id="selectUsersWithAccumulator" resultMap="ResultMaps.UserWithExtraColumnsMap">
+    <sql id="selectFromUsersWithAccumulator">
         select user_row_id,
                user_id,
                user_is_admin,
@@ -69,7 +80,9 @@
                            on user_id = permission_config_user_id
                  left join assets
                            on user_id = asset_owner_id
-        <include refid="QueryBlocks.filtering"/>
+    </sql>
+
+    <sql id="groupByUsersWithAccumulator">
         group by user_row_id,
                  user_id,
                  user_is_admin,
@@ -100,7 +113,21 @@
                  permission_config_can_update_asset_polygon,
                  permission_config_can_delete_asset,
                  permission_config_can_update_profile
+    </sql>
+
+    <select id="selectUsersWithAccumulator" resultMap="ResultMaps.UserWithExtraColumnsMap">
+        <include refid="selectFromUsersWithAccumulator"/>
+        <include refid="QueryBlocks.filtering"/>
+        <include refid="groupByUsersWithAccumulator"/>
         <include refid="QueryBlocks.orderAndPage"/>
+    </select>
+
+    <select id="selectUserWithAccumulatorAnchor" resultType="java.util.Map">
+        <include refid="selectFromUsersWithAccumulator"/>
+        where user_row_id = #{rowId}
+        <include refid="groupByUsersWithAccumulator"/>
+        order by user_row_id asc
+        limit 1 offset 0
     </select>
 
     <select id="selectPasswordByUserId" resultType="java.lang.String">
@@ -248,8 +275,11 @@
                              address_street,
                              address_city,
                              address_postcode,
-                             address_country)
-        values (#{id}, #{map.street}, #{map.city}, #{map.postcode}, #{map.country})
+                             address_country,
+                             address_postcode_country,
+                             address_postcode_region,
+                             address_postcode_admin_district)
+        values (#{id}, #{map.street}, #{map.city}, #{map.postcode}, #{map.country}, #{map.postcodeCountry}, #{map.postcodeRegion}, #{map.postcodeAdminDistrict})
         on conflict (address_id)
             do update
         <set>
@@ -257,6 +287,9 @@
             <if test="map.city != null and map.city != ''">address_city = #{map.city},</if>
             <if test="map.postcode != null and map.postcode != ''">address_postcode = #{map.postcode},</if>
             <if test="map.country != null and map.country != ''">address_country = #{map.country},</if>
+            <if test="map.postcodeCountry != null and map.postcodeCountry != ''">address_postcode_country = #{map.postcodeCountry},</if>
+            <if test="map.postcodeRegion != null and map.postcodeRegion != ''">address_postcode_region = #{map.postcodeRegion},</if>
+            <if test="map.postcodeAdminDistrict != null and map.postcodeAdminDistrict != ''">address_postcode_admin_district = #{map.postcodeAdminDistrict},</if>
         </set>
         returning xmax = 0 as inserted
     </select>

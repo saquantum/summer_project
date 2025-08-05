@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -22,13 +23,13 @@ public class AdminController {
     private final MetaDataService metaDataService;
     private final PermissionConfigService permissionConfigService;
     private final ContactService contactService;
-    private final ImageStorageService imageStorageService;
+    private final PostcodeService postcodeService;
 
-    public AdminController(MetaDataService metaDataService, PermissionConfigService permissionConfigService, ContactService contactService, ImageStorageService imageStorageService, PermissionGroupService permissionGroupService) {
+    public AdminController(MetaDataService metaDataService, PermissionConfigService permissionConfigService, ContactService contactService, PostcodeService postcodeService, PermissionGroupService permissionGroupService) {
         this.metaDataService = metaDataService;
         this.permissionConfigService = permissionConfigService;
         this.contactService = contactService;
-        this.imageStorageService = imageStorageService;
+        this.postcodeService = postcodeService;
     }
 
     @GetMapping("/metadata")
@@ -150,34 +151,48 @@ public class AdminController {
         return new ResponseBody(Code.UPDATE_OK, permissionConfigService.updatePermissionConfigByUserId(permissionConfig));
     }
 
-    @PostMapping("/image")
-    public ResponseBody uploadImage(@RequestParam("cid") String cid, @RequestParam("file") MultipartFile file) {
-        if (file.isEmpty()) {
-            return new ResponseBody(Code.SUCCESS, null, "No image insert to database!");
-        }
-
-        try {
-//            byte[] bytes = file.getBytes();
-//            String base64Image = Base64.getEncoder().encodeToString(bytes);
-            String contentType = file.getContentType(); // 例：image/png
-            String base64Image = "data:" + contentType + ";base64," +
-                    Base64.getEncoder().encodeToString(file.getBytes());
-
-            imageStorageService.insertImage(cid, base64Image);
-
-            return new ResponseBody(Code.SUCCESS, null, "Image insert to database!");
-        } catch (IOException e) {
-            return new ResponseBody(Code.SYSTEM_ERR, null, "Upload image error!");
-        }
+    @GetMapping("/dashboard/users/country")
+    public ResponseBody getCountUsersByCountry() {
+        return new ResponseBody(Code.SELECT_OK,
+                postcodeService.groupUserAddressPostcodeByCountry(Map.of("user_is_admin", false))
+                        .entrySet()
+                        .stream()
+                        .collect(
+                                Collectors.toMap(
+                                        Map.Entry::getKey,
+                                        e -> e.getValue().size()
+                                )
+                        )
+        );
     }
 
-    @DeleteMapping("/image")
-    public ResponseBody deleteImage(@RequestParam("cid") String cid) {
-        try {
-            imageStorageService.deleteImage(cid);
-            return new ResponseBody(Code.SUCCESS, null, "delete image success!");
-        } catch (Exception e) {
-            return new ResponseBody(Code.SYSTEM_ERR, null, "delete failed: " + e.getMessage());
-        }
+    @GetMapping("/dashboard/users/region")
+    public ResponseBody getCountUsersByRegion() {
+        return new ResponseBody(Code.SELECT_OK,
+                postcodeService.groupUserAddressPostcodeByRegion(Map.of("user_is_admin", false))
+                        .entrySet()
+                        .stream()
+                        .collect(
+                                Collectors.toMap(
+                                        Map.Entry::getKey,
+                                        e -> e.getValue().size()
+                                )
+                        )
+        );
+    }
+
+    @GetMapping("/dashboard/users/district")
+    public ResponseBody getCountUsersByDistrict() {
+        return new ResponseBody(Code.SELECT_OK,
+                postcodeService.groupUserAddressPostcodeByAdminDistrict(Map.of("user_is_admin", false))
+                        .entrySet()
+                        .stream()
+                        .collect(
+                                Collectors.toMap(
+                                        Map.Entry::getKey,
+                                        e -> e.getValue().size()
+                                )
+                        )
+        );
     }
 }

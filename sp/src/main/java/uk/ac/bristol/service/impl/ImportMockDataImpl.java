@@ -28,6 +28,7 @@ public class ImportMockDataImpl implements ImportMockData {
     private final AssetService assetService;
     private final WarningService warningService;
     private final ContactService contactService;
+    private final PostcodeService postcodeService;
     private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
     public ImportMockDataImpl(Settings settings,
@@ -35,13 +36,15 @@ public class ImportMockDataImpl implements ImportMockData {
                               UserService userService,
                               AssetService assetService,
                               WarningService warningService,
-                              ContactService contactService) {
+                              ContactService contactService,
+                              PostcodeService postcodeService) {
         this.settings = settings;
         this.permissionConfigService = permissionConfigService;
         this.userService = userService;
         this.assetService = assetService;
         this.warningService = warningService;
         this.contactService = contactService;
+        this.postcodeService = postcodeService;
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -79,7 +82,21 @@ public class ImportMockDataImpl implements ImportMockData {
             User user = new User();
             user.setId((String) map.get("id"));
             user.setName((String) map.get("name"));
-            user.setAddress((Map<String, String>) map.get("address"));
+            Map<String, String> address = (Map<String, String>) map.get("address");
+            Map<String, String> postcodeColumns = postcodeService.getColumnsOfPostcode(address.get("postcode"));
+            if(postcodeColumns == null){
+                postcodeColumns = postcodeService.getRandomPostcode();
+            }
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            address.put("postcode", postcodeColumns.get("postcode"));
+            address.put("postcodeCountry", postcodeColumns.get("postcodeCountry"));
+            address.put("postcodeRegion", postcodeColumns.get("postcodeRegion"));
+            address.put("postcodeAdminDistrict", postcodeColumns.get("postcodeAdminDistrict"));
+            user.setAddress(address);
             user.setContactDetails(Map.of("email", (String) map.get("email"), "phone", (String) map.get("phone")));
             user.setContactPreferences((Map<String, Boolean>) map.get("contact_preferences"));
             user.setPassword("123456");

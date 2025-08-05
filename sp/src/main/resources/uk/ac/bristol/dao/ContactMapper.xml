@@ -4,11 +4,19 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="uk.ac.bristol.dao.ContactMapper">
-    <select id="selectAllNotificationTemplates" resultMap="ResultMaps.TemplateMap">
+    <select id="selectNotificationTemplates" resultMap="ResultMaps.TemplateMap">
         select *
         from templates
         <include refid="QueryBlocks.filtering"/>
         <include refid="QueryBlocks.orderAndPage"/>
+    </select>
+
+    <select id="selectNotificationTemplateAnchor" resultType="java.util.Map">
+        select *
+        from templates
+        where template_id = #{rowId}
+        order by template_id asc
+        limit 1 offset 0
     </select>
 
     <select id="selectNotificationTemplateById" resultMap="ResultMaps.TemplateMap">

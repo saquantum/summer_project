@@ -41,17 +41,26 @@ public class WarningServiceImpl implements WarningService {
                                      List<Map<String, String>> orderList,
                                      Integer limit,
                                      Integer offset) {
-        return warningMapper.selectAllWarnings(
+        return warningMapper.selectWarnings(
                 QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList("warning_id", orderList, "weather_warnings"),
+                QueryTool.formatOrderList("warning_id", orderList, "weather_warnings"),
                 limit, offset);
     }
 
     @Override
     public List<Warning> getCursoredWarnings(Long lastWarningRowId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
-        return warningMapper.selectAllWarnings(
-                QueryTool.formatCursoredDeepPageFilters("warning_id", lastWarningRowId, filters),
-                QueryTool.filterOrderList("warning_id", orderList, "weather_warnings"),
+        Map<String, Object> anchor = null;
+        if (lastWarningRowId != null) {
+            List<Map<String, Object>> list = warningMapper.selectWarningAnchor(lastWarningRowId);
+            if (list.size() != 1) {
+                throw new SpExceptions.GetMethodException("Found " + list.size() + " anchors using warning id " + lastWarningRowId);
+            }
+            anchor = list.get(0);
+        }
+        List<Map<String, String>> formattedOrderList = QueryTool.formatOrderList("warning_id", orderList, "weather_warnings");
+        return warningMapper.selectWarnings(
+                QueryTool.formatCursoredDeepPageFilters(filters, anchor, formattedOrderList),
+                formattedOrderList,
                 limit, offset);
     }
 
@@ -61,24 +70,37 @@ public class WarningServiceImpl implements WarningService {
                                                       List<Map<String, String>> orderList,
                                                       Integer limit,
                                                       Integer offset) {
-        return warningMapper.selectAllWarningsIncludingOutdated(
+        return warningMapper.selectWarningsIncludingOutdated(
                 QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList("warning_id", orderList, "weather_warnings"),
+                QueryTool.formatOrderList("warning_id", orderList, "weather_warnings"),
                 limit, offset);
     }
 
     @Override
     public List<Warning> getCursoredWarningsIncludingOutdated(Long lastWarningRowId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
-        return warningMapper.selectAllWarningsIncludingOutdated(
-                QueryTool.formatCursoredDeepPageFilters("warning_id", lastWarningRowId, filters),
-                QueryTool.filterOrderList("warning_id", orderList, "weather_warnings"),
+        Map<String, Object> anchor = null;
+        if (lastWarningRowId != null) {
+            List<Map<String, Object>> list = warningMapper.selectWarningAnchor(lastWarningRowId);
+            if (list.size() != 1) {
+                throw new SpExceptions.GetMethodException("Found " + list.size() + " anchors using warning id " + lastWarningRowId);
+            }
+            anchor = list.get(0);
+        }
+        List<Map<String, String>> formattedOrderList = QueryTool.formatOrderList("warning_id", orderList, "weather_warnings");
+        return warningMapper.selectWarningsIncludingOutdated(
+                QueryTool.formatCursoredDeepPageFilters(filters, anchor, formattedOrderList),
+                formattedOrderList,
                 limit, offset);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<Warning> getWarningById(Long id) {
-        return warningMapper.selectWarningById(id);
+    public Warning getWarningById(Long id) {
+        List<Warning> list = warningMapper.selectWarningById(id);
+        if (list.size() != 1) {
+            throw new SpExceptions.GetMethodException("Found " + list.size() + " warnings for warning id " + id);
+        }
+        return list.get(0);
     }
 
     @Override
@@ -155,26 +177,6 @@ public class WarningServiceImpl implements WarningService {
         int n = warningMapper.insertWarning(warning);
         metaDataMapper.increaseTotalCountByTableName("weather_warnings", n);
         return n;
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-    @Override
-    public int insertWarningsList(List<Warning> warnings) {
-        if (warnings.isEmpty()) return 0;
-        int sum = 0;
-        for (Warning warning : warnings) {
-            List<Warning> search = warningMapper.selectWarningById(warning.getId());
-            if (search.size() > 1) {
-                throw new SpExceptions.SystemException("Found" + search.size() + " weather warning data stored in database for id " + warning.getId());
-            } else if (search.size() == 1) {
-                warningMapper.updateWarning(warning);
-            } else {
-                warningMapper.insertWarning(warning);
-                sum++;
-            }
-        }
-        metaDataMapper.increaseTotalCountByTableName("weather_warnings", sum);
-        return sum;
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)

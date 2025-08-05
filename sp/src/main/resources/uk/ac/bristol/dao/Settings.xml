@@ -6,7 +6,7 @@
 <mapper namespace="uk.ac.bristol.dao.Settings">
     <update id="resetSchema">
         create extension if not exists postgis;
-        create extension if not exists hstore;
+        create extension if not exists pg_trgm;
         drop table if exists table_meta_data cascade;
         drop table if exists address cascade;
         drop table if exists contact_details cascade;
@@ -73,7 +73,7 @@
             user_last_modified      timestamp without time zone default current_timestamp
         );
 
-        create index user_id_index on users (user_id);
+        create index index_users_user_name on users using GIN (user_name gin_trgm_ops);
 
         <include refid="initTableMetaData"/>
     </update>
@@ -81,11 +81,14 @@
     <update id="createAddress">
         create table if not exists address
         (
-            address_id       varchar(100) primary key references users (user_id) on update cascade,
-            address_street   varchar(100),
-            address_city     varchar(100),
-            address_postcode varchar(50),
-            address_country  varchar(100)
+            address_id                      varchar(100) primary key references users (user_id) on update cascade,
+            address_street                  varchar(100),
+            address_city                    varchar(100),
+            address_postcode                varchar(50),
+            address_country                 varchar(100),
+            address_postcode_country        varchar(100),
+            address_postcode_region         varchar(100),
+            address_postcode_admin_district varchar(100)
         );
 
         <include refid="initTableMetaData"/>
@@ -168,6 +171,15 @@
             asset_last_modified   timestamp without time zone default current_timestamp
         );
 
+        create index index_assets_asset_name on assets using GIN (asset_name gin_trgm_ops);
+        create index index_assets_maintainance on assets(asset_type_id, asset_status, asset_last_inspection);
+        create index index_assets_asset_owner_id on assets(asset_owner_id);
+        create index index_assets_asset_location on assets using GIST (asset_location);
+        create index index_assets_asset_capacity_litres on assets(asset_capacity_litres, asset_status);
+        create index index_assets_asset_status on assets(asset_status, asset_capacity_litres);
+        create index index_assets_asset_installed_at on assets(asset_installed_at, asset_last_inspection);
+        create index index_assets_asset_last_inspection on assets(asset_last_inspection, asset_installed_at);
+
         create or replace function set_asset_id()
             returns trigger as
         $$
@@ -207,6 +219,9 @@
             warning_area               geometry(multipolygon, 4326)
         );
 
+        create index index_weather_warnings_valid_period on weather_warnings(warning_valid_from, warning_valid_to);
+        create index index_weather_warnings_warning_area on weather_warnings using GIST (warning_area);
+
         <include refid="initTableMetaData"/>
     </update>
 
@@ -222,7 +237,7 @@
             template_body                 text
         );
 
-        create unique index joint_unique_identifier
+        create unique index index_unique_joint_constraint_on_templates
             on templates (
                           lower(template_asset_type_id),
                           lower(template_weather_warning_type),
@@ -260,6 +275,9 @@
             inbox_title       text                        not null,
             inbox_message     text                        not null
         );
+
+        create index index_inboxes_inbox_user_id on inboxes(inbox_user_id);
+        create index index_inboxes_inbox_valid_until on inboxes(inbox_valid_until);
 
         <include refid="initTableMetaData"/>
     </update>

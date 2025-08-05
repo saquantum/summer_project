@@ -14,6 +14,7 @@ public class FilterItemDTO {
     private Object min;
     private Object max;
     private List<Object> list;
+    private String rawVal;
 
     public static FilterItemDTO eq(String column, Object val) {
         if (!(val instanceof String) && !(val instanceof Number) && !(val instanceof Boolean)) {
@@ -62,6 +63,12 @@ public class FilterItemDTO {
 
     public static FilterItemDTO notNull(String column) {
         return new FilterItemDTO(column, "notNull");
+    }
+
+    public static FilterItemDTO raw(String rawVal) {
+        FilterItemDTO item = new FilterItemDTO(null, null);
+        item.rawVal = rawVal;
+        return item;
     }
 
     @Override
@@ -151,5 +158,9 @@ public class FilterItemDTO {
 
     public List<Object> getList() {
         return list;
+    }
+
+    public String getRawVal() {
+        return rawVal;
     }
 }

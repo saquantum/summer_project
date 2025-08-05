@@ -29,15 +29,13 @@ public interface WarningService {
                                                        Integer limit,
                                                        Integer offset);
 
-    List<Warning> getWarningById(Long id);
+    Warning getWarningById(Long id);
 
     List<Warning> getWarningsIntersectingWithGivenAsset(String assetId);
 
     boolean storeWarningsAndSendNotifications(List<Warning> parsedWarnings);
 
     int insertWarning(Warning warning);
-
-    int insertWarningsList(List<Warning> warnings);
 
     int updateWarning(Warning warning);
 

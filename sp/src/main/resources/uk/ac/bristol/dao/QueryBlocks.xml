@@ -8,6 +8,9 @@
     <sql id="filteringWithList">
         <foreach collection="filterList" item="item" separator="and">
             <choose>
+                <when test="item.rawVal != null and item.op == null and item.column == null">
+                    ${item.rawVal}
+                </when>
                 <when test="item.op == 'is'">
                     <choose>
                         <when test="item.dataType == 'date'">

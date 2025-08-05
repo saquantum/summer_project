@@ -11,15 +11,19 @@ import java.util.Map;
 @Mapper
 public interface WarningMapper {
 
-    List<Warning> selectAllWarnings(@Param("filterList") List<FilterItemDTO> filterList,
-                                    @Param("orderList") List<Map<String, String>> orderList,
-                                    @Param("limit") Integer limit,
-                                    @Param("offset") Integer offset);
+    List<Warning> selectWarnings(@Param("filterList") List<FilterItemDTO> filterList,
+                                 @Param("orderList") List<Map<String, String>> orderList,
+                                 @Param("limit") Integer limit,
+                                 @Param("offset") Integer offset);
 
-    List<Warning> selectAllWarningsIncludingOutdated(@Param("filterList") List<FilterItemDTO> filterList,
-                                                     @Param("orderList") List<Map<String, String>> orderList,
-                                                     @Param("limit") Integer limit,
-                                                     @Param("offset") Integer offset);
+    List<Map<String, Object>> selectWarningAnchor(@Param("rowId") Long rowId);
+
+    List<Warning> selectWarningsIncludingOutdated(@Param("filterList") List<FilterItemDTO> filterList,
+                                                  @Param("orderList") List<Map<String, String>> orderList,
+                                                  @Param("limit") Integer limit,
+                                                  @Param("offset") Integer offset);
+
+    List<Map<String, Object>> selectWarningsIncludingOutdatedAnchor(@Param("rowId") Long rowId);
 
     List<Warning> selectWarningById(@Param("id") Long id);
 

@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="uk.ac.bristol.dao.WarningMapper">
-    <select id="selectAllWarnings" resultMap="ResultMaps.WarningMap">
+    <sql id="selectWarnings">
         select warning_id,
                warning_weather_type,
                warning_level,
@@ -19,28 +19,34 @@
                warning_update_description,
                ST_AsGeoJSON(warning_area) as warning_area
         from weather_warnings
+    </sql>
+
+    <select id="selectWarnings" resultMap="ResultMaps.WarningMap">
+        <include refid="selectWarnings"/>
         where now() between warning_valid_from and warning_valid_to
         <include refid="QueryBlocks.combinedFiltering"/>
         <include refid="QueryBlocks.orderAndPage"/>
     </select>
+
+    <select id="selectWarningAnchor" resultType="java.util.Map">
+        <include refid="selectWarnings"/>
+        where now() between warning_valid_from and warning_valid_to
+        and warning_id = #{rowId}
+        order by warning_id asc
+        limit 1 offset 0
+    </select>
     
-    <select id="selectAllWarningsIncludingOutdated" resultMap="ResultMaps.WarningMap">
-        select warning_id,
-               warning_weather_type,
-               warning_level,
-               warning_head_line,
-               warning_valid_from,
-               warning_valid_to,
-               warning_impact,
-               warning_likelihood,
-               warning_affected_areas,
-               warning_what_to_expect,
-               warning_further_details,
-               warning_update_description,
-               ST_AsGeoJSON(warning_area) as warning_area
-        from weather_warnings
+    <select id="selectWarningsIncludingOutdated" resultMap="ResultMaps.WarningMap">
+        <include refid="selectWarnings"/>
         <include refid="QueryBlocks.filtering"/>
         <include refid="QueryBlocks.orderAndPage"/>
+    </select>
+
+    <select id="selectWarningsIncludingOutdatedAnchor" resultType="java.util.Map">
+        <include refid="selectWarnings"/>
+        where warning_id = #{rowId}
+        order by warning_id asc
+        limit 1 offset 0
     </select>
 
     <select id="selectWarningById" resultMap="ResultMaps.WarningMap">
