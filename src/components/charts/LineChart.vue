@@ -16,6 +16,12 @@ const props = withDefaults(defineProps<Props>(), {
 
 let lineChart: ECharts | null = null
 
+const handleResize = () => {
+  if (lineChart) {
+    lineChart.resize()
+  }
+}
+
 const initChart = () => {
   const chartDom = document.getElementById(props.id)
   if (chartDom) {
@@ -50,9 +56,11 @@ const initChart = () => {
 
 onMounted(async () => {
   initChart()
+  window.addEventListener('resize', handleResize)
 })
 
 onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
   if (lineChart) {
     lineChart.dispose()
   }

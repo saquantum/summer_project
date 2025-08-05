@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, ref, computed } from 'vue'
+import { watch, ref, computed, onMounted, onUnmounted } from 'vue'
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
@@ -17,6 +17,7 @@ import { ElMessage, type UploadProps } from 'element-plus'
 import Handlebars from 'handlebars'
 import DOMPurify from 'dompurify'
 import { getUploadData, getUploadUrl, validateImageFile } from '@/utils/upload'
+import { addInlineStyle, generateEditorCSS } from '@/utils/editorStyle'
 
 const lowlight = createLowlight(all)
 lowlight.register('html', html)
@@ -24,9 +25,19 @@ lowlight.register('css', css)
 lowlight.register('js', js)
 lowlight.register('ts', ts)
 
-// import { Extension } from '@tiptap/core'
-// import { Decoration, DecorationSet } from 'prosemirror-view'
-// import { Plugin, PluginKey } from 'prosemirror-state'
+const injectEditorStyles = () => {
+  const styleId = 'tiptap-dynamic-styles'
+  const existingStyle = document.getElementById(styleId)
+
+  if (existingStyle) {
+    existingStyle.remove()
+  }
+
+  const style = document.createElement('style')
+  style.id = styleId
+  style.textContent = generateEditorCSS()
+  document.head.appendChild(style)
+}
 
 const props = defineProps<{ content: string }>()
 
@@ -221,26 +232,6 @@ const mockData = {
   post_town: 'London'
 }
 
-function addInlineStyle(html: string): string {
-  const htmlWithLinkStyle = html.replace(
-    /<a\b([^>]*)>/g,
-    '<a$1 style="color: #409eff; text-decoration: underline; font-weight: bold;">'
-  )
-  const htmlWithImgStyle = htmlWithLinkStyle.replace(
-    /<img\b([^>]*)>/g,
-    '<img$1 style="display: block; height: auto; margin: 1.5rem 0; max-width: 100%; max-height: 100%;">'
-  )
-  const htmlWithPreStyle = htmlWithImgStyle.replace(
-    /<pre\b([^>]*)>/g,
-    '<pre$1 style="background: #f5f5f5; color: #333; border-radius: 6px; padding: 16px; font-family: Fira Mono, Consolas, Menlo, monospace; font-size: 1em; overflow-x: auto; margin: 1.2em 0;">'
-  )
-  const htmlWithCodeStyle = htmlWithPreStyle.replace(
-    /<pre([^>]*)><code([^>]*)>/g,
-    '<pre$1><code$2 style="background: none; color: inherit; padding: 0; border-radius: 0; font-family: inherit; font-size: inherit;">'
-  )
-  return htmlWithCodeStyle
-}
-
 function restoreEscapedHtmlExceptCode(html: string) {
   const codeBlocks: string[] = []
   // 1. replace all code
@@ -308,6 +299,17 @@ const compiledHTML = computed(() => {
 watch(content, async (newValue) => {
   if (editor.value && newValue !== editor.value.getHTML()) {
     editor.value.commands.setContent(newValue)
+  }
+})
+
+onMounted(() => {
+  injectEditorStyles()
+})
+
+onUnmounted(() => {
+  const styleElement = document.getElementById('tiptap-dynamic-styles')
+  if (styleElement) {
+    styleElement.remove()
   }
 })
 
@@ -624,66 +626,5 @@ defineExpose({ renderedHTML, compiledHTML, plainText })
   display: flex;
   flex-direction: column;
   overflow: auto;
-
-  .ProseMirror {
-    outline: none;
-    flex: 1;
-    min-height: 460px;
-    line-height: 1.6;
-    font-size: 14px;
-    color: #303133;
-  }
-}
-
-.ProseMirror img {
-  display: block;
-  height: auto;
-  margin: 1.5rem 0;
-  max-width: 100%;
-  max-height: 100%;
-}
-
-.ProseMirror:focus {
-  outline: none;
-}
-
-.ProseMirror ::selection {
-  background: rgba(64, 158, 255, 0.3);
-}
-
-.ProseMirror code {
-  background: #f5f5f5;
-  color: #e6a23c;
-  font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
-  font-size: 0.9em;
-  padding: 2px 6px;
-  border-radius: 3px;
-}
-
-.ProseMirror pre {
-  background: #f5f5f5;
-  color: #303133;
-  font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
-  font-size: 0.9em;
-  padding: 16px;
-  overflow-x: auto;
-  margin: 1.2em 0;
-  border-radius: 6px;
-  border: 1px solid #e4e7ed;
-}
-
-.ProseMirror pre code {
-  background: none;
-  color: inherit;
-  font-family: inherit;
-  font-size: inherit;
-  padding: 0;
-  border-radius: 0;
-}
-
-.ProseMirror a {
-  color: #409eff;
-  text-decoration: underline;
-  font-weight: bold;
 }
 </style>

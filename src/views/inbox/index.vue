@@ -11,7 +11,7 @@ import {
 } from '@element-plus/icons-vue'
 import { ref, computed, onMounted, watch } from 'vue'
 
-import { readMailService } from '@/api/mail'
+import { deleteMailService, readMailService } from '@/api/mail'
 import { useUserStore } from '@/stores'
 import { useResponsiveAction } from '@/composables/useResponsiveAction'
 const mailStore = useMailStore()
@@ -60,8 +60,25 @@ const handlePageChange = (page: number) => {
   currentPage.value = page
 }
 
-// delelte
-const handleDelete = () => console.log(111)
+// delete dialog
+const dialogVisible = ref(false)
+
+const deleteId = ref<string[]>([])
+
+const triggerDelete = (rows: string[]) => {
+  dialogVisible.value = true
+  deleteId.value = [...rows]
+}
+
+const handleDelete = async () => {
+  if (deleteId.value.length === 0 || !userStore.user) return
+  const res = await deleteMailService(userStore.user.id, deleteId.value)
+  console.log(res)
+  deleteId.value = []
+
+  mailStore.getMails()
+  dialogVisible.value = false
+}
 
 onMounted(() => {
   mailStore.getMails()
@@ -348,7 +365,9 @@ useResponsiveAction((width) => {
             </div>
           </div>
           <div class="mail-actions">
-            <el-button @click="handleDelete"
+            <el-button
+              @click="triggerDelete([String(mail.rowId)])"
+              style="border: none"
               ><el-icon><Delete /></el-icon
             ></el-button>
           </div>
@@ -412,6 +431,16 @@ useResponsiveAction((width) => {
       <div style="margin-top: 10px" v-html="selectedMail?.message"></div>
     </el-card>
   </div>
+
+  <!-- delete dialog -->
+  <ConfirmDialog
+    v-model="dialogVisible"
+    title="Warning"
+    content="Are you sure you want to delete this message"
+    :countdown-duration="0"
+    @confirm="handleDelete"
+    @cancel="dialogVisible = false"
+  />
 </template>
 
 <style scoped>

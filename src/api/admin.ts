@@ -194,7 +194,10 @@ export const adminSendMessageService = (obj: object) =>
   request.post('/admin/notify/inbox/all', obj)
 
 /**
- * meta data
+ * dashboard
  */
 
 export const adminGetMetaDateService = () => request.get('/admin/metadata')
+
+export const adminGetUserDistributionService = () =>
+  request.get('/admin/dashboard/users/region')

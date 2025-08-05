@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import type { ECharts } from 'echarts'
-import { adminGetMetaDateService } from '@/api/admin'
+import {
+  adminGetMetaDateService,
+  adminGetUserDistributionService
+} from '@/api/admin'
 import LineChart from '@/components/charts/LineChart.vue'
 import BarChart from '@/components/charts/BarChart.vue'
+import PieChart from '@/components/charts/PieChart.vue'
 import { Location, User, Message } from '@element-plus/icons-vue'
 const loadUKMap = () => import('@/assets/ukmap.json')
 const loadECharts = () => import('echarts')
@@ -21,6 +25,39 @@ const handleResize = () => {
 const userCount = ref(0)
 const assetCount = ref(0)
 
+const userDistribution = ref<Record<string, number>>({})
+
+// Computed property to process regional data - shows top 5 regions and groups others
+const pieChartData = computed(() => {
+  // Convert to array and sort by value (descending)
+  const sortedEntries = Object.entries(userDistribution.value).sort(
+    (a, b) => b[1] - a[1]
+  )
+
+  // Take top 5
+  const top5 = sortedEntries.slice(0, 5)
+
+  // Calculate sum of remaining regions
+  const othersSum = sortedEntries
+    .slice(5)
+    .reduce((sum, [, value]) => sum + value, 0)
+
+  // Create new data object
+  const processedData: Record<string, number> = {}
+
+  // Add top 5
+  top5.forEach(([name, value]) => {
+    processedData[name] = value
+  })
+
+  // Add others if there are remaining regions
+  if (othersSum > 0) {
+    processedData['Others'] = othersSum
+  }
+
+  return processedData
+})
+
 // Separate data fetching logic
 const fetchDashboardData = async () => {
   try {
@@ -35,6 +72,10 @@ const fetchDashboardData = async () => {
 
     userCount.value = user?.totalCount || 0
     assetCount.value = asset?.totalCount || 0
+    const userDistributionRes = await adminGetUserDistributionService()
+    if (userDistributionRes && userDistributionRes.data) {
+      userDistribution.value = userDistributionRes.data
+    }
   } catch (error) {
     console.error('Failed to fetch dashboard data:', error)
   }
@@ -253,16 +294,17 @@ onBeforeUnmount(() => {
           <el-icon><Message /></el-icon>
         </template>
       </BarChart>
-      <BarChart id="contact-preference-copy" title="Contact preference">
-        <template #icon>
-          <el-icon><Message /></el-icon>
-        </template>
-      </BarChart>
+      <PieChart
+        id="regional-pie-chart"
+        title="User Distribution"
+        :data="pieChartData"
+        chart-type="normal"
+      />
     </div>
   </div>
 </template>
 
-<style>
+<style scoped>
 .page-loading {
   position: fixed;
   top: 0;
@@ -318,7 +360,6 @@ onBeforeUnmount(() => {
 
 .map-container {
   border: 1px solid black;
-  padding: 16px 0;
   display: flex;
   justify-content: center;
   flex: 1;
