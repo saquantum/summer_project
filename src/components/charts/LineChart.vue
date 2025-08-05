@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ICountUp from 'vue-countup-v3'
-import { onMounted, onUnmounted, withDefaults } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import type { ECharts } from 'echarts'
 

@@ -13,11 +13,19 @@ import css from 'highlight.js/lib/languages/css'
 import js from 'highlight.js/lib/languages/javascript'
 import ts from 'highlight.js/lib/languages/typescript'
 import html from 'highlight.js/lib/languages/xml'
-import { ElMessage, type UploadProps } from 'element-plus'
+import { ElMessage, type UploadFile } from 'element-plus'
 import Handlebars from 'handlebars'
 import DOMPurify from 'dompurify'
 import { getUploadData, getUploadUrl, validateImageFile } from '@/utils/upload'
 import { addInlineStyle, generateEditorCSS } from '@/utils/editorStyle'
+
+// Configure DOMPurify to allow blob URLs
+DOMPurify.addHook('uponSanitizeAttribute', (node, data) => {
+  if (data.attrName === 'src' && data.attrValue.startsWith('blob:')) {
+    // Allow blob URLs for images
+    return
+  }
+})
 
 const lowlight = createLowlight(all)
 lowlight.register('html', html)
@@ -106,40 +114,58 @@ const editor = useEditor({
       allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'],
       onDrop: (currentEditor, files, pos) => {
         files.forEach((file) => {
-          const fileReader = new FileReader()
-
-          fileReader.readAsDataURL(file)
-          fileReader.onload = () => {
-            currentEditor
-              .chain()
-              .insertContentAt(pos, {
-                type: 'image',
-                attrs: {
-                  src: fileReader.result
-                }
-              })
-              .focus()
-              .run()
+          const validation = validateImageFile(file)
+          if (!validation.valid) {
+            ElMessage.error(validation.message || 'File validation failed')
+            return
           }
+
+          // Create local preview URL
+          const localUrl = URL.createObjectURL(file)
+
+          // Save file reference and mapping relationship
+          pendingFiles.value.push(file)
+          previewUrls.value.push(localUrl)
+          localUrlToFileMap.value.set(localUrl, file)
+
+          currentEditor
+            .chain()
+            .insertContentAt(pos, {
+              type: 'image',
+              attrs: {
+                src: localUrl
+              }
+            })
+            .focus()
+            .run()
         })
       },
       onPaste: (currentEditor, files) => {
         files.forEach((file) => {
-          const fileReader = new FileReader()
-
-          fileReader.readAsDataURL(file)
-          fileReader.onload = () => {
-            currentEditor
-              .chain()
-              .insertContentAt(currentEditor.state.selection.anchor, {
-                type: 'image',
-                attrs: {
-                  src: fileReader.result
-                }
-              })
-              .focus()
-              .run()
+          const validation = validateImageFile(file)
+          if (!validation.valid) {
+            ElMessage.error(validation.message || 'File validation failed')
+            return
           }
+
+          // Create local preview URL
+          const localUrl = URL.createObjectURL(file)
+
+          // Save file reference and mapping relationship
+          pendingFiles.value.push(file)
+          previewUrls.value.push(localUrl)
+          localUrlToFileMap.value.set(localUrl, file)
+
+          currentEditor
+            .chain()
+            .insertContentAt(currentEditor.state.selection.anchor, {
+              type: 'image',
+              attrs: {
+                src: localUrl
+              }
+            })
+            .focus()
+            .run()
         })
       }
     }),
@@ -176,24 +202,63 @@ const getLink = () => {
   }
 }
 
+// Helper function to normalize URL
+const normalizeUrl = (url: string): string => {
+  if (!url) return url
+
+  const trimmedUrl = url.trim()
+
+  // Check if it already has a protocol
+  if (/^https?:\/\//i.test(trimmedUrl)) {
+    return trimmedUrl
+  }
+
+  // Check if it's a mailto link
+  if (/^mailto:/i.test(trimmedUrl)) {
+    return trimmedUrl
+  }
+
+  // Check if it's a tel link
+  if (/^tel:/i.test(trimmedUrl)) {
+    return trimmedUrl
+  }
+
+  // Check if it's a relative URL (starts with / or ./)
+  if (/^(\/|\.\/|\.\.\/)/i.test(trimmedUrl)) {
+    return trimmedUrl
+  }
+
+  // Check if it's an anchor link (starts with #)
+  if (/^#/i.test(trimmedUrl)) {
+    return trimmedUrl
+  }
+
+  // Otherwise, add https://
+  return `https://${trimmedUrl}`
+}
+
 const setLink = () => {
   if (!editor.value) return
-  // cancelled
 
   // empty
   if (linkUrl.value === '') {
     editor.value.chain().focus().extendMarkRange('link').unsetLink().run()
-
     return
   }
+
+  // Normalize the URL by adding https:// if needed
+  const normalizedUrl = normalizeUrl(linkUrl.value)
 
   // update link
   editor.value
     .chain()
     .focus()
     .extendMarkRange('link')
-    .setLink({ href: linkUrl.value })
+    .setLink({ href: normalizedUrl })
     .run()
+
+  // Update the input value to show the normalized URL
+  linkUrl.value = normalizedUrl
 }
 
 const setColor = (e: Event) => {
@@ -208,18 +273,107 @@ const handleCommand = (command: string) => {
   editor.value.chain().focus().toggleHeading({ level }).run()
 }
 
-const handleUploadSuccess: UploadProps['onSuccess'] = (response) => {
-  if (response.data?.url && editor.value)
-    editor.value.chain().focus().setImage({ src: response.data.url }).run()
-}
+// Store pending files and their corresponding local preview URLs
+const pendingFiles = ref<File[]>([])
+const previewUrls = ref<string[]>([])
+const localUrlToFileMap = ref<Map<string, File>>(new Map())
 
-const beforeImageUpload: UploadProps['beforeUpload'] = (rawFile) => {
-  const validation = validateImageFile(rawFile)
+// Handle file selection and create local preview
+const handleImageUpload = (uploadFile: UploadFile) => {
+  const file = uploadFile.raw
+  if (!file) return
+
+  const validation = validateImageFile(file)
   if (!validation.valid) {
     ElMessage.error(validation.message || 'File validation failed')
-    return false
+    return
   }
-  return true
+
+  // Create local preview URL
+  const localUrl = URL.createObjectURL(file)
+
+  // Save file reference and mapping relationship
+  pendingFiles.value.push(file)
+  previewUrls.value.push(localUrl)
+  localUrlToFileMap.value.set(localUrl, file)
+
+  // Insert local preview image in editor
+  if (editor.value) {
+    editor.value.chain().focus().setImage({ src: localUrl }).run()
+  }
+}
+
+// Upload single file to server
+const uploadSingleFile = async (file: File): Promise<string | null> => {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  // Add other required upload data
+  const uploadData = getUploadData()
+  Object.entries(uploadData).forEach(([key, value]) => {
+    formData.append(key, value)
+  })
+
+  try {
+    const response = await fetch(getUploadUrl('image'), {
+      method: 'POST',
+      body: formData
+    })
+
+    const result = await response.json()
+    if (result.data?.url) {
+      return result.data.url
+    }
+    throw new Error('Upload failed')
+  } catch (error) {
+    console.error('Image upload error:', error)
+    throw error
+  }
+}
+
+// Batch upload all images and replace URLs when submitting
+const uploadAllImagesAndGetFinalContent = async (): Promise<string> => {
+  if (pendingFiles.value.length === 0) {
+    return renderedHTML.value || ''
+  }
+
+  let finalContent = renderedHTML.value || ''
+
+  // Upload corresponding file for each local URL
+  for (const [localUrl, file] of localUrlToFileMap.value.entries()) {
+    try {
+      const serverUrl = await uploadSingleFile(file)
+      console.log(serverUrl)
+      if (serverUrl) {
+        // Replace local URL with server URL in HTML
+        finalContent = finalContent.replace(
+          new RegExp(localUrl, 'g'),
+          serverUrl
+        )
+        // Clean up local URL
+        URL.revokeObjectURL(localUrl)
+      }
+    } catch (error) {
+      console.error('Failed to upload image:', error)
+      ElMessage.error('Some images failed to upload, please try again')
+    }
+  }
+
+  // Clean up state
+  pendingFiles.value = []
+  previewUrls.value = []
+  localUrlToFileMap.value.clear()
+
+  return finalContent
+}
+
+// Clean up local preview URLs (called when component is destroyed)
+const cleanupPreviewUrls = () => {
+  previewUrls.value.forEach((url) => {
+    URL.revokeObjectURL(url)
+  })
+  previewUrls.value = []
+  localUrlToFileMap.value.clear()
 }
 
 /**
@@ -260,6 +414,18 @@ function restoreEscapedHtmlExceptCode(html: string) {
   )
 }
 
+// Custom sanitize function that preserves blob URLs
+const sanitizeHtml = (html: string): string => {
+  return DOMPurify.sanitize(html, {
+    ADD_ATTR: ['src', 'alt', 'title', 'width', 'height'],
+    ADD_TAGS: ['img'],
+    ALLOW_UNKNOWN_PROTOCOLS: true,
+    ALLOWED_URI_REGEXP:
+      /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|blob|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+    KEEP_CONTENT: true
+  })
+}
+
 const renderedHTML = computed(() => {
   try {
     let htmlWithStyle
@@ -271,8 +437,8 @@ const renderedHTML = computed(() => {
       htmlWithStyle = addInlineStyle(content.value)
     }
 
-    // sanitize html code
-    return DOMPurify.sanitize(htmlWithStyle)
+    // sanitize html code with blob URL support
+    return sanitizeHtml(htmlWithStyle)
   } catch (e) {
     console.error(e)
     return '<p style="color:red">Syntax Error!</p>'
@@ -311,9 +477,17 @@ onUnmounted(() => {
   if (styleElement) {
     styleElement.remove()
   }
+  // Clean up local preview URLs
+  cleanupPreviewUrls()
 })
 
-defineExpose({ renderedHTML, compiledHTML, plainText })
+defineExpose({
+  renderedHTML,
+  compiledHTML,
+  plainText,
+  uploadAllImagesAndGetFinalContent,
+  cleanupPreviewUrls
+})
 </script>
 
 <template>
@@ -460,15 +634,27 @@ defineExpose({ renderedHTML, compiledHTML, plainText })
           </button>
         </template>
 
-        <el-input v-model="linkUrl" @keyup.enter="setLink"></el-input>
+        <div>
+          <el-input
+            v-model="linkUrl"
+            @keyup.enter="setLink"
+            placeholder="Enter URL (https:// will be added automatically)"
+            clearable
+            style="margin-bottom: 10px"
+          ></el-input>
+          <div style="display: flex; gap: 8px; justify-content: flex-end">
+            <el-button size="small" @click="setLink" type="primary">
+              Apply
+            </el-button>
+          </div>
+        </div>
       </el-popover>
 
       <el-upload
-        :action="getUploadUrl('image')"
-        :data="getUploadData()"
+        :auto-upload="false"
         :show-file-list="false"
-        :on-success="handleUploadSuccess"
-        :before-upload="beforeImageUpload"
+        :on-change="handleImageUpload"
+        accept="image/*"
       >
         <button>
           <svg

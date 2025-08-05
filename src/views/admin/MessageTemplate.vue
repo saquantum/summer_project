@@ -56,11 +56,6 @@ const contactChannelOptions = [
 const editorRef = ref()
 const allowedVariables = ['asset-model', 'contact_name', 'post_town']
 
-const renderedHTML = computed(() => {
-  if (!editorRef.value) return ''
-  return editorRef.value.renderedHTML
-})
-
 const compiledHTML = computed(() => {
   if (!editorRef.value) return ''
   return editorRef.value.compiledHTML
@@ -84,7 +79,9 @@ const form = ref<Template>({
 const submit = async () => {
   // set platform that can receive html format content.
   if (form.value.contactChannel === 'email') {
-    form.value.body = renderedHTML.value
+    const content = await editorRef.value.uploadAllImagesAndGetFinalContent()
+    console.log(content)
+    form.value.body = content
   } else {
     form.value.body = plainText.value
   }
@@ -92,7 +89,6 @@ const submit = async () => {
   try {
     await adminUpdateTemplateByIdService(form.value)
     isDirty.value = false
-    console.log(renderedHTML.value)
     ElMessage.success('Template updated successfully')
   } catch (e) {
     console.error(e)

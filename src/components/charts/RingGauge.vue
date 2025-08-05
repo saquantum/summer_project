@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, withDefaults } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import type { ECharts } from 'echarts'
 

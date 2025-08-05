@@ -187,7 +187,6 @@ defineExpose({})
     </el-select>
 
     <div style="margin-top: 20px">
-      <el-button @click="emit('search')">Search</el-button>
       <el-button @click="emit('clearFilters')">Clear filters</el-button>
     </div>
   </el-popover>
