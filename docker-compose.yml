@@ -9,7 +9,7 @@ services:
       - "80:80"
     environment:
       - NODE_ENV=production
-      - VITE_API_BASE_URL=http://localhost:8080/api
+      - VITE_API_BASE_URL=/api
     depends_on:
       - backend
     networks:
@@ -29,6 +29,8 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/rainwaterDB
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=123456
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
     depends_on:
       - db
     networks:
