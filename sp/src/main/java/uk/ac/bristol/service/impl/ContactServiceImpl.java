@@ -160,7 +160,7 @@ public class ContactServiceImpl implements ContactService {
 
     private String fillInVariablesWithValues(String content, User user, Asset asset) {
         return content
-                .replace("{{asset-model}}", asset.getName())
+                .replace("{{asset_model}}", asset.getName())
                 .replace("{{contact_name}}", user.getName())
                 .replace("{{post_town}}", user.getAddress().get("city"));
     }

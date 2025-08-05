@@ -210,7 +210,7 @@ public class ImportMockDataImpl implements ImportMockData {
                             template.setSeverity(severity);
                             template.setContactChannel(channel);
                             template.setTitle(warningType + templates.get(idx).get("title").toString());
-                            template.setBody("<h3>Dear {{contact_name}}:</h3><p></p><img src=\"https://s3.bmp.ovh/imgs/2025/07/22/e8f6d4e43207e112.png\" loading=\"lazy\" style=\"display: block; height: auto; margin: 1.5rem 0; max-width: 100%; max-height: 100%;\"><p><br></p><p>Protect your asset. If it sent by SMS, keep it short. If it is sent by email, insert helpful images and links.</p><p><br><a rel=\"noopener noreferrer nofollow\" href=\" \" style=\"color: #409eff; text-decoration: underline; font-weight: bold;\"><strong> Click This Link</strong></a></p>");
+                            template.setBody("<h3>Dear {{contact_name}}:</h3><p></p><img src=\"https://s3.bmp.ovh/imgs/2025/07/22/e8f6d4e43207e112.png\" loading=\"lazy\" style=\"display: block; height: auto; margin: 1.5rem 0; max-width: 100%; max-height: 100%;\"><p><br></p><p>Protect your asset. If it sent by SMS, keep it short. If it is sent by email, insert helpful images and links.</p><p><br><a rel=\"noopener noreferrer nofollow\" href=\"https://www.google.com\" style=\"color: #409eff; text-decoration: underline; font-weight: bold;\"><strong> Click This Link</strong></a></p>");
 
                             if (!contactService.getNotificationTemplateByTypes(template).isEmpty()) {
                                 contactService.updateNotificationTemplateMessageByTypes(template);
