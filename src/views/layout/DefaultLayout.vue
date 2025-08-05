@@ -62,10 +62,18 @@ watch(
 
 <template>
   <el-container class="layout-container">
-    <el-aside width="200px">
+    <el-aside width="250px">
       <router-link to="/">
         <img src="@/assets/uob-logo.svg" class="el-aside__logo" alt="logo" />
       </router-link>
+
+      <div class="el-aside__search">
+        <el-input placeholder="Search" size="small" class="custom-search-input">
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+        </el-input>
+      </div>
 
       <SideMenu
         :visible="true"
@@ -80,8 +88,10 @@ watch(
           size="large"
           @click="logout"
           class="signout-button"
-          >Sign out</el-button
         >
+          <img src="@/assets/logout.png" class="icon-image" alt="logout" />
+          <span>Log Out</span>
+        </el-button>
       </div>
     </el-aside>
 
@@ -120,6 +130,9 @@ watch(
           <el-dropdown placement="bottom-end" @command="handleCommand">
             <span class="el-dropdown__box">
               <el-avatar :src="userStore.user?.avatar" />
+              <div class="welcome-text">
+                <div class="welcome-title">Welcome back</div>
+              </div>
               <el-icon><CaretBottom /></el-icon>
             </span>
             <template #dropdown>
@@ -130,7 +143,11 @@ watch(
                 <el-dropdown-item command="password" :icon="Lock">
                   Change password
                 </el-dropdown-item>
-                <el-dropdown-item command="logout" :icon="SwitchButton">
+                <el-dropdown-item
+                  command="logout"
+                  :icon="SwitchButton"
+                  class="logout-item"
+                >
                   Log out
                 </el-dropdown-item>
               </el-dropdown-menu>
@@ -148,32 +165,153 @@ watch(
 </template>
 
 <style lang="scss" scoped>
+.icon-image {
+  width: 20px;
+  margin-right: 8px;
+  vertical-align: middle;
+  opacity: 0.7;
+}
+
 .layout-container {
   height: 100vh;
+
+  .el-main {
+    background-color: #ffffff;
+    padding: 20px;
+  }
+  ::v-deep(.el-menu > .el-menu-item),
+  ::v-deep(.el-sub-menu__title) {
+    font-size: 18px;
+    color: #424242;
+    border-radius: 12px;
+    margin: 6px 12px;
+    padding-left: 16px !important;
+    transition: background-color 0.3s;
+  }
+
+  ::v-deep(.el-sub-menu .el-menu .el-menu-item) {
+    font-size: 16px;
+    color: #424242;
+    border-radius: 12px;
+    margin: 6px 12px;
+    padding-left: 36px !important;
+    position: relative;
+  }
+
+  ::v-deep(.el-sub-menu .el-menu .el-menu-item)::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -12px;
+    width: 12px;
+    height: 100%;
+    border-left: 1px dashed #9f2222;
+  }
+
+  ::v-deep(.el-menu-item:hover),
+  ::v-deep(.el-menu-item.is-active),
+  ::v-deep(.el-sub-menu__title:hover),
+  ::v-deep(.el-sub-menu__title.is-active) {
+    color: #000 !important;
+    font-weight: bold;
+    border-radius: 12px;
+    margin: 6px 12px;
+  }
+
+  .el-aside__search {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 0;
+
+    .custom-search-input {
+      width: 220px;
+
+      ::v-deep(.el-input__wrapper) {
+        border-radius: 18px;
+        background-color: #ffffff;
+        box-shadow: none;
+        border: 1px solid #dcdfe6;
+        padding: 2px 10px;
+        height: 36px;
+
+        input {
+          font-size: 14px;
+          line-height: 20px;
+        }
+
+        input::placeholder {
+          color: #aaa;
+        }
+
+        .el-input__prefix {
+          margin-right: 6px;
+          color: #555;
+        }
+      }
+    }
+  }
+
+  ::v-deep(.el-sub-menu .el-menu) {
+    margin-left: 30px;
+    padding-left: 0;
+
+    .el-menu-item {
+      position: relative;
+      padding-left: 25px;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 20px;
+        height: 50%;
+        border-left: 1px dashed #636262;
+        border-bottom: 1px dashed #636262;
+        border-bottom-left-radius: 6px;
+        box-sizing: border-box;
+      }
+
+      &:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 0;
+        height: 50%;
+        border-left: 1px dashed #636262;
+        border-bottom-left-radius: 6px;
+        box-sizing: border-box;
+      }
+    }
+  }
 
   .el-aside {
     display: flex;
     flex-direction: column;
     height: 100%;
-    background-color: #528add;
-    width: 200px;
-    overflow: auto;
-    scrollbar-gutter: stable;
+    background-color: #f2f2f3;
 
     &__logo {
-      display: block;
-      padding: 16px;
-      width: 100%;
       box-sizing: border-box;
-      margin-right: auto;
+      width: 100%;
+      padding: 20px;
     }
     .el-menu {
       border-right: none;
+      flex: 1;
+      overflow-y: auto;
     }
     .el-menu-item.is-active {
       font-weight: bold;
     }
 
+    ::v-deep(.el-sub-menu__title:hover),
+    ::v-deep(.el-menu-item:hover) {
+      background-color: rgba(130, 185, 186, 0.62) !important;
+      color: #000 !important;
+    }
     .signout-container {
       margin-top: auto;
       padding: 20px;
@@ -182,6 +320,8 @@ watch(
 
       .signout-button {
         background-color: transparent;
+        color: #656363;
+        font-size: 16px;
       }
     }
   }
@@ -198,14 +338,11 @@ watch(
       gap: 20px;
 
       .bell {
-        font-size: 24px;
+        font-size: 28px;
+        padding-top: 6px;
         color: #999;
         cursor: pointer;
         transition: all 0.3s ease;
-
-        &:hover {
-          color: #409eff;
-        }
       }
     }
     .el-dropdown__box {
@@ -219,12 +356,6 @@ watch(
     }
   }
 
-  .el-main {
-    scrollbar-gutter: stable;
-    overflow-y: auto;
-    height: calc(100vh - 60px);
-  }
-
   .el-footer {
     display: flex;
     align-items: center;
@@ -232,6 +363,43 @@ watch(
     font-size: 14px;
     color: #666;
   }
+}
+
+.welcome-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+
+  .welcome-title {
+    font-weight: bold;
+    font-size: 16px;
+    color: #000;
+    margin-left: 7px;
+  }
+}
+
+::v-deep(.el-dropdown-menu__item) {
+  transition: background-color 0.2s ease;
+}
+
+::v-deep(.el-dropdown-menu__item:hover) {
+  background-color: rgba(199, 202, 202, 0.55);
+  color: #000;
+}
+::v-deep(.el-dropdown-menu__item.logout-item) {
+  color: #d32f2f;
+  font-weight: bold;
+}
+
+::v-deep(.el-dropdown-menu__item.logout-item:hover) {
+  background-color: #fddede;
+  color: #d32f2f;
+}
+
+::v-deep(.icon-badge .el-badge__content.is-dot) {
+  top: 10px;
+  right: 6px;
+  background-color: #933232;
 }
 
 @media (min-width: 768px) {
@@ -249,7 +417,7 @@ watch(
   }
 
   .el-main {
-    padding: 0px, 2px;
+    padding: 0px 2px;
     padding-bottom: 50px;
   }
 }
