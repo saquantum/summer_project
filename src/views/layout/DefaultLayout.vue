@@ -130,9 +130,6 @@ watch(
           <el-dropdown placement="bottom-end" @command="handleCommand">
             <span class="el-dropdown__box">
               <el-avatar :src="userStore.user?.avatar" />
-              <div class="welcome-text">
-                <div class="welcome-title">Welcome back</div>
-              </div>
               <el-icon><CaretBottom /></el-icon>
             </span>
             <template #dropdown>
@@ -362,19 +359,6 @@ watch(
     justify-content: center;
     font-size: 14px;
     color: #666;
-  }
-}
-
-.welcome-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-
-  .welcome-title {
-    font-weight: bold;
-    font-size: 16px;
-    color: #000;
-    margin-left: 7px;
   }
 }
 
