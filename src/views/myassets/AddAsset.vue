@@ -480,7 +480,7 @@ onMounted(() => {
                 v-if="isDrawing"
                 @click="clearCurrentPolygon"
                 :disabled="disableSetPolygon"
-                >Clear cUrrent polygon</el-button
+                >Clear current polygon</el-button
               >
               <el-button
                 v-if="isDrawing"

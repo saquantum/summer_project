@@ -181,6 +181,7 @@ const beginDrawing = () => {
   polygons.value = extractPolygonsFromMultiPolygon(
     JSON.parse(JSON.stringify(props.locations[0]))
   )
+  highlightCurrentPolygon()
   map.on('click', handleClick)
 }
 
@@ -338,11 +339,13 @@ const cancelDrawing = () => {
   layers.forEach((layer) => layer.addTo(m))
   // clear points, turn off click
   points = []
-  if (focusedIndex.value >= polygons.value.length) {
-    focusedIndex.value = 0
-  }
-  polygons.value = []
 
+  // reset polygons, set focus index to 0 is this reasonable?
+  polygons.value = extractPolygonsFromMultiPolygon(
+    JSON.parse(JSON.stringify(props.locations[0]))
+  )
+  focusedIndex.value = 0
+  highlightCurrentPolygon()
   m.off('click', handleClick)
 }
 
@@ -359,12 +362,6 @@ const clearCurrentPolygon = () => {
 const clearAll = () => {
   points = []
   polygons.value = []
-  emit('update:locations', [
-    {
-      type: 'MultiPolygon',
-      coordinates: []
-    }
-  ])
   if (map) {
     map.setView([51.505, -0.09], 13)
     map.eachLayer((layer) => {
