@@ -18,7 +18,8 @@ public interface AssetMapper {
                              @Param("limit") Integer limit,
                              @Param("offset") Integer offset);
 
-    List<AssetWithWeatherWarnings> selectAssetsWithWarnings(@Param("filterList") List<FilterItemDTO> filterList,
+    List<AssetWithWeatherWarnings> selectAssetsWithWarnings(@Param("simplify") Boolean simplify,
+                                                            @Param("filterList") List<FilterItemDTO> filterList,
                                                             @Param("orderList") List<Map<String, String>> orderList,
                                                             @Param("limit") Integer limit,
                                                             @Param("offset") Integer offset);

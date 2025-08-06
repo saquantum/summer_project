@@ -134,9 +134,11 @@ public class AssetController {
 
     @PostSearchEndpoint
     @PostMapping("/admin/asset/search")
-    public ResponseBody getAllAssetsWithWarnings(@RequestBody FilterDTO filter) {
+    public ResponseBody getAllAssetsWithWarnings(@RequestParam(required = false) Boolean simplify,
+                                                 @RequestBody FilterDTO filter) {
         String message = QueryTool.formatPaginationLimit(filter);
         return new ResponseBody(Code.SELECT_OK, assetService.getCursoredAssetsWithWarnings(
+                simplify,
                 filter.getLastRowId(),
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),

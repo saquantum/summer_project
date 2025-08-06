@@ -41,21 +41,30 @@
                asset_installed_at,
                asset_last_inspection,
                asset_last_modified,
-
-               warning_id,
-               warning_weather_type,
-               warning_level,
-               warning_head_line,
-               warning_valid_from,
-               warning_valid_to,
-               warning_impact,
-               warning_likelihood,
-               warning_affected_areas,
-               warning_what_to_expect,
-               warning_further_details,
-               warning_update_description,
-               ST_AsGeoJSON(warning_area)   as warning_area,
-
+            <choose>
+                <when test="simplify == true">
+                    warning_id,
+                    warning_weather_type,
+                    warning_level,
+                    warning_valid_from,
+                    warning_valid_to,
+                </when>
+                <otherwise>
+                    warning_id,
+                    warning_weather_type,
+                    warning_level,
+                    warning_head_line,
+                    warning_valid_from,
+                    warning_valid_to,
+                    warning_impact,
+                    warning_likelihood,
+                    warning_affected_areas,
+                    warning_what_to_expect,
+                    warning_further_details,
+                    warning_update_description,
+                    ST_AsGeoJSON(warning_area)   as warning_area,
+                </otherwise>
+            </choose>
                asset_types.*,
                asset_postcodes.*
         from assets

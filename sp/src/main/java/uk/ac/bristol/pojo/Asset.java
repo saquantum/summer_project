@@ -201,6 +201,7 @@ public class Asset {
         this.lastModified = lastModified;
     }
 
+    @JsonIgnore
     public Point getLocationCentroid() {
         String location = this.getLocationAsJson();
         if (location == null || location.isBlank()) return null;

@@ -19,7 +19,8 @@ public interface AssetService {
                                                          Integer limit,
                                                          Integer offset);
 
-    List<AssetWithWeatherWarnings> getCursoredAssetsWithWarnings(Long lastAssetRowId,
+    List<AssetWithWeatherWarnings> getCursoredAssetsWithWarnings(Boolean simplify,
+                                                                 Long lastAssetRowId,
                                                                  Map<String, Object> filters,
                                                                  List<Map<String, String>> orderList,
                                                                  Integer limit,

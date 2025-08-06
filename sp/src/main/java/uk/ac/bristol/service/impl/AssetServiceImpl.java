@@ -67,6 +67,7 @@ public class AssetServiceImpl implements AssetService {
                 });
         if (!hasWeatherWarningColumn) {
             return assetMapper.selectAssetsWithWarnings(
+                    false,
                     QueryTool.formatFilters(filters),
                     list,
                     limit, offset);
@@ -77,8 +78,9 @@ public class AssetServiceImpl implements AssetService {
                 limit, offset);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<AssetWithWeatherWarnings> getCursoredAssetsWithWarnings(Long lastAssetRowId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
+    public List<AssetWithWeatherWarnings> getCursoredAssetsWithWarnings(Boolean simplify, Long lastAssetRowId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
         Map<String, Object> anchor = null;
         if (lastAssetRowId != null) {
             List<Map<String, Object>> list = assetMapper.selectAssetWithWarningsAnchor(lastAssetRowId);
@@ -89,6 +91,7 @@ public class AssetServiceImpl implements AssetService {
         }
         List<Map<String, String>> formattedOrderList = QueryTool.formatOrderList("asset_row_id", orderList, "assets", "weather_warnings");
         return assetMapper.selectAssetsWithWarnings(
+                simplify,
                 QueryTool.formatCursoredDeepPageFilters(filters, anchor, formattedOrderList),
                 formattedOrderList,
                 limit, offset);
@@ -110,6 +113,7 @@ public class AssetServiceImpl implements AssetService {
     @Override
     public AssetWithWeatherWarnings getAssetWithWarningsById(String id) {
         List<AssetWithWeatherWarnings> asset = assetMapper.selectAssetsWithWarnings(
+                false,
                 QueryTool.formatFilters(Map.of("asset_id", id)),
                 null, null, null);
         if (asset.size() != 1) {
@@ -137,6 +141,7 @@ public class AssetServiceImpl implements AssetService {
                                                                          Integer limit,
                                                                          Integer offset) {
         return assetMapper.selectAssetsWithWarnings(
+                false,
                 QueryTool.formatFilters(Map.of("asset_owner_id", ownerId)),
                 QueryTool.formatOrderList("asset_row_id", orderList, "assets", "asset_types", "weather_warnings"),
                 limit, offset);
@@ -175,6 +180,7 @@ public class AssetServiceImpl implements AssetService {
     @Override
     public List<String> getAssetIdsIntersectingWithGivenWarning(@Param("id") Long id) {
         return assetMapper.selectAssetsWithWarnings(
+                        false,
                         QueryTool.formatFilters(Map.of("warning_id", id)),
                         null, null, null)
                 .stream()
@@ -193,7 +199,7 @@ public class AssetServiceImpl implements AssetService {
         Map<String, Integer> result = new HashMap<>();
 
         do {
-            List<AssetWithWeatherWarnings> list = getCursoredAssetsWithWarnings(cursor, filters, null, limit, null);
+            List<AssetWithWeatherWarnings> list = getCursoredAssetsWithWarnings(true, cursor, filters, null, limit, null);
             if (list == null) {
                 throw new SpExceptions.SystemException("Failed to access database or data integrity is broken.");
             }
