@@ -58,6 +58,7 @@ public class ImportMockDataImpl implements ImportMockData {
         settings.createContactPreferences("contact_preferences");
         settings.createAssetTypes("asset_types");
         settings.createAssets("assets");
+        settings.createAssetPostcode("asset_postcodes");
         settings.createWeatherWarnings("weather_warnings");
         settings.createNotificationTemplates("templates");
         settings.createPermissionConfigs("permission_configs");
@@ -83,9 +84,13 @@ public class ImportMockDataImpl implements ImportMockData {
             user.setId((String) map.get("id"));
             user.setName((String) map.get("name"));
             Map<String, String> address = (Map<String, String>) map.get("address");
-            Map<String, String> postcodeColumns = postcodeService.getColumnsOfPostcode(address.get("postcode"));
-            if(postcodeColumns == null){
-                postcodeColumns = postcodeService.getRandomPostcode();
+            Map<String, String> postcodeColumns = null;
+            try {
+                postcodeColumns = postcodeService.getColumnsOfPostcode(address.get("postcode"));
+            } catch (Exception ignored) {
+            }
+            if (postcodeColumns == null) {
+                postcodeColumns = postcodeService.getRandomPostcodeAddress();
             }
             try {
                 Thread.sleep(200);
@@ -157,7 +162,23 @@ public class ImportMockDataImpl implements ImportMockData {
             assetService.insertAssetType(type);
         }
         for (Asset asset : assets) {
-            assetService.insertAsset(asset);
+            String id = assetService.insertAssetReturningId(asset);
+            try {
+                Map<String, Object> postcode = postcodeService.getColumnsOfGeometricPoint(asset.getLocationCentroid());
+                if (postcode.get("postcode") == null || ((String)postcode.get("postcode")).isBlank()) {
+                    System.err.println("Random postcode inserted instead.");
+                    assetService.upsertAssetPostcodeByAssetId(id, postcodeService.getRandomPostcode());
+                } else {
+                    assetService.upsertAssetPostcodeByAssetId(id, postcode);
+                }
+            } catch (Exception e) {
+                System.err.println("Asset inserted, but failed to insert location postcode of asset");
+            }
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

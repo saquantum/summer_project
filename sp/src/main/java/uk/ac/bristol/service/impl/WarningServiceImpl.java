@@ -160,7 +160,7 @@ public class WarningServiceImpl implements WarningService {
             for (UserWithAssets uwa : list) {
                 contactService.sendNotificationsToUser(warning, uwa);
             }
-            cursor = userService.getUserRowIdByUserId(list.get(list.size() - 1).getUser().getId());
+            cursor = list.get(list.size() - 1).getUser().getRowId();
         } while (length > 0);
         if (cursor == 0L) {
             if (getDiff) {

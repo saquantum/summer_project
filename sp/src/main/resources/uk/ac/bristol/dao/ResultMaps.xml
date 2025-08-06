@@ -69,6 +69,16 @@
         <result property="description" column="asset_type_description"/>
     </resultMap>
 
+    <resultMap id="AssetPostcodeMap" type="java.util.Map">
+        <id property="id" column="asset_postcode_asset_id"/>
+        <result property="postcode" column="asset_postcode_postcode"/>
+        <result property="longitude" column="asset_postcode_longitude"/>
+        <result property="latitude" column="asset_postcode_latitude"/>
+        <result property="country" column="asset_postcode_country"/>
+        <result property="region" column="asset_postcode_region"/>
+        <result property="district" column="asset_postcode_admin_district"/>
+    </resultMap>
+
     <resultMap id="AssetMap" type="uk.ac.bristol.pojo.Asset">
         <id property="id" column="asset_id"/>
         <result property="rowId" column="asset_row_id"/>
@@ -84,6 +94,7 @@
         <result property="lastModified" column="asset_last_modified"/>
 
         <association property="type" javaType="uk.ac.bristol.pojo.AssetType" resultMap="AssetTypeMap"/>
+        <association property="postcode" javaType="java.util.Map" resultMap="AssetPostcodeMap"/>
     </resultMap>
 
     <resultMap id="WarningMap" type="uk.ac.bristol.pojo.Warning">

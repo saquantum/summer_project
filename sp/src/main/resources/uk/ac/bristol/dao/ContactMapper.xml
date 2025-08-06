@@ -14,7 +14,7 @@
     <select id="selectNotificationTemplateAnchor" resultType="java.util.Map">
         select *
         from templates
-        where template_id = #{rowId}
+        where template_id &gt;= #{rowId}
         order by template_id asc
         limit 1 offset 0
     </select>

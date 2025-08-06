@@ -52,6 +52,12 @@ public interface AssetService {
 
     List<String> getAssetIdsIntersectingWithGivenWarning(Long id);
 
+    Map<String, Integer> groupAssetLocationByCountry(Map<String, Object> filters);
+
+    Map<String, Integer> groupAssetLocationByRegion(Map<String, Object> filters);
+
+    Map<String, Integer> groupAssetLocationByAdminDistrict(Map<String, Object> filters);
+
     int countAssetsWithFilter(Map<String, Object> filters);
 
     boolean compareAssetLastModified(String assetId, Long timestamp);
@@ -59,6 +65,8 @@ public interface AssetService {
     int insertAssetType(AssetType assetType);
 
     int insertAsset(Asset asset);
+
+    String insertAssetReturningId(Asset asset);
 
     int updateAssetType(AssetType assetType);
 
@@ -71,4 +79,6 @@ public interface AssetService {
     int deleteAssetByIDs(String[] ids);
 
     int deleteAssetByIDs(List<String> ids);
+
+    boolean upsertAssetPostcodeByAssetId(String assetId, Map<String, Object> map);
 }

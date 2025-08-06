@@ -1,7 +1,6 @@
 package uk.ac.bristol.controller;
 
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import uk.ac.bristol.advice.PostSearchEndpoint;
 import uk.ac.bristol.pojo.FilterDTO;
 import uk.ac.bristol.pojo.PermissionConfig;
@@ -9,11 +8,8 @@ import uk.ac.bristol.pojo.Template;
 import uk.ac.bristol.service.*;
 import uk.ac.bristol.util.QueryTool;
 
-import java.io.IOException;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -23,13 +19,15 @@ public class AdminController {
     private final MetaDataService metaDataService;
     private final PermissionConfigService permissionConfigService;
     private final ContactService contactService;
-    private final PostcodeService postcodeService;
+    private final UserService userService;
+    private final AssetService assetService;
 
-    public AdminController(MetaDataService metaDataService, PermissionConfigService permissionConfigService, ContactService contactService, PostcodeService postcodeService, PermissionGroupService permissionGroupService) {
+    public AdminController(MetaDataService metaDataService, PermissionConfigService permissionConfigService, ContactService contactService, UserService userService, AssetService assetService) {
         this.metaDataService = metaDataService;
         this.permissionConfigService = permissionConfigService;
         this.contactService = contactService;
-        this.postcodeService = postcodeService;
+        this.userService = userService;
+        this.assetService = assetService;
     }
 
     @GetMapping("/metadata")
@@ -151,48 +149,40 @@ public class AdminController {
         return new ResponseBody(Code.UPDATE_OK, permissionConfigService.updatePermissionConfigByUserId(permissionConfig));
     }
 
+    /* dashboard */
+
     @GetMapping("/dashboard/users/country")
     public ResponseBody getCountUsersByCountry() {
-        return new ResponseBody(Code.SELECT_OK,
-                postcodeService.groupUserAddressPostcodeByCountry(Map.of("user_is_admin", false))
-                        .entrySet()
-                        .stream()
-                        .collect(
-                                Collectors.toMap(
-                                        Map.Entry::getKey,
-                                        e -> e.getValue().size()
-                                )
-                        )
-        );
+        return new ResponseBody(Code.SELECT_OK, userService.groupUserAddressPostcodeByCountry(Map.of("user_is_admin", false)));
     }
 
     @GetMapping("/dashboard/users/region")
     public ResponseBody getCountUsersByRegion() {
-        return new ResponseBody(Code.SELECT_OK,
-                postcodeService.groupUserAddressPostcodeByRegion(Map.of("user_is_admin", false))
-                        .entrySet()
-                        .stream()
-                        .collect(
-                                Collectors.toMap(
-                                        Map.Entry::getKey,
-                                        e -> e.getValue().size()
-                                )
-                        )
-        );
+        return new ResponseBody(Code.SELECT_OK, userService.groupUserAddressPostcodeByRegion(Map.of("user_is_admin", false)));
     }
 
     @GetMapping("/dashboard/users/district")
     public ResponseBody getCountUsersByDistrict() {
-        return new ResponseBody(Code.SELECT_OK,
-                postcodeService.groupUserAddressPostcodeByAdminDistrict(Map.of("user_is_admin", false))
-                        .entrySet()
-                        .stream()
-                        .collect(
-                                Collectors.toMap(
-                                        Map.Entry::getKey,
-                                        e -> e.getValue().size()
-                                )
-                        )
-        );
+        return new ResponseBody(Code.SELECT_OK, userService.groupUserAddressPostcodeByAdminDistrict(Map.of("user_is_admin", false)));
+    }
+
+    @GetMapping("/dashboard/users/contact-preference")
+    public ResponseBody getUserContactPreferencePercentage() {
+        return new ResponseBody(Code.SELECT_OK, userService.getUserContactPreferencesPercentage(Map.of("user_is_admin", false)));
+    }
+
+    @GetMapping("/dashboard/assets/country")
+    public ResponseBody getCountAssetsByCountry() {
+        return new ResponseBody(Code.SELECT_OK, assetService.groupAssetLocationByCountry(null));
+    }
+
+    @GetMapping("/dashboard/assets/region")
+    public ResponseBody getCountAssetsByRegion() {
+        return new ResponseBody(Code.SELECT_OK, assetService.groupAssetLocationByRegion(null));
+    }
+
+    @GetMapping("/dashboard/assets/district")
+    public ResponseBody getCountAssetsByDistrict() {
+        return new ResponseBody(Code.SELECT_OK, assetService.groupAssetLocationByAdminDistrict(null));
     }
 }

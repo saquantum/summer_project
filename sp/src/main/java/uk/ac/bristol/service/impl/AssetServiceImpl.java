@@ -4,6 +4,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import uk.ac.bristol.controller.Code;
 import uk.ac.bristol.dao.AssetMapper;
 import uk.ac.bristol.dao.MetaDataMapper;
 import uk.ac.bristol.exception.SpExceptions;
@@ -16,6 +17,7 @@ import uk.ac.bristol.util.QueryTool;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -180,6 +182,64 @@ public class AssetServiceImpl implements AssetService {
                 .toList();
     }
 
+    private Map<String, Integer> groupAssetLocationByOption(Map<String, Object> filters, String option) {
+        if (option == null || option.isBlank()) {
+            return new HashMap<>();
+        }
+
+        int limit = Code.PAGINATION_MAX_LIMIT;
+        long cursor = 0L;
+        int length = 0;
+        Map<String, Integer> result = new HashMap<>();
+
+        do {
+            List<AssetWithWeatherWarnings> list = getCursoredAssetsWithWarnings(cursor, filters, null, limit, null);
+            if (list == null) {
+                throw new SpExceptions.SystemException("Failed to access database or data integrity is broken.");
+            }
+            length = list.size();
+            if (length == 0) break;
+
+            for (AssetWithWeatherWarnings aww : list) {
+                Map<String, Object> postcode = aww.getAsset().getPostcode();
+                String postcodeCountry = (String) postcode.get("country");
+                String postcodeRegion = (String) postcode.get("region");
+                postcodeRegion = postcodeRegion.isBlank() ? postcodeCountry : postcodeRegion;
+                String postcodeAdminDistrict = (String) postcode.get("district");
+
+                String key = switch (option) {
+                    case "country" -> postcodeCountry;
+                    case "region" -> postcodeRegion;
+                    case "district" -> postcodeAdminDistrict;
+                    default -> null;
+                };
+                if (key != null && !key.isBlank()) {
+                    result.put(key, result.getOrDefault(key, 0) + 1);
+                }
+            }
+            cursor = list.get(list.size() - 1).getAsset().getRowId();
+        } while (length > 0);
+        return result;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public Map<String, Integer> groupAssetLocationByCountry(Map<String, Object> filters) {
+        return groupAssetLocationByOption(filters, "country");
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public Map<String, Integer> groupAssetLocationByRegion(Map<String, Object> filters) {
+        return groupAssetLocationByOption(filters, "region");
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public Map<String, Integer> groupAssetLocationByAdminDistrict(Map<String, Object> filters) {
+        return groupAssetLocationByOption(filters, "district");
+    }
+
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public int countAssetsWithFilter(Map<String, Object> filters) {
@@ -209,6 +269,13 @@ public class AssetServiceImpl implements AssetService {
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int insertAsset(Asset asset) {
+        insertAssetReturningId(asset);
+        return 1;
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public String insertAssetReturningId(Asset asset) {
         int n;
         asset.setLastModified(Instant.now());
         if (asset.getId() == null || asset.getId().isEmpty()) {
@@ -229,10 +296,12 @@ public class AssetServiceImpl implements AssetService {
             }
         } else {
             n = assetMapper.insertAsset(asset);
+            if (n != 1) {
+                throw new SpExceptions.GetMethodException("Inserted " + n + " assets with returning auto id mode");
+            }
         }
-
         metaDataMapper.increaseTotalCountByTableName("assets", n);
-        return n;
+        return asset.getId();
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -264,7 +333,7 @@ public class AssetServiceImpl implements AssetService {
 
         // if asset area is not touched, update now and return early
         asset.setLastModified(now);
-        if (asset.getLocationAsJson() == null || asset.getLocationAsJson().isBlank()) {
+        if (asset.getLocationAsJson() == null || asset.getLocationAsJson().isBlank() || assetMapper.testAssetLocationDiff(asset.getId(), asset.getLocationAsJson())) {
             return assetMapper.updateAsset(asset);
         }
 
@@ -324,5 +393,10 @@ public class AssetServiceImpl implements AssetService {
         int n = assetMapper.deleteAssetByIDs(ids);
         metaDataMapper.increaseTotalCountByTableName("assets", -n);
         return n;
+    }
+
+    @Override
+    public boolean upsertAssetPostcodeByAssetId(String assetId, Map<String, Object> map) {
+        return assetMapper.upsertAssetPostcodeByAssetId(assetId, map);
     }
 }

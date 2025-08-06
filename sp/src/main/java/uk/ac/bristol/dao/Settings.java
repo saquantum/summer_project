@@ -25,6 +25,8 @@ public interface Settings {
 
     void createAssets(@Param("tableName") String tableName);
 
+    void createAssetPostcode(@Param("tableName") String tableName);
+
     void createWeatherWarnings(@Param("tableName") String tableName);
 
     void createNotificationTemplates(@Param("tableName") String tableName);

@@ -13,7 +13,7 @@
 
     <select id="selectPermissionConfigAnchor" resultType="java.util.Map">
         select * from permission_configs
-        where permission_config_row_id = #{rowId}
+        where permission_config_row_id &gt;= #{rowId}
         order by permission_config_row_id asc
         limit 1 offset 0
     </select>

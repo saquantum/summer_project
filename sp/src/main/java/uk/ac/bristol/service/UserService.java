@@ -44,8 +44,6 @@ public interface UserService {
 
     User getUserByUserId(String uid);
 
-    Long getUserRowIdByUserId(String uid);
-
     boolean testUIDExistence(String id);
 
     boolean testEmailAddressExistence(String email);
@@ -55,6 +53,14 @@ public interface UserService {
                                                               Long waringId,
                                                               boolean getDiff,
                                                               String newAreaAsJson);
+
+    Map<String, Integer> groupUserAddressPostcodeByCountry(Map<String, Object> filters);
+
+    Map<String, Integer> groupUserAddressPostcodeByRegion(Map<String, Object> filters);
+
+    Map<String, Integer> groupUserAddressPostcodeByAdminDistrict(Map<String, Object> filters);
+
+    Map<String, Integer> getUserContactPreferencesPercentage(Map<String, Object> filters);
 
     long countUsersWithFilter(Map<String, Object> filters);
 

@@ -7,6 +7,7 @@ import com.password4j.types.Argon2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import uk.ac.bristol.controller.Code;
 import uk.ac.bristol.dao.MetaDataMapper;
 import uk.ac.bristol.dao.UserMapper;
 import uk.ac.bristol.exception.SpExceptions;
@@ -155,11 +156,6 @@ public class UserServiceImpl implements UserService {
         return user.get(0);
     }
 
-    @Override
-    public Long getUserRowIdByUserId(String uid) {
-        return userMapper.selectUserRowIdByUserId(uid);
-    }
-
     // true: UID exists
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
@@ -185,6 +181,96 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserWithAssets> groupUsersWithOwnedAssetsByWarningId(Integer limit, Long cursor, Long waringId, boolean getDiff, String newAreaAsJson) {
         return userMapper.groupUsersWithOwnedAssetsByWarningId(limit, cursor, waringId, getDiff, newAreaAsJson);
+    }
+
+    private Map<String, Integer> groupUserAddressPostcodeByOption(Map<String, Object> filters, String option) {
+        if (option == null || option.isBlank()) {
+            return new HashMap<>();
+        }
+
+        int limit = Code.PAGINATION_MAX_LIMIT;
+        long cursor = 0L;
+        int length = 0;
+        Map<String, Integer> result = new HashMap<>();
+
+        do {
+            List<User> list = getCursoredUsers(cursor, filters, null, limit, null);
+            if (list == null) {
+                throw new SpExceptions.SystemException("Failed to access database or data integrity is broken.");
+            }
+            length = list.size();
+            if (length == 0) break;
+
+            for (User user : list) {
+                Map<String, String> address = user.getAddress();
+                String postcodeCountry = address.get("postcodeCountry");
+                String postcodeRegion = address.get("postcodeRegion");
+                postcodeRegion = postcodeRegion.isBlank() ? postcodeCountry : postcodeRegion;
+                String postcodeAdminDistrict = address.get("postcodeAdminDistrict");
+
+                String key = switch (option) {
+                    case "country" -> postcodeCountry;
+                    case "region" -> postcodeRegion;
+                    case "district" -> postcodeAdminDistrict;
+                    default -> null;
+                };
+                if (key != null && !key.isBlank()) {
+                    result.put(key, result.getOrDefault(key, 0) + 1);
+                }
+            }
+            cursor = list.get(list.size() - 1).getRowId();
+        } while (length > 0);
+        return result;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public Map<String, Integer> groupUserAddressPostcodeByCountry(Map<String, Object> filters) {
+        return groupUserAddressPostcodeByOption(filters, "country");
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public Map<String, Integer> groupUserAddressPostcodeByRegion(Map<String, Object> filters) {
+        return groupUserAddressPostcodeByOption(filters, "region");
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public Map<String, Integer> groupUserAddressPostcodeByAdminDistrict(Map<String, Object> filters) {
+        return groupUserAddressPostcodeByOption(filters, "district");
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public Map<String, Integer> getUserContactPreferencesPercentage(Map<String, Object> filters) {
+        int limit = Code.PAGINATION_MAX_LIMIT;
+        long cursor = 0L;
+        int length = 0;
+        Map<String, Integer> result = new HashMap<>();
+
+        do {
+            List<User> list = getCursoredUsers(cursor, filters, null, limit, null);
+            if (list == null) {
+                throw new SpExceptions.SystemException("Failed to access database or data integrity is broken.");
+            }
+            length = list.size();
+            if (length == 0) break;
+
+            for (User user : list) {
+                Map<String, Boolean> contactPreferences = user.getContactPreferences();
+                for (Map.Entry<String, Boolean> entry : contactPreferences.entrySet()) {
+                    String key = entry.getKey();
+                    Boolean value = entry.getValue();
+                    if (value == true) {
+                        result.put(key, result.getOrDefault(key, 0) + 1);
+                    }
+                }
+                result.put("total", result.getOrDefault("total", 0) + 1);
+            }
+            cursor = list.get(list.size() - 1).getRowId();
+        } while (length > 0);
+        return result;
     }
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
