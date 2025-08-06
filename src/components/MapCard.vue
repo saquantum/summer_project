@@ -67,20 +67,7 @@ const handleClick = (e: LeafletMouseEvent) => {
     points[index] = [marker.getLatLng().lat, marker.getLatLng().lng]
   })
 }
-const DEFAULT_MULTIPOLYGON = {
-  type: 'MultiPolygon',
-  coordinates: [
-    [
-      [
-        [-0.5103751, 51.2867601],
-        [0.3340155, 51.2867601],
-        [0.3340155, 51.6918741],
-        [-0.5103751, 51.6918741],
-        [-0.5103751, 51.2867601]
-      ]
-    ]
-  ]
-}
+
 const focusedIndex = ref(0)
 
 const highlightCurrentPolygon = () => {
@@ -191,18 +178,9 @@ const quickEscapePolygons = () => {
 
 const beginDrawing = () => {
   if (!map) return
-
-  // clear place holder
-  if (
-    props.locations[0] &&
-    JSON.stringify(props.locations[0]) === JSON.stringify(DEFAULT_MULTIPOLYGON)
-  ) {
-    map.eachLayer((layer) => {
-      if (!(layer instanceof L.TileLayer)) {
-        map!.removeLayer(layer)
-      }
-    })
-  }
+  polygons.value = extractPolygonsFromMultiPolygon(
+    JSON.parse(JSON.stringify(props.locations[0]))
+  )
   map.on('click', handleClick)
 }
 
@@ -285,7 +263,7 @@ const finishOneShape = async () => {
 
   // reset point
   points = []
-  highlightCurrentPolygon()
+  // highlightCurrentPolygon()
 }
 
 const finishOnePolygon = () => {
@@ -360,7 +338,41 @@ const cancelDrawing = () => {
   layers.forEach((layer) => layer.addTo(m))
   // clear points, turn off click
   points = []
+  if (focusedIndex.value >= polygons.value.length) {
+    focusedIndex.value = 0
+  }
+  polygons.value = []
+
   m.off('click', handleClick)
+}
+
+const clearCurrentPolygon = () => {
+  if (focusedIndex.value >= 0 && focusedIndex.value < polygons.value.length) {
+    polygons.value.splice(focusedIndex.value, 1)
+    if (focusedIndex.value >= polygons.value.length) {
+      focusedIndex.value = polygons.value.length - 1
+    }
+    highlightCurrentPolygon()
+  }
+}
+
+const clearAll = () => {
+  points = []
+  polygons.value = []
+  emit('update:locations', [
+    {
+      type: 'MultiPolygon',
+      coordinates: []
+    }
+  ])
+  if (map) {
+    map.setView([51.505, -0.09], 13)
+    map.eachLayer((layer) => {
+      if (!(layer instanceof L.TileLayer)) {
+        map!.removeLayer(layer)
+      }
+    })
+  }
 }
 
 const renderLayers = (m: L.Map) => {
@@ -372,51 +384,49 @@ const renderLayers = (m: L.Map) => {
     }
   })
 
-  if (!props.locations || props.locations.length === 0) return
+  if (
+    !props.locations ||
+    props.locations.length <= 0 ||
+    props.locations[0].coordinates.length <= 0
+  ) {
+    m.setView([51.505, -0.09], 13)
+  } else {
+    // Create separate layers for each MultiPolygon
+    const layers: L.GeoJSON[] = []
 
-  // Create separate layers for each MultiPolygon
-  const layers: L.GeoJSON[] = []
-
-  props.locations.forEach((geometry, idx) => {
-    const feature: Feature = {
-      type: 'Feature',
-      geometry,
-      properties: { index: idx }
-    }
-
-    const layer = L.geoJSON(feature, {
-      style: () => {
-        if (props.styles?.length > 0 && props.styles[idx]) {
-          return props.styles[idx]
-        }
-        return {}
+    props.locations.forEach((geometry, idx) => {
+      const feature: Feature = {
+        type: 'Feature',
+        geometry,
+        properties: { index: idx }
       }
+
+      const layer = L.geoJSON(feature, {
+        style: () => {
+          if (props.styles?.length > 0 && props.styles[idx]) {
+            return props.styles[idx]
+          }
+          return {}
+        }
+      })
+
+      layer.addTo(m)
+      layers.push(layer)
     })
 
-    layer.addTo(m)
-    layers.push(layer)
-  })
+    // Store all layers for later use
+    saveLayer.length = 0 // Clear existing layers
+    saveLayer.push(...layers)
 
-  // Store all layers for later use
-  saveLayer.length = 0 // Clear existing layers
-  saveLayer.push(...layers)
-
-  // Fit bounds to all layers
-  if (layers.length > 0) {
-    try {
-      const group = L.featureGroup(layers)
-      m.fitBounds(group.getBounds())
-    } catch (e) {
-      console.error(e)
+    // Fit bounds to all layers
+    if (layers.length > 0) {
+      try {
+        const group = L.featureGroup(layers)
+        m.fitBounds(group.getBounds())
+      } catch (e) {
+        console.error(e)
+      }
     }
-  }
-
-  if (
-    props.locations[0] &&
-    JSON.stringify(props.locations[0]) !== JSON.stringify(DEFAULT_MULTIPOLYGON)
-  ) {
-    // conver multipolygon to polygon, this is only for asset
-    polygons.value = extractPolygonsFromMultiPolygon(props.locations[0])
   }
 }
 
@@ -425,7 +435,6 @@ watch(
   () => {
     const m = map
     if (!m) return
-
     renderLayers(m)
   },
   {
@@ -469,6 +478,8 @@ defineExpose({
   finishOnePolygon,
   endDrawing,
   cancelDrawing,
+  clearAll,
+  clearCurrentPolygon,
   map,
   disablePrev,
   disableNext

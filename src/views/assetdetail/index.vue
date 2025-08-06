@@ -57,9 +57,14 @@ const mode = ref<'convex' | 'sequence'>('convex')
 /**
  * The reason for using an array is to be compatible with warnings.
  */
+
 const locations = computed({
-  get: () => [asset.value.location],
+  get: () => {
+    console.log('locations getter', asset.value.location)
+    return asset.value.location ? [asset.value.location] : []
+  },
   set: (val: MultiPolygon[]) => {
+    console.log('locations setter', val)
     asset.value.location = val[0]
   }
 })
@@ -86,6 +91,7 @@ const endDrawing = () => {
 
 const cancelDrawing = () => {
   isDrawing.value = false
+  console.log(locations.value)
   mapCardRef.value?.cancelDrawing()
 }
 
@@ -123,93 +129,22 @@ const isMobile = computed(() => {
 </script>
 
 <template>
-  <el-row :gutter="20" class="main-content">
-    <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-      <el-card class="map-card">
-        <template #header>
-          <div class="card-header">
-            <span>{{ asset?.name }}</span>
-          </div>
-        </template>
-        <div class="map-container">
-          <MapCard
-            ref="mapCardRef"
-            :map-id="'mapdetail'"
-            v-model:locations="locations"
-            :asset="asset"
-            v-model:mode="mode"
-          ></MapCard>
-        </div>
-      </el-card>
-    </el-col>
-
-    <!-- form -->
-    <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-      <div class="table-section">
-        <h3>Warning Details</h3>
-        <div class="table-container">
-          <el-table
-            :data="displayData"
-            stripe
-            class="responsive-table"
-            :size="isMobile ? 'small' : 'default'"
-          >
-            <el-table-column
-              prop="weatherType"
-              label="Weather Type"
-              :width="isMobile ? undefined : 180"
-              :min-width="120"
-            />
-            <el-table-column
-              prop="warningLevel"
-              label="Warning Level"
-              :width="isMobile ? undefined : 180"
-              :min-width="120"
-            />
-
-            <el-table-column
-              prop="period"
-              label="Period"
-              :width="isMobile ? undefined : 180"
-              :min-width="110"
-            />
-            <el-table-column label="Actions" :min-width="150" fixed="right">
-              <template #default="scope">
-                <div class="action-cell">
-                  <el-button
-                    text
-                    type="primary"
-                    :size="isMobile ? 'small' : 'default'"
-                    @click="handleShowDetail(scope.row)"
-                  >
-                    Detail
-                  </el-button>
-                </div>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
+  <el-card class="map-card">
+    <template #header>
+      <div class="card-header">
+        <span>{{ asset?.name }}</span>
       </div>
-
-      <div class="form-section">
-        <AssetForm
-          ref="assetFormRef"
-          v-model:isEdit="isEdit"
-          :item="item"
-        ></AssetForm>
-
-        <div class="action-buttons">
-          <el-button v-if="!isEdit" @click="isEdit = true" type="primary">
-            Edit
-          </el-button>
-          <el-button v-else @click="isEdit = false"> Cancel </el-button>
-          <el-button v-if="isEdit" @click="submit" type="success">
-            Submit
-          </el-button>
-        </div>
-      </div>
-    </el-col>
-  </el-row>
+    </template>
+    <div class="map-container">
+      <MapCard
+        ref="mapCardRef"
+        :map-id="'mapdetail'"
+        v-model:locations="locations"
+        :asset="asset"
+        v-model:mode="mode"
+      ></MapCard>
+    </div>
+  </el-card>
 
   <!-- action -->
   <div
@@ -269,6 +204,72 @@ const isMobile = computed(() => {
           >Cancel drawing</el-button
         >
       </div>
+    </div>
+  </div>
+
+  <!-- form -->
+
+  <div class="table-section">
+    <h3>Warning Details</h3>
+    <div class="table-container">
+      <el-table
+        :data="displayData"
+        stripe
+        class="responsive-table"
+        :size="isMobile ? 'small' : 'default'"
+      >
+        <el-table-column
+          prop="weatherType"
+          label="Weather Type"
+          :width="isMobile ? undefined : 180"
+          :min-width="120"
+        />
+        <el-table-column
+          prop="warningLevel"
+          label="Warning Level"
+          :width="isMobile ? undefined : 180"
+          :min-width="120"
+        />
+
+        <el-table-column
+          prop="period"
+          label="Period"
+          :width="isMobile ? undefined : 180"
+          :min-width="110"
+        />
+        <el-table-column label="Actions" :min-width="150" fixed="right">
+          <template #default="scope">
+            <div class="action-cell">
+              <el-button
+                text
+                type="primary"
+                :size="isMobile ? 'small' : 'default'"
+                @click="handleShowDetail(scope.row)"
+              >
+                Detail
+              </el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <AssetForm
+      ref="assetFormRef"
+      v-model:isEdit="isEdit"
+      :item="item"
+    ></AssetForm>
+
+    <div class="action-buttons">
+      <el-button v-if="!isEdit" @click="isEdit = true" type="primary">
+        Edit
+      </el-button>
+      <el-button v-else @click="isEdit = false"> Cancel </el-button>
+      <el-button v-if="isEdit" @click="submit" type="success">
+        Submit
+      </el-button>
     </div>
   </div>
 </template>

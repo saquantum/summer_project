@@ -114,17 +114,7 @@ const disableSetPolygon = computed(() => {
 
 const DEFAULT_MULTIPOLYGON = {
   type: 'MultiPolygon',
-  coordinates: [
-    [
-      [
-        [-0.5103751, 51.2867601],
-        [0.3340155, 51.2867601],
-        [0.3340155, 51.6918741],
-        [-0.5103751, 51.6918741],
-        [-0.5103751, 51.2867601]
-      ]
-    ]
-  ]
+  coordinates: []
 }
 
 const form = ref<AssetForm>({
@@ -243,6 +233,14 @@ const nextPolygon = () => {
 
 const quickEscapePolygons = () => {
   mapCardRef.value?.quickEscapePolygons()
+}
+
+const clearAll = () => {
+  mapCardRef.value?.clearAll()
+}
+
+const clearCurrentPolygon = () => {
+  mapCardRef.value?.clearCurrentPolygon()
 }
 
 const userSubmit = async () => {
@@ -477,6 +475,18 @@ onMounted(() => {
                 @click="finishOnePolygon"
                 :disabled="disableSetPolygon"
                 >Finish one polygon</el-button
+              >
+              <el-button
+                v-if="isDrawing"
+                @click="clearCurrentPolygon"
+                :disabled="disableSetPolygon"
+                >Clear cUrrent polygon</el-button
+              >
+              <el-button
+                v-if="isDrawing"
+                @click="clearAll"
+                :disabled="disableSetPolygon"
+                >Clear all</el-button
               >
               <el-button
                 v-if="isDrawing"
