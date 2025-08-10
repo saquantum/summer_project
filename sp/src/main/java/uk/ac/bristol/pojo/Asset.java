@@ -6,6 +6,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.io.geojson.GeoJsonReader;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -22,6 +26,7 @@ public class Asset {
     @JsonAlias("owner_id")
     private String ownerId;
     private Map<String, Object> location;
+    private Map<String, Object> postcode;
     @JsonAlias("capacity_litres")
     private Long capacityLitres;
     private String material;
@@ -138,6 +143,14 @@ public class Asset {
         this.location = null;
     }
 
+    public Map<String, Object> getPostcode() {
+        return postcode;
+    }
+
+    public void setPostcode(Map<String, Object> postcode) {
+        this.postcode = postcode;
+    }
+
     public Long getCapacityLitres() {
         return capacityLitres;
     }
@@ -186,5 +199,19 @@ public class Asset {
 
     public void setLastModified(Instant lastModified) {
         this.lastModified = lastModified;
+    }
+
+    @JsonIgnore
+    public Point getLocationCentroid() {
+        String location = this.getLocationAsJson();
+        if (location == null || location.isBlank()) return null;
+        try {
+            GeometryFactory geometryFactory = new GeometryFactory();
+            GeoJsonReader reader = new GeoJsonReader(geometryFactory);
+            Geometry geometry = reader.read(location);
+            return geometry.getCentroid();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse GeoJSON and calculate centroid", e);
+        }
     }
 }

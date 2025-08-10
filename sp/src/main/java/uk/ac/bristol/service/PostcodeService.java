@@ -1,19 +1,16 @@
 package uk.ac.bristol.service;
 
-import uk.ac.bristol.pojo.User;
+import org.locationtech.jts.geom.Point;
 
-import java.util.List;
 import java.util.Map;
 
 public interface PostcodeService {
 
-    Map<String, String> getRandomPostcode();
+    Map<String, Object> getRandomPostcode();
+
+    Map<String, String> getRandomPostcodeAddress();
 
     Map<String, String> getColumnsOfPostcode(String postcode);
 
-    Map<String, List<User>> groupUserAddressPostcodeByCountry(Map<String, Object> filters);
-
-    Map<String, List<User>> groupUserAddressPostcodeByRegion(Map<String, Object> filters);
-
-    Map<String, List<User>> groupUserAddressPostcodeByAdminDistrict(Map<String, Object> filters);
+    Map<String, Object> getColumnsOfGeometricPoint(Point point);
 }

@@ -40,8 +40,6 @@ public interface UserMapper {
 
     String selectPasswordByUserId(@Param("id") String id);
 
-    Long selectUserRowIdByUserId(@Param("id") String id);
-
     // grouping
 
     List<UserWithAssets> groupUsersWithOwnedAssetsByWarningId(@Param("limit") Integer limit,
@@ -66,7 +64,7 @@ public interface UserMapper {
 
     /* address */
 
-    List<Map<String, String>> selectAddressByUserId(@Param("id") String userId);
+    List<Map<String, Object>> selectAddressByUserId(@Param("id") String userId);
 
     boolean upsertAddressByUserId(@Param("id") String uid, Map<String, String> map);
 
@@ -74,7 +72,7 @@ public interface UserMapper {
 
     /* contact details */
 
-    List<Map<String, String>> selectContactDetailsByUserId(@Param("id") String userId);
+    List<Map<String, Object>> selectContactDetailsByUserId(@Param("id") String userId);
 
     boolean upsertContactDetailsByUserId(@Param("id") String uid, Map<String, String> map);
 
@@ -82,7 +80,7 @@ public interface UserMapper {
 
     /* contact preference */
 
-    List<Map<String, Boolean>> selectContactPreferencesByUserId(@Param("id") String userId);
+    List<Map<String, Object>> selectContactPreferencesByUserId(@Param("id") String userId);
 
     boolean upsertContactPreferencesByUserId(@Param("id") String uid, Map<String, Boolean> map);
 

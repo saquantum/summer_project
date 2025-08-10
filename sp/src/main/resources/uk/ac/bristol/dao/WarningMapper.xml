@@ -31,7 +31,7 @@
     <select id="selectWarningAnchor" resultType="java.util.Map">
         <include refid="selectWarnings"/>
         where now() between warning_valid_from and warning_valid_to
-        and warning_id = #{rowId}
+        and warning_id &gt;= #{rowId}
         order by warning_id asc
         limit 1 offset 0
     </select>
@@ -44,7 +44,7 @@
 
     <select id="selectWarningsIncludingOutdatedAnchor" resultType="java.util.Map">
         <include refid="selectWarnings"/>
-        where warning_id = #{rowId}
+        where warning_id &gt;= #{rowId}
         order by warning_id asc
         limit 1 offset 0
     </select>

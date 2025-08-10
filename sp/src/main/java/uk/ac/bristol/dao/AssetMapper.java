@@ -18,7 +18,8 @@ public interface AssetMapper {
                              @Param("limit") Integer limit,
                              @Param("offset") Integer offset);
 
-    List<AssetWithWeatherWarnings> selectAssetsWithWarnings(@Param("filterList") List<FilterItemDTO> filterList,
+    List<AssetWithWeatherWarnings> selectAssetsWithWarnings(@Param("simplify") Boolean simplify,
+                                                            @Param("filterList") List<FilterItemDTO> filterList,
                                                             @Param("orderList") List<Map<String, String>> orderList,
                                                             @Param("limit") Integer limit,
                                                             @Param("offset") Integer offset);
@@ -31,6 +32,8 @@ public interface AssetMapper {
                                                                                     @Param("offset") Integer offset);
 
     int countAssetsWithWarnings(@Param("filterList") List<FilterItemDTO> filterList);
+
+    boolean testAssetLocationDiff(@Param("id") String assetId, @Param("locationAsJson") String locationAsJson);
 
     int insertAsset(Asset asset);
 
@@ -62,4 +65,10 @@ public interface AssetMapper {
     int deleteAssetTypeByIDs(@Param("ids") String[] ids);
 
     int deleteAssetTypeByIDs(@Param("ids") List<String> ids);
+
+    List<Map<String, Object>> selectAssetPostcodeByAssetId(@Param("id") String userId);
+
+    boolean upsertAssetPostcodeByAssetId(@Param("id") String assetId, @Param("map") Map<String, Object> map);
+
+    int deleteAssetPostcodeByAssetIds(@Param("ids") List<String> ids);
 }
