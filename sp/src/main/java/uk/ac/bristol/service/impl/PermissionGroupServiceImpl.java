@@ -6,7 +6,9 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.dao.GroupMemberMapper;
 import uk.ac.bristol.dao.PermissionGroupMapper;
 import uk.ac.bristol.dao.PermissionGroupPermissionMapper;
+import uk.ac.bristol.pojo.CreateGroupRequest;
 import uk.ac.bristol.pojo.PermissionGroup;
+import uk.ac.bristol.pojo.PermissionGroupPermission;
 import uk.ac.bristol.service.PermissionGroupService;
 
 import java.util.List;
@@ -71,5 +73,34 @@ public class PermissionGroupServiceImpl implements PermissionGroupService {
         permissionGroupPermissionMapper.deletePermissions(groupId);
 
         permissionGroupMapper.deleteGroup(groupId);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    @Override
+    public PermissionGroup createGroupWithPermissions(CreateGroupRequest request) {
+        PermissionGroup group = new PermissionGroup();
+        group.setGroupName(request.getGroupName());
+        group.setDescription(request.getDescription());
+
+        permissionGroupMapper.insertGroup(group);
+
+        PermissionGroupPermission permissions = new PermissionGroupPermission();
+        permissions.setGroupId(group.getGroupId());
+        permissions.setCanCreateAsset(request.getCanCreateAsset());
+        permissions.setCanSetPolygonOnCreate(request.getCanSetPolygonOnCreate());
+        permissions.setCanUpdateAssetFields(request.getCanUpdateAssetFields());
+        permissions.setCanUpdateAssetPolygon(request.getCanUpdateAssetPolygon());
+        permissions.setCanDeleteAsset(request.getCanDeleteAsset());
+        permissions.setCanUpdateProfile(request.getCanUpdateProfile());
+
+        permissionGroupPermissionMapper.insertPermissions(permissions);
+
+        return group;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public PermissionGroup getGroupByName(String groupName) {
+        return permissionGroupMapper.selectGroupByName(groupName);
     }
 }

@@ -2,6 +2,8 @@ package uk.ac.bristol.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.bristol.pojo.ApiResponse;
+import uk.ac.bristol.pojo.CreateGroupRequest;
 import uk.ac.bristol.pojo.PermissionGroup;
 import uk.ac.bristol.service.PermissionGroupService;
 
@@ -33,6 +35,12 @@ public class PermissionGroupController {
         permissionGroupService.addGroup(group);
     }
 
+    @PostMapping("/group/full")
+    public ApiResponse<PermissionGroup> createGroupWithPermissions(@RequestBody CreateGroupRequest request) {
+        PermissionGroup createdGroup = permissionGroupService.createGroupWithPermissions(request);
+        return new ApiResponse<>(200, "Group created successfully", createdGroup);
+    }
+
     @PutMapping("/{groupId}")
     public void updateGroup(@PathVariable Long groupId, @RequestBody PermissionGroup group) {
         group.setGroupId(groupId);
@@ -40,7 +48,8 @@ public class PermissionGroupController {
     }
 
     @DeleteMapping("/{groupId}")
-    public void deleteGroup(@PathVariable Long groupId) {
+    public ApiResponse<Void> deleteGroup(@PathVariable Long groupId) {
         permissionGroupService.deleteGroup(groupId);
+        return new ApiResponse<>(200, "Group deleted successfully", null);
     }
 }

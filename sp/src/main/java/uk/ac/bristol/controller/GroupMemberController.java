@@ -2,6 +2,7 @@ package uk.ac.bristol.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.bristol.pojo.ApiResponse;
 import uk.ac.bristol.pojo.GroupMember;
 import uk.ac.bristol.service.GroupMemberService;
 
@@ -19,13 +20,19 @@ public class GroupMemberController {
     }
 
     @PostMapping("/group-members")
-    public void addGroupMember(@RequestBody GroupMember groupMember) {
-        groupMemberService.addGroupMember(groupMember);
+    public ApiResponse<GroupMember> addGroupMember(@RequestBody GroupMember member) {
+        GroupMember createdMember = groupMemberService.addGroupMember(member);
+        return new ApiResponse<>(200, "Member added successfully", createdMember);
     }
 
     @DeleteMapping("/group-members/{id}")
-    public void deleteGroupMember(@PathVariable Integer id) {
-        groupMemberService.removeGroupMemberById(id);
+    public ApiResponse<Void> deleteGroupMember(@PathVariable Integer id) {
+        boolean success = groupMemberService.removeGroupMemberById(id);
+        if (success) {
+            return new ApiResponse<>(200, "Member deleted successfully", null);
+        } else {
+            return new ApiResponse<>(404, "Member not found", null);
+        }
     }
 
     @PutMapping("/group-members")

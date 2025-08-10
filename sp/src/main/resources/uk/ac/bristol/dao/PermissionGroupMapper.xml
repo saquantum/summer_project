@@ -14,7 +14,11 @@
         SELECT * FROM permission_groups WHERE group_id = #{groupId}
     </select>
 
-    <insert id="insertGroup" useGeneratedKeys="true" keyProperty="groupId" parameterType="uk.ac.bristol.pojo.PermissionGroup">
+    <insert id="insertGroup"
+            useGeneratedKeys="true"
+            keyProperty="groupId"
+            keyColumn="group_id"
+            parameterType="uk.ac.bristol.pojo.PermissionGroup">
         INSERT INTO permission_groups (group_name, description, created_at, updated_at)
         VALUES (#{groupName}, #{description}, NOW(), NOW())
     </insert>
@@ -28,5 +32,9 @@
     <delete id="deleteGroup" parameterType="long">
         DELETE FROM permission_groups WHERE group_id = #{groupId}
     </delete>
+
+    <select id="selectGroupByName" parameterType="string" resultType="uk.ac.bristol.pojo.PermissionGroup">
+        SELECT * FROM permission_groups WHERE group_name = #{groupName}
+    </select>
 
 </mapper>

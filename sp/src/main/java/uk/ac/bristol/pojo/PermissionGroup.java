@@ -1,12 +1,15 @@
 package uk.ac.bristol.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.sql.Timestamp;
 
 public class PermissionGroup {
     private Long groupId;
     private String groupName;
     private String description;
+    @JsonIgnore
     private Timestamp createdAt;
+    @JsonIgnore
     private Timestamp updatedAt;
 
     public Long getGroupId() { return groupId; }
