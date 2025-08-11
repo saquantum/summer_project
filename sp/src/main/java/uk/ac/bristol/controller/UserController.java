@@ -6,7 +6,12 @@ import uk.ac.bristol.advice.UserIdentificationExecution;
 import uk.ac.bristol.advice.UserUID;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.FilterDTO;
+import uk.ac.bristol.pojo.PermissionGroup;
+import uk.ac.bristol.pojo.PermissionGroupPermission;
 import uk.ac.bristol.pojo.User;
+import uk.ac.bristol.service.GroupMemberService;
+import uk.ac.bristol.service.PermissionGroupPermissionService;
+import uk.ac.bristol.service.PermissionGroupService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.QueryTool;
 
@@ -21,9 +26,15 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final PermissionGroupService permissionGroupService;
+    private final PermissionGroupPermissionService permissionGroupPermissionService;
+    private final GroupMemberService groupMemberService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, PermissionGroupService permissionGroupService, PermissionGroupPermissionService permissionGroupPermissionService, GroupMemberService groupMemberService) {
         this.userService = userService;
+        this.permissionGroupService = permissionGroupService;
+        this.permissionGroupPermissionService = permissionGroupPermissionService;
+        this.groupMemberService = groupMemberService;
     }
 
     /* --------- *************************** --------- */
@@ -78,14 +89,29 @@ public class UserController {
         userService.deleteUserByUserIds(List.of(uid));
         return new ResponseBody(Code.DELETE_OK, null);
     }
-
     @UserIdentificationExecution
     @GetMapping("/user/uid/{uid}/permission")
-    public ResponseBody getMyPermissionByUID(HttpServletResponse response,
-                                             HttpServletRequest request,
-                                             @UserUID @PathVariable String uid) {
-        return new ResponseBody(Code.SELECT_OK, QueryTool.getUserPermissions(uid));
+    public ResponseBody getDefaultPermissionsForUser(
+            HttpServletResponse response,
+            HttpServletRequest request,
+            @UserUID @PathVariable String uid) {
+        PermissionGroup defaultGroup = permissionGroupService.getGroupByName("User");
+        if (defaultGroup == null) {
+            return new ResponseBody(Code.SELECT_ERR, "default permission group does not exist");
+        }
+
+        return new ResponseBody(Code.SELECT_OK, permissionGroupPermissionService.getPermissionsByGroupId(1l));
     }
+
+//    @UserIdentificationExecution
+//    @GetMapping("/user/uid/{uid}/permission")
+//    public ResponseBody getMyPermissionByUID(HttpServletResponse response,
+//                                             HttpServletRequest request,
+//                                             @UserUID @PathVariable String uid) {
+//        return new ResponseBody(Code.SELECT_OK, QueryTool.getUserPermissions(uid));
+//    }
+
+
 
     /* --------- ********************* --------- */
     /* --------- interfaces for admins --------- */

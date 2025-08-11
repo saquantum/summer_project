@@ -1,0 +1,12 @@
+[
+  {
+    "groupName": "User",
+    "description": "Basic access permissions",
+    "canCreateAsset": false,
+    "canSetPolygonOnCreate": false,
+    "canUpdateAssetFields": true,
+    "canUpdateAssetPolygon": false,
+    "canDeleteAsset": false,
+    "canUpdateProfile": true
+  }
+]
