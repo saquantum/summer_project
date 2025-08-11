@@ -181,7 +181,7 @@ watch(
     font-size: 18px;
     color: #424242;
     border-radius: 12px;
-    margin: 6px 12px;
+    margin: 0;
     padding-left: 16px !important;
     transition: background-color 0.3s;
   }
@@ -225,6 +225,7 @@ watch(
     .el-menu-item {
       position: relative;
       padding-left: 20px;
+      min-width: 200px;
     }
   }
 
@@ -243,9 +244,6 @@ watch(
       border-right: none;
       flex: 1;
       overflow-y: auto;
-    }
-    .el-menu-item.is-active {
-      font-weight: bold;
     }
 
     .signout-container {
@@ -308,22 +306,6 @@ watch(
 ::v-deep(.el-dropdown-menu__item:hover) {
   background-color: rgba(163, 205, 168, 0.76);
   color: #000;
-}
-
-::v-deep(.el-dropdown-menu__item.logout-item) {
-  color: #d32f2f;
-  font-weight: bold;
-}
-
-::v-deep(.el-dropdown-menu__item.logout-item:hover) {
-  background-color: #fddede;
-  color: #d32f2f;
-}
-
-::v-deep(.icon-badge .el-badge__content.is-dot) {
-  top: 10px;
-  right: 6px;
-  background-color: #933232;
 }
 
 @media (min-width: 768px) {
