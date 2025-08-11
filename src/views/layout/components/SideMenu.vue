@@ -50,11 +50,6 @@ const handleBackToAdmin = () => {
       <span>My Profile</span>
     </el-menu-item>
 
-    <el-menu-item index="/message" data-test="message-side">
-      <el-icon><MessageBox /></el-icon>
-      <span>Message</span>
-    </el-menu-item>
-
     <el-sub-menu index="1">
       <template #title>
         <el-icon><LocationInformation /></el-icon>
@@ -87,6 +82,11 @@ const handleBackToAdmin = () => {
     >
       <el-icon><Back /></el-icon>
       <span>Back to admin</span>
+    </el-menu-item>
+
+    <el-menu-item index="/message" data-test="message-side">
+      <el-icon><MessageBox /></el-icon>
+      <span>Message</span>
     </el-menu-item>
   </el-menu>
 
