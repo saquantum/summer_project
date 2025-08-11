@@ -337,6 +337,16 @@ const cancelDrawing = () => {
   })
   // Re-add all saved layers
   layers.forEach((layer) => layer.addTo(m))
+  // Fit bounds to all layers
+  if (layers.length > 0) {
+    try {
+      const group = L.featureGroup(layers)
+      m.fitBounds(group.getBounds())
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   // clear points, turn off click
   points = []
 

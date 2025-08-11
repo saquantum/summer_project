@@ -107,6 +107,14 @@ const quickEscapePolygons = () => {
   mapCardRef.value?.quickEscapePolygons()
 }
 
+const clearAll = () => {
+  mapCardRef.value?.clearAll()
+}
+
+const clearCurrentPolygon = () => {
+  mapCardRef.value?.clearCurrentPolygon()
+}
+
 const handleShowDetail = (row: WarningTableRow) => {
   router.push(`/warnings/${row.id}`)
 }
@@ -190,6 +198,18 @@ const isMobile = computed(() => {
           @click="finishOnePolygon"
           :disabled="disableSetPolygon"
           >Finish one polygon</el-button
+        >
+        <el-button
+          v-if="isDrawing"
+          @click="clearCurrentPolygon"
+          :disabled="disableSetPolygon"
+          >Clear current polygon</el-button
+        >
+        <el-button
+          v-if="isDrawing"
+          @click="clearAll"
+          :disabled="disableSetPolygon"
+          >Clear all</el-button
         >
         <el-button
           v-if="isDrawing"
