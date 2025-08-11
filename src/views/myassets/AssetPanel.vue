@@ -9,6 +9,7 @@ import WarningLegend from '@/components/WarningLegend.vue'
 const assetStore = useAssetStore()
 const userStore = useUserStore()
 const router = useRouter()
+import { Position } from '@element-plus/icons-vue'
 
 // filter value
 
@@ -164,10 +165,10 @@ defineExpose({
       @clearFilters="clearFilters"
     >
     </TestSearch>
+    <!-- warning legend -->
+    <WarningLegend v-if="!isMobile" :orientation="'vertical'" :size="'small'" />
   </div>
 
-  <!-- warning legend -->
-  <WarningLegend v-if="!isMobile" />
   <!-- cards for assets -->
   <div class="assets-container" v-if="!isMobile">
     <h3 v-if="assetStore.userAssets?.length === 0">You don't have any asset</h3>
@@ -178,43 +179,74 @@ defineExpose({
         class="asset-card"
         shadow="hover"
       >
-        <template #header>
-          <div class="card-header">
-            <h3
-              class="asset-title"
-              :class="{
-                'warning-low': !item.maxWarning,
-                'warning-medium': item.maxWarning?.warningLevel === 'YELLOW',
-                'warning-high': item.maxWarning?.warningLevel === 'AMBER',
-                'warning-severe': item.maxWarning?.warningLevel === 'RED'
-              }"
-            >
-              {{ item.asset.name || 'Asset Name' }}
-            </h3>
-            <StatusIndicator
-              :status="item.maxWarning?.warningLevel || 'SUCCESS'"
+        <div class="card-body">
+          <div class="map-container">
+            <MapCard
+              :map-id="'map-' + index"
+              :locations="[item.asset.location]"
+              :display="true"
             />
           </div>
-        </template>
-
-        <div class="map-container">
-          <MapCard
-            :map-id="'map-' + index"
-            :locations="[item.asset.location]"
-            :display="true"
-          />
         </div>
-
         <template #footer>
-          <div class="card-footer">
-            <el-button
-              type="primary"
-              @click="router.push(`/assets/${item.asset.id}`)"
-              class="view-details-btn"
-            >
-              Show Detail
-            </el-button>
+          <div class="card-footer-row">
+            <div class="footer-top-row">
+              <div
+                class="asset-title"
+                :class="{
+                  'warning-low': !item.maxWarning,
+                  'warning-medium': item.maxWarning?.warningLevel === 'YELLOW',
+                  'warning-high': item.maxWarning?.warningLevel === 'AMBER',
+                  'warning-severe': item.maxWarning?.warningLevel === 'RED'
+                }"
+              >
+                {{ item.asset.name || 'Asset Name' }}
+              </div>
+
+              <div class="warning-container">
+                <div
+                  class="warning-bar"
+                  :class="`bar-${item.maxWarning?.warningLevel || 'SUCCESS'}`"
+                ></div>
+                <div class="warning-text">
+                  {{
+                    item.maxWarning?.warningLevel === 'RED'
+                      ? 'High Risk'
+                      : item.maxWarning?.warningLevel === 'AMBER'
+                        ? 'Medium Risk'
+                        : item.maxWarning?.warningLevel === 'YELLOW'
+                          ? 'Low Risk'
+                          : 'No Risk'
+                  }}
+                </div>
+              </div>
+            </div>
+            <el-divider style="margin: 10px 0" />
+            <div class="asset-info-group">
+              <div class="asset-info-item">
+                <div class="info-value">{{ item.asset.id }}</div>
+                <div class="info-label">Asset ID</div>
+              </div>
+              <div class="asset-info-item">
+                <div class="info-value">{{ item.asset.capacityLitres }}L</div>
+                <div class="info-label">Capacity</div>
+              </div>
+              <div class="asset-info-item">
+                <div class="info-value">{{ item.asset.installedAt }}</div>
+                <div class="info-label">Installed</div>
+              </div>
+            </div>
           </div>
+          <el-button
+            type="primary"
+            @click="router.push(`/assets/${item.asset.id}`)"
+            class="view-details-btn"
+          >
+            Detail
+            <span class="btn-icon">
+              <el-icon class="filled-icon"><Position /></el-icon>
+            </span>
+          </el-button>
         </template>
       </el-card>
     </div>
@@ -246,6 +278,9 @@ defineExpose({
 </template>
 
 <style scoped>
+:deep(.el-card__footer) {
+  border-top: none !important;
+}
 .search-bar {
   position: sticky;
   top: 0;
@@ -271,66 +306,64 @@ defineExpose({
 .card-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
-
-  max-width: calc(300px * 4 + 20px * 3);
+  gap: 40px;
+  max-width: calc(300px * 4 + 40px * 3);
   margin-left: auto;
   margin-right: auto;
-
   justify-content: flex-start;
 }
 
 .asset-card {
+  display: flex;
   width: 300px;
-  height: 310px;
-  border-radius: 12px;
+  border-radius: 30px;
   overflow: hidden;
   transition: all 0.3s ease;
   border: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .asset-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
-
 .card-header {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: start;
   column-gap: 8px;
 }
-
 .asset-title {
   /* hide overflow text*/
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   color: #2c3e50;
-  margin: 0;
-
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100%;
-  line-height: 1.2;
-  height: 1.2em;
+  margin-bottom: -5px;
+  max-width: calc(100% - 32px);
 }
 
 .map-container {
   padding: 16px 0;
   display: flex;
   justify-content: center;
-  height: 180px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 25px;
+  height: 200px;
 }
 
 .map {
   width: 100%;
   height: 100%;
-  border-radius: 8px;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 }
 
 .card-footer {
@@ -338,34 +371,133 @@ defineExpose({
   justify-content: center;
   padding: 0;
 }
+.card-footer-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  height: 55px;
+  margin-top: 10px;
+}
+.footer-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 4px;
+}
 
 .view-details-btn {
-  width: 80%;
-  border-radius: 8px;
-  font-weight: 500;
+  display: block;
+  margin: 24px auto 10px auto;
+  padding: 0 35px;
+  width: 120px;
+  height: 35px;
+
+  background-image: linear-gradient(
+    to top,
+    rgba(163, 205, 168, 0.76) 0%,
+    #a4d5a1 100%
+  );
+  border: 1px solid #fdfdfd;
+  border-radius: 999px;
+
+  font-weight: 600;
+  font-size: 16px;
+  color: rgb(255, 255, 255);
+
+  text-align: center;
+
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
 }
 
 .view-details-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(to bottom, #d4eacb, #f4f4f4);
+  color: #6b9f65;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.btn-icon {
+  background: linear-gradient(to bottom, #ffffff, #eaeaea);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  margin-left: 8px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.filled-icon svg {
+  width: 18px;
+  height: 18px;
+  color: #8eae89;
+  stroke: none !important;
+}
+
+.asset-info-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: -15px;
+  padding: 0 8px;
+  gap: 45px;
+  margin-bottom: 10px;
+}
+
+.info-value {
+  margin-top: 5px;
+  font-size: 14px;
+  font-weight: 560;
+  color: #222;
+  white-space: nowrap;
+}
+.info-label {
+  font-size: 12px;
+  color: #777;
 }
 
 .select-style {
   width: 240px;
 }
 
-.warning-low {
-  color: green;
+.warning-bar {
+  width: 45px;
+  height: 16px;
+  border-radius: 4px;
+  margin-left: 8px;
+  margin-top: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
-.warning-medium {
-  color: #ffe923;
+.warning-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: #555;
+  margin-top: 2px;
+  text-align: center;
+  margin-left: 5px;
 }
-.warning-high {
-  color: #f90;
+
+.bar-RED {
+  background-color: rgba(174, 9, 9, 0.79);
 }
-.warning-severe {
-  color: red;
+
+.bar-AMBER {
+  background-color: rgba(255, 165, 0, 0.75);
+}
+
+.bar-YELLOW {
+  background-color: rgba(244, 234, 78, 0.93);
+}
+
+.bar-SUCCESS {
+  background-color: rgba(0, 128, 0, 0.64);
 }
 
 @media (max-width: 768px) {
