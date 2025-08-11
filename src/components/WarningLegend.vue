@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 
 export interface LegendItem {
   value: string
@@ -19,27 +19,27 @@ const props = withDefaults(defineProps<Props>(), {
     {
       value: 'NO',
       label: 'No Warning',
-      color: 'green',
+      color: 'rgba(0, 128, 0, 0.64)',
       description: 'No meteorological warning for this asset.'
     },
     {
       value: 'YELLOW',
       label: 'Yellow Warning',
-      color: '#ffe923',
+      color: 'rgba(244,234,78,0.93)',
       description:
         'Yellow: Be aware. Severe weather is possible. Plan ahead and check for updates.'
     },
     {
       value: 'AMBER',
       label: 'Amber Warning',
-      color: '#f90',
+      color: 'rgba(255,165,0,0.75)',
       description:
         'Amber: Be prepared. There is an increased likelihood of impacts from severe weather, which could potentially disrupt your plans.'
     },
     {
       value: 'RED',
       label: 'Red Warning',
-      color: 'red',
+      color: 'rgba(174, 9, 9, 0.79)',
       description:
         'Red: Take action. Dangerous weather is expected. Avoid dangerous areas and follow official advice.'
     }
@@ -47,6 +47,8 @@ const props = withDefaults(defineProps<Props>(), {
   size: 'medium',
   orientation: 'horizontal'
 })
+
+const showDialog = ref(false)
 
 const sizeClasses = computed(() => {
   switch (props.size) {
@@ -67,34 +69,60 @@ const orientationClasses = computed(() => {
 </script>
 
 <template>
-  <div class="warning-legend" :class="[sizeClasses, orientationClasses]">
-    <el-popover
-      v-for="item in items"
-      :key="item.value"
-      placement="top"
-      :width="250"
-      trigger="hover"
-      :show-after="300"
-      :hide-after="100"
-    >
-      <template #reference>
-        <div class="legend-item" :style="{ '--item-color': item.color }">
-          <span class="legend-dot">●</span>
-          <span class="legend-label">{{ item.label }}</span>
-        </div>
-      </template>
-      <template #default>
-        <div class="popover-content">
-          <h4 class="popover-title" :style="{ color: item.color }">
-            {{ item.label }}
-          </h4>
-          <p class="popover-description">
-            {{ item.description }}
-          </p>
-        </div>
-      </template>
-    </el-popover>
-  </div>
+  <svg
+    t="1754662950876"
+    class="icon legend-icon"
+    viewBox="0 0 1024 1024"
+    version="1.1"
+    xmlns="http://www.w3.org/2000/svg"
+    p-id="6217"
+    width="35"
+    height="35"
+    style="cursor: pointer"
+    @click="showDialog = true"
+  >
+    <path
+      d="M334.016 727.04a32 32 0 1 0 0-64 32 32 0 0 0 0 64z m0-183.04a32 32 0 1 0 0-64 32 32 0 0 0 0 64z m0-182.016a32 32 0 1 0 0-64 32 32 0 0 0 0 64z m478.976-279.04H211.008c-37.568 0.064-67.968 30.528-68.032 68.032v722.048c0.064 37.504 30.464 67.968 68.032 67.968h601.984c37.568 0 67.968-30.464 68.032-67.968V150.976c-0.064-37.504-30.464-67.968-68.032-67.968z m-3.968 786.048H214.976V155.008h594.048v713.984zM414.016 296h307.968c5.376 0 8 2.688 8 8v48c0 5.312-2.624 8-8 8H414.08c-5.376 0-8-2.688-8-8v-48c0-5.312 2.624-8 8-8z m0 184h307.968c5.376 0 8 2.688 8 8v48c0 5.312-2.624 8-8 8H414.08c-5.376 0-8-2.688-8-8v-48c0-5.312 2.624-8 8-8z m0 184h307.968c5.376 0 8 2.688 8 8v48c0 5.312-2.624 8-8 8H414.08c-5.376 0-8-2.688-8-8v-48c0-5.312 2.624-8 8-8z"
+      fill="#000000"
+      p-id="6218"
+    ></path>
+  </svg>
+  <el-dialog
+    v-model="showDialog"
+    title="Warning Legend"
+    width="300px"
+    append-to-body
+    top="15vh"
+  >
+    <div class="warning-legend" :class="[sizeClasses, orientationClasses]">
+      <el-popover
+        v-for="item in items"
+        :key="item.value"
+        placement="top"
+        :width="250"
+        trigger="hover"
+        :show-after="300"
+        :hide-after="100"
+      >
+        <template #reference>
+          <div class="legend-item" :style="{ '--item-color': item.color }">
+            <span class="legend-bar"></span>
+            <span class="legend-label">{{ item.label }}</span>
+          </div>
+        </template>
+        <template #default>
+          <div class="popover-content">
+            <h4 class="popover-title" :style="{ color: item.color }">
+              {{ item.label }}
+            </h4>
+            <p class="popover-description">
+              {{ item.description }}
+            </p>
+          </div>
+        </template>
+      </el-popover>
+    </div>
+  </el-dialog>
 </template>
 
 <style scoped>
@@ -108,9 +136,11 @@ const orientationClasses = computed(() => {
   flex-direction: row;
   gap: 18px;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .legend--vertical {
+  display: flex;
   flex-direction: column;
   gap: 12px;
   align-items: flex-start;
@@ -120,7 +150,6 @@ const orientationClasses = computed(() => {
   display: flex;
   align-items: center;
   gap: 4px;
-  color: var(--item-color);
   transition: all 0.3s ease;
   border-radius: 6px;
   padding: 4px 8px;
@@ -135,10 +164,13 @@ const orientationClasses = computed(() => {
   filter: brightness(1.1);
 }
 
-.legend-dot {
-  font-size: inherit;
-  line-height: 1;
-  transition: transform 0.3s ease;
+.legend-bar {
+  width: 40px;
+  height: 12px;
+  border-radius: 4px;
+  background-color: var(--item-color);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 
 .legend-item:hover .legend-dot {
@@ -146,8 +178,7 @@ const orientationClasses = computed(() => {
 }
 
 .legend-label {
-  white-space: nowrap;
-  transition: all 0.3s ease;
+  color: #292828;
 }
 
 .legend-item:hover .legend-label {
@@ -181,6 +212,34 @@ const orientationClasses = computed(() => {
 
 .legend--large .legend--vertical {
   gap: 16px;
+}
+
+.legend-card-wrapper {
+  position: fixed;
+  top: 120px;
+  right: 24px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 12px 16px;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: max-content;
+}
+
+.legend-header {
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.legend-icon {
+  cursor: pointer;
+  background-color: transparent;
+  padding: 6px;
+  margin-left: 15px;
+  transition: background-color 0.2s ease;
 }
 
 /* Responsive design */
