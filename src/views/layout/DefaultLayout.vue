@@ -67,19 +67,11 @@ watch(
         <img src="@/assets/uob-logo.svg" class="el-aside__logo" alt="logo" />
       </router-link>
 
-      <div class="el-aside__search">
-        <el-input placeholder="Search" size="small" class="custom-search-input">
-          <template #prefix>
-            <el-icon><Search /></el-icon>
-          </template>
-        </el-input>
-      </div>
-
       <SideMenu
         :visible="true"
         :showUserSideBar="showUserSideBar"
         :activeIndex="activeIndex"
-      ></SideMenu>
+      />
 
       <div class="signout-container">
         <el-button
@@ -89,8 +81,23 @@ watch(
           @click="logout"
           class="signout-button"
         >
-          <img src="@/assets/logout.png" class="icon-image" alt="logout" />
-          <span>Log Out</span>
+          <svg
+            t="1754387182843"
+            class="icon"
+            viewBox="0 0 1024 1024"
+            version="1.1"
+            xmlns="http://www.w3.org/2000/svg"
+            p-id="4432"
+            width="20"
+            height="20"
+          >
+            <path
+              d="M835.669333 554.666667h-473.173333A42.453333 42.453333 0 0 1 320 512a42.666667 42.666667 0 0 1 42.474667-42.666667h473.173333l-161.813333-161.834666a42.666667 42.666667 0 0 1 60.330666-60.330667l234.666667 234.666667a42.666667 42.666667 0 0 1 0 60.330666l-234.666667 234.666667a42.666667 42.666667 0 0 1-60.330666-60.330667L835.669333 554.666667zM554.666667 42.666667a42.666667 42.666667 0 1 1 0 85.333333H149.525333C137.578667 128 128 137.578667 128 149.482667v725.034666C128 886.4 137.6 896 149.525333 896H554.666667a42.666667 42.666667 0 1 1 0 85.333333H149.525333A106.816 106.816 0 0 1 42.666667 874.517333V149.482667A106.773333 106.773333 0 0 1 149.525333 42.666667H554.666667z"
+              fill="currentColor"
+              p-id="4433"
+            ></path>
+          </svg>
+          <span>&nbsp;&nbsp;Log Out</span>
         </el-button>
       </div>
     </el-aside>
@@ -162,13 +169,6 @@ watch(
 </template>
 
 <style lang="scss" scoped>
-.icon-image {
-  width: 20px;
-  margin-right: 8px;
-  vertical-align: middle;
-  opacity: 0.7;
-}
-
 .layout-container {
   height: 100vh;
 
@@ -185,24 +185,12 @@ watch(
     padding-left: 16px !important;
     transition: background-color 0.3s;
   }
-
   ::v-deep(.el-sub-menu .el-menu .el-menu-item) {
     font-size: 16px;
     color: #424242;
-    border-radius: 12px;
-    margin: 6px 12px;
-    padding-left: 36px !important;
-    position: relative;
-  }
-
-  ::v-deep(.el-sub-menu .el-menu .el-menu-item)::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -12px;
-    width: 12px;
-    height: 100%;
-    border-left: 1px dashed #9f2222;
+    border-radius: 8px;
+    margin: 4px 30px;
+    padding-left: 20px !important;
   }
 
   ::v-deep(.el-menu-item:hover),
@@ -213,74 +201,30 @@ watch(
     font-weight: bold;
     border-radius: 12px;
     margin: 6px 12px;
+    background-color: rgba(130, 185, 186, 0.62) !important;
+    position: relative;
+    z-index: 2;
   }
 
-  .el-aside__search {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 12px 0;
-
-    .custom-search-input {
-      width: 220px;
-
-      ::v-deep(.el-input__wrapper) {
-        border-radius: 18px;
-        background-color: #ffffff;
-        box-shadow: none;
-        border: 1px solid #dcdfe6;
-        padding: 2px 10px;
-        height: 36px;
-
-        input {
-          font-size: 14px;
-          line-height: 20px;
-        }
-
-        input::placeholder {
-          color: #aaa;
-        }
-
-        .el-input__prefix {
-          margin-right: 6px;
-          color: #555;
-        }
-      }
-    }
-  }
-
-  ::v-deep(.el-sub-menu .el-menu) {
+  ::v-deep(.el-sub-menu > .el-menu) {
+    position: relative;
     margin-left: 30px;
     padding-left: 0;
 
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 10px;
+      width: 1px;
+      height: 100%;
+      border-left: 1.2px dashed #636262;
+      z-index: 0;
+    }
+
     .el-menu-item {
       position: relative;
-      padding-left: 25px;
-
-      &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 20px;
-        height: 50%;
-        border-left: 1px dashed #636262;
-        border-bottom: 1px dashed #636262;
-        border-bottom-left-radius: 6px;
-        box-sizing: border-box;
-      }
-
-      &:not(:last-child)::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 0;
-        width: 0;
-        height: 50%;
-        border-left: 1px dashed #636262;
-        border-bottom-left-radius: 6px;
-        box-sizing: border-box;
-      }
+      padding-left: 20px;
     }
   }
 
@@ -304,11 +248,6 @@ watch(
       font-weight: bold;
     }
 
-    ::v-deep(.el-sub-menu__title:hover),
-    ::v-deep(.el-menu-item:hover) {
-      background-color: rgba(130, 185, 186, 0.62) !important;
-      color: #000 !important;
-    }
     .signout-container {
       margin-top: auto;
       padding: 20px;
