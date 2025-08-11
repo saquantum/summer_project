@@ -200,8 +200,8 @@ watch(
     color: #000 !important;
     font-weight: bold;
     border-radius: 12px;
-    margin: 6px 12px;
-    background-color: rgba(130, 185, 186, 0.62) !important;
+    margin: 0;
+    background-color: rgba(163, 205, 168, 0.76);
     position: relative;
     z-index: 2;
   }
@@ -306,9 +306,10 @@ watch(
 }
 
 ::v-deep(.el-dropdown-menu__item:hover) {
-  background-color: rgba(199, 202, 202, 0.55);
+  background-color: rgba(163, 205, 168, 0.76);
   color: #000;
 }
+
 ::v-deep(.el-dropdown-menu__item.logout-item) {
   color: #d32f2f;
   font-weight: bold;
