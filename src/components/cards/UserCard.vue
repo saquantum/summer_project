@@ -6,7 +6,7 @@ import {
   adminGetUserInfoService,
   adminUpdateUserInfoService
 } from '@/api/admin'
-import { ElMessage, type UploadFile } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import type { User, UserInfoForm } from '@/types'
 import { useRoute } from 'vue-router'
 import {
@@ -18,12 +18,12 @@ import {
   trimForm
 } from '@/utils/formUtils'
 import { Plus } from '@element-plus/icons-vue'
-import { getUploadData, validateAvatarFile, getUploadUrl } from '@/utils/upload'
+import { getUploadData, getUploadUrl } from '@/utils/upload'
 import { useResponsiveAction } from '@/composables/useResponsiveAction'
 const route = useRoute()
 const props = defineProps<{ isEdit: boolean }>()
 
-const emit = defineEmits(['update:isEdit'])
+const emit = defineEmits(['update:isEdit', 'open-cropper'])
 const userStore = useUserStore()
 
 const user = computed(() => {
@@ -105,25 +105,25 @@ const rules = {
 }
 
 // Handle file selection and create local preview
-const handleAvatarChange = (uploadFile: UploadFile) => {
-  const file = uploadFile.raw
-  if (!file) return
-
-  const validation = validateAvatarFile(file)
-  if (!validation.valid) {
-    ElMessage.error(validation.message || 'File validation failed')
-    return
-  }
-
-  // Save file reference
-  avatarFile.value = file
-
-  // Create local preview URL
-  if (previewUrl.value) {
-    URL.revokeObjectURL(previewUrl.value)
-  }
-  previewUrl.value = URL.createObjectURL(file)
-}
+// const handleAvatarChange = (uploadFile: UploadFile) => {
+//   const file = uploadFile.raw
+//   if (!file) return
+//
+//   const validation = validateAvatarFile(file)
+//   if (!validation.valid) {
+//     ElMessage.error(validation.message || 'File validation failed')
+//     return
+//   }
+//
+//   // Save file reference
+//   avatarFile.value = file
+//
+//   // Create local preview URL
+//   if (previewUrl.value) {
+//     URL.revokeObjectURL(previewUrl.value)
+//   }
+//   previewUrl.value = URL.createObjectURL(file)
+// }
 
 // Upload avatar to server
 const uploadAvatarToServer = async (): Promise<string | null> => {
@@ -298,6 +298,8 @@ const cancelEdit = () => {
 defineExpose({
   submit,
   form,
+  avatarFile,
+  previewUrl,
   cancelEdit
 })
 </script>
@@ -343,7 +345,7 @@ defineExpose({
       <el-checkbox
         v-model="currentUser.contactPreferences.whatsapp"
         :disabled="!props.isEdit"
-        >whatsapp</el-checkbox
+        >Whatsapp</el-checkbox
       >
     </el-descriptions-item>
   </el-descriptions>
@@ -359,19 +361,13 @@ defineExpose({
     <!-- Avatar upload -->
     <el-form-item label="Avatar">
       <div style="display: flex; align-items: center; gap: 16px">
-        <el-upload
-          class="avatar-uploader"
-          :auto-upload="false"
-          :show-file-list="false"
-          :on-change="handleAvatarChange"
-          accept="image/*"
-        >
-          <el-avatar
-            v-if="previewUrl || imageUrl"
-            :src="previewUrl || imageUrl"
-          ></el-avatar>
-          <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
-        </el-upload>
+        <el-avatar
+          v-if="previewUrl || imageUrl"
+          :src="previewUrl || imageUrl"
+          @click="emit('open-cropper')"
+          style="cursor: pointer; border: 1px dashed #d9d9d9"
+        ></el-avatar>
+        <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
         <div v-if="avatarFile" style="color: #409eff; font-size: 12px">
           {{ avatarFile.name }} (Preview)
         </div>
@@ -449,11 +445,12 @@ defineExpose({
       <el-checkbox label="Discord" v-model="form.contactPreferences.discord" />
       <el-checkbox label="Post" v-model="form.contactPreferences.post" />
       <el-checkbox
-        label="telegram"
+        label="Telegram"
         v-model="form.contactPreferences.telegram"
       />
       <el-checkbox
-        label="telegram"
+        label="
+        Whatsapp"
         v-model="form.contactPreferences.whatsapp"
       />
     </el-form-item>

@@ -3,6 +3,23 @@ import { ref, nextTick, onUnmounted } from 'vue'
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
 
+// Props:
+const props = defineProps<{
+  visible: boolean
+}>()
+
+// Emits
+const emit = defineEmits<{
+  (_event: 'update:visible', _value: boolean): void
+  (_event: 'close'): void
+  (_event: 'crop-finish', _base64: string): void
+}>()
+
+function handleClose() {
+  emit('update:visible', false)
+  emit('close')
+}
+
 // Reactive data
 const imgRef = ref<HTMLImageElement>()
 const imageSrc = ref('')
@@ -71,7 +88,11 @@ function getCroppedImage() {
 
   if (canvas) {
     // Convert to base64
-    croppedBase64.value = canvas.toDataURL('image/jpeg', 0.8)
+    // croppedBase64.value = canvas.toDataURL('image/jpeg', 0.8)
+    const base64 = canvas.toDataURL('image/jpeg', 0.8) // 定义局部变量
+    croppedBase64.value = base64
+    emit('crop-finish', base64) // 将结果传递给父组件
+    handleClose() // 关闭弹窗
 
     // You can also convert to blob for upload
     canvas.toBlob(
@@ -117,7 +138,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="cropper-container">
+  <el-dialog
+    :model-value="props.visible"
+    title="Crop Avatar"
+    width="600px"
+    @close="handleClose"
+  >
     <!-- File Upload -->
     <input
       type="file"
@@ -132,7 +158,7 @@ onUnmounted(() => {
         ref="imgRef"
         :src="imageSrc"
         alt="Image to crop"
-        style="max-width: 100%; height: 360px"
+        style="max-width: 100%; max-height: 50vh"
       />
 
       <!-- Action Buttons -->
@@ -154,7 +180,7 @@ onUnmounted(() => {
         />
       </div>
     </div>
-  </div>
+  </el-dialog>
 </template>
 
 <style scoped>
@@ -172,17 +198,17 @@ onUnmounted(() => {
 }
 
 .cropper-wrapper {
-  border: 1px solid #e1e5e9;
-  border-radius: 8px;
-  padding: 20px;
-  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* 图片和按钮之间的间距 */
+  border: 1px solid #eee;
+  padding: 10px;
 }
 
 .button-group {
-  margin: 20px 0;
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center; /* 按钮居中 */
 }
 
 button {
