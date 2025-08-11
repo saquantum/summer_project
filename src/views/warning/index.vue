@@ -21,22 +21,18 @@ const style = ref<Style>({
 
 const setWarningLevelStyle = (level: string): Style => {
   const style = { weight: 2, fillOpacity: 0.4, color: '', fillColor: '' }
-  const l = level?.toLowerCase()
-  if (l?.includes('yellow')) {
+
+  if (level.includes('YELLOW')) {
     style.color = '#cc9900'
     style.fillColor = '#ffff00'
-  } else if (l?.includes('amber')) {
+  } else if (level.includes('AMBER')) {
     style.color = '#cc6600'
     style.fillColor = '#ffcc00'
-  } else if (l?.includes('red')) {
+  } else if (level.includes('RED')) {
     style.color = '#800000'
     style.fillColor = '#ff0000'
   }
   return style
-}
-
-if (warning.value) {
-  style.value = setWarningLevelStyle(warning.value.warningLevel)
 }
 
 const displayData = computed(() => {
@@ -73,17 +69,21 @@ const displayData = computed(() => {
   ]
 })
 
-onMounted(() => {
+onMounted(async () => {
   // get warnings if not exist
   if (warningStore.allWarnings.length === 0) {
     warningStore.getAllWarnings()
+  }
+
+  if (warning.value) {
+    style.value = setWarningLevelStyle(warning.value.warningLevel)
   }
 })
 </script>
 
 <template>
   <div class="map-container">
-    <MapCard :map-id="mapId" :locations="[warning?.area]" :style="style" />
+    <MapCard :map-id="mapId" :locations="[warning?.area]" :styles="[style]" />
   </div>
 
   <el-descriptions title="Warning Detail" :column="1" direction="vertical">

@@ -163,7 +163,7 @@ export const adminGetAssetsTotalService = (obj: object) =>
  */
 
 export const adminGetAllWarningsService = (): Promise<ApiResponse<Warning[]>> =>
-  request.get('/admin/warning/all')
+  request.get('/warning')
 
 export const adminGetAllLiveWarningsService = (): Promise<
   ApiResponse<Warning[]>

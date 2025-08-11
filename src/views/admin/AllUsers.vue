@@ -60,6 +60,7 @@ const fetchTableData = async () => {
     if (prop === 'uid') dbField = 'user_id'
     else if (prop === 'assetHolderId') dbField = 'asset_holder_id'
     else if (prop === 'count') dbField = 'accumulation'
+    else if (prop === 'name') dbField = 'user_name'
     else continue
 
     const sortDir = order === 'descending' ? 'desc' : 'asc'
