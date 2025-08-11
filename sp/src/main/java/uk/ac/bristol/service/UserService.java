@@ -76,7 +76,7 @@ public interface UserService {
 
     int insertUserBatch(List<User> list);
 
-    void registerNewUser(Map<String, String> data);
+    void registerNewUser(Map<String, Object> data);
 
     int updateUser(User user);
 

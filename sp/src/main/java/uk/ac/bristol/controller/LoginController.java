@@ -38,7 +38,7 @@ public class LoginController {
     }
 
     @PostMapping("/register")
-    public ResponseBody register(@RequestBody Map<String, String> body) {
+    public ResponseBody register(@RequestBody Map<String, Object> body) {
         userService.registerNewUser(body);
         return new ResponseBody(Code.SUCCESS, null, "Success.");
     }
