@@ -29,6 +29,11 @@ let timer: ReturnType<typeof setInterval> | null = null
 watch(visible, (val) => {
   if (val) {
     countdown.value = props.countdownDuration ?? 5
+    if (countdown.value === 0) {
+      confirmDisabled.value = false
+      return
+    }
+
     confirmDisabled.value = true
     if (timer) clearInterval(timer)
     timer = setInterval(() => {

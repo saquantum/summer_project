@@ -14,8 +14,6 @@ const emit = defineEmits(['update:userSearchBody'])
 
 const visible = ref<boolean>(false)
 const detail = ref<boolean>(false)
-// const assetId = ref<string | null>(null)
-// const lastType: string | null = null
 
 const popoverRef = ref<{ popperRef?: { contentRef: HTMLElement } } | null>(null)
 const referenceRef = ref<{ $el: HTMLElement } | null>(null)
@@ -41,26 +39,19 @@ const handleClickOutside = (e: MouseEvent) => {
 const userStore = useUserStore()
 
 const handleRowClick = (id: string) => {
-  tags.value.push(id)
   fuzzySearch(id)
 }
 
-const tags = ref<string[]>([])
 const input = ref<string>('')
 
 const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Enter' && !input.value.trim()) {
+    clearFilters()
+  }
   if (e.key === 'Enter' && input.value.trim()) {
     e.preventDefault()
-    tags.value.push(input.value.trim())
     fuzzySearch(input.value)
-    input.value = ''
-  } else if (e.key === 'Backspace' && !input.value && tags.value.length) {
-    tags.value.pop()
   }
-}
-
-const removeTag = (index: number) => {
-  tags.value.splice(index, 1)
 }
 
 const focusInput = () => {
@@ -78,7 +69,8 @@ const handleFilterClick = () => {
 }
 
 const form = ref<UserSearchForm>({
-  id: ''
+  id: '',
+  name: ''
 })
 
 const handleSearch = () => {
@@ -93,14 +85,16 @@ const handleSearch = () => {
 
 const clearFilters = () => {
   form.value = {
-    id: ''
+    id: '',
+    name: ''
   }
   handleSearch()
 }
 
 const fuzzySearch = (input: string) => {
   const fuzzyForm = {
-    id: input
+    id: input,
+    name: ''
   }
   const obj: UserSearchBody = {
     ...props.userSearchBody,
@@ -116,6 +110,10 @@ const fuzzySearch = (input: string) => {
   }
   props.fetchTableData()
   visible.value = false
+}
+
+const clearSearchHistory = () => {
+  userStore.clearUserSearchHistory()
 }
 
 onMounted(() => {
@@ -143,10 +141,6 @@ defineExpose({
   >
     <template #reference>
       <div class="tag-input-wrapper">
-        <span class="tag" v-for="(tag, index) in tags" :key="index">
-          {{ tag }}
-          <span class="close" @click.stop="removeTag(index)">×</span>
-        </span>
         <input
           @click="focusInput"
           ref="inputRef"
@@ -173,6 +167,9 @@ defineExpose({
         <el-form-item label="Id">
           <el-input v-model="form.id"></el-input>
         </el-form-item>
+        <el-form-item label="Name">
+          <el-input v-model="form.name"></el-input>
+        </el-form-item>
       </el-form>
 
       <div style="margin-top: 20px">
@@ -181,8 +178,19 @@ defineExpose({
       </div>
     </div>
     <div v-else class="search-history">
-      <span>Search history</span>
-      <ul>
+      <div class="search-history-header">
+        <span>Search history</span>
+        <el-button
+          v-if="userStore.userSearchHistory.length > 0"
+          type="text"
+          size="small"
+          @click="clearSearchHistory"
+          class="clear-history-btn"
+        >
+          Clear
+        </el-button>
+      </div>
+      <ul v-if="userStore.userSearchHistory.length > 0">
         <li
           v-for="(item, index) in userStore.userSearchHistory.slice(0, 5)"
           :key="index"
@@ -191,6 +199,7 @@ defineExpose({
           {{ item }}
         </li>
       </ul>
+      <div v-else class="empty-history">No search history</div>
     </div>
   </el-popover>
 </template>
@@ -214,23 +223,6 @@ defineExpose({
   background-color: white;
 }
 
-.tag {
-  background-color: #409eff;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 4px;
-  margin-right: 4px;
-  display: flex;
-  align-items: center;
-  font-size: 12px;
-}
-
-.close {
-  margin-left: 6px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
 .tag-input {
   flex: 1;
   border: none;
@@ -247,6 +239,20 @@ defineExpose({
 .search-history {
   margin-top: 10px;
   padding: 0;
+}
+.search-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.clear-history-btn {
+  padding: 0;
+  font-size: 12px;
+  color: #909399;
+}
+.clear-history-btn:hover {
+  color: #409eff;
 }
 .search-history ul {
   list-style: none;
@@ -265,5 +271,11 @@ defineExpose({
 .search-history li:hover {
   background: #e0e7ef;
   color: #409eff;
+}
+.empty-history {
+  color: #909399;
+  font-size: 14px;
+  text-align: center;
+  padding: 20px 0;
 }
 </style>

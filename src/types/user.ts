@@ -87,6 +87,7 @@ export interface RegisterForm {
 
 export interface UserSearchForm {
   id: string
+  name: string
 }
 
 export interface UserSearchBody {
@@ -98,6 +99,10 @@ export interface UserSearchBody {
 
 export interface UserFilter {
   user_id?: {
+    op: string
+    val: string
+  }
+  user_name?: {
     op: string
     val: string
   }

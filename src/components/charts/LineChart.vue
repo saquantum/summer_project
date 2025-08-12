@@ -94,7 +94,7 @@ onUnmounted(() => {
 
 <style scoped>
 .line-chart-card {
-  min-width: 280px;
+  min-width: 375px !important;
   flex: 1;
   box-sizing: border-box;
 }

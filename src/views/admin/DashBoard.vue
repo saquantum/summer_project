@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import type { ECharts } from 'echarts'
 import {
+  adminGetContactPreferenceService,
   adminGetMetaDateService,
   adminGetUserDistributionService
 } from '@/api/admin'
@@ -26,6 +27,7 @@ const userCount = ref(0)
 const assetCount = ref(0)
 
 const userDistribution = ref<Record<string, number>>({})
+const contactPreference = ref<Record<string, number>>({})
 
 // Computed property to process regional data - shows top 5 regions and groups others
 const pieChartData = computed(() => {
@@ -75,6 +77,10 @@ const fetchDashboardData = async () => {
     const userDistributionRes = await adminGetUserDistributionService()
     if (userDistributionRes && userDistributionRes.data) {
       userDistribution.value = userDistributionRes.data
+    }
+    const percentage = await adminGetContactPreferenceService()
+    if (percentage && percentage.data) {
+      contactPreference.value = percentage.data
     }
   } catch (error) {
     console.error('Failed to fetch dashboard data:', error)
@@ -289,7 +295,11 @@ onBeforeUnmount(() => {
 
     <!-- Right Side: Dashboard Area -->
     <div class="dashboard-section">
-      <BarChart id="contact-preference" title="Contact preference">
+      <BarChart
+        id="contact-preference"
+        title="Contact preference"
+        :data="contactPreference"
+      >
         <template #icon>
           <el-icon><Message /></el-icon>
         </template>

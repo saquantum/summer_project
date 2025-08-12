@@ -10,6 +10,7 @@ const instance = axios.create({
 const EXCLUDE_IDEMPOTENCY_PATHS = [
   '/login',
   '/logout',
+  '/register',
   '/email/code',
   '/auth/refresh',
   '/email/verification',

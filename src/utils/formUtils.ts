@@ -271,6 +271,8 @@ export const userConverFormToFilter = (form: UserSearchForm): UserFilter => {
 
   if (form.id) {
     body.user_id = { op: 'like', val: `%${form.id}%` }
+  } else if (form.name) {
+    body.user_name = { op: 'like', val: `%${form.name}%` }
   }
 
   return body

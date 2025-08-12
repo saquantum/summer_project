@@ -45,6 +45,7 @@ export const useUserStore = defineStore(
 
     const getUserInfo = async () => {
       try {
+        if (!user.value) return
         const { data } = await userGetInfoService(user.value.id)
         user.value = data
       } catch (e) {
@@ -60,6 +61,10 @@ export const useUserStore = defineStore(
       proxyId.value = id
     }
 
+    const clearUserSearchHistory = () => {
+      userSearchHistory.value = []
+    }
+
     return {
       user,
       users,
@@ -70,7 +75,8 @@ export const useUserStore = defineStore(
       setProxyId,
       updateUser,
       getUserInfo,
-      getUsers
+      getUsers,
+      clearUserSearchHistory
     }
   },
   {

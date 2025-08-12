@@ -201,3 +201,6 @@ export const adminGetMetaDateService = () => request.get('/admin/metadata')
 
 export const adminGetUserDistributionService = () =>
   request.get('/admin/dashboard/users/region')
+
+export const adminGetContactPreferenceService = () =>
+  request.get('/admin/dashboard/users/contact-preference')

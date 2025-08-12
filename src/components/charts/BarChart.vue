@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, nextTick } from 'vue'
+import { onMounted, onUnmounted, nextTick, ref, watch } from 'vue'
 import * as echarts from 'echarts'
 import type { ECharts } from 'echarts'
 
 interface Props {
   id: string
   title: string
+  data?: Record<string, number>
 }
 
 const props = withDefaults(defineProps<Props>(), {})
@@ -21,15 +22,31 @@ const handleResize = () => {
     }, 100)
   }
 }
+const chartData = ref<Array<{ value: number; name: string }>>([])
+
+const processData = (apiData: Record<string, number> | undefined) => {
+  if (!apiData) {
+    return []
+  }
+
+  return Object.entries(apiData).map(([name, value]) => ({
+    value,
+    name
+  }))
+}
 
 const initChart = () => {
   const chartDom = document.getElementById(props.id)
   if (chartDom) {
     barChart = echarts.init(chartDom)
+
+    const categories = chartData.value.map((item) => item.name)
+    const values = chartData.value.map((item) => item.value)
+
     const barOption = {
       tooltip: {
         trigger: 'axis',
-        formatter: '{b}: {c}%'
+        formatter: '{b}: {c}'
       },
       grid: {
         left: 40,
@@ -40,7 +57,7 @@ const initChart = () => {
       xAxis: {
         show: true,
         type: 'category',
-        data: ['Email', 'SMS', 'Discord', 'Post', 'Telegram', 'Whatsapp'],
+        data: categories,
         axisLabel: {
           fontSize: 12,
           color: '#606266',
@@ -50,10 +67,7 @@ const initChart = () => {
       yAxis: {
         show: true,
         type: 'value',
-        max: 40,
-        interval: 10,
         axisLabel: {
-          formatter: '{value}%',
           fontSize: 10,
           color: '#606266'
         },
@@ -63,7 +77,7 @@ const initChart = () => {
       },
       series: [
         {
-          data: [12, 28, 15, 32, 20, 25],
+          data: values,
           type: 'bar',
           itemStyle: {
             color: '#409eff',
@@ -76,6 +90,36 @@ const initChart = () => {
     barChart.setOption(barOption)
   }
 }
+
+const updateChart = () => {
+  if (barChart && chartData.value.length > 0) {
+    const categories = chartData.value.map((item) => item.name)
+    const values = chartData.value.map((item) => item.value)
+
+    barChart.setOption({
+      xAxis: {
+        data: categories
+      },
+      series: [
+        {
+          data: values
+        }
+      ]
+    })
+  }
+}
+
+// Watch for data changes
+watch(
+  () => props.data,
+  (newData) => {
+    chartData.value = processData(newData)
+    if (barChart) {
+      updateChart()
+    }
+  },
+  { immediate: true }
+)
 
 onMounted(async () => {
   await nextTick()
@@ -106,6 +150,9 @@ onUnmounted(() => {
       <!-- Bar chart -->
       <div class="chart-section">
         <div :id="props.id" class="chart-container"></div>
+        <div v-if="!chartData.length" class="no-data">
+          <el-empty description="No data available" />
+        </div>
       </div>
     </div>
   </el-card>

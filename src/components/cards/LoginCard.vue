@@ -9,12 +9,12 @@ import { ElMessage } from 'element-plus'
 import type { LoginForm } from '@/types'
 import {
   createRepasswordRules,
-  emailRules,
   firstNameRules,
   lastNameRules,
   passwordRules,
   phoneRules,
   trimForm,
+  uniqueEmailRules,
   usernameRules
 } from '@/utils/formUtils'
 
@@ -59,7 +59,8 @@ const registerForm = ref({
   email: '',
   phone: '',
   password: '',
-  repassword: ''
+  repassword: '',
+  contact: false
 })
 
 const rules = {
@@ -72,7 +73,7 @@ const rules = {
   repassword: createRepasswordRules(() => registerForm.value.password || ''),
   firstName: firstNameRules,
   lastName: lastNameRules,
-  email: emailRules,
+  email: uniqueEmailRules,
   phone: phoneRules
 }
 
@@ -141,7 +142,8 @@ const resetRegister = () => {
     email: '',
     phone: '',
     password: '',
-    repassword: ''
+    repassword: '',
+    contact: false
   }
 
   currentStep.value = 1
@@ -421,6 +423,9 @@ defineExpose({ currentStep })
                 type="password"
                 placeholder="Please input password again"
               />
+              <el-checkbox v-model="registerForm.contact">
+                I agree to receive emails from [Company].</el-checkbox
+              >
             </el-form-item>
             <el-form-item>
               <el-button @click="register" class="step-button">

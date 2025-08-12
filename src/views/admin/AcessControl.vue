@@ -10,6 +10,7 @@ const userStore = useUserStore()
 
 const permission = ref<Permission | null>(null)
 const checkboxOptions = ref<{ label: string; value: boolean }[]>([])
+const selectUserVisible = ref(false)
 
 const submit = async () => {
   if (permission.value) {
@@ -58,4 +59,12 @@ onMounted(async () => {
       <el-button @click="submit">Submit</el-button>
     </div>
   </div>
+
+  <el-input @click="selectUserVisible = true"></el-input>
+
+  <SelectUserDialog
+    v-model="selectUserVisible"
+    :multiple="true"
+    title="Select user"
+  />
 </template>
