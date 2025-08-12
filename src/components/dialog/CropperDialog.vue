@@ -89,10 +89,10 @@ function getCroppedImage() {
   if (canvas) {
     // Convert to base64
     // croppedBase64.value = canvas.toDataURL('image/jpeg', 0.8)
-    const base64 = canvas.toDataURL('image/jpeg', 0.8) // 定义局部变量
+    const base64 = canvas.toDataURL('image/jpeg', 0.8)
     croppedBase64.value = base64
-    emit('crop-finish', base64) // 将结果传递给父组件
-    handleClose() // 关闭弹窗
+    emit('crop-finish', base64)
+    handleClose()
 
     // You can also convert to blob for upload
     canvas.toBlob(
@@ -200,7 +200,7 @@ onUnmounted(() => {
 .cropper-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 16px; /* 图片和按钮之间的间距 */
+  gap: 16px;
   border: 1px solid #eee;
   padding: 10px;
 }
@@ -208,7 +208,7 @@ onUnmounted(() => {
 .button-group {
   display: flex;
   gap: 8px;
-  justify-content: center; /* 按钮居中 */
+  justify-content: center;
 }
 
 button {
