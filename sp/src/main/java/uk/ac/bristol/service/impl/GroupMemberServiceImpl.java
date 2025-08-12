@@ -19,13 +19,15 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     }
 
     @Override
-    public void addGroupMember(GroupMember groupMember) {
+    public GroupMember addGroupMember(GroupMember groupMember) {
         groupMemberMapper.insertGroupMember(groupMember);
+        return groupMember;
     }
 
     @Override
-    public void removeGroupMemberById(Integer id) {
-        groupMemberMapper.deleteGroupMemberById(id);
+    public boolean removeGroupMemberById(Integer id) {
+        int rows = groupMemberMapper.deleteGroupMemberById(id);
+        return rows > 0;
     }
 
     @Override

@@ -84,25 +84,7 @@ public class ImportMockDataImpl implements ImportMockData {
             User user = new User();
             user.setId((String) map.get("id"));
             user.setName((String) map.get("name"));
-            Map<String, String> address = (Map<String, String>) map.get("address");
-            Map<String, String> postcodeColumns = null;
-            try {
-                postcodeColumns = postcodeService.getColumnsOfPostcode(address.get("postcode"));
-            } catch (Exception ignored) {
-            }
-            if (postcodeColumns == null) {
-                postcodeColumns = postcodeService.getRandomPostcodeAddress();
-            }
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            address.put("postcode", postcodeColumns.get("postcode"));
-            address.put("postcodeCountry", postcodeColumns.get("postcodeCountry"));
-            address.put("postcodeRegion", postcodeColumns.get("postcodeRegion"));
-            address.put("postcodeAdminDistrict", postcodeColumns.get("postcodeAdminDistrict"));
-            user.setAddress(address);
+            user.setAddress((Map<String, String>) map.get("address"));
             user.setContactDetails(Map.of("email", (String) map.get("email"), "phone", (String) map.get("phone")));
             user.setContactPreferences((Map<String, Boolean>) map.get("contact_preferences"));
             user.setPassword("123456");

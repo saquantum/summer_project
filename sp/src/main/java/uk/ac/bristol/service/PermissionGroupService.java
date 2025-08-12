@@ -1,5 +1,6 @@
 package uk.ac.bristol.service;
 
+import uk.ac.bristol.pojo.CreateGroupRequest;
 import uk.ac.bristol.pojo.PermissionGroup;
 import java.util.List;
 
@@ -14,4 +15,8 @@ public interface PermissionGroupService {
     void updateGroup(PermissionGroup group);
 
     void deleteGroup(Long groupId);
+
+    PermissionGroup createGroupWithPermissions(CreateGroupRequest request);
+
+    PermissionGroup getGroupByName(String groupName);
 }

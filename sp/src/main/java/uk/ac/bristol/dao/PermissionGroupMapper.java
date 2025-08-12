@@ -11,4 +11,6 @@ public interface PermissionGroupMapper {
     void insertGroup(PermissionGroup group);
     void updateGroup(PermissionGroup group);
     void deleteGroup(Long groupId);
+
+    PermissionGroup selectGroupByName(String groupName);
 }

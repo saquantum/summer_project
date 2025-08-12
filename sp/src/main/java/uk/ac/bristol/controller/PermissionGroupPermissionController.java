@@ -2,8 +2,10 @@ package uk.ac.bristol.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.bristol.pojo.ApiResponse;
 import uk.ac.bristol.pojo.PermissionGroupPermission;
 import uk.ac.bristol.service.PermissionGroupPermissionService;
+import uk.ac.bristol.pojo.GroupMember;
 
 import java.util.List;
 
@@ -29,9 +31,10 @@ public class PermissionGroupPermissionController {
     }
 
     @PutMapping("/group-permissions/{groupId}")
-    public void updatePermissions(@PathVariable Long groupId, @RequestBody PermissionGroupPermission permissions) {
+    public ApiResponse<Void> updatePermissions(@PathVariable Long groupId, @RequestBody PermissionGroupPermission permissions) {
         permissions.setGroupId(groupId);
         permissionGroupPermissionService.updatePermissions(permissions);
+        return new ApiResponse<>(200, "Permissions updated successfully", null);
     }
 
     @DeleteMapping("/group-permissions/{groupId}")

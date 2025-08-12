@@ -284,7 +284,8 @@
             <if test="map.postcodeCountry != null and map.postcodeCountry != ''">address_postcode_country = #{map.postcodeCountry},</if>
             <if test="map.postcodeRegion != null and map.postcodeRegion != ''">address_postcode_region = #{map.postcodeRegion},</if>
             <if test="map.postcodeAdminDistrict != null and map.postcodeAdminDistrict != ''">address_postcode_admin_district = #{map.postcodeAdminDistrict},</if>
-        </set>
+			address_id = excluded.address_id
+		</set>
         returning xmax = 0 as inserted
     </select>
 
@@ -319,7 +320,8 @@
             <if test="map.whatsapp != null and map.whatsapp != ''">contact_details_whatsapp = #{map.whatsapp},</if>
             <if test="map.discord != null and map.discord != ''">contact_details_discord = #{map.discord},</if>
             <if test="map.telegram != null and map.telegram != ''">contact_details_telegram = #{map.telegram},</if>
-        </set>
+			contact_details_id = excluded.contact_details_id
+		</set>
         returning xmax = 0 as inserted
     </select>
 
@@ -354,7 +356,8 @@
             <if test="map.whatsapp != null">contact_preferences_whatsapp = #{map.whatsapp},</if>
             <if test="map.discord != null">contact_preferences_discord = #{map.discord},</if>
             <if test="map.telegram != null">contact_preferences_telegram = #{map.telegram},</if>
-        </set>
+			contact_preferences_id = excluded.contact_preferences_id
+		</set>
         returning xmax = 0 as inserted
     </select>
 

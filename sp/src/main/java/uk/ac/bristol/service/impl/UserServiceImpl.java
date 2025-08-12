@@ -355,13 +355,14 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
-    public void registerNewUser(Map<String, String> data) {
-        String id = data.get("id").trim();
-        String password = data.get("password").trim();
-        String repassword = data.get("repassword").trim();
-        String name = data.get("name").trim();
-        String email = data.get("email").trim();
-        String phone = data.get("phone").trim();
+    public void registerNewUser(Map<String, Object> data) {
+        String id = ((String) data.get("id")).trim();
+        String password = ((String) data.get("password")).trim();
+        String repassword = ((String) data.get("repassword")).trim();
+        String name = ((String) data.get("name")).trim();
+        String email = ((String) data.get("email")).trim();
+        String phone = ((String) data.get("phone")).trim();
+        Boolean wouldLikeContact = (Boolean) data.get("contact");
 
         if (id.isBlank() || password.isBlank() || repassword.isBlank() || name.isBlank() || email.isBlank() || phone.isBlank()) {
             throw new SpExceptions.BadRequestException("Key fields missing during registration.");
@@ -384,7 +385,11 @@ public class UserServiceImpl implements UserService {
         user.setPassword(password);
         user.setAddress(Map.of());
         user.setContactDetails(Map.of("email", email, "phone", phone));
-        user.setContactPreferences(Map.of());
+        if(wouldLikeContact){
+            user.setContactPreferences(Map.of("email", true));
+        }else{
+            user.setContactPreferences(Map.of());
+        }
         insertUser(user);
 
         int n = permissionConfigService.insertPermissionConfig(new PermissionConfig(id));

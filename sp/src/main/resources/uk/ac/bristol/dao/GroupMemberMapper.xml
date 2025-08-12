@@ -5,7 +5,7 @@
 
 <mapper namespace="uk.ac.bristol.dao.GroupMemberMapper">
 
-    <insert id="insertGroupMember" parameterType="uk.ac.bristol.pojo.GroupMember">
+    <insert id="insertGroupMember" parameterType="uk.ac.bristol.pojo.GroupMember" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO group_members (group_id, user_id)
         VALUES (#{groupId}, #{userId})
     </insert>
