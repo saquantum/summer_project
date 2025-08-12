@@ -14,8 +14,8 @@
         drop table if exists users cascade;
         drop table if exists asset_types cascade;
         drop table if exists assets cascade;
-        drop table if exists asset_postcodes cascade;
         drop table if exists weather_warnings cascade;
+        drop table if exists uk_regions cascade;
         drop table if exists templates cascade;
         drop table if exists permission_configs cascade;
         drop table if exists inboxes cascade;
@@ -202,21 +202,6 @@
         <include refid="initTableMetaData"/>
     </update>
 
-    <update id="createAssetPostcode">
-        create table if not exists asset_postcodes
-        (
-            asset_postcode_asset_id       varchar(100) primary key references assets (asset_id) on update cascade,
-            asset_postcode_postcode       varchar(50),
-            asset_postcode_longitude      decimal,
-            asset_postcode_latitude       decimal,
-            asset_postcode_country        varchar(100),
-            asset_postcode_region         varchar(100),
-            asset_postcode_admin_district varchar(100)
-        );
-
-        <include refid="initTableMetaData"/>
-    </update>
-
     <update id="createWeatherWarnings">
         create table if not exists weather_warnings
         (
@@ -238,6 +223,16 @@
         create index index_weather_warnings_valid_period on weather_warnings(warning_valid_from, warning_valid_to);
         create index index_weather_warnings_warning_area on weather_warnings using GIST (warning_area);
 
+        <include refid="initTableMetaData"/>
+    </update>
+
+    <update id="createUKRegions">
+        create table if not exists uk_regions
+        (
+            uk_region_row_id bigserial primary key,
+            uk_region_name   varchar(50),
+            uk_region_area   geometry(multipolygon, 4326)
+        );
         <include refid="initTableMetaData"/>
     </update>
 

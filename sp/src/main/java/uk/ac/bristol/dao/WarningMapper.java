@@ -42,4 +42,10 @@ public interface WarningMapper {
     int deleteWarningByIDs(@Param("ids") Long[] ids);
 
     int deleteWarningByIDs(@Param("ids") List<Long> ids);
+
+    // UK Regions
+
+    List<Map<String, Object>> selectIntersectingRegionsGivenGeometry(@Param("givenArea") String multiPolygon);
+
+    int insertUkRegion(Map<String, String> region);
 }

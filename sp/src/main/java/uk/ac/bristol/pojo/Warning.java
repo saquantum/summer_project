@@ -6,6 +6,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -175,7 +177,19 @@ public class Warning {
         }
     }
 
-    public static Warning getWarningFromGeoJSON(Map<String, Object> properties, Map<String, Object> geometry){
+    public static class FeatureCollection {
+        public String type;
+        public List<Feature> features;
+    }
+
+    public static class Feature {
+        public String type;
+        public Long id;
+        public Map<String, Object> properties;
+        public Map<String, Object> geometry;
+    }
+
+    private static Warning getWarningFromGeoJSON(Map<String, Object> properties, Map<String, Object> geometry){
         Warning warning = new Warning();
         warning.setId(((Number) properties.get("OBJECTID")).longValue());
         warning.setWeatherType((String) properties.get("weathertype"));
@@ -190,7 +204,36 @@ public class Warning {
         warning.setWarningFurtherDetails((String) properties.get("warningFurtherDetails"));
         warning.setWarningUpdateDescription((String) properties.get("warningUpdateDescription"));
         warning.setArea(geometry);
-
         return warning;
+    }
+
+    private static List<Feature> getFeatures(String GeoJSON) throws JsonProcessingException {
+        return objectMapper.readValue(GeoJSON, FeatureCollection.class).features;
+    }
+
+    private static List<Warning> parseWarningFromFeatures(List<Feature> features) {
+        if (features.isEmpty()) return new ArrayList<>();
+        List<Warning> warnings = new ArrayList<>();
+        for (Feature feature : features) {
+            Warning warning = getWarningFromGeoJSON(feature.properties, feature.geometry);
+            warnings.add(warning);
+        }
+        return warnings;
+    }
+
+    public static List<Warning> parseWarningsFromGeoJSON(String GeoJSON) throws JsonProcessingException {
+        return parseWarningFromFeatures(getFeatures(GeoJSON));
+    }
+
+    public static List<Map<String, String>> extractUKRegions(String GeoJSON) throws JsonProcessingException {
+        List<Feature> features = getFeatures(GeoJSON);
+        List<Map<String, String>> result = new ArrayList<>();
+        for (Feature feature : features) {
+            Map<String, String> map = new HashMap<>();
+            map.put("name", (String) feature.properties.get("name"));
+            map.put("area", objectMapper.writeValueAsString(feature.geometry));
+            result.add(map);
+        }
+        return result;
     }
 }

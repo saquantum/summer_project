@@ -171,18 +171,9 @@ public class AdminController {
         return new ResponseBody(Code.SELECT_OK, userService.getUserContactPreferencesPercentage(Map.of("user_is_admin", false)));
     }
 
-    @GetMapping("/dashboard/assets/country")
-    public ResponseBody getCountAssetsByCountry() {
-        return new ResponseBody(Code.SELECT_OK, assetService.groupAssetLocationByCountry(null));
-    }
-
     @GetMapping("/dashboard/assets/region")
     public ResponseBody getCountAssetsByRegion() {
         return new ResponseBody(Code.SELECT_OK, assetService.groupAssetLocationByRegion(null));
     }
 
-    @GetMapping("/dashboard/assets/district")
-    public ResponseBody getCountAssetsByDistrict() {
-        return new ResponseBody(Code.SELECT_OK, assetService.groupAssetLocationByAdminDistrict(null));
-    }
 }

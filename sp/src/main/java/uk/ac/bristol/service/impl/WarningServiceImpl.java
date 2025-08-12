@@ -1,5 +1,6 @@
 package uk.ac.bristol.service.impl;
 
+import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -7,6 +8,7 @@ import uk.ac.bristol.controller.Code;
 import uk.ac.bristol.dao.MetaDataMapper;
 import uk.ac.bristol.dao.WarningMapper;
 import uk.ac.bristol.exception.SpExceptions;
+import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.UserWithAssets;
 import uk.ac.bristol.pojo.Warning;
 import uk.ac.bristol.service.ContactService;
@@ -197,5 +199,24 @@ public class WarningServiceImpl implements WarningService {
         int n = warningMapper.deleteWarningByIDs(ids);
         metaDataMapper.increaseTotalCountByTableName("weather_warnings", -n);
         return n;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public String getRegionNameGivenAsset(Asset asset) {
+        Point centroid = asset.getLocationCentroid();
+        String geoJsonPoint = String.format(
+                "{\"type\":\"Point\",\"coordinates\":[%f,%f]}",
+                centroid.getX(), centroid.getY()
+        );
+        List<Map<String, Object>> regions =
+                warningMapper.selectIntersectingRegionsGivenGeometry(geoJsonPoint);
+        return regions.isEmpty() ? null : (String) regions.get(0).get("name");
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public int insertUkRegion(Map<String, String> region) {
+        return warningMapper.insertUkRegion(region);
     }
 }

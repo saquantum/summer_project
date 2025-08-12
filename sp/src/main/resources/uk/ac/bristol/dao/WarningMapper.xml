@@ -180,4 +180,19 @@
             #{id}
         </foreach>
     </delete>
+
+    <select id="selectIntersectingRegionsGivenGeometry" resultMap="ResultMaps.UkRegionMap">
+        select uk_region_row_id,
+               uk_region_name,
+               ST_AsGeoJSON(uk_region_area) as uk_region_area
+        from uk_regions
+        where ST_Intersects(uk_region_area, ST_Multi(ST_GeomFromGeoJSON(#{givenArea})))
+    </select>
+
+    <insert id="insertUkRegion">
+        insert into uk_regions (uk_region_name,
+                                uk_region_area)
+        values (#{name},
+                ST_Multi(ST_GeomFromGeoJSON(#{area})));
+    </insert>
 </mapper>

@@ -24,6 +24,8 @@ public class MockDataInitializer implements CommandLineRunner {
 
     @Value("${mock-data.state}")
     private String STATE_FILE_PATH;
+    @Value("${mock-data.ukmap}")
+    private String UK_MAP_FILE_PATH;
     @Value("${mock-data.assets}")
     private String ASSETS_FILE_PATH;
     @Value("${mock-data.asset-types}")
@@ -67,9 +69,9 @@ public class MockDataInitializer implements CommandLineRunner {
 
     public void forceReload() throws IOException {
         importMockData.resetSchema();
+        importMockData.importWarnings(getClasspathStream(WARNINGS_FILE_PATH), getClasspathStream(UK_MAP_FILE_PATH));
         importMockData.importUsers(getClasspathStream(USERS_FILE_PATH));
         importMockData.importAssets(getClasspathStream(ASSET_TYPES_FILE_PATH), getClasspathStream(ASSETS_FILE_PATH));
-        importMockData.importWarnings(getClasspathStream(WARNINGS_FILE_PATH));
         importMockData.importTemplates(getClasspathStream(NOTIFICATION_FILE_PATH));
     }
 
@@ -80,6 +82,13 @@ public class MockDataInitializer implements CommandLineRunner {
                 || shouldImport("warnings")
                 || shouldImport("templates")) {
             importMockData.resetSchema();
+        }
+
+        if (shouldImport("warnings")) {
+            importMockData.importWarnings(getClasspathStream(WARNINGS_FILE_PATH), getClasspathStream(UK_MAP_FILE_PATH));
+            markAsImported("warnings");
+        } else {
+            System.out.println("Warnings file skipped");
         }
 
         if (shouldImport("users")) {
@@ -95,13 +104,6 @@ public class MockDataInitializer implements CommandLineRunner {
             markAsImported("assets");
         } else {
             System.out.println("Assets file skipped");
-        }
-
-        if (shouldImport("warnings")) {
-            importMockData.importWarnings(getClasspathStream(WARNINGS_FILE_PATH));
-            markAsImported("warnings");
-        } else {
-            System.out.println("Warnings file skipped");
         }
 
         if (shouldImport("templates")) {

@@ -12,6 +12,7 @@ import uk.ac.bristol.service.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -58,8 +59,8 @@ public class ImportMockDataImpl implements ImportMockData {
         settings.createContactPreferences("contact_preferences");
         settings.createAssetTypes("asset_types");
         settings.createAssets("assets");
-        settings.createAssetPostcode("asset_postcodes");
         settings.createWeatherWarnings("weather_warnings");
+        settings.createUKRegions("uk_regions");
         settings.createNotificationTemplates("templates");
         settings.createPermissionConfigs("permission_configs");
         settings.createUserInboxes("inboxes");
@@ -77,7 +78,7 @@ public class ImportMockDataImpl implements ImportMockData {
             parsed = mapper.readValue(usersInputStream, new TypeReference<List<Map<String, Object>>>() {
             });
         } catch (IOException e) {
-            throw new SpExceptions.SystemException("Loading Users failed.", e);
+            throw new SpExceptions.SystemException("Failed to load mock users.", e);
         }
         for (Map<String, Object> map : parsed) {
             User user = new User();
@@ -156,54 +157,37 @@ public class ImportMockDataImpl implements ImportMockData {
             assets = mapper.readValue(assetsInputStream, new TypeReference<List<Asset>>() {
             });
         } catch (IOException e) {
-            throw new SpExceptions.SystemException("Loading Assets failed.", e);
+            throw new SpExceptions.SystemException("Failed to load mock assets.", e);
         }
         for (AssetType type : types) {
             assetService.insertAssetType(type);
         }
         for (Asset asset : assets) {
-            String id = assetService.insertAssetReturningId(asset);
-            try {
-                Map<String, Object> postcode = postcodeService.getColumnsOfGeometricPoint(asset.getLocationCentroid());
-                if (postcode.get("postcode") == null || ((String)postcode.get("postcode")).isBlank()) {
-                    System.err.println("Random postcode inserted instead.");
-                    assetService.upsertAssetPostcodeByAssetId(id, postcodeService.getRandomPostcode());
-                } else {
-                    assetService.upsertAssetPostcodeByAssetId(id, postcode);
-                }
-            } catch (Exception e) {
-                System.err.println("Asset inserted, but failed to insert location postcode of asset");
-            }
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            assetService.insertAsset(asset);
         }
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
-    public void importWarnings(InputStream warningsInputStream) {
+    public void importWarnings(InputStream warningsInputStream, InputStream UKMapInputStream) {
         try {
-            List<Map<String, Object>> list = mapper.readValue(warningsInputStream, new TypeReference<List<Map<String, Object>>>() {
-            });
-
-            for (Map<String, Object> map : list) {
-                List<Map<String, Object>> features = (List<Map<String, Object>>) map.get("features");
-                if (features != null) {
-                    for (Map<String, Object> feature : features) {
-                        Map<String, Object> properties = (Map<String, Object>) feature.get("properties");
-                        Map<String, Object> geometry = (Map<String, Object>) feature.get("geometry");
-
-                        Warning warning = Warning.getWarningFromGeoJSON(properties, geometry);
-
-                        warningService.insertWarning(warning);
-                    }
-                }
+            String GeoJSON = new String(warningsInputStream.readAllBytes(), StandardCharsets.UTF_8);
+            List<Warning> warnings = Warning.parseWarningsFromGeoJSON(GeoJSON);
+            for (Warning warning : warnings) {
+                warningService.insertWarning(warning);
             }
         } catch (Exception e) {
-            throw new SpExceptions.SystemException("Loading Warnings failed.", e);
+            throw new SpExceptions.SystemException("Failed to load mock warnings.", e);
+        }
+
+        try {
+            String GeoJSON = new String(UKMapInputStream.readAllBytes(), StandardCharsets.UTF_8);
+            List<Map<String, String>> list = Warning.extractUKRegions(GeoJSON);
+            for (Map<String, String> map : list) {
+                warningService.insertUkRegion(map);
+            }
+        } catch (Exception e) {
+            throw new SpExceptions.SystemException("Failed to load UK regions.", e);
         }
     }
 
@@ -243,7 +227,7 @@ public class ImportMockDataImpl implements ImportMockData {
                 }
             }
         } catch (IOException e) {
-            throw new SpExceptions.SystemException("Loading Templates failed.", e);
+            throw new SpExceptions.SystemException("Failed to load mock templates.", e);
         }
     }
 }

@@ -1,5 +1,6 @@
 package uk.ac.bristol.service;
 
+import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.Warning;
 
 import java.util.List;
@@ -42,4 +43,10 @@ public interface WarningService {
     int deleteWarningByIDs(Long[] ids);
 
     int deleteWarningByIDs(List<Long> ids);
+
+    // UK Regions
+
+    String getRegionNameGivenAsset(Asset asset);
+
+    int insertUkRegion(Map<String, String> region);
 }

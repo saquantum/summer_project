@@ -73,6 +73,7 @@ public class AssetServiceImpl implements AssetService {
                     limit, offset);
         }
         return assetMapper.selectAssetsWithWarningsPuttingWarningsTableMain(
+                false,
                 QueryTool.formatFilters(filters),
                 list,
                 limit, offset);
@@ -83,7 +84,7 @@ public class AssetServiceImpl implements AssetService {
     public List<AssetWithWeatherWarnings> getCursoredAssetsWithWarnings(Boolean simplify, Long lastAssetRowId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
         Map<String, Object> anchor = null;
         if (lastAssetRowId != null) {
-            List<Map<String, Object>> list = assetMapper.selectAssetWithWarningsAnchor(lastAssetRowId);
+            List<Map<String, Object>> list = assetMapper.selectAssetWithWarningsAnchor(simplify, lastAssetRowId);
             if (list.size() != 1) {
                 throw new SpExceptions.GetMethodException("Found " + list.size() + " anchors using asset row id " + lastAssetRowId);
             }
@@ -188,11 +189,9 @@ public class AssetServiceImpl implements AssetService {
                 .toList();
     }
 
-    private Map<String, Integer> groupAssetLocationByOption(Map<String, Object> filters, String option) {
-        if (option == null || option.isBlank()) {
-            return new HashMap<>();
-        }
-
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public Map<String, Integer> groupAssetLocationByRegion(Map<String, Object> filters) {
         int limit = Code.PAGINATION_MAX_LIMIT;
         long cursor = 0L;
         int length = 0;
@@ -207,43 +206,14 @@ public class AssetServiceImpl implements AssetService {
             if (length == 0) break;
 
             for (AssetWithWeatherWarnings aww : list) {
-                Map<String, Object> postcode = aww.getAsset().getPostcode();
-                String postcodeCountry = (String) postcode.get("country");
-                String postcodeRegion = (String) postcode.get("region");
-                postcodeRegion = postcodeRegion.isBlank() ? postcodeCountry : postcodeRegion;
-                String postcodeAdminDistrict = (String) postcode.get("district");
-
-                String key = switch (option) {
-                    case "country" -> postcodeCountry;
-                    case "region" -> postcodeRegion;
-                    case "district" -> postcodeAdminDistrict;
-                    default -> null;
-                };
-                if (key != null && !key.isBlank()) {
-                    result.put(key, result.getOrDefault(key, 0) + 1);
+                String name = warningService.getRegionNameGivenAsset(aww.getAsset());
+                if (name != null && !name.isBlank()) {
+                    result.put(name, result.getOrDefault(name, 0) + 1);
                 }
             }
             cursor = list.get(list.size() - 1).getAsset().getRowId();
         } while (length > 0);
         return result;
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-    @Override
-    public Map<String, Integer> groupAssetLocationByCountry(Map<String, Object> filters) {
-        return groupAssetLocationByOption(filters, "country");
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-    @Override
-    public Map<String, Integer> groupAssetLocationByRegion(Map<String, Object> filters) {
-        return groupAssetLocationByOption(filters, "region");
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-    @Override
-    public Map<String, Integer> groupAssetLocationByAdminDistrict(Map<String, Object> filters) {
-        return groupAssetLocationByOption(filters, "district");
     }
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
@@ -399,10 +369,5 @@ public class AssetServiceImpl implements AssetService {
         int n = assetMapper.deleteAssetByIDs(ids);
         metaDataMapper.increaseTotalCountByTableName("assets", -n);
         return n;
-    }
-
-    @Override
-    public boolean upsertAssetPostcodeByAssetId(String assetId, Map<String, Object> map) {
-        return assetMapper.upsertAssetPostcodeByAssetId(assetId, map);
     }
 }

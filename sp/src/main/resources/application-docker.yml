@@ -43,6 +43,7 @@ mybatis:
   type-aliases-package: uk.ac.bristol.pojo
 
 mock-data:
+  ukmap: data/ukmap.json
   assets: data/assets.json
   asset-types: data/asset_types.json
   users: data/users.json

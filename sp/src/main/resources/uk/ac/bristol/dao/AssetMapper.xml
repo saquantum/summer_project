@@ -18,12 +18,9 @@
                asset_last_inspection,
                asset_last_modified,
                asset_types.*,
-               asset_postcodes.*
         from assets
                  left join asset_types
                            on asset_type_type_id = asset_type_id
-                 left join asset_postcodes
-                           on asset_id = asset_postcode_asset_id
         <include refid="QueryBlocks.filtering"/>
         <include refid="QueryBlocks.orderAndPage"/>
     </select>
@@ -42,7 +39,7 @@
                asset_last_inspection,
                asset_last_modified,
             <choose>
-                <when test="simplify == true">
+                <when test="simplify != null and simplify == true">
                     warning_id,
                     warning_weather_type,
                     warning_level,
@@ -65,16 +62,13 @@
                     ST_AsGeoJSON(warning_area)   as warning_area,
                 </otherwise>
             </choose>
-               asset_types.*,
-               asset_postcodes.*
+               asset_types.*
         from assets
                  left join weather_warnings
                            on ST_Intersects(asset_location, warning_area) and
                               now() between warning_valid_from and warning_valid_to
                  left join asset_types
                            on asset_type_type_id = asset_type_id
-                 left join asset_postcodes
-                           on asset_id = asset_postcode_asset_id
     </sql>
 
     <select id="selectAssetsWithWarnings" resultMap="ResultMaps.AssetWithWarningsMap">
@@ -118,16 +112,13 @@
                warning_update_description,
                ST_AsGeoJSON(warning_area)   as warning_area,
 
-               asset_types.*,
-               asset_postcodes.*
+               asset_types.*
         from weather_warnings
                  right join assets
                            on ST_Intersects(asset_location, warning_area) and
                               now() between warning_valid_from and warning_valid_to
                  left join asset_types
                            on asset_type_type_id = asset_type_id
-                 left join asset_postcodes
-                           on asset_id = asset_postcode_asset_id
         <include refid="QueryBlocks.filtering"/>
         <include refid="QueryBlocks.orderAndPage"/>
     </select>
@@ -140,8 +131,6 @@
                               now() between warning_valid_from and warning_valid_to
                  left join asset_types
                            on asset_type_type_id = asset_type_id
-                left join asset_postcodes
-                           on asset_id = asset_postcode_asset_id
         <include refid="QueryBlocks.filtering"/>
     </select>
 
@@ -271,42 +260,6 @@
         delete
         from asset_types
         where asset_type_type_id in
-        <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
-    </delete>
-
-    <select id="selectAssetPostcodeByAssetId" resultMap="ResultMaps.AssetPostcodeMap">
-        select *
-        from asset_postcodes
-        where asset_postcode_asset_id = #{id}
-    </select>
-
-    <select id="upsertAssetPostcodeByAssetId" resultType="java.lang.Boolean">
-        insert into asset_postcodes (asset_postcode_asset_id,
-                                     asset_postcode_postcode,
-                                     asset_postcode_longitude,
-                                     asset_postcode_latitude,
-                                     asset_postcode_country,
-                                     asset_postcode_region,
-                                     asset_postcode_admin_district)
-        values (#{id}, #{map.postcode}, #{map.longitude}, #{map.latitude}, #{map.country}, #{map.region},
-                #{map.district})
-        on conflict (asset_postcode_asset_id)
-            do update
-        <set>
-            <if test="map.postcode != null">asset_postcode_postcode = #{map.postcode},</if>
-            <if test="map.longitude != null">asset_postcode_longitude = #{map.longitude},</if>
-            <if test="map.latitude != null">asset_postcode_latitude = #{map.latitude},</if>
-            <if test="map.country != null">asset_postcode_country = #{map.country},</if>
-            <if test="map.region != null">asset_postcode_region = #{map.region},</if>
-            <if test="map.district != null">asset_postcode_admin_district = #{map.district},</if>
-        </set>
-        returning xmax = 0 as inserted
-    </select>
-
-    <delete id="deleteAssetPostcodeByAssetIds">
-        delete
-        from asset_postcodes
-        where asset_postcode_asset_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 </mapper>

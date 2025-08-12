@@ -53,11 +53,11 @@ public interface AssetService {
 
     List<String> getAssetIdsIntersectingWithGivenWarning(Long id);
 
-    Map<String, Integer> groupAssetLocationByCountry(Map<String, Object> filters);
+    default Map<String, Integer> groupAssetLocationByCountry(Map<String, Object> filters){return Map.of();}
 
     Map<String, Integer> groupAssetLocationByRegion(Map<String, Object> filters);
 
-    Map<String, Integer> groupAssetLocationByAdminDistrict(Map<String, Object> filters);
+    default Map<String, Integer> groupAssetLocationByAdminDistrict(Map<String, Object> filters){return Map.of();}
 
     int countAssetsWithFilter(Map<String, Object> filters);
 
@@ -80,6 +80,4 @@ public interface AssetService {
     int deleteAssetByIDs(String[] ids);
 
     int deleteAssetByIDs(List<String> ids);
-
-    boolean upsertAssetPostcodeByAssetId(String assetId, Map<String, Object> map);
 }
