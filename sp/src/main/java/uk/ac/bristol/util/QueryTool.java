@@ -314,9 +314,9 @@ public final class QueryTool {
     public static AccessControlGroup getAccessControlGroupByUserId(String uid) {
         List<AccessControlGroup> list = QueryToolConfig.accessControlService.getAccessControlGroupByUserId(uid);
         if (list.size() != 1){
-            return AccessControlGroup.defaultGroup();
+            return new AccessControlGroup();
         }else{
-            return list.get(0);
+            return AccessControlGroup.formatSystemShutdown(list.get(0));
         }
     }
 }

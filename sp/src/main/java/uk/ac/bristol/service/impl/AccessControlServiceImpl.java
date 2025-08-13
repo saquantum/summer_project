@@ -107,7 +107,7 @@ public class AccessControlServiceImpl implements AccessControlService {
     public int updateAccessControlGroup(AccessControlGroup accessControlGroup) {
         if(accessControlGroup != null){
             String name =  accessControlGroup.getName();
-            if (name == null || !name.matches("^[A-Za-z0-9_]+$")) {
+            if (name != null && !name.isBlank() && !name.matches("^[A-Za-z0-9_]+$")) {
                 throw new IllegalArgumentException("Name must contain only letters, numbers and underscores.");
             }
         }

@@ -2,6 +2,7 @@ package uk.ac.bristol.controller;
 
 import org.springframework.web.bind.annotation.*;
 import uk.ac.bristol.advice.PostSearchEndpoint;
+import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.AccessControlGroup;
 import uk.ac.bristol.pojo.FilterDTO;
 import uk.ac.bristol.pojo.Template;
@@ -139,14 +140,34 @@ public class AdminController {
         return new ResponseBody(Code.SELECT_OK, accessControlService.getAccessControlGroupByUserId(uid));
     }
 
+    @GetMapping("/access-group/system")
+    public ResponseBody getSystemShutdown() {
+        return new ResponseBody(Code.SELECT_OK, AccessControlGroup.systemShutdown);
+    }
+
     @PostMapping("/access-group")
-    public ResponseBody insertAccessControlGroup(@RequestBody AccessControlGroup accessControlGroup) {
-        return new ResponseBody(Code.INSERT_OK, accessControlService.insertAccessControlGroup(accessControlGroup));
+    public ResponseBody insertAccessControlGroup(@RequestBody AccessControlGroup.AccessControlGroupInterface group) {
+        return new ResponseBody(Code.INSERT_OK, accessControlService.insertAccessControlGroup(new AccessControlGroup(group)));
     }
 
     @PutMapping("/access-group")
-    public ResponseBody updateAccessControlGroup(@RequestBody AccessControlGroup accessControlGroup) {
-        return new ResponseBody(Code.UPDATE_OK, accessControlService.updateAccessControlGroup(accessControlGroup));
+    public ResponseBody updateAccessControlGroup(@RequestBody AccessControlGroup.AccessControlGroupInterface group) {
+        return new ResponseBody(Code.UPDATE_OK, accessControlService.updateAccessControlGroup(new AccessControlGroup(group)));
+    }
+
+    @PutMapping("/access-group/system")
+    public ResponseBody updateSystemShutdown(@RequestBody AccessControlGroup.AccessControlGroupInterface group) {
+        if (group == null) {
+            throw new SpExceptions.PutMethodException("Invalid system shutdown settings");
+        }
+        if (group.getName() != null && !group.getName().isBlank() && !"system shutdown".equals(group.getName())) {
+            System.out.println(group.getName());
+            throw new SpExceptions.PutMethodException("Please remain the name of system shutdown and do not modify it.");
+        }
+        group.setRowId(-1L);
+        group.setName("system shutdown");
+        AccessControlGroup.systemShutdown = new AccessControlGroup(new AccessControlGroup(group));
+        return new ResponseBody(Code.UPDATE_OK, AccessControlGroup.systemShutdown);
     }
 
     @PutMapping("/access-group/assign/{groupName}")
