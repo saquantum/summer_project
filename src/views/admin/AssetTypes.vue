@@ -21,6 +21,7 @@ const form = ref<AssetType>({
 })
 
 const addAssetType = async () => {
+  console.log(form.value)
   await adminInsetAssetTypeService(form.value)
   assetStore.getAssetTypes()
   dialogVisible.value = false
@@ -94,7 +95,7 @@ const handleDelete = async (row: AssetType) => {
       </el-form-item>
     </el-form>
     <template #footer>
-      <div class="dialog-footer">
+      <div>
         <el-button @click="dialogVisible = false">Cancel</el-button>
         <el-button type="primary" @click="addAssetType"> Submit </el-button>
       </div>
@@ -114,7 +115,7 @@ const handleDelete = async (row: AssetType) => {
       </el-form-item>
     </el-form>
     <template #footer>
-      <div class="dialog-footer">
+      <div>
         <el-button @click="dialogVisible = false">Cancel</el-button>
         <el-button type="primary" @click="handleEdit"> Submit </el-button>
       </div>

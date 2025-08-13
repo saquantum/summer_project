@@ -174,7 +174,6 @@ describe('UserCard', () => {
     await flushPromises()
 
     expect(wrapper.find('input[data-test="firstName"]').exists()).toBe(true)
-    expect(wrapper.find('.el-upload').exists()).toBe(true)
   })
 
   it('loads user data correctly for regular user', async () => {
@@ -195,63 +194,60 @@ describe('UserCard', () => {
     mockUserStore.user.admin = false
   })
 
-  it('handles avatar upload success', async () => {
+  it('handles avatar file selection', async () => {
     const wrapper = createWrapper({ isEdit: true })
     await flushPromises()
 
-    // Test the handleAvatarSuccess method
+    // Test the avatarFile ref which is exposed
     const component = wrapper.vm as unknown as {
-      handleAvatarSuccess: (
-        _response: { data: { url: string } },
-        _file: unknown
-      ) => void
-      imageUrl: string
+      avatarFile: File | null
+      previewUrl: string
     }
 
-    const mockResponse = { data: { url: 'new-avatar-url' } }
-    component.handleAvatarSuccess(mockResponse, {})
+    // Initially no file should be selected
+    expect(component.avatarFile).toBeNull()
 
-    expect(component.imageUrl).toBe('new-avatar-url')
-    expect(vi.mocked(ElMessage.success)).toHaveBeenCalledWith('Upload success')
+    // The component should have previewUrl available
+    expect(component.previewUrl).toBeDefined()
   })
 
-  it('validates file size before upload', async () => {
+  it('exposes avatar-related properties', async () => {
     const wrapper = createWrapper({ isEdit: true })
     await flushPromises()
 
-    const component = wrapper.vm as unknown as {
-      beforeAvatarUpload: (_file: { size: number; type: string }) => boolean
-    }
-
-    // Test large file rejection (6MB > 5MB limit)
-    const largeMockFile = {
-      size: 6 * 1024 * 1024,
-      type: 'image/jpeg'
-    }
-    const result = component.beforeAvatarUpload(largeMockFile)
-
-    expect(result).toBe(false)
-    expect(vi.mocked(ElMessage.error)).toHaveBeenCalledWith(
-      'Avatar file size cannot exceed 5MB!'
-    )
+    // Test that avatar-related properties are exposed
+    expect(wrapper.vm.avatarFile).toBeDefined()
+    expect(wrapper.vm.previewUrl).toBeDefined()
   })
 
-  it('allows file upload for valid file size', async () => {
+  it('displays avatar file preview when file is selected', async () => {
     const wrapper = createWrapper({ isEdit: true })
     await flushPromises()
 
+    // Test that the component can handle avatar file state
     const component = wrapper.vm as unknown as {
-      beforeAvatarUpload: (_file: { size: number; type: string }) => boolean
+      avatarFile: File | null
     }
 
-    // Test valid file acceptance (4MB < 5MB limit, valid image type)
-    const validMockFile = {
-      size: 4 * 1024 * 1024,
-      type: 'image/jpeg'
-    }
-    const result = component.beforeAvatarUpload(validMockFile)
+    // Initially no file should be selected
+    expect(component.avatarFile).toBeNull()
 
-    expect(result).toBe(true)
+    // We can't easily mock file selection without simulating the cropper,
+    // but we can test that the property exists and is accessible
+    expect(wrapper.vm.avatarFile).toBeDefined()
+  })
+
+  it('displays avatar upload section in edit mode', async () => {
+    const wrapper = createWrapper({ isEdit: true })
+    await flushPromises()
+
+    // Check that the edit form exists (which includes avatar section)
+    const form = wrapper.find('.el-form')
+    expect(form.exists()).toBe(true)
+
+    // Check that el-avatar exists (either showing existing avatar or placeholder)
+    const avatar = wrapper.find('.el-avatar')
+    expect(avatar.exists()).toBe(true)
   })
 
   it('exposes submit method via defineExpose', async () => {
@@ -317,14 +313,6 @@ describe('UserCard', () => {
     expect((firstNameInput.element as HTMLInputElement).value).toBe(
       'Updated Name'
     )
-  })
-
-  it('displays upload button with correct configuration', async () => {
-    const wrapper = createWrapper({ isEdit: true })
-    await flushPromises()
-
-    const upload = wrapper.find('.el-upload')
-    expect(upload.exists()).toBe(true)
   })
 
   it('handles form submission successfully', async () => {

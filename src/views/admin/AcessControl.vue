@@ -1,70 +1,264 @@
 <script setup lang="ts">
 import {
-  adminGetPermissionByUIDService,
-  adminUpdatePermissionService
+  adminDeletPermissionGroup,
+  adminGetPermissionGroupsService,
+  adminInsertPermissionGroupService,
+  adminUpdatePermissionGroupService
 } from '@/api/admin'
-import { useUserStore } from '@/stores'
-import type { Permission } from '@/types'
-import { onMounted, ref } from 'vue'
-const userStore = useUserStore()
+import type { PermissionGroup } from '@/types'
 
-const permission = ref<Permission | null>(null)
-const checkboxOptions = ref<{ label: string; value: boolean }[]>([])
+import { ElMessage } from 'element-plus'
+import { onMounted, ref } from 'vue'
+
+const permissions = ref<PermissionGroup[]>([])
+
 const selectUserVisible = ref(false)
 
-const submit = async () => {
-  if (permission.value) {
-    const p = permission.value
-    p.canCreateAsset = checkboxOptions.value[0].value
-    p.canSetPolygonOnCreate = checkboxOptions.value[1].value
-    p.canUpdateAssetPolygon = checkboxOptions.value[2].value
-    p.canUpdateAssetFields = checkboxOptions.value[3].value
-    p.canDeleteAsset = checkboxOptions.value[4].value
-    p.canUpdateProfile = checkboxOptions.value[5].value
-    await adminUpdatePermissionService(p)
+const update = async () => {
+  try {
+    await adminUpdatePermissionGroupService(form.value)
+    fetchTableData()
+    ElMessage.success('Permission group updated')
+    editDialogVisible.value = false
+  } catch {
+    ElMessage.error('Fail to update')
+  }
+}
+
+const createPermissionGroup = async () => {
+  try {
+    form.value.rowId = ''
+    const res = await adminInsertPermissionGroupService(form.value)
+    console.log(res)
+    fetchTableData()
+    ElMessage.success('Permission group created')
+    editDialogVisible.value = false
+  } catch {
+    ElMessage.error('Fail to create')
+  }
+}
+
+const editDialogVisible = ref(false)
+const createDialogVisible = ref(false)
+
+const form = ref({
+  rowId: '',
+  name: '',
+  description: '',
+  canCreateAsset: false,
+  canSetPolygonOnCreate: false,
+  canUpdateAssetFields: false,
+  canUpdateAssetPolygon: false,
+  canDeleteAsset: false,
+  canUpdateProfile: false
+})
+
+const triggerEdit = async (row: PermissionGroup) => {
+  editDialogVisible.value = true
+  form.value.rowId = row.rowId
+  form.value.name = row.name
+  form.value.description = row.description
+  form.value.canCreateAsset = row.canCreateAsset
+  form.value.canSetPolygonOnCreate = row.canSetPolygonOnCreate
+  form.value.canUpdateAssetFields = row.canUpdateAssetFields
+  form.value.canUpdateAssetPolygon = row.canUpdateAssetPolygon
+  form.value.canDeleteAsset = row.canDeleteAsset
+  form.value.canUpdateProfile = row.canUpdateProfile
+}
+
+const handleCreate = () => {
+  form.value = {
+    rowId: '',
+    name: '',
+    description: '',
+    canCreateAsset: false,
+    canSetPolygonOnCreate: false,
+    canUpdateAssetFields: false,
+    canUpdateAssetPolygon: false,
+    canDeleteAsset: false,
+    canUpdateProfile: false
+  }
+  createDialogVisible.value = true
+}
+
+// delete confirm
+const deleteDialogVisible = ref(false)
+const deleteId = ref<string[]>([])
+
+const triggerDelete = (row: PermissionGroup) => {
+  deleteDialogVisible.value = true
+  deleteId.value.push(row.rowId)
+}
+
+const handleDelete = async () => {
+  try {
+    await adminDeletPermissionGroup(deleteId.value)
+    fetchTableData()
+    deleteDialogVisible.value = false
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+const fetchTableData = async () => {
+  const res = await adminGetPermissionGroupsService()
+  if (res && res.data) {
+    permissions.value = res.data
   }
 }
 
 onMounted(async () => {
-  if (userStore.user) {
-    const res = await adminGetPermissionByUIDService(userStore.user.id)
-    permission.value = res.data
-  }
-
-  if (permission.value) {
-    const p = permission.value
-    checkboxOptions.value = [
-      { label: 'Add new asset', value: p.canCreateAsset },
-      { label: 'Add polygon', value: p.canSetPolygonOnCreate },
-      { label: 'Update polygon', value: p.canUpdateAssetPolygon },
-      { label: 'Update basic information', value: p.canUpdateAssetFields },
-      { label: 'Delete asset', value: p.canDeleteAsset },
-      { label: 'Update profile', value: p.canUpdateProfile }
-    ]
-  }
+  fetchTableData()
 })
 </script>
 
 <template>
   <div>
-    <div>global control</div>
-
-    <el-checkbox
-      v-for="(item, index) in checkboxOptions"
-      :key="index"
-      :label="item.label"
-      v-model="item.value"
-    />
-    <div>
-      <el-button @click="submit">Submit</el-button>
-    </div>
+    <el-button @click="handleCreate">Add permission group</el-button>
   </div>
 
-  <el-input @click="selectUserVisible = true"></el-input>
+  <el-table :data="permissions">
+    <el-table-column prop="rowId" label="Row id" width="120" />
+    <el-table-column prop="name" label="Name" width="180" />
+    <el-table-column prop="description" label="Description" />
+    <el-table-column prop="canCreateAsset" label="Create asset" />
+    <el-table-column
+      prop="canSetPolygonOnCreate"
+      label="set polygon on create"
+    />
+    <el-table-column prop="canUpdateAssetFields" label="Update asset fields" />
+    <el-table-column
+      prop="canUpdateAssetPolygon"
+      label="Update asset polygon"
+    />
+    <el-table-column prop="canDeleteAsset" label="Delete asset" />
+    <el-table-column prop="canUpdateProfile" label="Update profile" />
+    <el-table-column label="Actions">
+      <template #default="scope">
+        <el-button text size="small" @click="triggerEdit(scope.row)">
+          Edit
+        </el-button>
+        <el-button
+          text
+          type="danger"
+          size="small"
+          @click="triggerDelete(scope.row)"
+        >
+          Delete
+        </el-button>
+      </template>
+    </el-table-column>
+  </el-table>
 
-  <SelectUserDialog
-    v-model="selectUserVisible"
-    :multiple="true"
-    title="Select user"
+  <el-dialog v-model="editDialogVisible" title="Update asset type" width="500">
+    <el-form :model="form" label-width="auto">
+      <el-form-item label="Id">
+        <el-input v-model="form.rowId" disabled="true" />
+      </el-form-item>
+      <el-form-item label="Name">
+        <el-input v-model="form.name" />
+      </el-form-item>
+      <el-form-item label="Description">
+        <el-input v-model="form.description" />
+      </el-form-item>
+      <el-form-item label="Create asset">
+        <el-radio-group v-model="form.canCreateAsset">
+          <el-radio :label="true">true</el-radio>
+          <el-radio :label="false">false</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="Update asset fields">
+        <el-radio-group v-model="form.canUpdateAssetFields">
+          <el-radio :label="true">true</el-radio>
+          <el-radio :label="false">false</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="Update asset polygon">
+        <el-radio-group v-model="form.canUpdateAssetPolygon">
+          <el-radio :label="true">true</el-radio>
+          <el-radio :label="false">false</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="Delete asset">
+        <el-radio-group v-model="form.canDeleteAsset">
+          <el-radio :label="true">true</el-radio>
+          <el-radio :label="false">false</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="Update profile">
+        <el-radio-group v-model="form.canUpdateProfile">
+          <el-radio :label="true">true</el-radio>
+          <el-radio :label="false">false</el-radio>
+        </el-radio-group>
+      </el-form-item>
+    </el-form>
+    <el-input @click="selectUserVisible = true"></el-input>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="editDialogVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="update"> Submit </el-button>
+      </div>
+    </template>
+  </el-dialog>
+
+  <el-dialog
+    v-model="createDialogVisible"
+    title="Create permission group"
+    width="500"
+  >
+    <el-form :model="form" label-width="auto">
+      <el-form-item label="Name">
+        <el-input v-model="form.name" />
+      </el-form-item>
+      <el-form-item label="Description">
+        <el-input v-model="form.description" />
+      </el-form-item>
+      <el-form-item label="Create asset">
+        <el-radio-group v-model="form.canCreateAsset">
+          <el-radio :label="true">true</el-radio>
+          <el-radio :label="false">false</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="Update asset fields">
+        <el-radio-group v-model="form.canUpdateAssetFields">
+          <el-radio :label="true">true</el-radio>
+          <el-radio :label="false">false</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="Update asset polygon">
+        <el-radio-group v-model="form.canUpdateAssetPolygon">
+          <el-radio :label="true">true</el-radio>
+          <el-radio :label="false">false</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="Delete asset">
+        <el-radio-group v-model="form.canDeleteAsset">
+          <el-radio :label="true">true</el-radio>
+          <el-radio :label="false">false</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="Update profile">
+        <el-radio-group v-model="form.canUpdateProfile">
+          <el-radio :label="true">true</el-radio>
+          <el-radio :label="false">false</el-radio>
+        </el-radio-group>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <div>
+        <el-button @click="createDialogVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="createPermissionGroup">
+          Submit
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
+
+  <ConfirmDialog
+    v-model="deleteDialogVisible"
+    title="Warning"
+    content="This will permanently delete this permission group"
+    :countdown-duration="5"
+    @confirm="handleDelete"
   />
 </template>

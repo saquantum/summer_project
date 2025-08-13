@@ -178,6 +178,7 @@ const quickEscapePolygons = () => {
 
 const beginDrawing = () => {
   if (!map) return
+  if (!props.locations || props.locations.length <= 0) return
   polygons.value = extractPolygonsFromMultiPolygon(
     JSON.parse(JSON.stringify(props.locations[0]))
   )

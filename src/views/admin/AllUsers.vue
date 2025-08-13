@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { adminDeleteUserService, adminGetUsersTotalService } from '@/api/admin'
+import {
+  adminAssignUsersToGroup,
+  adminDeleteUserService,
+  adminGetUsersTotalService
+} from '@/api/admin'
 import { useRouter } from 'vue-router'
 import type { Permission, UserItem, UserSearchBody } from '@/types'
 import { useUserStore } from '@/stores'
@@ -27,7 +31,7 @@ const userTable = computed(() => {
     assets: item.user.id,
     count: item.accumulation,
     role: item.user.admin ? 'admin' : 'user',
-    permission: item.user.permissionConfig
+    permission: item.user.accessControlGroup
   }))
 })
 
@@ -138,6 +142,26 @@ function getPermission(uid: string) {
   return user?.permission
 }
 
+const permissionDialogVisible = ref(false)
+const selectAll = ref(false)
+
+const handleUpdatePermissionGroup = async (groupName: string) => {
+  if (selectAll.value) {
+    await adminAssignUsersToGroup(groupName, userSearchBody.value.filters)
+  } else {
+    const filters = {
+      user_id: {
+        op: 'in',
+        list: mutipleSelection.value.map((item) => {
+          return item.uid
+        })
+      }
+    }
+
+    await adminAssignUsersToGroup(groupName, filters)
+  }
+}
+
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
@@ -179,8 +203,14 @@ onMounted(async () => {
     ></SortTool>
   </div>
 
-  <div v-show="mutipleSelection.length > 0">
-    <el-button type="danger" @click="triggerDelete(mutipleSelection)"
+  <div>
+    <el-button @click="permissionDialogVisible = true"
+      >Set permission</el-button
+    >
+    <el-button
+      v-show="mutipleSelection.length > 0"
+      type="danger"
+      @click="triggerDelete(mutipleSelection)"
       >Delete</el-button
     >
   </div>
@@ -257,6 +287,12 @@ onMounted(async () => {
     @confirm="handleDelete"
     @cancel="dialogVisible = false"
   />
+
+  <PermissionDialog
+    v-model:permissionDialogVisible="permissionDialogVisible"
+    v-model:selectAll="selectAll"
+    @update-permission-group="handleUpdatePermissionGroup"
+  ></PermissionDialog>
 </template>
 
 <style scoped>

@@ -10,7 +10,8 @@ import type { Mail } from '@/types'
 // Mock mail services
 vi.mock('@/api/mail', () => ({
   readMailService: vi.fn(),
-  getMailService: vi.fn()
+  getMailService: vi.fn(),
+  deleteMailService: vi.fn()
 }))
 
 // Mock composables
@@ -21,10 +22,11 @@ vi.mock('@/composables/useResponsiveAction', () => ({
 }))
 
 // Import the mocked functions after mocking
-import { readMailService } from '@/api/mail'
+import { readMailService, deleteMailService } from '@/api/mail'
 import { useResponsiveAction } from '@/composables/useResponsiveAction'
 
 const readMailServiceMock = vi.mocked(readMailService)
+const deleteMailServiceMock = vi.mocked(deleteMailService)
 const mockUseResponsiveAction = vi.mocked(useResponsiveAction)
 
 // Mock mail data
@@ -100,6 +102,10 @@ describe('InboxView', () => {
     // Reset mock implementations
     getMailsMock.mockResolvedValue(undefined)
     readMailServiceMock.mockResolvedValue({ data: {} } as any)
+    deleteMailServiceMock.mockResolvedValue({
+      success: true,
+      data: 'deleted'
+    } as any)
 
     // Reset responsive mock to default wide screen
     mockUseResponsiveAction.mockImplementation(
@@ -440,17 +446,58 @@ describe('InboxView', () => {
   })
 
   describe('Delete Functionality', () => {
-    it('should handle delete button click', async () => {
+    it('should handle delete button click and confirmation', async () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
       const wrapper = createWrapper()
       await nextTick()
 
+      // Click the delete button to open dialog
       const deleteButton = wrapper.find('.mail-actions .el-button')
       await deleteButton.trigger('click')
+      await nextTick()
 
-      expect(consoleSpy).toHaveBeenCalledWith(111)
+      // Check that dialog is visible
+      const vm = wrapper.vm as any
+      expect(vm.dialogVisible).toBe(true)
+      expect(vm.deleteId).toEqual(['1']) // First mail's rowId
+
+      // Simulate confirming the delete action
+      await vm.handleDelete()
+      await nextTick()
+
+      // Check that deleteMailService was called with correct parameters
+      expect(deleteMailServiceMock).toHaveBeenCalledWith('user1', ['1'])
+
+      // Check that the API response was logged
+      expect(consoleSpy).toHaveBeenCalledWith({
+        success: true,
+        data: 'deleted'
+      })
+
+      // Check that dialog is closed and deleteId is cleared
+      expect(vm.dialogVisible).toBe(false)
+      expect(vm.deleteId).toEqual([])
+
       consoleSpy.mockRestore()
+    })
+
+    it('should not delete if no user is logged in', async () => {
+      // Temporarily remove user
+      const originalUser = mockUserStore.user
+      ;(mockUserStore as any).user = null
+
+      const wrapper = createWrapper()
+      await nextTick()
+
+      const vm = wrapper.vm as any
+      vm.deleteId = ['1']
+      await vm.handleDelete()
+
+      expect(deleteMailServiceMock).not.toHaveBeenCalled()
+
+      // Restore user
+      mockUserStore.user = originalUser
     })
   })
 

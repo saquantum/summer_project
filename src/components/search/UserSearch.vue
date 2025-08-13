@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores'
 import type { UserSearchBody, UserSearchForm } from '@/types'
-import { userConverFormToFilter } from '@/utils/formUtils'
+import { userConvertFormToFilter } from '@/utils/formUtils'
 import { Filter } from '@element-plus/icons-vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 
@@ -76,7 +76,7 @@ const form = ref<UserSearchForm>({
 const handleSearch = () => {
   const newObj: UserSearchBody = {
     ...props.userSearchBody,
-    filters: userConverFormToFilter(form.value)
+    filters: userConvertFormToFilter(form.value)
   }
   emit('update:userSearchBody', newObj)
   props.fetchTableData()
@@ -98,7 +98,7 @@ const fuzzySearch = (input: string) => {
   }
   const obj: UserSearchBody = {
     ...props.userSearchBody,
-    filters: userConverFormToFilter(fuzzyForm)
+    filters: userConvertFormToFilter(fuzzyForm)
   }
   emit('update:userSearchBody', obj)
   const index = userStore.userSearchHistory.indexOf(input)

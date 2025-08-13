@@ -17,7 +17,7 @@ import type {
   UserSearchBody,
   Warning
 } from '@/types'
-import type { Permission } from '@/types/permission'
+import type { PermissionGroup } from '@/types/permission'
 
 /**
  * user
@@ -44,7 +44,7 @@ export const adminSearchUsersService = (
   obj: UserSearchBody
 ): Promise<ApiResponse<UserItem[]>> =>
   request.post('/admin/user/accumulate/search', obj, {
-    params: { function: functionName, column: '1' }
+    params: { function: functionName, column: 'asset_id' }
   })
 
 export const adminGetUserInfoService = (
@@ -173,18 +173,37 @@ export const adminGetAllLiveWarningsService = (): Promise<
  * permisssion
  */
 
-export const adminGetAllPermissionService = (): Promise<
-  ApiResponse<Permission[]>
-> => request.get('/admin/permission')
+// export const adminGetAllPermissionService = (): Promise<
+//   ApiResponse<Permission[]>
+// > => request.get('/admin/permission')
 
-export const adminGetPermissionByUIDService = (
-  id: string
-): Promise<ApiResponse<Permission>> => request.get(`/admin/permission/${id}`)
+// export const adminGetPermissionByUIDService = (
+//   id: string
+// ): Promise<ApiResponse<Permission>> => request.get(`/admin/permission/${id}`)
 
-export const adminUpdatePermissionService = (
-  permission: Permission
-): Promise<ApiResponse<Permission[]>> =>
-  request.put(`/admin/permission/`, permission)
+// export const adminUpdatePermissionService = (
+//   permission: Permission
+// ): Promise<ApiResponse<Permission[]>> =>
+//   request.put(`/admin/permission/`, permission)
+
+export const adminGetPermissionGroupsService = () =>
+  request.get('/admin/access-group')
+
+export const adminUpdatePermissionGroupService = (obj: PermissionGroup) =>
+  request.put('/admin/access-group', obj)
+
+export const adminInsertPermissionGroupService = (obj: PermissionGroup) =>
+  request.post('/admin/access-group', obj)
+
+export const adminAssignUsersToGroup = (groupName: string, obj: object) =>
+  request.put(`/admin/access-group/assign/${groupName}`, obj)
+
+export const adminDeletPermissionGroup = (ids: string[]) =>
+  request.delete('/admin/access-group', {
+    data: {
+      ids: ids
+    }
+  })
 
 /**
  * message

@@ -2,12 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/index.ts'
-import {
-  adminGetPermissionByUIDService,
-  adminGetUserInfoService,
-  adminUpdatePermissionService
-} from '@/api/admin'
-import type { Permission } from '@/types'
+import { adminGetUserInfoService } from '@/api/admin'
 
 const route = useRoute()
 const router = useRouter()
@@ -15,8 +10,6 @@ const userStore = useUserStore()
 const user = ref()
 
 const userCardRef = ref()
-const permission = ref<Permission | null>(null)
-const checkboxOptions = ref<{ label: string; value: boolean }[]>([])
 
 const proxyUser = () => {
   // goto user interface
@@ -30,59 +23,23 @@ const proxyUser = () => {
 const isEdit = ref(false)
 const submit = async () => {
   userCardRef.value.submit()
-
-  if (permission.value) {
-    const p = permission.value
-    p.canCreateAsset = checkboxOptions.value[0].value
-    p.canSetPolygonOnCreate = checkboxOptions.value[1].value
-    p.canUpdateAssetPolygon = checkboxOptions.value[2].value
-    p.canUpdateAssetFields = checkboxOptions.value[3].value
-    p.canDeleteAsset = checkboxOptions.value[4].value
-    p.canUpdateProfile = checkboxOptions.value[5].value
-    await adminUpdatePermissionService(p)
-  }
 }
 
 const handleCancel = () => {
   userCardRef.value.cancelEdit()
 }
+
 onMounted(async () => {
   const id = route.query.id
   if (typeof id === 'string') {
     const res = await adminGetUserInfoService(id)
     user.value = res.data
   }
-
-  const res = await adminGetPermissionByUIDService(user.value.id)
-  console.log(res)
-  permission.value = res.data
-
-  if (permission.value) {
-    const p = permission.value
-    checkboxOptions.value = [
-      { label: 'Add new asset', value: p.canCreateAsset },
-      { label: 'Add polygon', value: p.canSetPolygonOnCreate },
-      { label: 'Update polygon', value: p.canUpdateAssetPolygon },
-      { label: 'Update basic information', value: p.canUpdateAssetFields },
-      { label: 'Delete asset', value: p.canDeleteAsset },
-      { label: 'Update profile', value: p.canUpdateProfile }
-    ]
-  }
 })
 </script>
 
 <template>
   <UserCard ref="userCardRef" v-model:isEdit="isEdit"></UserCard>
-  <div>
-    <h3>Permission</h3>
-    <el-checkbox
-      :disabled="!isEdit"
-      v-for="(item, index) in checkboxOptions"
-      :key="index"
-      :label="item.label"
-      v-model="item.value"
-    />
-  </div>
 
   <el-button @click="proxyUser" v-if="!isEdit"> Proxy as this user</el-button>
   <el-button @click="isEdit = true" v-if="!isEdit">Edit</el-button>

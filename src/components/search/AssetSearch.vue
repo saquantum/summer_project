@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAssetStore, useUserStore } from '@/stores'
 import type { AssetSearchBody, AssetSearchForm } from '@/types'
-import { assetConverFormToFilter } from '@/utils/formUtils'
+import { assetConvertFormToFilter } from '@/utils/formUtils'
 import { Filter } from '@element-plus/icons-vue'
 import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import type { CSSProperties } from 'vue'
@@ -174,7 +174,7 @@ const handleSearch = () => {
   console.log(form.value)
   const newObj: AssetSearchBody = {
     ...props.assetSearchBody,
-    filters: assetConverFormToFilter(form.value)
+    filters: assetConvertFormToFilter(form.value)
   }
   emit('update:assetSearchBody', newObj)
   props.fetchTableData()
@@ -212,7 +212,7 @@ const fuzzySearch = (input: string) => {
   }
   const obj: AssetSearchBody = {
     ...props.assetSearchBody,
-    filters: assetConverFormToFilter(fuzzyForm)
+    filters: assetConvertFormToFilter(fuzzyForm)
   }
   emit('update:assetSearchBody', obj)
   const index = userStore.searchHistory.indexOf(input)

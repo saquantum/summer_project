@@ -202,7 +202,9 @@ export const trimForm = (obj: object) => {
   })
 }
 
-export const assetConverFormToFilter = (form: AssetSearchForm): AssetFilter => {
+export const assetConvertFormToFilter = (
+  form: AssetSearchForm
+): AssetFilter => {
   const body: AssetFilter = {}
 
   if (form.id) {
@@ -266,7 +268,7 @@ export const assetConverFormToFilter = (form: AssetSearchForm): AssetFilter => {
   return body
 }
 
-export const userConverFormToFilter = (form: UserSearchForm): UserFilter => {
+export const userConvertFormToFilter = (form: UserSearchForm): UserFilter => {
   const body: UserFilter = {}
 
   if (form.id) {

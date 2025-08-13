@@ -1,4 +1,4 @@
-import type { Permission } from './permission'
+import type { Permission, PermissionGroup } from './permission'
 
 export interface ContactPreferences {
   whatsapp: boolean
@@ -35,7 +35,7 @@ export interface User {
   adminLevel: number
   avatar: string
   name: string
-  permissionConfig: Permission
+  accessControlGroup: PermissionGroup
 
   address: Address
 
