@@ -75,6 +75,30 @@ const handleBackToAdmin = () => {
       </el-menu-item>
     </el-sub-menu>
 
+    <el-sub-menu index="3">
+      <template #title>
+        <el-icon><Warning /></el-icon>
+        <span>Warning</span>
+      </template>
+      <el-menu-item index="/warnings">
+        <span>All Warning</span>
+      </el-menu-item>
+      <el-menu-item
+        v-if="
+          props.activeIndex.startsWith('/warnings') &&
+          props.activeIndex !== '/warnings'
+        "
+        :index="props.activeIndex"
+      >
+        <span>Current Warning</span>
+      </el-menu-item>
+    </el-sub-menu>
+
+    <el-menu-item index="/message" data-test="message-side">
+      <el-icon><MessageBox /></el-icon>
+      <span>Message</span>
+    </el-menu-item>
+
     <el-menu-item
       v-if="userStore.user?.admin"
       index="/"
@@ -82,11 +106,6 @@ const handleBackToAdmin = () => {
     >
       <el-icon><Back /></el-icon>
       <span>Back to admin</span>
-    </el-menu-item>
-
-    <el-menu-item index="/message" data-test="message-side">
-      <el-icon><MessageBox /></el-icon>
-      <span>Message</span>
     </el-menu-item>
   </el-menu>
 

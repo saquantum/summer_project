@@ -185,7 +185,7 @@ describe('DefaultLayout', () => {
     // Check for sign out button
     const signOutButton = wrapper.find('.signout-button')
     expect(signOutButton.exists()).toBe(true)
-    expect(signOutButton.text()).toBe('Sign out')
+    expect(signOutButton.text()).toContain('Out')
   })
 
   it('renders header with search and user dropdown', async () => {

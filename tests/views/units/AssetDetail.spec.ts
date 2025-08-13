@@ -131,7 +131,7 @@ const mockUserStore = {
   user: {
     id: 'user1',
     admin: false,
-    permissionConfig: {
+    accessControlGroup: {
       canSetPolygonOnCreate: true,
       canUpdateAssetPolygon: true
     }
@@ -155,7 +155,7 @@ describe('AssetDetail', () => {
 
     // Reset mock store state
     mockUserStore.user.admin = false
-    mockUserStore.user.permissionConfig.canUpdateAssetPolygon = true
+    mockUserStore.user.accessControlGroup.canUpdateAssetPolygon = true
     mockAssetStore.userAssets = [mockAsset]
   })
 
@@ -281,14 +281,14 @@ describe('AssetDetail', () => {
 
     it('should show admin controls for users with update permissions', () => {
       mockUserStore.user.admin = false
-      mockUserStore.user.permissionConfig.canUpdateAssetPolygon = true
+      mockUserStore.user.accessControlGroup.canUpdateAssetPolygon = true
       const wrapper = createWrapper()
       expect(wrapper.text()).toContain('Admin Actions')
     })
 
     it('should hide admin controls for users without permissions', () => {
       mockUserStore.user.admin = false
-      mockUserStore.user.permissionConfig.canUpdateAssetPolygon = false
+      mockUserStore.user.accessControlGroup.canUpdateAssetPolygon = false
       const wrapper = createWrapper()
       expect(wrapper.text()).not.toContain('Admin Actions')
     })

@@ -48,11 +48,15 @@ const router = createRouter({
         },
         {
           path: 'admin/warnings',
-          component: () => import('@/views/admin/AllWarnings.vue')
+          component: () => import('@/views/warning/AllWarnings.vue')
+        },
+        {
+          path: 'warnings',
+          component: () => import('@/views/warning/AllWarnings.vue')
         },
         {
           path: 'warnings/:id',
-          component: () => import('@/views/warning/index.vue')
+          component: () => import('@/views/warning/WarningDetail.vue')
         },
         {
           path: 'admin/dashboard',

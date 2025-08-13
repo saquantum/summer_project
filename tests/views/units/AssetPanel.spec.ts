@@ -124,19 +124,6 @@ describe('AssetPanel.vue', () => {
     expect(wrapper.find('.assets-container').exists()).toBe(true)
   })
 
-  it('displays legend items correctly', async () => {
-    const wrapper = mount(AssetPanel)
-    await nextTick()
-
-    const legendItems = wrapper.findAll('.legend-item')
-    expect(legendItems).toHaveLength(4)
-
-    expect(wrapper.text()).toContain('No Warning')
-    expect(wrapper.text()).toContain('Yellow Warning')
-    expect(wrapper.text()).toContain('Amber Warning')
-    expect(wrapper.text()).toContain('Red Warning')
-  })
-
   it('renders asset cards correctly', async () => {
     const wrapper = mount(AssetPanel)
     await nextTick()

@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router'
 import { useWarningStore } from '@/stores/index.ts'
 import type { Style } from '@/types'
 import type { MultiPolygon } from 'geojson'
-// TODO: warning display visibility function
 
 const activeNames = ref<string[]>(['live', 'expired'])
 const outdatedWarnings = ref<TableRow[]>([])

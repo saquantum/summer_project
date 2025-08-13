@@ -46,6 +46,11 @@ const warningOrder: Record<string, number> = {
   '': 0
 }
 
+// empty status
+const showEmpty = computed(() => {
+  return currentAssets.value.length <= 0
+})
+
 /**
  * mobile component
  */
@@ -250,6 +255,8 @@ defineExpose({
         </template>
       </el-card>
     </div>
+
+    <el-empty v-show="showEmpty" description="No assets found" />
   </div>
 
   <div class="asset-list" v-else>

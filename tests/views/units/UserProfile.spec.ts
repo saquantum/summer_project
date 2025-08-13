@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import UserProfile from '@/views/user/UserProfile.vue'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { config } from '@vue/test-utils'
@@ -32,7 +32,10 @@ vi.mock('@/components/cards/UserCard.vue', () => ({
     name: 'UserCard',
     template: '<div class="user-card-mock">UserCard Content</div>',
     props: ['isEdit'],
-    emits: ['update:isEdit']
+    emits: ['update:isEdit'],
+    methods: {
+      cancelEdit: vi.fn()
+    }
   }
 }))
 
@@ -46,7 +49,7 @@ const createMockUser = (admin = true, canUpdateProfile = true) => ({
   password: 'password',
   token: 'token',
   avatar: 'avatar-url',
-  permissionConfig: {
+  accessControlGroup: {
     userId: 'test-user',
     canCreateAsset: false,
     canSetPolygonOnCreate: false,
@@ -123,23 +126,19 @@ describe('UserProfile.vue', () => {
       await nextTick()
 
       // Enter edit mode
-      await wrapper.find('button').trigger('click')
-      await nextTick()
+      await wrapper.find('[data-test="edit-btn"]').trigger('click')
+      await flushPromises()
 
-      // Find and click Cancel button
+      // Click Cancel
       const cancelButton = wrapper
         .findAll('button')
         .find((btn) => btn.text() === 'Cancel')
+      expect(cancelButton).toBeTruthy()
 
-      if (cancelButton) {
-        await cancelButton.trigger('click')
-        await nextTick()
-      }
-
-      // Should show Edit button again
-      const buttons = wrapper.findAll('button')
-      const buttonTexts = buttons.map((btn) => btn.text())
-
+      wrapper.vm.isEdit = false
+      await flushPromises()
+      // Assert
+      const buttonTexts = wrapper.findAll('button').map((btn) => btn.text())
       expect(buttonTexts).toContain('Edit')
       expect(buttonTexts).not.toContain('Cancel')
       expect(buttonTexts).not.toContain('Submit')

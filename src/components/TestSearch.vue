@@ -51,8 +51,6 @@ const emit = defineEmits([
   'clearFilters'
 ])
 
-const detail = ref<boolean>(false)
-
 const popoverRef = ref<{ popperRef?: { contentRef: HTMLElement } } | null>(null)
 const referenceRef = ref<{ $el: HTMLElement } | null>(null)
 const inputRef = ref<HTMLInputElement | null>(null)
@@ -74,45 +72,12 @@ const handleClickOutside = (e: MouseEvent) => {
   }
 }
 
-const tags = ref<string[]>([])
-
-const handleKeydown = (e: KeyboardEvent) => {
-  if (!filters.value) return
-
-  if (e.key === 'Enter' && filters.value.assetName.trim()) {
-    e.preventDefault()
-    tags.value.push(filters.value.assetName.trim())
-    fuzzySearch(filters.value.assetName)
-    filters.value.assetName = ''
-  } else if (
-    e.key === 'Backspace' &&
-    !filters.value.assetName &&
-    tags.value.length
-  ) {
-    tags.value.pop()
-  }
-}
-
-const fuzzySearch = (input: string) => {
-  console.log(input)
-}
-
-const removeTag = (index: number) => {
-  tags.value.splice(index, 1)
-}
-
 const focusInput = () => {
   inputRef.value?.focus()
-  visible.value = true
-  detail.value = false
 }
 
 const handleFilterClick = () => {
-  if (detail.value === true && visible.value === true) visible.value = false
-  else {
-    detail.value = true
-    visible.value = true
-  }
+  visible.value = !visible.value
 }
 
 onMounted(() => {
@@ -137,15 +102,10 @@ defineExpose({})
   >
     <template #reference>
       <div class="tag-input-wrapper">
-        <span class="tag" v-for="(tag, index) in tags" :key="index">
-          {{ tag }}
-          <span class="close" @click.stop="removeTag(index)">×</span>
-        </span>
         <input
           @click="focusInput"
           ref="inputRef"
           v-model="filters.assetName"
-          @keydown="handleKeydown"
           class="tag-input"
           placeholder="Search assets..."
         />

@@ -5,7 +5,7 @@ import {
   CaretBottom,
   Message,
   Operation,
-  Search,
+  ArrowLeft,
   Lock
 } from '@element-plus/icons-vue'
 import { ref, watch, computed } from 'vue'
@@ -105,15 +105,15 @@ watch(
     <el-container>
       <el-header style="display: flex; justify-content: space-between">
         <div class="header-left">
+          <el-button @click="router.go(-1)" :plain="true">
+            <el-icon><ArrowLeft /></el-icon>
+          </el-button>
           <el-button
             class="mobile-menu"
             @click="mobileMenuVisible = true"
             plain
           >
             <el-icon><Operation /></el-icon>
-          </el-button>
-          <el-button @click="searchDialogVisible = true">
-            <el-icon><Search /></el-icon>
           </el-button>
         </div>
 

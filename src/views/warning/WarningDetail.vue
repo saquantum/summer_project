@@ -22,13 +22,14 @@ const style = ref<Style>({
 const setWarningLevelStyle = (level: string): Style => {
   const style = { weight: 2, fillOpacity: 0.4, color: '', fillColor: '' }
 
-  if (level.includes('YELLOW')) {
+  const l = level.toUpperCase()
+  if (l === 'YELLOW') {
     style.color = '#cc9900'
     style.fillColor = '#ffff00'
-  } else if (level.includes('AMBER')) {
+  } else if (l === 'AMBER') {
     style.color = '#cc6600'
     style.fillColor = '#ffcc00'
-  } else if (level.includes('RED')) {
+  } else if (l === 'RED') {
     style.color = '#800000'
     style.fillColor = '#ff0000'
   }

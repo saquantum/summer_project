@@ -97,7 +97,7 @@ const disableForUser = ref(false)
 const disableAddAsset = computed(() => {
   if (
     !userStore.user?.admin &&
-    !userStore.user?.permissionConfig.canCreateAsset
+    !userStore.user?.accessControlGroup.canCreateAsset
   )
     return true
   return false
@@ -106,16 +106,11 @@ const disableAddAsset = computed(() => {
 const disableSetPolygon = computed(() => {
   if (
     !userStore.user?.admin &&
-    !userStore.user?.permissionConfig.canSetPolygonOnCreate
+    !userStore.user?.accessControlGroup.canSetPolygonOnCreate
   )
     return true
   return false
 })
-
-const DEFAULT_MULTIPOLYGON = {
-  type: 'MultiPolygon',
-  coordinates: []
-}
 
 const form = ref<AssetForm>({
   username: '',
@@ -123,7 +118,12 @@ const form = ref<AssetForm>({
   typeId: '',
   ownerId: '',
   address: '',
-  locations: [JSON.parse(JSON.stringify(DEFAULT_MULTIPOLYGON))],
+  locations: [
+    {
+      type: 'MultiPolygon',
+      coordinates: []
+    }
+  ],
   capacityLitres: 0,
   material: '',
   status: '',
@@ -261,15 +261,6 @@ const userSubmit = async () => {
   }
   form.value.capacityLitres = Number(form.value.capacityLitres)
 
-  // if user did not set polygon, clear
-  if (
-    JSON.stringify(form.value.location) === JSON.stringify(DEFAULT_MULTIPOLYGON)
-  ) {
-    form.value.location = {
-      type: 'MultiPolygon',
-      coordinates: []
-    }
-  }
   try {
     if (userStore.user) {
       await userInsertAssetService(userStore.user?.id, form.value)
@@ -297,15 +288,7 @@ const adminSubmit = async () => {
   form.value.ownerId = form.value.username
 
   form.value.capacityLitres = Number(form.value.capacityLitres)
-  // if user did not set polygon, clear
-  if (
-    JSON.stringify(form.value.location) === JSON.stringify(DEFAULT_MULTIPOLYGON)
-  ) {
-    form.value.location = {
-      type: 'MultiPolygon',
-      coordinates: []
-    }
-  }
+
   try {
     await adminInsertAssetService(form.value)
     ElMessage.success('Successfully add an asset')
@@ -321,7 +304,12 @@ const reset = () => {
     typeId: '',
     ownerId: '',
     address: '',
-    locations: [JSON.parse(JSON.stringify(DEFAULT_MULTIPOLYGON))],
+    locations: [
+      {
+        type: 'MultiPolygon',
+        coordinates: []
+      }
+    ],
     capacityLitres: 0,
     material: '',
     status: '',

@@ -430,7 +430,10 @@ const renderLayers = (m: L.Map) => {
     if (layers.length > 0) {
       try {
         const group = L.featureGroup(layers)
-        m.fitBounds(group.getBounds())
+        m.fitBounds(group.getBounds(), {
+          padding: [50, 50],
+          maxZoom: 15
+        })
       } catch (e) {
         console.error(e)
       }

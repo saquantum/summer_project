@@ -2,6 +2,8 @@ import { mount } from '@vue/test-utils'
 import LoginCard from '@/components/cards/LoginCard.vue'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
+import * as userApi from '@/api/user'
+import type { ApiResponse } from '@/types'
 
 // Mock router
 const pushMock = vi.fn()
@@ -21,11 +23,6 @@ vi.mock('@/stores/index.ts', () => ({
   }),
   useAssetStore: () => ({ getAssetTypes: vi.fn() }),
   useMailStore: () => ({ getMails: vi.fn() })
-}))
-vi.mock('@/api/user', () => ({
-  userCheckEmailService: vi.fn(),
-  userCheckUIDService: vi.fn(),
-  userRegisterService: vi.fn()
 }))
 
 // Basic tests
@@ -75,6 +72,7 @@ describe('LoginCard.vue', () => {
 describe('Register', () => {
   beforeEach(() => {
     pushMock.mockClear()
+    vi.restoreAllMocks()
   })
 
   it('shows register form when clicking Register', async () => {
@@ -84,8 +82,25 @@ describe('Register', () => {
   })
 
   it('cannot goto step 2 if email is empty', async () => {
+    vi.spyOn(userApi, 'userCheckEmailService').mockResolvedValue(
+      {} as ApiResponse
+    )
     const wrapper = mount(LoginCard)
     await wrapper.find('.fixed-bottom-tip .el-link').trigger('click')
+    await wrapper.find('[data-test="register-button1"]').trigger('click')
+    await flushPromises()
+    expect(wrapper.vm.currentStep).toBe(1)
+  })
+
+  it('cannot goto step 2 if email exist', async () => {
+    vi.spyOn(userApi, 'userCheckEmailService').mockRejectedValue(
+      {} as ApiResponse
+    )
+    const wrapper = mount(LoginCard)
+    await wrapper.find('.fixed-bottom-tip .el-link').trigger('click')
+    await wrapper
+      .find('[data-test="register-email-input"]')
+      .setValue('testmail@gmail.com')
     await wrapper.find('[data-test="register-button1"]').trigger('click')
     await flushPromises()
     expect(wrapper.vm.currentStep).toBe(1)
@@ -103,10 +118,13 @@ describe('Register', () => {
   })
 
   it('can goto step 2 if email is correct', async () => {
+    vi.spyOn(userApi, 'userCheckEmailService').mockResolvedValue(
+      {} as ApiResponse
+    )
     const wrapper = mount(LoginCard)
     await wrapper.find('.fixed-bottom-tip .el-link').trigger('click')
     await wrapper
-      .find('input[placeholder*="email" i]')
+      .find('[data-test="register-email-input"]')
       .setValue('testmail@gmail.com')
     await wrapper.find('[data-test="register-button1"]').trigger('click')
     await flushPromises()
@@ -114,6 +132,9 @@ describe('Register', () => {
   })
 
   it('cannot goto step 3 if personal information is empty', async () => {
+    vi.spyOn(userApi, 'userCheckEmailService').mockResolvedValue(
+      {} as ApiResponse
+    )
     const wrapper = mount(LoginCard)
     await wrapper.find('.fixed-bottom-tip .el-link').trigger('click')
     await wrapper

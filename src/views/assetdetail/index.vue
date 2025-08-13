@@ -122,7 +122,7 @@ const handleShowDetail = (row: WarningTableRow) => {
 const disableSetPolygon = computed(() => {
   if (
     !userStore.user?.admin &&
-    !userStore.user?.permissionConfig.canSetPolygonOnCreate
+    !userStore.user?.accessControlGroup.canSetPolygonOnCreate
   )
     return true
   return false
@@ -158,7 +158,7 @@ const isMobile = computed(() => {
   <div
     v-if="
       userStore.user?.admin ||
-      userStore.user?.permissionConfig.canUpdateAssetPolygon
+      userStore.user?.accessControlGroup.canUpdateAssetPolygon
     "
     class="admin-section"
   >

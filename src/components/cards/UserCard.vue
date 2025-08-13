@@ -156,10 +156,11 @@ const uploadAvatarToServer = async (): Promise<string | null> => {
 }
 
 const userToForm = (user: User): UserInfoForm => {
+  const arr = user.name.split(' ')
   return {
     id: user.id,
-    firstName: '',
-    lastName: '',
+    firstName: arr[0],
+    lastName: arr[1],
     avatar: user.avatar ?? '',
     name: user.name ?? '',
     contactDetails: {
@@ -292,6 +293,9 @@ const cancelEdit = () => {
     previewUrl.value = ''
   }
   avatarFile.value = null
+  if (currentUser.value) {
+    form.value = userToForm(currentUser.value)
+  }
   emit('update:isEdit', false)
 }
 

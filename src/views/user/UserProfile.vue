@@ -23,7 +23,7 @@ const handleEdit = () => {
   if (user.value.admin) {
     isEdit.value = true
   } else {
-    if (user.value.permissionConfig.canUpdateProfile) {
+    if (user.value.accessControlGroup.canUpdateProfile) {
       isEdit.value = true
     } else {
       ElMessage.error('Can not update profile')
@@ -39,7 +39,7 @@ const isDisabled = computed(() => {
   if (user.value.admin) {
     return false
   } else {
-    return !userStore.user?.permissionConfig.canUpdateProfile
+    return !userStore.user?.accessControlGroup.canUpdateProfile
   }
 })
 
@@ -96,12 +96,6 @@ const handleCroppedAvatar = async (base64: string) => {
     v-model:isEdit="isEdit"
     @open-cropper="openCropperDialog"
   >
-    <!-- button inside UserCard can be modified to icon？-->
-    <template #avatar>
-      <el-button type="primary" @click="openCropperDialog" :disabled="!isEdit">
-        Change Avatar
-      </el-button>
-    </template>
   </UserCard>
 
   <!-- operation -->
@@ -109,6 +103,7 @@ const handleCroppedAvatar = async (base64: string) => {
     <el-button
       v-if="!isEdit"
       class="styled-btn btn-edit"
+      data-test="edit-btn"
       :disabled="isDisabled"
       @click="handleEdit"
     >
