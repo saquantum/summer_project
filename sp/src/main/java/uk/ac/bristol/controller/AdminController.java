@@ -2,8 +2,8 @@ package uk.ac.bristol.controller;
 
 import org.springframework.web.bind.annotation.*;
 import uk.ac.bristol.advice.PostSearchEndpoint;
+import uk.ac.bristol.pojo.AccessControlGroup;
 import uk.ac.bristol.pojo.FilterDTO;
-import uk.ac.bristol.pojo.PermissionConfig;
 import uk.ac.bristol.pojo.Template;
 import uk.ac.bristol.service.*;
 import uk.ac.bristol.util.QueryTool;
@@ -17,14 +17,14 @@ import java.util.Map;
 public class AdminController {
 
     private final MetaDataService metaDataService;
-    private final PermissionConfigService permissionConfigService;
+    private final AccessControlService accessControlService;
     private final ContactService contactService;
     private final UserService userService;
     private final AssetService assetService;
 
-    public AdminController(MetaDataService metaDataService, PermissionConfigService permissionConfigService, ContactService contactService, UserService userService, AssetService assetService) {
+    public AdminController(MetaDataService metaDataService, AccessControlService accessControlService, ContactService contactService, UserService userService, AssetService assetService) {
         this.metaDataService = metaDataService;
-        this.permissionConfigService = permissionConfigService;
+        this.accessControlService = accessControlService;
         this.contactService = contactService;
         this.userService = userService;
         this.assetService = assetService;
@@ -107,13 +107,13 @@ public class AdminController {
         return new ResponseBody(Code.DELETE_OK, contactService.deleteNotificationTemplateByIds(ids));
     }
 
-    @GetMapping("/permission")
-    public ResponseBody getAllPermissions(@RequestParam(required = false) List<String> orderList,
-                                          @RequestParam(required = false) Integer limit,
-                                          @RequestParam(required = false) Integer offset) {
+    @GetMapping("/access-group")
+    public ResponseBody getAllAccessControlGroups(@RequestParam(required = false) List<String> orderList,
+                                                  @RequestParam(required = false) Integer limit,
+                                                  @RequestParam(required = false) Integer offset) {
         FilterDTO filter = new FilterDTO(limit, offset);
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, permissionConfigService.getPermissionConfigs(
+        return new ResponseBody(Code.SELECT_OK, accessControlService.getAccessControlGroups(
                 null,
                 QueryTool.getOrderList(orderList),
                 filter.getLimit(),
@@ -122,10 +122,10 @@ public class AdminController {
     }
 
     @PostSearchEndpoint
-    @PostMapping("/permission/search")
-    public ResponseBody getAllPermissions(@RequestBody FilterDTO filter) {
+    @PostMapping("/access-group/search")
+    public ResponseBody getAllAccessControlGroups(@RequestBody FilterDTO filter) {
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, permissionConfigService.getCursoredPermissionConfigs(
+        return new ResponseBody(Code.SELECT_OK, accessControlService.getCursoredAccessControlGroups(
                 filter.getLastRowId(),
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
@@ -134,19 +134,25 @@ public class AdminController {
         ), message);
     }
 
-    @GetMapping("/permission/{uid}")
-    public ResponseBody getPermissionByUserId(@PathVariable String uid) {
-        return new ResponseBody(Code.SELECT_OK, permissionConfigService.getPermissionConfigByUserId(uid));
+    @GetMapping("/access-group/{uid}")
+    public ResponseBody getAccessControlGroupByUserId(@PathVariable String uid) {
+        return new ResponseBody(Code.SELECT_OK, accessControlService.getAccessControlGroupByUserId(uid));
     }
 
-    @PostMapping("/permission")
-    public ResponseBody insertPermissionConfig(@RequestBody PermissionConfig permissionConfig) {
-        return new ResponseBody(Code.INSERT_OK, permissionConfigService.insertPermissionConfig(permissionConfig));
+    @PostMapping("/access-group")
+    public ResponseBody insertAccessControlGroup(@RequestBody AccessControlGroup accessControlGroup) {
+        return new ResponseBody(Code.INSERT_OK, accessControlService.insertAccessControlGroup(accessControlGroup));
     }
 
-    @PutMapping("/permission")
-    public ResponseBody updatePermissionConfig(@RequestBody PermissionConfig permissionConfig) {
-        return new ResponseBody(Code.UPDATE_OK, permissionConfigService.updatePermissionConfigByUserId(permissionConfig));
+    @PutMapping("/access-group")
+    public ResponseBody updateAccessControlGroup(@RequestBody AccessControlGroup accessControlGroup) {
+        return new ResponseBody(Code.UPDATE_OK, accessControlService.updateAccessControlGroup(accessControlGroup));
+    }
+
+    @PutMapping("/access-group/assign/{groupName}")
+    public ResponseBody assignUsersToAccessControlGroupByFilter(@RequestBody FilterDTO filter, @PathVariable String groupName) {
+        Map<String, Integer> map = accessControlService.assignUsersToGroupByFilter(groupName, filter.getFilters());
+        return new ResponseBody(Code.UPDATE_OK, null, "assigned " + map.get("inserted") + " previously orphaned users, updated " + map.get("updated") + " users");
     }
 
     /* dashboard */

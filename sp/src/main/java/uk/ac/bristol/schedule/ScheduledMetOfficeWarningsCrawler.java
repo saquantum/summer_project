@@ -1,7 +1,5 @@
 package uk.ac.bristol.schedule;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -12,6 +10,7 @@ import uk.ac.bristol.service.WarningService;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -53,6 +52,9 @@ public class ScheduledMetOfficeWarningsCrawler {
         String response = null;
         try {
             httpResponse = getResponse();
+        } catch (ConnectException e) {
+            System.err.println("Failed to fetch weather warning data due to lost network connection.");
+            return;
         } catch (Exception e) {
             throw new SpExceptions.SystemException("Failed to fetch weather warning data. " + e.getMessage());
         }

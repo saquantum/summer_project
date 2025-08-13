@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="uk.ac.bristol.dao.AccessControlMapper">
+
+    <select id="selectAccessControlGroups" resultMap="ResultMaps.AccessControlGroupMap">
+        select * from access_control_groups
+        <include refid="QueryBlocks.filtering"/>
+        <include refid="QueryBlocks.orderAndPage"/>
+    </select>
+
+    <select id="selectAccessControlGroupAnchor" resultType="java.util.Map">
+        select * from access_control_groups
+        where access_control_group_row_id &gt;= #{rowId}
+        order by access_control_group_row_id asc
+        limit 1 offset 0
+    </select>
+
+    <select id="selectAccessControlGroupsByUserId" resultMap="ResultMaps.AccessControlGroupMap">
+        select access_control_groups.*
+        from access_control_groups,
+             user_group_mappings
+        where user_group_mappings_user_id = #{userId}
+          and user_group_mappings_group_name = access_control_group_name
+    </select>
+
+    <insert id="insertAccessControlGroup">
+        insert into access_control_groups
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            access_control_group_name,
+            access_control_group_description,
+            <if test="canCreateAsset != null">access_control_can_create_asset,</if>
+            <if test="canSetPolygonOnCreate != null">access_control_can_set_polygon_on_create,</if>
+            <if test="canUpdateAssetFields != null">access_control_can_update_asset_fields,</if>
+            <if test="canUpdateAssetPolygon != null">access_control_can_update_asset_polygon,</if>
+            <if test="canDeleteAsset != null">access_control_can_delete_asset,</if>
+            <if test="canUpdateProfile != null">access_control_can_update_profile,</if>
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            #{name},
+            #{description},
+            <if test="canCreateAsset != null">#{canCreateAsset},</if>
+            <if test="canSetPolygonOnCreate != null">#{canSetPolygonOnCreate},</if>
+            <if test="canUpdateAssetFields != null">#{canUpdateAssetFields},</if>
+            <if test="canUpdateAssetPolygon != null">#{canUpdateAssetPolygon},</if>
+            <if test="canDeleteAsset != null">#{canDeleteAsset},</if>
+            <if test="canUpdateProfile != null">#{canUpdateProfile},</if>
+        </trim>
+    </insert>
+
+    <update id="updateAccessControlGroup">
+        update access_control_groups
+        <set>
+            <if test="name != null and name != ''">
+                access_control_group_name = #{name},
+            </if>
+            <if test="description != null and description != ''">
+                access_control_group_description = #{description},
+            </if>
+            <if test="canCreateAsset != null">
+                access_control_can_create_asset = #{canCreateAsset},
+            </if>
+            <if test="canSetPolygonOnCreate != null">
+                access_control_can_set_polygon_on_create = #{canSetPolygonOnCreate},
+            </if>
+            <if test="canUpdateAssetFields != null">
+                access_control_can_update_asset_fields = #{canUpdateAssetFields},
+            </if>
+            <if test="canUpdateAssetPolygon != null">
+                access_control_can_update_asset_polygon = #{canUpdateAssetPolygon},
+            </if>
+            <if test="canDeleteAsset != null">
+                access_control_can_delete_asset = #{canDeleteAsset},
+            </if>
+            <if test="canUpdateProfile != null">
+                access_control_can_update_profile = #{canUpdateProfile},
+            </if>
+        </set>
+        where access_control_group_row_id = #{rowId}
+    </update>
+
+    <delete id="deleteAccessControlGroupByRowIds">
+        delete
+        from access_control_groups
+        where access_control_group_row_id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
+    </delete>
+
+    <select id="upsertUserAccessControlGroupMapping" resultType="java.util.Map">
+        with filtered_users as (select distinct user_id
+                                from users
+                                         left join address
+                                                   on user_id = address_id
+                                         left join contact_details
+                                                   on user_id = contact_details_id
+                                         left join contact_preferences
+                                                   on user_id = contact_preferences_id
+                                         left join user_group_mappings
+                                                   on user_id = user_group_mappings_user_id
+                                         left join access_control_groups
+                                                   on user_group_mappings_group_name = access_control_group_name
+                                <include refid="QueryBlocks.filtering"/>
+                                ),
+             upserted as (
+                 insert into user_group_mappings (user_group_mappings_user_id, user_group_mappings_group_name)
+                     select tmp.user_id, #{groupName}
+                     from filtered_users tmp
+                     on conflict (user_group_mappings_user_id) do update
+                         set user_group_mappings_group_name = excluded.user_group_mappings_group_name
+                     returning (xmax = 0)::int as inserted, (xmax != 0)::int as updated)
+        select coalesce(sum(inserted), 0) as inserted,
+               coalesce(sum(updated), 0)  as updated
+        from upserted
+    </select>
+</mapper>

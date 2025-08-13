@@ -41,6 +41,8 @@ spring:
 mybatis:
   mapper-locations: classpath*:uk/ac/bristol/dao/*.xml
   type-aliases-package: uk.ac.bristol.pojo
+  configuration:
+    call-setters-on-nulls: false
 
 mock-data:
   ukmap: data/ukmap.json

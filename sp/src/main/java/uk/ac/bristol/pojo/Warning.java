@@ -164,7 +164,7 @@ public class Warning {
     }
 
     // for back-end persistence
-    public void setAreaAsJson(String geoJson){
+    public void setAreaAsJson(String geoJson) {
         try {
             if (geoJson == null || geoJson.isBlank()) {
                 this.area = Map.ofEntries(Map.entry("type", "MultiPolygon"), Map.entry("coordinates", List.of(List.of(List.of()))));
@@ -189,7 +189,7 @@ public class Warning {
         public Map<String, Object> geometry;
     }
 
-    private static Warning getWarningFromGeoJSON(Map<String, Object> properties, Map<String, Object> geometry){
+    private static Warning getWarningFromGeoJSON(Map<String, Object> properties, Map<String, Object> geometry) {
         Warning warning = new Warning();
         warning.setId(((Number) properties.get("OBJECTID")).longValue());
         warning.setWeatherType((String) properties.get("weathertype"));

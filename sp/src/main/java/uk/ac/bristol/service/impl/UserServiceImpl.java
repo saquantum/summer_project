@@ -8,19 +8,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.bristol.controller.Code;
+import uk.ac.bristol.dao.ContactMapper;
 import uk.ac.bristol.dao.MetaDataMapper;
 import uk.ac.bristol.dao.UserMapper;
 import uk.ac.bristol.exception.SpExceptions;
-import uk.ac.bristol.pojo.PermissionConfig;
 import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.pojo.UserWithAssets;
 import uk.ac.bristol.pojo.UserWithExtraColumns;
-import uk.ac.bristol.service.PermissionConfigService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
 import uk.ac.bristol.util.QueryTool;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,12 +30,12 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
     private final MetaDataMapper metaDataMapper;
-    private final PermissionConfigService permissionConfigService;
+    private final ContactMapper contactMapper;
 
-    public UserServiceImpl(UserMapper userMapper, MetaDataMapper metaDataMapper, PermissionConfigService permissionConfigService) {
+    public UserServiceImpl(UserMapper userMapper, MetaDataMapper metaDataMapper, ContactMapper contactMapper) {
         this.userMapper = userMapper;
         this.metaDataMapper = metaDataMapper;
-        this.permissionConfigService = permissionConfigService;
+        this.contactMapper = contactMapper;
     }
 
     // checks uid and password, returns a jwt token
@@ -385,18 +385,22 @@ public class UserServiceImpl implements UserService {
         user.setPassword(password);
         user.setAddress(Map.of());
         user.setContactDetails(Map.of("email", email, "phone", phone));
-        if(wouldLikeContact){
+        if (wouldLikeContact) {
             user.setContactPreferences(Map.of("email", true));
-        }else{
+        } else {
             user.setContactPreferences(Map.of());
         }
         insertUser(user);
 
-        int n = permissionConfigService.insertPermissionConfig(new PermissionConfig(id));
-        if (n != 1) {
-            throw new SpExceptions.PostMethodException("Failed to insert permission config for user " + id);
-        }
-        metaDataMapper.increaseTotalCountByTableName("permission_configs", 1);
+        LocalDateTime now = LocalDateTime.now();
+        contactMapper.insertInboxMessageToUser(Map.of(
+                "userId", user.getId(),
+                "hasRead", false,
+                "issuedDate", now,
+                "validUntil", now.plusYears(100),
+                "title", user.getName() + ", your account has been activated",
+                "message", "If you encounter any issues using our system, please feel free to contact us.")
+        );
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)

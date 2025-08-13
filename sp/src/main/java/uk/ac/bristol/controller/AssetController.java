@@ -107,11 +107,11 @@ public class AssetController {
                                            HttpServletRequest request,
                                            @UserUID @PathVariable String uid,
                                            @RequestBody Asset asset) {
-        if (!QueryTool.getUserPermissions(uid).getCanCreateAsset()) {
+        if (!QueryTool.getAccessControlGroupByUserId(uid).getCanCreateAsset()) {
             throw new SpExceptions.ForbiddenException("The user is not allowed to insert asset.");
         }
         asset.setId(null);
-        if (!QueryTool.getUserPermissions(uid).getCanSetPolygonOnCreate()) {
+        if (!QueryTool.getAccessControlGroupByUserId(uid).getCanSetPolygonOnCreate()) {
             asset.clearLocation();
             return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset), "The asset is successfully inserted but without polygon since the user is not allowed to do so.");
         }
@@ -170,10 +170,10 @@ public class AssetController {
                                              HttpServletRequest request,
                                              @UserUID @PathVariable String uid,
                                              @UserAsset @RequestBody Asset asset) {
-        if (!QueryTool.getUserPermissions(uid).getCanUpdateAssetFields()) {
+        if (!QueryTool.getAccessControlGroupByUserId(uid).getCanUpdateAssetFields()) {
             throw new SpExceptions.ForbiddenException("The user is not allowed to update asset.");
         }
-        if (!QueryTool.getUserPermissions(uid).getCanUpdateAssetPolygon()) {
+        if (!QueryTool.getAccessControlGroupByUserId(uid).getCanUpdateAssetPolygon()) {
             asset.clearLocation();
             return new ResponseBody(Code.UPDATE_OK, assetService.updateAsset(asset), "The asset is successfully updated but without polygon since the user is not allowed to do so.");
         }
@@ -191,7 +191,7 @@ public class AssetController {
                                                         HttpServletRequest request,
                                                         @UserUID @PathVariable String uid,
                                                         @RequestBody Map<String, Object> body) {
-        if (!QueryTool.getUserPermissions(uid).getCanDeleteAsset()) {
+        if (!QueryTool.getAccessControlGroupByUserId(uid).getCanDeleteAsset()) {
             throw new SpExceptions.ForbiddenException("The user is not allowed to delete asset.");
         }
 

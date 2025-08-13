@@ -6,12 +6,7 @@ import uk.ac.bristol.advice.UserIdentificationExecution;
 import uk.ac.bristol.advice.UserUID;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.FilterDTO;
-import uk.ac.bristol.pojo.PermissionGroup;
-import uk.ac.bristol.pojo.PermissionGroupPermission;
 import uk.ac.bristol.pojo.User;
-import uk.ac.bristol.service.GroupMemberService;
-import uk.ac.bristol.service.PermissionGroupPermissionService;
-import uk.ac.bristol.service.PermissionGroupService;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.QueryTool;
 
@@ -26,15 +21,9 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
-    private final PermissionGroupService permissionGroupService;
-    private final PermissionGroupPermissionService permissionGroupPermissionService;
-    private final GroupMemberService groupMemberService;
 
-    public UserController(UserService userService, PermissionGroupService permissionGroupService, PermissionGroupPermissionService permissionGroupPermissionService, GroupMemberService groupMemberService) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.permissionGroupService = permissionGroupService;
-        this.permissionGroupPermissionService = permissionGroupPermissionService;
-        this.groupMemberService = groupMemberService;
     }
 
     /* --------- *************************** --------- */
@@ -46,9 +35,7 @@ public class UserController {
     public ResponseBody getMyProfileByUID(HttpServletResponse response,
                                           HttpServletRequest request,
                                           @UserUID @PathVariable String uid) {
-        User user = userService.getUserByUserId(uid);
-        user.setPermissionConfig(QueryTool.getUserPermissions(uid));
-        return new ResponseBody(Code.SELECT_OK, user);
+        return new ResponseBody(Code.SELECT_OK, userService.getUserByUserId(uid));
     }
 
     @UserIdentificationExecution
@@ -74,7 +61,7 @@ public class UserController {
                                                HttpServletRequest request,
                                                @UserUID @PathVariable String uid,
                                                @RequestBody User user) {
-        if (!QueryTool.getUserPermissions(uid).getCanUpdateProfile()) {
+        if (!QueryTool.getAccessControlGroupByUserId(uid).getCanUpdateProfile()) {
             throw new SpExceptions.ForbiddenException("The user is not allowed to update profile");
         }
         userService.updateUser(user);
@@ -89,29 +76,14 @@ public class UserController {
         userService.deleteUserByUserIds(List.of(uid));
         return new ResponseBody(Code.DELETE_OK, null);
     }
+
     @UserIdentificationExecution
-    @GetMapping("/user/uid/{uid}/permission")
-    public ResponseBody getDefaultPermissionsForUser(
-            HttpServletResponse response,
-            HttpServletRequest request,
-            @UserUID @PathVariable String uid) {
-        PermissionGroup defaultGroup = permissionGroupService.getGroupByName("User");
-        if (defaultGroup == null) {
-            return new ResponseBody(Code.SELECT_ERR, "default permission group does not exist");
-        }
-
-        return new ResponseBody(Code.SELECT_OK, permissionGroupPermissionService.getPermissionsByGroupId(1l));
+    @GetMapping("/user/uid/{uid}/access-group")
+    public ResponseBody getMyAccessControlGroupByUID(HttpServletResponse response,
+                                                     HttpServletRequest request,
+                                                     @UserUID @PathVariable String uid) {
+        return new ResponseBody(Code.SELECT_OK, QueryTool.getAccessControlGroupByUserId(uid));
     }
-
-//    @UserIdentificationExecution
-//    @GetMapping("/user/uid/{uid}/permission")
-//    public ResponseBody getMyPermissionByUID(HttpServletResponse response,
-//                                             HttpServletRequest request,
-//                                             @UserUID @PathVariable String uid) {
-//        return new ResponseBody(Code.SELECT_OK, QueryTool.getUserPermissions(uid));
-//    }
-
-
 
     /* --------- ********************* --------- */
     /* --------- interfaces for admins --------- */

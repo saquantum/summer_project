@@ -14,7 +14,7 @@ public class User {
     private Integer adminLevel;
     private String avatar;
     private String name;
-    private PermissionConfig permissionConfig;
+    private AccessControlGroup accessControlGroup;
     private Map<String, String> address;
     private Map<String, String> contactDetails;
     private Map<String, Boolean> contactPreferences;
@@ -110,12 +110,12 @@ public class User {
         }
     }
 
-    public PermissionConfig getPermissionConfig() {
-        return permissionConfig;
+    public AccessControlGroup getAccessControlGroup() {
+        return accessControlGroup;
     }
 
-    public void setPermissionConfig(PermissionConfig permissionConfig) {
-        this.permissionConfig = permissionConfig;
+    public void setAccessControlGroup(AccessControlGroup accessControlGroup) {
+        this.accessControlGroup = accessControlGroup;
     }
 
     public Map<String, String> getAddress() {

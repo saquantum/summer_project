@@ -6,9 +6,9 @@ import org.springframework.stereotype.Component;
 import uk.ac.bristol.controller.Code;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.*;
+import uk.ac.bristol.service.AccessControlService;
 import uk.ac.bristol.service.AssetService;
 import uk.ac.bristol.service.MetaDataService;
-import uk.ac.bristol.service.PermissionConfigService;
 import uk.ac.bristol.service.UserService;
 
 import javax.annotation.PostConstruct;
@@ -288,23 +288,6 @@ public final class QueryTool {
         return Objects.equals(user.getId(), asset.getOwnerId());
     }
 
-    public static PermissionConfig getUserPermissions(String uid) {
-        if (uid == null) {
-            throw new SpExceptions.BusinessException("No valid uid is provided");
-        }
-
-        PermissionConfig adminConfig = QueryToolConfig.permissionConfigService.getPermissionConfigByUserId("admin");
-        PermissionConfig config = QueryToolConfig.permissionConfigService.getPermissionConfigByUserId(uid);
-        return new PermissionConfig(uid,
-                adminConfig.getCanCreateAsset() && config.getCanCreateAsset(),
-                adminConfig.getCanSetPolygonOnCreate() && config.getCanSetPolygonOnCreate(),
-                adminConfig.getCanUpdateAssetFields() && config.getCanUpdateAssetFields(),
-                adminConfig.getCanUpdateAssetPolygon() && config.getCanUpdateAssetPolygon(),
-                adminConfig.getCanDeleteAsset() && config.getCanDeleteAsset(),
-                adminConfig.getCanUpdateProfile() && config.getCanUpdateProfile()
-        );
-    }
-
     public static String formatPaginationLimit(FilterDTO filter) {
         if (filter == null) return null;
         if (filter.hasLimit()) {
@@ -327,6 +310,15 @@ public final class QueryTool {
         }
         return null;
     }
+
+    public static AccessControlGroup getAccessControlGroupByUserId(String uid) {
+        List<AccessControlGroup> list = QueryToolConfig.accessControlService.getAccessControlGroupByUserId(uid);
+        if (list.size() != 1){
+            return AccessControlGroup.defaultGroup();
+        }else{
+            return list.get(0);
+        }
+    }
 }
 
 @Component
@@ -334,22 +326,22 @@ class QueryToolConfig {
     @Autowired
     public MetaDataService metaDataService0;
     @Autowired
-    public PermissionConfigService permissionConfigService0;
-    @Autowired
     public AssetService assetService0;
     @Autowired
     public UserService userService0;
+    @Autowired
+    public AccessControlService accessControlService0;
 
     public static MetaDataService metaDataService;
-    public static PermissionConfigService permissionConfigService;
     public static AssetService assetService;
     public static UserService userService;
+    public static AccessControlService accessControlService;
 
     @PostConstruct
     public void init() {
         metaDataService = this.metaDataService0;
-        permissionConfigService = this.permissionConfigService0;
         assetService = this.assetService0;
         userService = this.userService0;
+        accessControlService = this.accessControlService0;
     }
 }

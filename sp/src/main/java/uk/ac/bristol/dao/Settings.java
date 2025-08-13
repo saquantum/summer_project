@@ -3,9 +3,6 @@ package uk.ac.bristol.dao;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface Settings {
 
@@ -31,16 +28,9 @@ public interface Settings {
 
     void createNotificationTemplates(@Param("tableName") String tableName);
 
-    void createPermissionConfigs(@Param("tableName") String tableName);
+    void createAccessControlGroups(@Param("tableName") String tableName);
+
+    void createUserAccessControlGroupMapping(@Param("tableName") String tableName);
 
     void createUserInboxes(@Param("tableName") String tableName);
-
-    void createPermissionGroups(@Param("tableName") String tableName);
-
-    void createGroupPermissions(@Param("tableName") String tableName);
-
-    void createGroupMembers(@Param("tableName") String tableName);
-
-    void createImageStorage(@Param("tableName") String tableName);
-
 }

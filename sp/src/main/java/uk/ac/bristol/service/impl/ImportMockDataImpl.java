@@ -24,28 +24,22 @@ import java.util.Random;
 public class ImportMockDataImpl implements ImportMockData {
 
     private final Settings settings;
-    private final PermissionConfigService permissionConfigService;
     private final UserService userService;
     private final AssetService assetService;
     private final WarningService warningService;
     private final ContactService contactService;
-    private final PostcodeService postcodeService;
     private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
     public ImportMockDataImpl(Settings settings,
-                              PermissionConfigService permissionConfigService,
                               UserService userService,
                               AssetService assetService,
                               WarningService warningService,
-                              ContactService contactService,
-                              PostcodeService postcodeService) {
+                              ContactService contactService) {
         this.settings = settings;
-        this.permissionConfigService = permissionConfigService;
         this.userService = userService;
         this.assetService = assetService;
         this.warningService = warningService;
         this.contactService = contactService;
-        this.postcodeService = postcodeService;
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -62,12 +56,9 @@ public class ImportMockDataImpl implements ImportMockData {
         settings.createWeatherWarnings("weather_warnings");
         settings.createUKRegions("uk_regions");
         settings.createNotificationTemplates("templates");
-        settings.createPermissionConfigs("permission_configs");
+        settings.createAccessControlGroups("access_control_groups");
+        settings.createUserAccessControlGroupMapping("user_group_mappings");
         settings.createUserInboxes("inboxes");
-        settings.createPermissionGroups("permission_groups");
-        settings.createGroupPermissions("group_permissions");
-        settings.createGroupMembers("group_members");
-        settings.createImageStorage("image_storage");
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -91,7 +82,6 @@ public class ImportMockDataImpl implements ImportMockData {
             user.setAdmin(false);
             user.setAvatar("https://cdn-icons-png.flaticon.com/512/149/149071.png");
             userService.insertUser(user);
-            permissionConfigService.insertPermissionConfig(new PermissionConfig(user.getId()));
             // insert template welcome messages
             LocalDateTime now = LocalDateTime.now();
             contactService.insertInboxMessageToUser(Map.of(
@@ -118,7 +108,6 @@ public class ImportMockDataImpl implements ImportMockData {
         admin.setAdmin(true);
         admin.setAdminLevel(1);
         userService.insertUser(admin);
-        permissionConfigService.insertPermissionConfig(new PermissionConfig("admin"));
 
         User root = new User();
         root.setId("root");

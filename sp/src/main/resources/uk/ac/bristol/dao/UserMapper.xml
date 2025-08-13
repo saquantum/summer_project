@@ -13,8 +13,10 @@
                            on user_id = contact_details_id
                  left join contact_preferences
                            on user_id = contact_preferences_id
-                 left join permission_configs
-                           on user_id = permission_config_user_id
+                 left join user_group_mappings
+                           on user_id = user_group_mappings_user_id
+                 left join access_control_groups
+                           on user_group_mappings_group_name = access_control_group_name
     </sql>
 
     <select id="selectUsers" resultMap="ResultMaps.UserMap">
@@ -62,12 +64,15 @@
                contact_preferences_discord,
                contact_preferences_telegram,
                contact_preferences_whatsapp,
-               permission_config_can_create_asset,
-               permission_config_can_set_polygon_on_create,
-               permission_config_can_update_asset_fields,
-               permission_config_can_update_asset_polygon,
-               permission_config_can_delete_asset,
-               permission_config_can_update_profile,
+               access_control_group_row_id,
+               access_control_group_name,
+               access_control_group_description,
+               access_control_can_create_asset,
+               access_control_can_set_polygon_on_create,
+               access_control_can_update_asset_fields,
+               access_control_can_update_asset_polygon,
+               access_control_can_delete_asset,
+               access_control_can_update_profile,
                ${function}(${column}) as accumulation
         from users
                  left join address
@@ -76,8 +81,10 @@
                            on user_id = contact_details_id
                  left join contact_preferences
                            on user_id = contact_preferences_id
-                 left join permission_configs
-                           on user_id = permission_config_user_id
+                 left join user_group_mappings
+                           on user_id = user_group_mappings_user_id
+                 left join access_control_groups
+                           on user_group_mappings_group_name = access_control_group_name
                  left join assets
                            on user_id = asset_owner_id
     </sql>
@@ -107,12 +114,15 @@
                  contact_preferences_discord,
                  contact_preferences_telegram,
                  contact_preferences_whatsapp,
-                 permission_config_can_create_asset,
-                 permission_config_can_set_polygon_on_create,
-                 permission_config_can_update_asset_fields,
-                 permission_config_can_update_asset_polygon,
-                 permission_config_can_delete_asset,
-                 permission_config_can_update_profile
+                 access_control_group_row_id,
+                 access_control_group_name,
+                 access_control_group_description,
+                 access_control_can_create_asset,
+                 access_control_can_set_polygon_on_create,
+                 access_control_can_update_asset_fields,
+                 access_control_can_update_asset_polygon,
+                 access_control_can_delete_asset,
+                 access_control_can_update_profile
     </sql>
 
     <select id="selectUsersWithAccumulator" resultMap="ResultMaps.UserWithExtraColumnsMap">
@@ -198,8 +208,10 @@
                            on user_id = contact_details_id
                  left join contact_preferences
                            on user_id = contact_preferences_id
-                 left join permission_configs
-                           on user_id = permission_config_user_id
+                 left join user_group_mappings
+                           on user_id = user_group_mappings_user_id
+                 left join access_control_groups
+                           on user_group_mappings_group_name = access_control_group_name
                  left join assets
                            on user_id = asset_owner_id
         <include refid="QueryBlocks.filtering"/>
