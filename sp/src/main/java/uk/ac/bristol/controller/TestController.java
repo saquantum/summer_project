@@ -14,7 +14,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api")
 @CrossOrigin
 public class TestController {
 
