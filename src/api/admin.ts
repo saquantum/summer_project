@@ -223,3 +223,6 @@ export const adminGetUserDistributionService = () =>
 
 export const adminGetContactPreferenceService = () =>
   request.get('/admin/dashboard/users/contact-preference')
+
+export const adminGetAssetDistributionService = () =>
+  request.get('/admin/dashboard/assets/region')

@@ -112,7 +112,7 @@ export const useAssetStore = defineStore(
     return {
       userAssets,
       getUserAssets,
-
+      getMaxWarningLevel,
       allAssets,
       getAllAssets,
       getAssetTypes,

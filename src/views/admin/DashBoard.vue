@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import type { ECharts } from 'echarts'
 import {
+  adminGetAssetDistributionService,
   adminGetContactPreferenceService,
   adminGetMetaDateService,
   adminGetUserDistributionService
@@ -10,6 +11,11 @@ import LineChart from '@/components/charts/LineChart.vue'
 import BarChart from '@/components/charts/BarChart.vue'
 import PieChart from '@/components/charts/PieChart.vue'
 import { Location, User, Message } from '@element-plus/icons-vue'
+import { ukRegionsCoordinates } from '@/utils/UKRegionsCoordinates'
+import * as turf from '@turf/turf'
+import { useWarningStore, useAssetStore } from '@/stores'
+import type { Warning } from '@/types'
+
 const loadUKMap = () => import('@/assets/ukmap.json')
 const loadECharts = () => import('echarts')
 
@@ -23,10 +29,14 @@ const handleResize = () => {
   }
 }
 
+const warningStore = useWarningStore()
+const assetStore = useAssetStore()
+
 const userCount = ref(0)
 const assetCount = ref(0)
 
 const userDistribution = ref<Record<string, number>>({})
+const assetDistribution = ref<Record<string, number>>({})
 const contactPreference = ref<Record<string, number>>({})
 
 // Computed property to process regional data - shows top 5 regions and groups others
@@ -60,6 +70,48 @@ const pieChartData = computed(() => {
   return processedData
 })
 
+// map data
+const mapData = computed(() => {
+  const sortedEntries = Object.entries(assetDistribution.value).sort(
+    (a, b) => b[1] - a[1]
+  )
+  const top5 = sortedEntries.slice(0, 5)
+  return top5
+})
+
+const citys = computed(() => {
+  if (!mapData.value.length) return []
+  return mapData.value.map(([city]) => city)
+})
+
+type ScatterData = [number, number, number]
+
+const locations = computed(() => {
+  const newArr: ScatterData[] = []
+  mapData.value.forEach((item) => {
+    newArr.push([...ukRegionsCoordinates[item[0]], item[1]])
+  })
+  return newArr
+})
+
+const assetWarnings = computed(() => {
+  if (!mapData.value.length) return []
+  const arr: (Warning | null)[] = []
+  mapData.value.forEach((item) => {
+    const point = ukRegionsCoordinates[item[0]]
+    const warnings: Warning[] = []
+    warningStore.liveWarnings.forEach((warning) => {
+      if (turf.booleanPointInPolygon(point, warning.area)) {
+        warnings.push(warning)
+      }
+    })
+    const maxWarning = assetStore.getMaxWarningLevel(warnings)
+    arr.push(maxWarning)
+  })
+  console.log(arr)
+  return arr
+})
+
 // Separate data fetching logic
 const fetchDashboardData = async () => {
   try {
@@ -82,6 +134,13 @@ const fetchDashboardData = async () => {
     if (percentage && percentage.data) {
       contactPreference.value = percentage.data
     }
+    const assetDis = await adminGetAssetDistributionService()
+    if (assetDis && assetDis.data) {
+      assetDistribution.value = assetDis.data
+    }
+    console.log(assetDistribution.value)
+
+    await warningStore.getAllLiveWarnings()
   } catch (error) {
     console.error('Failed to fetch dashboard data:', error)
   }
@@ -132,23 +191,16 @@ const initializeMap = async () => {
     echarts.registerMap('UK', ukmap as any)
 
     // Scatter plot data
-    const scatterData = [
-      [-0.1276, 51.5072, 85], // London
-      [-3.1883, 55.9533, 62], // Edinburgh
-      [-1.2577, 51.752, 45], // Oxford
-      [-2.2426, 53.4808, 73], // Manchester
-      [-1.4701, 53.3811, 58], // Sheffield
-      [-1.8904, 52.4862, 39] // Birmingham
-    ]
+    const scatterData = locations.value
 
-    const cityNames = [
-      'London',
-      'Edinburgh',
-      'Oxford',
-      'Manchester',
-      'Sheffield',
-      'Birmingham'
-    ]
+    const cityNames = citys.value
+
+    const warningColors: Record<string, string> = {
+      RED: '#ff4757',
+      AMBER: '#ffa502',
+      YELLOW: '#ffda3a',
+      NONE: '#409eff'
+    }
 
     const option = {
       tooltip: {
@@ -163,7 +215,6 @@ const initializeMap = async () => {
       },
       legend: {
         show: true,
-        data: ['UK Cities Data'],
         left: 'center',
         top: '10px',
         textStyle: {
@@ -189,32 +240,35 @@ const initializeMap = async () => {
           }
         }
       },
-      series: [
-        {
-          type: 'effectScatter',
-          coordinateSystem: 'geo',
-          geoIndex: 0,
-          symbolSize: function (params: number[]) {
-            return (params[2] / 100) * 20 + 8
-          },
-          data: scatterData.map((item, index) => {
-            const value = item[2]
+      series: ['RED', 'AMBER', 'YELLOW', 'NONE'].map((level) => ({
+        name: level,
+        type: 'effectScatter',
+        coordinateSystem: 'geo',
+        geoIndex: 0,
+        itemStyle: {
+          color: warningColors[level]
+        },
+        symbolSize: (params: number[]) => {
+          return (params[2] / 100) * 100 + 8
+        },
+        data: scatterData
+          .map((item, index) => {
+            const warningLevel =
+              assetWarnings.value[index]?.warningLevel || 'NONE'
+            if (warningLevel !== level) return null
             let rippleConfig = {}
-
-            if (value > 70) {
+            if (warningLevel === 'RED') {
               rippleConfig = { period: 2, scale: 4 }
-            } else if (value > 50) {
+            } else if (warningLevel === 'AMBER') {
               rippleConfig = { period: 3, scale: 3 }
             } else {
               rippleConfig = { period: 6, scale: 2 }
             }
-
             return {
               name: cityNames[index],
               value: item,
               itemStyle: {
-                color:
-                  value > 70 ? '#ff4757' : value > 50 ? '#ffa502' : '#409eff',
+                color: warningColors[warningLevel] || '#409eff',
                 opacity: 0.8
               },
               emphasis: {
@@ -226,8 +280,8 @@ const initializeMap = async () => {
               rippleEffect: rippleConfig
             }
           })
-        }
-      ]
+          .filter(Boolean)
+      }))
     }
 
     mapChart.hideLoading()
@@ -239,9 +293,8 @@ const initializeMap = async () => {
 }
 
 onMounted(() => {
-  initializeMap()
   fetchDashboardData()
-
+  initializeMap()
   window.addEventListener('resize', handleResize)
 })
 
