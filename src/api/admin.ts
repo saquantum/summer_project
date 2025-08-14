@@ -100,6 +100,12 @@ export const adminGetTemplateByIdService = (id: string) =>
 export const adminUpdateTemplateByIdService = (template: Template) =>
   request.put('/admin/template/id', template)
 
+export const adminUpdateTemplateByTypesService = (template: Template) =>
+  request.put('/admin/template/type', template)
+
+export const adminInsertTemplateService = (template: Template) =>
+  request.post('/admin/template', template)
+
 export const adminDeleteTemplateByIdService = (ids: number[]) =>
   request.delete('/admin/template', {
     data: { ids: ids }

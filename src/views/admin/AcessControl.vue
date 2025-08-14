@@ -12,8 +12,9 @@ import { onMounted, ref } from 'vue'
 
 const permissions = ref<PermissionGroup[]>([])
 
-const selectUserVisible = ref(false)
-
+const rules = {
+  name: [{ required: true, message: 'Name is required', trigger: 'blur' }]
+}
 const update = async () => {
   try {
     await adminUpdatePermissionGroupService(form.value)
@@ -32,7 +33,7 @@ const createPermissionGroup = async () => {
     console.log(res)
     fetchTableData()
     ElMessage.success('Permission group created')
-    editDialogVisible.value = false
+    createDialogVisible.value = false
   } catch {
     ElMessage.error('Fail to create')
   }
@@ -192,7 +193,6 @@ onMounted(async () => {
         </el-radio-group>
       </el-form-item>
     </el-form>
-    <el-input @click="selectUserVisible = true"></el-input>
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="editDialogVisible = false">Cancel</el-button>
@@ -206,8 +206,8 @@ onMounted(async () => {
     title="Create permission group"
     width="500"
   >
-    <el-form :model="form" label-width="auto">
-      <el-form-item label="Name">
+    <el-form :model="form" :rules="rules" label-width="auto">
+      <el-form-item label="Name" prop="name">
         <el-input v-model="form.name" />
       </el-form-item>
       <el-form-item label="Description">

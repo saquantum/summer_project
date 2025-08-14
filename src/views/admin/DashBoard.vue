@@ -146,7 +146,6 @@ const fetchDashboardData = async () => {
   }
 }
 
-// Asynchronously initialize map
 const initializeMap = async () => {
   try {
     // Load ECharts and map data in parallel
@@ -292,8 +291,8 @@ const initializeMap = async () => {
   }
 }
 
-onMounted(() => {
-  fetchDashboardData()
+onMounted(async () => {
+  await fetchDashboardData()
   initializeMap()
   window.addEventListener('resize', handleResize)
 })

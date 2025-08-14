@@ -65,6 +65,7 @@ declare module 'vue' {
     LineChart: typeof import('./src/components/charts/LineChart.vue')['default']
     LoginCard: typeof import('./src/components/cards/LoginCard.vue')['default']
     MapCard: typeof import('./src/components/MapCard.vue')['default']
+    MapChart: typeof import('./src/components/charts/MapChart.vue')['default']
     PermissionDialog: typeof import('./src/components/dialog/PermissionDialog.vue')['default']
     PermissionIndicator: typeof import('./src/components/PermissionIndicator.vue')['default']
     PieChart: typeof import('./src/components/charts/PieChart.vue')['default']
@@ -85,5 +86,8 @@ declare module 'vue' {
     UserSearchExample: typeof import('./src/components/search/examples/UserSearchExample.vue')['default']
     WarningCard: typeof import('./src/components/cards/WarningCard.vue')['default']
     WarningLegend: typeof import('./src/components/WarningLegend.vue')['default']
+  }
+  export interface GlobalDirectives {
+    vLoading: typeof import('element-plus/es')['ElLoadingDirective']
   }
 }

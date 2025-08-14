@@ -8,6 +8,7 @@ import {
   adminUpdateAssetTypeService
 } from '@/api/admin'
 import { type AssetType } from '@/types'
+import { trimForm } from '@/utils/formUtils'
 
 const assetStore = useAssetStore()
 
@@ -21,16 +22,27 @@ const form = ref<AssetType>({
 })
 
 const addAssetType = async () => {
-  console.log(form.value)
+  trimForm(form.value)
   await adminInsetAssetTypeService(form.value)
   assetStore.getAssetTypes()
   dialogVisible.value = false
   form.value = { name: '', description: '' }
 }
 
+const triggerAdd = () => {
+  form.value = {
+    id: '',
+    name: '',
+    description: ''
+  }
+  dialogVisible.value = true
+}
+
 const triggerEdit = async (row: AssetType) => {
   editDialogVisible.value = true
   form.value.id = row.id
+  form.value.name = row.name
+  form.value.description = row.description
 }
 
 const handleEdit = async () => {
@@ -62,9 +74,8 @@ const handleDelete = async (row: AssetType) => {
 }
 </script>
 <template>
-  <el-button @click="dialogVisible = true">Add asset type</el-button>
+  <el-button @click="triggerAdd">Add asset type</el-button>
   <el-table :data="assetStore.assetTypes" class="table">
-    <el-table-column type="selection"> </el-table-column>
     <el-table-column prop="id" label="Type ID" width="120" />
     <el-table-column prop="name" label="Type Name" width="180" />
     <el-table-column prop="description" label="Description" />
@@ -116,7 +127,7 @@ const handleDelete = async (row: AssetType) => {
     </el-form>
     <template #footer>
       <div>
-        <el-button @click="dialogVisible = false">Cancel</el-button>
+        <el-button @click="editDialogVisible = false">Cancel</el-button>
         <el-button type="primary" @click="handleEdit"> Submit </el-button>
       </div>
     </template>

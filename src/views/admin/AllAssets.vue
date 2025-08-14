@@ -9,6 +9,7 @@ import {
 import { type AssetSearchBody, type AssetTableItem } from '@/types'
 import { useResponsiveAction } from '@/composables/useResponsiveAction'
 import AssetCard from '@/components/cards/AssetCard.vue'
+import { ElMessage } from 'element-plus'
 
 const assets = computed<AssetTableItem[]>(() => {
   if (!assetStore.allAssets || assetStore.allAssets.length <= 0) return []
@@ -28,6 +29,8 @@ const assets = computed<AssetTableItem[]>(() => {
 
 const router = useRouter()
 const assetStore = useAssetStore()
+
+const isLoading = ref(false)
 
 const handleShowDetail = (row: AssetTableItem) => {
   router.push(`/assets/${row.id}`)
@@ -92,38 +95,48 @@ const assetSearchBody = ref<AssetSearchBody>({
 })
 
 const fetchTableData = async () => {
-  const propOrderList: string[] = []
+  try {
+    isLoading.value = true
+    const propOrderList: string[] = []
 
-  for (const { prop, order } of multiSort.value) {
-    let dbField = ''
-    if (prop === 'id') dbField = 'asset_id'
-    else if (prop === 'name') dbField = 'asset_name'
-    else if (prop === 'assetHolderId') dbField = 'asset_owner_id'
-    else if (prop === 'warningLevel') dbField = 'warning_level'
-    else if (prop === 'type') dbField = 'asset_type_id'
-    else if (prop === 'capacityLitres') dbField = 'asset_capacity_litres'
-    else if (prop === 'material') dbField = 'asset_material'
-    else if (prop === 'status') dbField = 'asset_status'
-    else if (prop === 'installedAt') dbField = 'asset_installed_at'
-    else if (prop === 'lastInspection') dbField = 'asset_last_inspection'
-    else continue
+    for (const { prop, order } of multiSort.value) {
+      let dbField = ''
+      if (prop === 'id') dbField = 'asset_id'
+      else if (prop === 'name') dbField = 'asset_name'
+      else if (prop === 'assetHolderId') dbField = 'asset_owner_id'
+      else if (prop === 'warningLevel') dbField = 'warning_level'
+      else if (prop === 'type') dbField = 'asset_type_id'
+      else if (prop === 'capacityLitres') dbField = 'asset_capacity_litres'
+      else if (prop === 'material') dbField = 'asset_material'
+      else if (prop === 'status') dbField = 'asset_status'
+      else if (prop === 'installedAt') dbField = 'asset_installed_at'
+      else if (prop === 'lastInspection') dbField = 'asset_last_inspection'
+      else continue
 
-    const sortDir = order === 'descending' ? 'desc' : 'asc'
-    propOrderList.push(`${dbField},${sortDir}`)
+      const sortDir = order === 'descending' ? 'desc' : 'asc'
+      propOrderList.push(`${dbField},${sortDir}`)
+    }
+
+    // order by asset_id asc by default
+    const sortStr =
+      propOrderList.length > 0 ? propOrderList.join(',') : 'asset_id,asc'
+
+    assetSearchBody.value.offset = (currentPage.value - 1) * pageSize.value
+    assetSearchBody.value.limit = pageSize.value
+    assetSearchBody.value.orderList = sortStr
+
+    const [, res] = await Promise.all([
+      assetStore.getAllAssets(assetSearchBody.value),
+      adminGetAssetsTotalService({ filters: assetSearchBody.value.filters })
+    ])
+
+    total.value = res.data
+  } catch (error) {
+    console.error('Fail to load assets:', error)
+    ElMessage.error('Failed to fetch table data')
+  } finally {
+    isLoading.value = false
   }
-
-  // order by asset_id asc by default
-  const sortStr =
-    propOrderList.length > 0 ? propOrderList.join(',') : 'asset_id,asc'
-
-  assetSearchBody.value.offset = (currentPage.value - 1) * pageSize.value
-  assetSearchBody.value.limit = pageSize.value
-  assetSearchBody.value.orderList = sortStr
-  await assetStore.getAllAssets(assetSearchBody.value)
-
-  const assetTotalBody = { filters: assetSearchBody.value.filters }
-  const res = await adminGetAssetsTotalService(assetTotalBody)
-  total.value = res.data
 }
 
 const handleSortChange = (sort: { prop: string; order: string | null }) => {
@@ -212,7 +225,7 @@ onMounted(async () => {
       :row-class-name="tableRowClassName"
       @sort-change="handleSortChange"
       :default-sort="multiSort[0] || {}"
-      class="table"
+      v-loading="isLoading"
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection"> </el-table-column>

@@ -5,7 +5,8 @@ import {
   adminDeleteTemplateByIdService,
   adminGetTemplateByIdService,
   adminGetTemplateByTypesService,
-  adminUpdateTemplateByIdService
+  adminInsertTemplateService,
+  adminUpdateTemplateByTypesService
 } from '@/api/admin'
 import { useAssetStore } from '@/stores'
 import type { Template } from '@/types'
@@ -53,8 +54,11 @@ const contactChannelOptions = [
   }
 ]
 
+const placeholder = "You haven't set template for this"
+const hasTemplate = ref(true)
+
 const editorRef = ref()
-const allowedVariables = ['asset-model', 'contact_name', 'post_town']
+const allowedVariables = ['asset_model', 'contact_name', 'post_town']
 
 const compiledHTML = computed(() => {
   if (!editorRef.value) return ''
@@ -76,18 +80,38 @@ const form = ref<Template>({
   body: ''
 })
 
+const confirmDialogVisible = ref(false)
+
+const triggerSubmit = () => {
+  // empty content alert
+  if (plainText.value === placeholder || !plainText.value) {
+    confirmDialogVisible.value = true
+  } else {
+    submit()
+  }
+}
 const submit = async () => {
   // set platform that can receive html format content.
   if (form.value.contactChannel === 'email') {
-    const content = await editorRef.value.uploadAllImagesAndGetFinalContent()
-    console.log(content)
-    form.value.body = content
+    try {
+      const content = await editorRef.value.uploadAllImagesAndGetFinalContent()
+      form.value.body = content
+    } catch {
+      ElMessage.error('Fail to upload images')
+    }
   } else {
     form.value.body = plainText.value
   }
 
   try {
-    await adminUpdateTemplateByIdService(form.value)
+    if (hasTemplate.value) {
+      await adminUpdateTemplateByTypesService(form.value)
+    } else {
+      console.log(form.value)
+      const res = await adminInsertTemplateService(form.value)
+      console.log(res)
+    }
+
     isDirty.value = false
     ElMessage.success('Template updated successfully')
   } catch (e) {
@@ -150,6 +174,9 @@ onMounted(async () => {
   }
   if (template) {
     form.value = template
+  } else {
+    form.value.body = placeholder
+    hasTemplate.value = false
   }
   console.log(form.value)
 
@@ -198,6 +225,9 @@ watch(
         form.value = template
         isDirty.value = false // Reset dirty state after loading new template
         return // Don't set dirty if we just loaded a template
+      } else {
+        form.value.body = placeholder
+        hasTemplate.value = false
       }
     }
 
@@ -274,9 +304,19 @@ watch(
   </div>
 
   <div>
-    <el-button @click="submit">Submit</el-button>
+    <el-button @click="triggerSubmit">Submit</el-button>
     <el-button @click="triggerDelete">Delete</el-button>
   </div>
+
+  <el-dialog v-model="confirmDialogVisible" title="Alert" width="500">
+    <span>You didn't write anything. Are you sure you want to submit?</span>
+    <template #footer>
+      <div>
+        <el-button @click="confirmDialogVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="submit"> Submit </el-button>
+      </div>
+    </template>
+  </el-dialog>
 
   <ConfirmDialog
     v-model="dialogVisible"

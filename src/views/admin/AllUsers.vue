@@ -8,6 +8,7 @@ import {
 import { useRouter } from 'vue-router'
 import type { Permission, UserItem, UserSearchBody } from '@/types'
 import { useUserStore } from '@/stores'
+import { ElMessage } from 'element-plus'
 
 interface TableRow {
   uid: string
@@ -22,6 +23,8 @@ interface TableRow {
 const router = useRouter()
 
 const userStore = useUserStore()
+
+const isLoading = ref(true)
 
 const userTable = computed(() => {
   if (!userStore.users || userStore.users.length <= 0) return []
@@ -39,7 +42,6 @@ const multiSort = ref<{ prop: string; order: string }[]>([])
 const columns = ref([
   { prop: 'uid', label: 'UID' },
   { prop: 'name', label: 'Name' },
-  { prop: 'role', label: 'Role' },
   { prop: 'count', label: 'Asset' }
 ])
 
@@ -57,31 +59,41 @@ const handleDelete = async () => {
 }
 
 const fetchTableData = async () => {
-  const propOrderList: string[] = []
+  try {
+    isLoading.value = true
+    const propOrderList: string[] = []
 
-  for (const { prop, order } of multiSort.value) {
-    let dbField = ''
-    if (prop === 'uid') dbField = 'user_id'
-    else if (prop === 'assetHolderId') dbField = 'asset_holder_id'
-    else if (prop === 'count') dbField = 'accumulation'
-    else if (prop === 'name') dbField = 'user_name'
-    else continue
+    for (const { prop, order } of multiSort.value) {
+      let dbField = ''
+      if (prop === 'uid') dbField = 'user_id'
+      else if (prop === 'assetHolderId') dbField = 'asset_holder_id'
+      else if (prop === 'count') dbField = 'accumulation'
+      else if (prop === 'name') dbField = 'user_name'
+      else continue
 
-    const sortDir = order === 'descending' ? 'desc' : 'asc'
-    propOrderList.push(`${dbField},${sortDir}`)
+      const sortDir = order === 'descending' ? 'desc' : 'asc'
+      propOrderList.push(`${dbField},${sortDir}`)
+    }
+
+    const sortStr =
+      propOrderList.length > 0 ? propOrderList.join(',') : 'user_id,asc'
+
+    userSearchBody.value.offset = (currentPage.value - 1) * pageSize.value
+    userSearchBody.value.limit = pageSize.value
+    userSearchBody.value.orderList = sortStr
+
+    const [, res] = await Promise.all([
+      userStore.getUsers('count', userSearchBody.value),
+      adminGetUsersTotalService({ filters: userSearchBody.value.filters })
+    ])
+
+    total.value = res.data
+  } catch (error) {
+    console.error('Failed to fetch table data:', error)
+    ElMessage.error('Failed to fetch table data')
+  } finally {
+    isLoading.value = false
   }
-
-  const sortStr =
-    propOrderList.length > 0 ? propOrderList.join(',') : 'user_id,asc'
-
-  userSearchBody.value.offset = (currentPage.value - 1) * pageSize.value
-  userSearchBody.value.limit = pageSize.value
-  userSearchBody.value.orderList = sortStr
-  userStore.getUsers('count', userSearchBody.value)
-
-  const userTotalBody = { filters: userSearchBody.value.filters }
-  const res = await adminGetUsersTotalService(userTotalBody)
-  total.value = res.data
 }
 
 const handleSortChange = (sort: { prop: string; order: string | null }) => {
@@ -113,7 +125,6 @@ const triggerDelete = (rows: TableRow[]) => {
 
 const mutipleSelection = ref<TableRow[]>([])
 const handleSelectionChange = (val: TableRow[]) => {
-  console.log(val)
   mutipleSelection.value = val
 }
 
@@ -146,19 +157,27 @@ const permissionDialogVisible = ref(false)
 const selectAll = ref(false)
 
 const handleUpdatePermissionGroup = async (groupName: string) => {
-  if (selectAll.value) {
-    await adminAssignUsersToGroup(groupName, userSearchBody.value.filters)
-  } else {
-    const filters = {
-      user_id: {
-        op: 'in',
-        list: mutipleSelection.value.map((item) => {
-          return item.uid
-        })
+  try {
+    if (selectAll.value) {
+      await adminAssignUsersToGroup(groupName, userSearchBody.value.filters)
+    } else {
+      const filters = {
+        filters: {
+          user_id: {
+            op: 'in',
+            list: mutipleSelection.value.map((item) => {
+              return item.uid
+            })
+          }
+        }
       }
-    }
 
-    await adminAssignUsersToGroup(groupName, filters)
+      await adminAssignUsersToGroup(groupName, filters)
+    }
+    permissionDialogVisible.value = false
+    fetchTableData()
+  } catch {
+    ElMessage.error('Fail to update permission')
   }
 }
 
@@ -219,15 +238,19 @@ onMounted(async () => {
     <UserCollapse :users="userTable"></UserCollapse>
   </div>
   <el-table
+    v-loading="isLoading"
     :data="userTable"
     stripe
     style="width: 100%"
     @sort-change="handleSortChange"
     :default-sort="multiSort[0] || {}"
     @selection-change="handleSelectionChange"
-    class="table"
   >
-    <el-table-column type="selection"> </el-table-column>
+    <el-table-column
+      type="selection"
+      :selectable="(row: TableRow) => row.role !== 'admin'"
+    >
+    </el-table-column>
     <el-table-column
       v-for="(item, index) in columns"
       :key="index"
@@ -236,6 +259,7 @@ onMounted(async () => {
       width="auto"
       sortable="custom"
     ></el-table-column>
+    <el-table-column label="Role" prop="role"> </el-table-column>
     <el-table-column label="Permission">
       <template #default="scope">
         <div style="display: flex; gap: 3px">
@@ -251,7 +275,7 @@ onMounted(async () => {
     <el-table-column label="Actions">
       <template #default="scope">
         <el-button
-          :disabled="scope.row.uid === 'admin'"
+          :disabled="scope.row.role === 'admin'"
           text
           type="primary"
           size="small"
@@ -259,6 +283,7 @@ onMounted(async () => {
           >Edit</el-button
         >
         <el-button
+          :disabled="scope.row.role === 'admin'"
           text
           type="danger"
           size="small"
@@ -291,6 +316,7 @@ onMounted(async () => {
   <PermissionDialog
     v-model:permissionDialogVisible="permissionDialogVisible"
     v-model:selectAll="selectAll"
+    :total="total"
     @update-permission-group="handleUpdatePermissionGroup"
   ></PermissionDialog>
 </template>

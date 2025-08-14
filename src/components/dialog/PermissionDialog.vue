@@ -5,6 +5,10 @@ import type { PermissionGroup } from '@/types'
 
 import { onMounted, ref } from 'vue'
 
+const props = defineProps<{
+  total: number
+}>()
+
 const visible = defineModel('permissionDialogVisible')
 const selectAll = defineModel('selectAll')
 
@@ -31,7 +35,7 @@ onMounted(async () => {
 
 <template>
   <el-dialog v-model="visible">
-    <span>Select All</span>
+    <span>Select All ({{ props.total }})</span>
     <el-checkbox v-model="selectAll"></el-checkbox>
     <el-table
       :data="permissions"
