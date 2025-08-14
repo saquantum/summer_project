@@ -70,6 +70,7 @@ const orientationClasses = computed(() => {
 
 <template>
   <svg
+    data-test="warning-legend-btn"
     t="1754662950876"
     class="icon legend-icon"
     viewBox="0 0 1024 1024"

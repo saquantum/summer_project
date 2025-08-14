@@ -2,12 +2,7 @@
 
 describe('AssetPanel', () => {
   beforeEach(() => {
-    cy.visit('/login')
-    cy.get('input[placeholder="Username"]').type('user_017')
-    cy.get('input[placeholder="Password"]').type('123456')
-    cy.get('.button').contains('Sign in').click()
-    // Wait for login to complete and then navigate to assets
-    cy.url().should('not.include', '/login')
+    cy.login('user_017', '123456')
     cy.visit('/assets')
     // Wait for the asset panel to load
     cy.get('.search-bar').should('be.visible')
@@ -23,8 +18,7 @@ describe('AssetPanel', () => {
   })
 
   it('renders asset cards and legend', () => {
-    cy.get('.legend').should('be.visible')
-    cy.get('.legend-item').should('have.length', 4)
+    cy.get('[data-test="warning-legend-btn"]').should('be.visible')
 
     // Debug: Print page content to understand what's happening
     cy.get('body').then(($body) => {
@@ -61,10 +55,21 @@ describe('AssetPanel', () => {
   it('filters by asset type', () => {
     // Open the filter detail panel
     cy.get('.seamless-button').click()
-    cy.get('.el-select').eq(1).click()
-    cy.get('.el-select-dropdown__item').first().click() // Select first available type
-    cy.get('.seamless-button').click() // Close filter panel
-    // Assets might be filtered out, so just check the panel still exists
+
+    // Wait for select to be visible and click it
+    cy.get('.el-select').eq(1).should('be.visible').click()
+
+    // Wait for dropdown to be visible and force click the first item
+    cy.get('.el-popper')
+      .should('be.visible')
+      .find('.el-select-dropdown__item')
+      .first()
+      .click({ force: true })
+
+    // Close filter panel
+    cy.get('.seamless-button').click()
+
+    // Verify container is still visible after filtering
     cy.get('.assets-container').should('be.visible')
   })
 

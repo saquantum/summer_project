@@ -2,10 +2,9 @@
 
 describe('Inbox Page', () => {
   beforeEach(() => {
-    cy.visit('/login')
-    cy.get('input[placeholder="Username"]').type('user_017')
-    cy.get('input[placeholder="Password"]').type('123456')
-    cy.get('.button').contains('Sign in').click()
+    cy.resetDB()
+    cy.login('user_017', '123456')
+    cy.visit('/assets')
     cy.get('[data-test="message-side"]').click()
   })
 
@@ -25,10 +24,7 @@ describe('Inbox Page', () => {
   it('searches mails by keyword', () => {
     cy.get('input[placeholder="Search something..."]').type('Naomi')
     cy.get('.mail-item').each(($el) => {
-      cy.wrap($el)
-        .find('.mail-title')
-        .invoke('text')
-        .should('match', /N  zZaomi/i)
+      cy.wrap($el).find('.mail-title').invoke('text').should('match', /Naomi/i)
     })
   })
 

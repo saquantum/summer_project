@@ -12,6 +12,7 @@ const EXCLUDE_IDEMPOTENCY_PATHS = [
   '/logout',
   '/register',
   '/email/code',
+  '/email/password',
   '/auth/refresh',
   '/email/verification',
   '/asset/type/search',
