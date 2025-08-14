@@ -12,7 +12,9 @@
     "prepare": "husky install",
     "lint-staged": "lint-staged",
     "type-check": "vue-tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "cy:run": "cypress run",
+    "cy:open": "cypress open"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
