@@ -50,12 +50,23 @@ public class LoginController {
 
     @PostMapping("/email/verification")
     public ResponseBody resetPasswordValidateCode(@RequestBody Map<String, String> body) {
-        return contactService.validateCode(body.get("email"), body.get("code"));
+        ResponseBody result = contactService.validateCode(body.get("email"), body.get("code"));
+        if (result.getCode() == Code.SUCCESS) {
+            contactService.markEmailVerified(body.get("email"));
+        }
+        return result;
     }
 
     @PostMapping("/email/password")
     public ResponseBody resetPasswordUpdatePassword(@RequestBody Map<String, String> body) {
-        userService.updateUserPasswordByEmail(body.get("email"), body.get("password"));
+        String email = body.get("email");
+
+        if (!contactService.isEmailVerified(email)) {
+            return new ResponseBody(Code.BUSINESS_ERR, null, "Unauthorized request.");
+        }
+
+        userService.updateUserPasswordByEmail(email, body.get("password"));
+        contactService.clearEmailVerified(email);
         return new ResponseBody(Code.SUCCESS, null, "Success.");
     }
 

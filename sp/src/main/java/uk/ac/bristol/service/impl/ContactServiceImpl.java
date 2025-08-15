@@ -45,6 +45,7 @@ import java.net.URLConnection;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class ContactServiceImpl implements ContactService {
@@ -68,6 +69,8 @@ public class ContactServiceImpl implements ContactService {
 
     private final Duration expireTime = Duration.ofMinutes(5);
     private final String prefix = "email:verify:code:";
+
+    private final Set<String> verifiedEmails = ConcurrentHashMap.newKeySet();
 
     public ContactServiceImpl(UserService userService, MetaDataMapper metaDataMapper, ContactMapper contactMapper) {
         this.userService = userService;
@@ -396,6 +399,21 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public int deleteOutDatedInboxMessagesByUserId(String userId) {
         return contactMapper.deleteOutDatedInboxMessagesByUserId(userId);
+    }
+
+    @Override
+    public void markEmailVerified(String email) {
+        verifiedEmails.add(email);
+    }
+
+    @Override
+    public boolean isEmailVerified(String email) {
+        return verifiedEmails.contains(email);
+    }
+
+    @Override
+    public void clearEmailVerified(String email) {
+        verifiedEmails.remove(email);
     }
 }
 
