@@ -34,9 +34,7 @@ public final class QueryTool {
     static {
         Set<String> columnBlacklist = Set.of(
                 "user_password",
-                "user_password_plaintext",
-                "user_row_id",
-                "asset_row_id"
+                "user_password_plaintext"
         );
 
         registeredColumns = QueryToolConfig.metaDataService.getAllRegisteredColumnNamesWithBlacklist(
