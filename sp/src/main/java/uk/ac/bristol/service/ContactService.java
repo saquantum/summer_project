@@ -64,4 +64,10 @@ public interface ContactService {
     int deleteOutDatedInboxMessages();
 
     int deleteOutDatedInboxMessagesByUserId(String userId);
+
+    void markEmailVerified(String email);
+
+    boolean isEmailVerified(String email);
+
+    void clearEmailVerified(String email);
 }
