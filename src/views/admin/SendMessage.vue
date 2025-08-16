@@ -132,7 +132,7 @@ const handleSend = async () => {
 
   try {
     await adminSendMessageService(requestBody)
-    ElMessage.success('Message send')
+    ElMessage.success('Message sent')
   } catch (e) {
     console.error(e)
     ElMessage.error('Fail to send message')
@@ -176,7 +176,10 @@ const handleSend = async () => {
     </el-form-item>
 
     <el-form-item label="Send to all" prop="sendToAll">
-      <el-checkbox v-model="sendToAll"></el-checkbox>
+      <el-checkbox
+        v-model="sendToAll"
+        data-test="send-to-all-checkbox"
+      ></el-checkbox>
     </el-form-item>
   </el-form>
 
@@ -207,12 +210,12 @@ const handleSend = async () => {
   <div class="send-button-container">
     <el-button
       @click="handleSend"
-      :loading="isLoading"
+      v-bind="isLoading ? { loading: true } : {}"
       :disabled="isLoading"
       type="primary"
       data-test="send-button"
     >
-      {{ isLoading ? 'Sending...' : 'Send' }}
+      Send
     </el-button>
   </div>
 </template>

@@ -5,7 +5,6 @@ describe('RecoverForm', () => {
     cy.visit('/recover')
     // In your test, before the code input step:
     cy.intercept('**/email/verification*', (req) => {
-      console.log('Intercepted:', req)
       req.reply({ code: 200, message: 'success' })
     }).as('verifyCode')
   })

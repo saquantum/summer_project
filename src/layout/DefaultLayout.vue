@@ -105,7 +105,7 @@ watch(
     <el-container>
       <el-header style="display: flex; justify-content: space-between">
         <div class="header-left">
-          <el-button @click="router.go(-1)" :plain="true">
+          <el-button aria-label="Go back" @click="router.go(-1)" :plain="true">
             <el-icon><ArrowLeft /></el-icon>
           </el-button>
           <el-button

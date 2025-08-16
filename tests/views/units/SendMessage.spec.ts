@@ -165,7 +165,7 @@ describe('SendMessage', () => {
     )
 
     // Verify success message
-    expect(vi.mocked(ElMessage.success)).toHaveBeenCalledWith('Message send')
+    expect(vi.mocked(ElMessage.success)).toHaveBeenCalledWith('Message sent')
   })
 
   it('handles empty duration as 9999999', async () => {

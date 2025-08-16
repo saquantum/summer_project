@@ -6,7 +6,7 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      component: () => import('@/views/layout/BlankLayout.vue'),
+      component: () => import('@/layout/BlankLayout.vue'),
       children: [
         {
           path: '/recover',
@@ -20,7 +20,7 @@ const router = createRouter({
     },
     {
       path: '/',
-      component: () => import('@/views/layout/DefaultLayout.vue'),
+      component: () => import('@/layout/DefaultLayout.vue'),
       children: [
         {
           path: 'assets',

@@ -197,6 +197,7 @@ onMounted(async () => {
   <div>
     <div class="search-wrapper">
       <AssetSearch
+        data-test="asset-search"
         :fetch-table-data="fetchTableData"
         v-model:asset-search-body="assetSearchBody"
       ></AssetSearch>
@@ -221,6 +222,7 @@ onMounted(async () => {
       >
     </div>
     <el-table
+      data-test="assets-table"
       :data="assets"
       :row-class-name="tableRowClassName"
       @sort-change="handleSortChange"

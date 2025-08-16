@@ -15,6 +15,19 @@ export default mergeConfig(
         deps: {
           inline: ['element-plus']
         }
+      },
+      coverage: {
+        provider: 'v8',
+        reporter: ['text', 'html'],
+        include: ['src/**/*.{ts,tsx,vue}'],
+        exclude: [
+          'src/main.ts',
+          'src/App.vue',
+          'src/types/**',
+          'src/api/**',
+          'src/router/**',
+          'src/api/[...all].vue'
+        ]
       }
     }
   })

@@ -16,7 +16,7 @@ export default defineConfig({
       resolvers: [ElementPlusResolver()]
     }),
     Components({
-      dirs: ['src/components', 'src/views/layout/components'],
+      dirs: ['src/components', 'src/layout/components'],
       resolvers: [ElementPlusResolver()]
     }),
     compression({

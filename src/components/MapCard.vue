@@ -96,9 +96,9 @@ const highlightCurrentPolygon = () => {
         layer = L.geoJSON(polygon, {
           style: () => {
             return {
-              color: 'red',
+              color: '#33CC66',
               weight: 2,
-              fillOpacity: 0.5
+              fillOpacity: 0.4
             }
           }
         })
@@ -198,14 +198,12 @@ const finishOneShape = async () => {
   if (points.length < 3) {
     points = []
     ElMessage.error('You should specify more than 3 points to shape a polygon.')
-    // destroy all layers on the map
+    // destroy all points on the map
     m.eachLayer((layer) => {
-      if (!(layer instanceof L.TileLayer)) {
+      if (layer instanceof L.Marker || layer instanceof L.CircleMarker) {
         m.removeLayer(layer)
       }
     })
-    // Re-add all saved layers
-    layers.forEach((layer) => layer.addTo(m))
     return
   }
   // destroy all layers on the map
@@ -265,7 +263,7 @@ const finishOneShape = async () => {
 
   // reset point
   points = []
-  // highlightCurrentPolygon()
+  highlightCurrentPolygon()
 }
 
 const finishOnePolygon = () => {

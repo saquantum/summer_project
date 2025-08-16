@@ -2,11 +2,12 @@ import { mount } from '@vue/test-utils'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { ElMessage } from 'element-plus'
-import DefaultLayout from '@/views/layout/DefaultLayout.vue'
+import DefaultLayout from '@/layout/DefaultLayout.vue'
 
 // Mock router
 const mockRouter = {
   push: vi.fn(),
+  go: vi.fn(),
   currentRoute: { value: { path: '/dashboard' } }
 }
 
@@ -102,7 +103,7 @@ vi.mock('element-plus', async (importOriginal) => {
 })
 
 // Mock child components
-vi.mock('@/components/SideMenu.vue', () => ({
+vi.mock('@/layout/components/SideMenu.vue', () => ({
   default: {
     name: 'SideMenu',
     template: '<div data-test="side-menu">SideMenu</div>',
