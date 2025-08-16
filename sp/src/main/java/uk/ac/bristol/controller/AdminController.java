@@ -203,4 +203,8 @@ public class AdminController {
         return new ResponseBody(Code.SELECT_OK, assetService.groupAssetLocationByRegion(null));
     }
 
+    @GetMapping("/dashboard/login")
+    public ResponseBody getLoginCount() {
+        return new ResponseBody(Code.SELECT_OK, userService.getLoginCount());
+    }
 }

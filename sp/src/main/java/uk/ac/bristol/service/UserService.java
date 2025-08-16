@@ -85,4 +85,6 @@ public interface UserService {
     int updateUserPasswordByEmail(String email, String password);
 
     int deleteUserByUserIds(List<String> ids);
+
+    int getLoginCount();
 }
