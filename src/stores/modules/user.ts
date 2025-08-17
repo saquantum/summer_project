@@ -20,7 +20,9 @@ export const useUserStore = defineStore(
       try {
         await userLoginService(form)
         const res = await userGetInfoService(form.username)
-        user.value = res.data
+        if (res.data) {
+          user.value = res.data
+        }
         ElMessage.success('Success')
       } catch (e) {
         const status = (e as { response?: { status?: number } })?.response
@@ -37,7 +39,9 @@ export const useUserStore = defineStore(
     const getUsers = async (func: string, obj: UserSearchBody) => {
       try {
         const res = await adminSearchUsersService(func, obj)
-        users.value = res.data
+        if (res.data) {
+          users.value = res.data
+        }
       } catch (e) {
         console.error(e)
       }

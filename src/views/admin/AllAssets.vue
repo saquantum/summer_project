@@ -191,6 +191,10 @@ useResponsiveAction((width) => {
 onMounted(async () => {
   await fetchTableData()
 })
+
+defineExpose({
+  assets
+})
 </script>
 
 <template>
@@ -267,7 +271,7 @@ onMounted(async () => {
       :current-page="currentPage"
       :page-size="pageSize"
       :total="total"
-      :pager-count="3"
+      :pager-count="5"
       @current-change="handlePageChange"
       @size-change="handleSizeChange"
     />

@@ -83,7 +83,7 @@ describe('AddUser.vue', () => {
     // Fill required fields correctly
     await wrapper.find('[data-test="id"]').setValue('user1')
     await wrapper.find('[data-test="password"]').setValue('Password123!')
-    await wrapper.find('[data-test="repassword"]').setValue('Password123!') // fixed typo
+    await wrapper.find('[data-test="repassword"]').setValue('Password123!')
     await wrapper.find('[data-test="firstName"]').setValue('John')
     await wrapper.find('[data-test="lastName"]').setValue('Doe')
     await wrapper.find('[data-test="email"]').setValue('john@example.com')

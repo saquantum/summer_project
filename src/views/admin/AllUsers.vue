@@ -6,18 +6,17 @@ import {
   adminGetUsersTotalService
 } from '@/api/admin'
 import { useRouter } from 'vue-router'
-import type { Permission, UserItem, UserSearchBody } from '@/types'
+import type { PermissionGroup, UserItem, UserSearchBody } from '@/types'
 import { useUserStore } from '@/stores'
 import { ElMessage } from 'element-plus'
 
-interface TableRow {
+interface User {
   uid: string
   username: string
-  assetHolderId: string
   assets: string
   count: number
   role: 'admin' | 'user'
-  permission: Permission
+  permission: PermissionGroup
 }
 
 const router = useRouter()
@@ -26,7 +25,7 @@ const userStore = useUserStore()
 
 const isLoading = ref(true)
 
-const userTable = computed(() => {
+const users = computed(() => {
   if (!userStore.users || userStore.users.length <= 0) return []
   return userStore.users.map((item: UserItem) => ({
     uid: item.user.id,
@@ -45,7 +44,7 @@ const columns = ref([
   { prop: 'count', label: 'Asset' }
 ])
 
-const handleEdit = (row: TableRow) => {
+const handleEdit = (row: User) => {
   router.push({ path: '/admin/user/detail', query: { id: row.uid } })
 }
 
@@ -53,9 +52,8 @@ const handleDelete = async () => {
   if (deleteId.value.length === 0) return
   await adminDeleteUserService(deleteId.value)
   deleteId.value = []
-
-  await fetchTableData()
   dialogVisible.value = false
+  await fetchTableData()
 }
 
 const fetchTableData = async () => {
@@ -116,15 +114,15 @@ const handleSortChange = (sort: { prop: string; order: string | null }) => {
 const dialogVisible = ref(false)
 const deleteId = ref<string[]>([])
 
-const triggerDelete = (rows: TableRow[]) => {
+const triggerDelete = (rows: User[]) => {
   dialogVisible.value = true
   rows.forEach((element) => {
     deleteId.value.push(element.uid)
   })
 }
 
-const mutipleSelection = ref<TableRow[]>([])
-const handleSelectionChange = (val: TableRow[]) => {
+const mutipleSelection = ref<User[]>([])
+const handleSelectionChange = (val: User[]) => {
   mutipleSelection.value = val
 }
 
@@ -138,7 +136,7 @@ const permissionFields = [
 ] as const
 
 function getPermission(uid: string) {
-  const user = userTable.value.find((user) => user.uid === uid)
+  const user = users.value.find((user) => user.uid === uid)
   if (user?.role === 'admin') {
     return {
       userId: user?.uid,
@@ -209,6 +207,10 @@ const handleSizeChange = (size: number) => {
 onMounted(async () => {
   fetchTableData()
 })
+
+defineExpose({
+  users
+})
 </script>
 
 <template>
@@ -226,23 +228,26 @@ onMounted(async () => {
   </div>
 
   <div>
-    <el-button @click="permissionDialogVisible = true"
+    <el-button
+      @click="permissionDialogVisible = true"
+      data-test="set-permission"
       >Set permission</el-button
     >
     <el-button
       v-show="mutipleSelection.length > 0"
       type="danger"
       @click="triggerDelete(mutipleSelection)"
+      data-test="delete-selected"
       >Delete</el-button
     >
   </div>
 
   <div class="collapse-wrapper">
-    <UserCollapse :users="userTable"></UserCollapse>
+    <UserCollapse :users="users"></UserCollapse>
   </div>
   <el-table
     v-loading="isLoading"
-    :data="userTable"
+    :data="users"
     stripe
     style="width: 100%"
     @sort-change="handleSortChange"
@@ -251,7 +256,7 @@ onMounted(async () => {
   >
     <el-table-column
       type="selection"
-      :selectable="(row: TableRow) => row.role !== 'admin'"
+      :selectable="(row: User) => row.role !== 'admin'"
     >
     </el-table-column>
     <el-table-column
@@ -283,6 +288,7 @@ onMounted(async () => {
           type="primary"
           size="small"
           @click="handleEdit(scope.row)"
+          data-test="edit"
           >Edit</el-button
         >
         <el-button
@@ -291,6 +297,7 @@ onMounted(async () => {
           type="danger"
           size="small"
           @click="triggerDelete([scope.row])"
+          data-test="delete"
           >Delete</el-button
         >
       </template>
