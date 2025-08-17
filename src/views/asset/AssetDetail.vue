@@ -60,11 +60,9 @@ const mode = ref<'convex' | 'sequence'>('convex')
 
 const locations = computed({
   get: () => {
-    console.log('locations getter', asset.value.location)
     return asset.value.location ? [asset.value.location] : []
   },
   set: (val: MultiPolygon[]) => {
-    console.log('locations setter', val)
     asset.value.location = val[0]
   }
 })

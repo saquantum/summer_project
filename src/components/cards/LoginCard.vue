@@ -245,7 +245,7 @@ defineExpose({ currentStep })
           <el-checkbox>Remember me</el-checkbox>
           <el-link
             type="primary"
-            underline="never"
+            underline="hover"
             @click="router.push('/recover')"
             >Forget password?
           </el-link>
@@ -438,7 +438,7 @@ defineExpose({ currentStep })
 
       <el-form-item class="fixed-bottom-tip">
         <span>Already have an account?&nbsp;&nbsp;</span>
-        <el-link type="primary" underline="never" @click="isRegister = false">
+        <el-link type="primary" underline="hover" @click="isRegister = false">
           Sign in
         </el-link>
       </el-form-item>

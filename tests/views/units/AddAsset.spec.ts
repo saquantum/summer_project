@@ -375,7 +375,7 @@ describe('AddAsset.vue', () => {
             coordinates: []
           }
         ],
-        capacityLitres: '1000', // String that will be converted to number
+        capacityLitres: 1000,
         material: 'Steel',
         status: 'active',
         installedAt: '2024-01-01',
@@ -481,7 +481,7 @@ describe('AddAsset.vue', () => {
             coordinates: []
           }
         ],
-        capacityLitres: '2000',
+        capacityLitres: 2000,
         material: 'Concrete',
         status: 'maintenance',
         installedAt: '2024-01-01',

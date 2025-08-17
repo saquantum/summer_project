@@ -10,6 +10,7 @@ import {
   Warning,
   CopyDocument
 } from '@element-plus/icons-vue'
+
 const userStore = useUserStore()
 
 const props = defineProps<{
@@ -24,6 +25,24 @@ const visible = computed({
   get: () => props.visible,
   set: (val) => emit('update:visible', val)
 })
+
+// Helper functions for better route matching
+const isAssetDetailRoute = (route: string): boolean => {
+  // Match routes like /assets/123, /admin/assets/456 but exclude /assets and /assets/add
+  const assetRoutePattern = /^\/(?:admin\/)?assets\/(?!add$)[^/]+(?:\/.*)?$/
+  return assetRoutePattern.test(route)
+}
+
+const isWarningDetailRoute = (route: string): boolean => {
+  // Match routes like /warnings/123, /admin/warnings/456 but exclude base /warnings
+  const warningRoutePattern = /^\/(?:admin\/)?warnings\/[^/]+(?:\/.*)?$/
+  return warningRoutePattern.test(route)
+}
+
+const isCurrentWarningRoute = (route: string): boolean => {
+  // More precise matching for warning routes
+  return route.startsWith('/warnings/') || route.startsWith('/admin/warnings/')
+}
 
 const handleMenuSelect = () => {
   visible.value = false
@@ -64,12 +83,9 @@ const handleBackToAdmin = () => {
         <span>Add asset</span>
       </el-menu-item>
 
+      <!-- Fixed asset detail route matching -->
       <el-menu-item
-        v-if="
-          props.activeIndex.startsWith('/assets') &&
-          props.activeIndex !== '/assets/add' &&
-          props.activeIndex !== '/assets'
-        "
+        v-if="isAssetDetailRoute(props.activeIndex)"
         :index="props.activeIndex"
       >
         <span>Asset detail</span>
@@ -84,11 +100,10 @@ const handleBackToAdmin = () => {
       <el-menu-item index="/warnings">
         <span>All Warning</span>
       </el-menu-item>
+
+      <!-- Fixed warning detail route matching -->
       <el-menu-item
-        v-if="
-          props.activeIndex.startsWith('/warnings') &&
-          props.activeIndex !== '/warnings'
-        "
+        v-if="isWarningDetailRoute(props.activeIndex)"
         :index="props.activeIndex"
       >
         <span>Current Warning</span>
@@ -177,11 +192,7 @@ const handleBackToAdmin = () => {
       </el-menu-item>
 
       <el-menu-item
-        v-if="
-          props.activeIndex.startsWith('/assets') &&
-          props.activeIndex !== '/assets/add' &&
-          props.activeIndex !== '/assets'
-        "
+        v-if="isAssetDetailRoute(props.activeIndex)"
         :index="props.activeIndex"
       >
         <span>Asset detail</span>
@@ -196,8 +207,9 @@ const handleBackToAdmin = () => {
       <el-menu-item index="/admin/warnings">
         <span>All Warning</span>
       </el-menu-item>
+
       <el-menu-item
-        v-if="props.activeIndex.startsWith('/warning')"
+        v-if="isCurrentWarningRoute(props.activeIndex)"
         :index="props.activeIndex"
       >
         <span>Current Warning</span>

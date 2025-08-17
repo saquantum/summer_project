@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import LoginCard from '@/components/cards/LoginCard.vue'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import * as userApi from '@/api/user'
 import type { ApiResponse } from '@/types'
@@ -29,6 +29,14 @@ vi.mock('@/stores/index.ts', () => ({
 describe('LoginCard.vue', () => {
   beforeEach(() => {
     pushMock.mockClear()
+
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    // Restore console methods after each test
+    vi.restoreAllMocks()
   })
 
   it('renders sign in form by default', () => {
@@ -72,6 +80,14 @@ describe('LoginCard.vue', () => {
 describe('Register', () => {
   beforeEach(() => {
     pushMock.mockClear()
+    vi.restoreAllMocks()
+
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    // Restore console methods after each test
     vi.restoreAllMocks()
   })
 

@@ -112,7 +112,7 @@ describe('PermissionPage.vue', () => {
     await nextTick()
 
     // Advance timers to finish countdown
-    vi.advanceTimersByTime(6000)
+    vi.advanceTimersByTime(5000)
     await nextTick() // Wait for DOM update
 
     // The ConfirmDialog may be teleported to body

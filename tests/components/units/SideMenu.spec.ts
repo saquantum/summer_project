@@ -10,25 +10,15 @@ vi.mock('@/stores', () => ({
   useUserStore: vi.fn()
 }))
 
-// Mock Element Plus icons
-vi.mock('@element-plus/icons-vue', async (importOriginal) => {
-  const actual = await importOriginal()
-  return {
-    ...actual,
-    User: { name: 'User' },
-    MessageBox: { name: 'MessageBox' },
-    Back: { name: 'Back' },
-    House: { name: 'House' },
-    LocationInformation: { name: 'LocationInformation' },
-    Warning: { name: 'Warning' },
-    CopyDocument: { name: 'CopyDocument' }
-  }
-})
-
 // Mock router
 const mockRouter = createRouter({
   history: createWebHistory(),
   routes: [
+    {
+      path: '/',
+      name: 'placeholder',
+      component: { template: '<div>Profile</div>' }
+    },
     {
       path: '/user/profile',
       name: 'user-profile',
@@ -222,7 +212,7 @@ describe('SidebarComponent', () => {
 
     it('should show current warning item when on warning page', () => {
       wrapper = createWrapper({
-        activeIndex: '/warning/123',
+        activeIndex: '/warnings/123',
         showUserSideBar: false
       })
 
@@ -425,7 +415,7 @@ describe('SidebarComponent', () => {
 
       // Should show for warning routes in admin menu
       wrapper = createWrapper({
-        activeIndex: '/warning/123',
+        activeIndex: '/warnings/123',
         showUserSideBar: false
       })
       expect(wrapper.text()).toContain('Current Warning')

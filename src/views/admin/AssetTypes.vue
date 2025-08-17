@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-// import { useRouter } from 'vue-router'
 import { useAssetStore } from '@/stores/index'
 import {
   adminDeleteAssetTypeService,
@@ -12,7 +11,7 @@ import { trimForm } from '@/utils/formUtils'
 
 const assetStore = useAssetStore()
 
-const dialogVisible = ref(false)
+const addDialogVisible = ref(false)
 const editDialogVisible = ref(false)
 
 const form = ref<AssetType>({
@@ -25,8 +24,8 @@ const addAssetType = async () => {
   trimForm(form.value)
   await adminInsetAssetTypeService(form.value)
   assetStore.getAssetTypes()
-  dialogVisible.value = false
-  form.value = { name: '', description: '' }
+  addDialogVisible.value = false
+  form.value = { id: '', name: '', description: '' }
 }
 
 const triggerAdd = () => {
@@ -35,7 +34,7 @@ const triggerAdd = () => {
     name: '',
     description: ''
   }
-  dialogVisible.value = true
+  addDialogVisible.value = true
 }
 
 const triggerEdit = async (row: AssetType) => {
@@ -48,7 +47,7 @@ const triggerEdit = async (row: AssetType) => {
 const handleEdit = async () => {
   await adminUpdateAssetTypeService(form.value)
   assetStore.getAssetTypes()
-  dialogVisible.value = false
+  addDialogVisible.value = false
   form.value = { id: '', name: '', description: '' }
   editDialogVisible.value = false
 }
@@ -62,8 +61,7 @@ const triggerDelete = (row: AssetType) => {
   deleteId.value.push(row.id as string)
 }
 
-const handleDelete = async (row: AssetType) => {
-  console.log(row)
+const handleDelete = async () => {
   try {
     await adminDeleteAssetTypeService(deleteId.value)
     assetStore.getAssetTypes()
@@ -72,16 +70,25 @@ const handleDelete = async (row: AssetType) => {
     console.error(e)
   }
 }
+
+defineExpose({
+  deleteDialogVisible
+})
 </script>
 <template>
-  <el-button @click="triggerAdd">Add asset type</el-button>
-  <el-table :data="assetStore.assetTypes" class="table">
+  <el-button @click="triggerAdd" data-test="add-btn">Add asset type</el-button>
+  <el-table :data="assetStore.assetTypes">
     <el-table-column prop="id" label="Type ID" width="120" />
     <el-table-column prop="name" label="Type Name" width="180" />
     <el-table-column prop="description" label="Description" />
     <el-table-column label="Actions">
       <template #default="scope">
-        <el-button text size="small" @click="triggerEdit(scope.row)">
+        <el-button
+          text
+          size="small"
+          @click="triggerEdit(scope.row)"
+          data-test="edit"
+        >
           Edit
         </el-button>
         <el-button
@@ -89,6 +96,7 @@ const handleDelete = async (row: AssetType) => {
           type="danger"
           size="small"
           @click="triggerDelete(scope.row)"
+          data-test="delete"
         >
           Delete
         </el-button>
@@ -96,39 +104,57 @@ const handleDelete = async (row: AssetType) => {
     </el-table-column>
   </el-table>
 
-  <el-dialog v-model="dialogVisible" title="Add asset type" width="500">
+  <el-dialog
+    v-model="addDialogVisible"
+    title="Add asset type"
+    width="500"
+    data-test="add-dialog"
+  >
     <el-form :model="form" label-width="auto">
       <el-form-item label="name">
-        <el-input v-model="form.name" />
+        <el-input v-model="form.name" data-test="name" />
       </el-form-item>
       <el-form-item label="discription">
-        <el-input v-model="form.description" />
+        <el-input v-model="form.description" data-test="description" />
       </el-form-item>
     </el-form>
     <template #footer>
       <div>
-        <el-button @click="dialogVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="addAssetType"> Submit </el-button>
+        <el-button @click="addDialogVisible = false" data-test="cancel"
+          >Cancel</el-button
+        >
+        <el-button type="primary" @click="addAssetType" data-test="submit">
+          Submit
+        </el-button>
       </div>
     </template>
   </el-dialog>
 
-  <el-dialog v-model="editDialogVisible" title="Update asset type" width="500">
+  <el-dialog
+    v-model="editDialogVisible"
+    title="Update asset type"
+    width="500"
+    data-test="edit-dialog"
+  >
     <el-form :model="form" label-width="auto">
       <el-form-item label="id">
-        <el-input v-model="form.id" disabled="true" />
+        <el-input v-model="form.id" disabled />
       </el-form-item>
       <el-form-item label="name">
-        <el-input v-model="form.name" />
+        <el-input v-model="form.name" data-test="name" />
       </el-form-item>
-      <el-form-item label="discription">
-        <el-input v-model="form.description" />
+      <el-form-item label="description">
+        <el-input v-model="form.description" data-test="description" />
       </el-form-item>
     </el-form>
     <template #footer>
       <div>
-        <el-button @click="editDialogVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="handleEdit"> Submit </el-button>
+        <el-button @click="editDialogVisible = false" data-test="cancel"
+          >Cancel</el-button
+        >
+        <el-button type="primary" @click="handleEdit" data-test="submit">
+          Submit
+        </el-button>
       </div>
     </template>
   </el-dialog>

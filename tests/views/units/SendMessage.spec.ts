@@ -47,6 +47,13 @@ vi.mock('@/components/TiptapEditor.vue', () => ({
   }
 }))
 
+vi.mock('@/components/dialog/SelectUserDialog.vue', () => ({
+  default: {
+    name: 'SelectUserDialog',
+    template: '<div data-test="select-user-dialog"></div>'
+  }
+}))
+
 describe('SendMessage', () => {
   const createWrapper = () => {
     return mount(SendMessage)
@@ -165,7 +172,6 @@ describe('SendMessage', () => {
     await wrapper
       .find('input[placeholder="Please input title"]')
       .setValue('Test Title')
-    // Duration input left empty
 
     // Click send button
     const sendButton = wrapper.find('[data-test="send-button"]')
@@ -202,11 +208,15 @@ describe('SendMessage', () => {
     expect(vi.mocked(adminSendMessageService)).not.toHaveBeenCalled()
   })
 
-  it('can trigger send button click', async () => {
+  it('can not submit if not fill the form', async () => {
     const wrapper = createWrapper()
     await flushPromises()
 
-    // Just test that we can click the send button without errors
+    // Mock console.warn
+    const consoleWarnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation(() => {})
+
     const sendButton = wrapper.find('[data-test="send-button"]')
     expect(sendButton.exists()).toBe(true)
 
@@ -214,11 +224,15 @@ describe('SendMessage', () => {
     await sendButton.trigger('click')
     await flushPromises()
 
-    // This test just ensures the component doesn't crash
-    expect(true).toBe(true)
+    // Verify API was not called
+    expect(vi.mocked(adminSendMessageService)).not.toHaveBeenCalled()
+
+    // Restore console.error
+    consoleWarnSpy.mockRestore()
   })
 
   it('handles API error and shows error message', async () => {
+    // Mock the API to reject with an error
     vi.mocked(adminSendMessageService).mockRejectedValue(new Error('API Error'))
 
     const wrapper = createWrapper()
@@ -231,15 +245,24 @@ describe('SendMessage', () => {
       .find('input[placeholder="Please input title"]')
       .setValue('Test Title')
 
-    // Click send button
+    // Mock console.error to suppress the error log during testing
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {})
+
+    // Click send button - the component should handle the error internally
     const sendButton = wrapper.find('[data-test="send-button"]')
     await sendButton.trigger('click')
+
     await flushPromises()
 
-    // Verify error message
+    // Verify error message was called
     expect(vi.mocked(ElMessage.error)).toHaveBeenCalledWith(
       'Fail to send message'
     )
+
+    // Clean up the console spy
+    consoleErrorSpy.mockRestore()
   })
 
   it('validates zero duration and prevents submission', async () => {
@@ -262,6 +285,7 @@ describe('SendMessage', () => {
   })
 
   it('preserves form data after failed submission', async () => {
+    // Mock the API to reject
     vi.mocked(adminSendMessageService).mockRejectedValue(new Error('API Error'))
 
     const wrapper = createWrapper()
@@ -276,14 +300,23 @@ describe('SendMessage', () => {
     await durationInput.setValue('30')
     await titleInput.setValue('Test Title')
 
-    // Click send button
+    // Mock console.error to suppress error logs
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {})
+
+    // Click send button - component should handle error internally
     const sendButton = wrapper.find('[data-test="send-button"]')
     await sendButton.trigger('click')
+
     await flushPromises()
 
     // Verify form data is still there after failed submission
     expect((usernameInput.element as HTMLInputElement).value).toBe('testuser')
     expect((durationInput.element as HTMLInputElement).value).toBe('30')
     expect((titleInput.element as HTMLInputElement).value).toBe('Test Title')
+
+    // Clean up
+    consoleErrorSpy.mockRestore()
   })
 })

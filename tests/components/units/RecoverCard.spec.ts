@@ -1,6 +1,6 @@
 import { mount, flushPromises } from '@vue/test-utils'
 import RecoverCard from '@/components/cards/RecoverCard.vue'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import * as userApi from '@/api/user'
 
 // Mock router
@@ -22,6 +22,14 @@ describe('RecoverCard.vue', () => {
     vi.mocked(userApi.userEmailVerificationService).mockClear()
     vi.mocked(userApi.userResetPasswordService).mockClear()
     pushMock.mockClear()
+
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    // Restore console methods after each test
+    vi.restoreAllMocks()
   })
 
   it('renders email input and send button', () => {

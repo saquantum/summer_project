@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import UserCard from '@/components/cards/UserCard.vue'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { ElMessage } from 'element-plus'
 import * as userApi from '@/api/user'
@@ -143,6 +143,14 @@ describe('UserCard', () => {
     vi.mocked(adminApi.adminUpdateUserInfoService).mockResolvedValue({
       data: 'success'
     })
+
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    // Restore console methods after each test
+    vi.restoreAllMocks()
   })
 
   it('renders user info in description mode when isEdit is false', async () => {

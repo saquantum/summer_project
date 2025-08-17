@@ -29,8 +29,7 @@ const update = async () => {
 const createPermissionGroup = async () => {
   try {
     form.value.rowId = ''
-    const res = await adminInsertPermissionGroupService(form.value)
-    console.log(res)
+    await adminInsertPermissionGroupService(form.value)
     fetchTableData()
     ElMessage.success('Permission group created')
     createDialogVisible.value = false
@@ -166,7 +165,7 @@ onMounted(async () => {
   >
     <el-form :model="form" label-width="auto">
       <el-form-item label="Id">
-        <el-input v-model="form.rowId" disabled="true" data-test="input-id" />
+        <el-input v-model="form.rowId" disabled data-test="input-id" />
       </el-form-item>
       <el-form-item label="Name">
         <el-input v-model="form.name" data-test="input-name" />
@@ -179,8 +178,17 @@ onMounted(async () => {
           v-model="form.canCreateAsset"
           data-test="radio-canCreateAsset"
         >
-          <el-radio :label="true">true</el-radio>
-          <el-radio :label="false">false</el-radio>
+          <el-radio :value="true">true</el-radio>
+          <el-radio :value="false">false</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="Set polygon on create">
+        <el-radio-group
+          v-model="form.canSetPolygonOnCreate"
+          data-test="radio-canSetPolygonOnCreate"
+        >
+          <el-radio :value="true">true</el-radio>
+          <el-radio :value="false">false</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="Update asset fields">
@@ -188,8 +196,8 @@ onMounted(async () => {
           v-model="form.canUpdateAssetFields"
           data-test="radio-canUpdateAssetFields"
         >
-          <el-radio :label="true">true</el-radio>
-          <el-radio :label="false">false</el-radio>
+          <el-radio :value="true">true</el-radio>
+          <el-radio :value="false">false</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="Update asset polygon">
@@ -197,8 +205,8 @@ onMounted(async () => {
           v-model="form.canUpdateAssetPolygon"
           data-test="radio-canUpdateAssetPolygon"
         >
-          <el-radio :label="true">true</el-radio>
-          <el-radio :label="false">false</el-radio>
+          <el-radio :value="true">true</el-radio>
+          <el-radio :value="false">false</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="Delete asset">
@@ -206,8 +214,8 @@ onMounted(async () => {
           v-model="form.canDeleteAsset"
           data-test="radio-canDeleteAsset"
         >
-          <el-radio :label="true">true</el-radio>
-          <el-radio :label="false">false</el-radio>
+          <el-radio :value="true">true</el-radio>
+          <el-radio :value="false">false</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="Update profile">
@@ -215,8 +223,8 @@ onMounted(async () => {
           v-model="form.canUpdateProfile"
           data-test="radio-canUpdateProfile"
         >
-          <el-radio :label="true">true</el-radio>
-          <el-radio :label="false">false</el-radio>
+          <el-radio :value="true">true</el-radio>
+          <el-radio :value="false">false</el-radio>
         </el-radio-group>
       </el-form-item>
     </el-form>
@@ -249,8 +257,17 @@ onMounted(async () => {
           v-model="form.canCreateAsset"
           data-test="radio-canCreateAsset"
         >
-          <el-radio :label="true">true</el-radio>
-          <el-radio :label="false">false</el-radio>
+          <el-radio :value="true">true</el-radio>
+          <el-radio :value="false">false</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="Set polygon on create">
+        <el-radio-group
+          v-model="form.canSetPolygonOnCreate"
+          data-test="radio-canSetPolygonOnCreate"
+        >
+          <el-radio :value="true">true</el-radio>
+          <el-radio :value="false">false</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="Update asset fields">
@@ -258,8 +275,8 @@ onMounted(async () => {
           v-model="form.canUpdateAssetFields"
           data-test="radio-canUpdateAssetFields"
         >
-          <el-radio :label="true">true</el-radio>
-          <el-radio :label="false">false</el-radio>
+          <el-radio :value="true">true</el-radio>
+          <el-radio :value="false">false</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="Update asset polygon">
@@ -267,8 +284,8 @@ onMounted(async () => {
           v-model="form.canUpdateAssetPolygon"
           data-test="radio-canUpdateAssetPolygon"
         >
-          <el-radio :label="true">true</el-radio>
-          <el-radio :label="false">false</el-radio>
+          <el-radio :value="true">true</el-radio>
+          <el-radio :value="false">false</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="Delete asset">
@@ -276,8 +293,8 @@ onMounted(async () => {
           v-model="form.canDeleteAsset"
           data-test="radio-canDeleteAsset"
         >
-          <el-radio :label="true">true</el-radio>
-          <el-radio :label="false">false</el-radio>
+          <el-radio :value="true">true</el-radio>
+          <el-radio :value="false">false</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="Update profile">
@@ -285,8 +302,8 @@ onMounted(async () => {
           v-model="form.canUpdateProfile"
           data-test="radio-canUpdateProfile"
         >
-          <el-radio :label="true">true</el-radio>
-          <el-radio :label="false">false</el-radio>
+          <el-radio :value="true">true</el-radio>
+          <el-radio :value="false">false</el-radio>
         </el-radio-group>
       </el-form-item>
     </el-form>

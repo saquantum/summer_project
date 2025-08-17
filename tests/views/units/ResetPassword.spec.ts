@@ -1,6 +1,6 @@
 import { mount, flushPromises, VueWrapper, DOMWrapper } from '@vue/test-utils'
 import ResetPassword from '@/views/user/ResetPassword.vue'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { config } from '@vue/test-utils'
 import { nextTick, type ComponentPublicInstance } from 'vue'
 
@@ -92,6 +92,14 @@ describe('ResetPassword.vue', () => {
       message: 'Success',
       data: undefined
     })
+
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    // Restore console methods after each test
+    vi.restoreAllMocks()
   })
 
   describe('Initial State', () => {

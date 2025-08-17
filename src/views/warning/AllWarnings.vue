@@ -28,8 +28,9 @@ const handleShowDetail = (row: TableRow) => {
   router.push(`/warnings/${row.id}`)
 }
 
+const deleteId = ref<number[]>([])
 const handleDelete = (row: TableRow) => {
-  console.log('Delete warning:', row.id)
+  deleteId.value.push(row.id)
 }
 
 const processWarnings = () => {

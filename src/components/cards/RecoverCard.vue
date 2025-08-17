@@ -124,7 +124,7 @@ const handleConfirm = async () => {
         <el-button @click="handleVerify" v-if="codeVisible">Verify</el-button>
       </el-form-item>
 
-      <el-link type="info" :underline="false" @click="router.push('/login')">
+      <el-link type="info" underline="hover" @click="router.push('/login')">
         ← Back to login
       </el-link>
     </el-form>
@@ -163,7 +163,7 @@ const handleConfirm = async () => {
         <el-button @click="handleConfirm">Confirm</el-button>
       </el-form-item>
 
-      <el-link type="info" underline="never" @click="router.push('/login')">
+      <el-link type="info" underline="hover" @click="router.push('/login')">
         ← Back to login
       </el-link>
     </el-form>

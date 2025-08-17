@@ -99,6 +99,7 @@ describe('AddUser.vue', () => {
   })
 
   it('shows error when API fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     vi.mocked(adminInsertUserService).mockRejectedValue({} as ApiResponse)
 
     const wrapper = mount(AddUser)
@@ -123,6 +124,8 @@ describe('AddUser.vue', () => {
     expect(vi.mocked(adminInsertUserService)).toHaveBeenCalled()
 
     expect(ElMessage.error).toHaveBeenCalledWith('Server Error')
+
+    vi.restoreAllMocks()
   })
 
   it('resets the form', async () => {
