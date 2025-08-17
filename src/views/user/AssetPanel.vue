@@ -6,10 +6,10 @@ import { useUserStore, useAssetStore } from '@/stores'
 import type { AssetWithWarnings } from '@/types'
 import { useResponsiveAction } from '@/composables/useResponsiveAction.ts'
 import WarningLegend from '@/components/WarningLegend.vue'
+import { WarningFilled } from '@element-plus/icons-vue'
 const assetStore = useAssetStore()
 const userStore = useUserStore()
 const router = useRouter()
-import { Position } from '@element-plus/icons-vue'
 
 // filter value
 
@@ -45,11 +45,6 @@ const warningOrder: Record<string, number> = {
   YELLOW: 1,
   '': 0
 }
-
-// empty status
-const showEmpty = computed(() => {
-  return currentAssets.value.length <= 0
-})
 
 /**
  * mobile component
@@ -182,6 +177,9 @@ defineExpose({
         v-for="(item, index) in currentPageAssets"
         :key="item.asset.id"
         class="asset-card"
+        :class="{
+          'asset-card--severe': item.maxWarning?.warningLevel === 'RED'
+        }"
         shadow="hover"
       >
         <div class="card-body">
@@ -206,6 +204,17 @@ defineExpose({
                 }"
               >
                 {{ item.asset.name || 'Asset Name' }}
+                <el-tooltip
+                  v-if="item.maxWarning?.warningLevel === 'RED'"
+                  content="High Risk"
+                  placement="top"
+                >
+                  <span class="risk-badge">
+                    <el-icon class="risk-icon--warning" aria-label="High Risk">
+                      <WarningFilled />
+                    </el-icon>
+                  </span>
+                </el-tooltip>
               </div>
 
               <div class="warning-container">
@@ -226,6 +235,7 @@ defineExpose({
                 </div>
               </div>
             </div>
+
             <el-divider style="margin: 10px 0" />
             <div class="asset-info-group">
               <div class="asset-info-item">
@@ -242,21 +252,17 @@ defineExpose({
               </div>
             </div>
           </div>
+
           <el-button
             type="primary"
             @click="router.push(`/assets/${item.asset.id}`)"
             class="view-details-btn"
           >
             Detail
-            <span class="btn-icon">
-              <el-icon class="filled-icon"><Position /></el-icon>
-            </span>
           </el-button>
         </template>
       </el-card>
     </div>
-
-    <el-empty v-show="showEmpty" description="No assets found" />
   </div>
 
   <div class="asset-list" v-else>
@@ -313,8 +319,8 @@ defineExpose({
 .card-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 40px;
-  max-width: calc(300px * 4 + 40px * 3);
+  gap: 20px;
+  max-width: calc(300px * 4 + 20px * 3);
   margin-left: auto;
   margin-right: auto;
   justify-content: flex-start;
@@ -327,16 +333,16 @@ defineExpose({
   overflow: hidden;
   transition: all 0.3s ease;
   border: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 10px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
   flex-direction: column;
   justify-content: space-between;
 }
 
 .asset-card:hover {
-  transform: translateY(-4px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
+
 .card-header {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -402,51 +408,41 @@ defineExpose({
   width: 120px;
   height: 35px;
 
-  background-image: linear-gradient(
-    to top,
-    rgba(163, 205, 168, 0.76) 0%,
-    #a4d5a1 100%
-  );
-  border: 1px solid #fdfdfd;
+  background: linear-gradient(
+    90deg,
+    rgba(36, 59, 107, 0.65) 0%,
+    rgba(155, 183, 212, 0.85) 55%,
+    rgba(228, 223, 216, 0.45) 100%
+  ) !important;
+
+  color: rgb(255, 255, 255);
+  text-shadow: 0 4px 6px rgba(2, 12, 119, 0.89);
+
+  border: 1px solid rgba(253, 253, 253, 0.68);
   border-radius: 999px;
 
-  font-weight: 600;
+  font-weight: 700;
   font-size: 16px;
-  color: rgb(255, 255, 255);
 
   text-align: center;
 
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 6px rgba(0, 0, 0, 0.27);
   transition: all 0.3s ease;
 }
 
 .view-details-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  background: linear-gradient(to bottom, #d4eacb, #f4f4f4);
-  color: #6b9f65;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.25);
-}
+  background: linear-gradient(
+    90deg,
+    rgba(117, 134, 155, 0.42) 12%,
+    rgba(197, 191, 168, 0.65) 40%,
+    rgba(197, 191, 168, 0.41) 88%,
+    rgba(117, 134, 155, 0.11) 100%
+  ) !important;
 
-.btn-icon {
-  background: linear-gradient(to bottom, #ffffff, #eaeaea);
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  margin-left: 8px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-.filled-icon svg {
-  width: 18px;
-  height: 18px;
-  color: #8eae89;
-  stroke: none !important;
+  color: rgba(48, 94, 152, 0.87);
+  text-shadow: 0 4px 6px rgba(66, 71, 138, 0.41);
 }
 
 .asset-info-group {
@@ -460,7 +456,7 @@ defineExpose({
 
 .info-value {
   margin-top: 5px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 560;
   color: #222;
   white-space: nowrap;
@@ -475,8 +471,8 @@ defineExpose({
 }
 
 .warning-bar {
-  width: 45px;
-  height: 16px;
+  width: 40px;
+  height: 10px;
   border-radius: 4px;
   margin-left: 8px;
   margin-top: 12px;
@@ -505,6 +501,22 @@ defineExpose({
 
 .bar-SUCCESS {
   background-color: rgba(0, 128, 0, 0.64);
+}
+
+.asset-card--severe:hover {
+  filter: drop-shadow(0 3px 5px rgb(161, 29, 29));
+}
+
+.asset-card--severe {
+  box-shadow: 0 8px 10px rgba(0, 0, 0, 0.1);
+  filter: drop-shadow(0 3px 5px rgba(255, 106, 58, 0.35));
+}
+
+.risk-icon--warning {
+  font-size: 18px;
+  color: #ae3a33;
+  filter: drop-shadow(0 0 4px rgba(60, 1, 1, 0.19));
+  margin-top: 2px;
 }
 
 @media (max-width: 768px) {
