@@ -200,7 +200,7 @@ const isMobile = computed(() => {
 
     <el-row :gutter="16" class="content-grid">
       <!-- Left: Map -->
-      <el-col :xs="24" :lg="14">
+      <el-col :xs="24" :sm="24" :md="14" :lg="14">
         <el-card class="card-elevated map-card">
           <template #header>
             <div class="card-header">
@@ -218,7 +218,7 @@ const isMobile = computed(() => {
           </div>
         </el-card>
       </el-col>
-      <el-col :xs="24" :lg="10" class="right-col">
+      <el-col :xs="24" :sm="24" :md="10" :lg="10" class="right-col">
         <!-- Admin -->
         <el-card
           v-if="
@@ -247,17 +247,17 @@ const isMobile = computed(() => {
                 <el-button
                   @click="prevPolygon"
                   :disabled="mapCardRef?.disablePrev"
-                >⬅</el-button
+                  >⬅</el-button
                 >
                 <el-button
                   @click="nextPolygon"
                   :disabled="mapCardRef?.disableNext"
-                >➡</el-button
+                  >➡</el-button
                 >
                 <el-button
                   class="styled-btn reset-btn"
                   @click="quickEscapePolygons"
-                >Reset display</el-button
+                  >Reset display</el-button
                 >
                 <div class="toolbar-group">
                   <el-button
@@ -266,7 +266,7 @@ const isMobile = computed(() => {
                     @click="beginDrawing"
                     :disabled="disableSetPolygon"
                     type="primary"
-                  >Draw polygon</el-button
+                    >Draw polygon</el-button
                   >
                 </div>
                 <div class="toolbar-group" v-if="isDrawing">
@@ -274,39 +274,39 @@ const isMobile = computed(() => {
                     v-if="isDrawing"
                     @click="finishOneShape"
                     :disabled="disableSetPolygon"
-                  >Finish shape</el-button
+                    >Finish shape</el-button
                   >
                   <el-button
                     v-if="isDrawing"
                     @click="finishOnePolygon"
                     :disabled="disableSetPolygon"
-                  >Finish polygon</el-button
+                    >Finish polygon</el-button
                   >
                   <el-button
                     v-if="isDrawing"
                     @click="clearCurrentPolygon"
                     :disabled="disableSetPolygon"
-                  >Clear current</el-button
+                    >Clear current</el-button
                   >
                   <el-button
                     v-if="isDrawing"
                     @click="clearAll"
                     :disabled="disableSetPolygon"
-                  >Clear all</el-button
+                    >Clear all</el-button
                   >
                   <el-button
                     v-if="isDrawing"
                     @click="endDrawing"
                     :disabled="disableSetPolygon"
                     type="success"
-                  >End drawing</el-button
+                    >End drawing</el-button
                   >
                   <el-button
                     v-if="isDrawing"
                     @click="cancelDrawing"
                     :disabled="disableSetPolygon"
                     type="warning"
-                  >Cancel</el-button
+                    >Cancel</el-button
                   >
                 </div>
               </div>
@@ -326,7 +326,7 @@ const isMobile = computed(() => {
                   class="styled-btn"
                   type="primary"
                   size="small"
-                >Edit</el-button
+                  >Edit</el-button
                 >
 
                 <template v-else>
@@ -334,14 +334,14 @@ const isMobile = computed(() => {
                     class="styled-btn btn-cancel"
                     @click="isEdit = false"
                     size="small"
-                  >Cancel</el-button
+                    >Cancel</el-button
                   >
                   <el-button
                     @click="submit"
                     class="styled-btn"
                     type="success"
                     size="small"
-                  >Submit</el-button
+                    >Submit</el-button
                   >
                 </template>
               </div>
@@ -602,7 +602,7 @@ const isMobile = computed(() => {
 }
 
 .equal-table
-:deep(.el-table--striped .el-table__body tr.el-table__row--striped td) {
+  :deep(.el-table--striped .el-table__body tr.el-table__row--striped td) {
   background-color: #f2f6ff;
 }
 
@@ -610,15 +610,32 @@ const isMobile = computed(() => {
   background-color: #eaf3ff;
 }
 
+@media (min-width: 1024px) {
+  .asset-detail-page {
+    width: 1380px;
+    margin: 10px auto;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .admin-card {
+    margin-top: 20px;
+  }
+}
+
 @media (max-width: 768px) {
   .asset-detail-page {
     --gap: 12px;
     --gap-lg: 16px;
     padding: var(--gap);
+    width: auto;
   }
   .page-header {
     padding: 10px 12px;
     border-radius: 10px;
+  }
+  .map-card {
+    margin-bottom: 20px;
   }
   .map-container {
     height: clamp(260px, 48vh, 420px);
@@ -629,11 +646,8 @@ const isMobile = computed(() => {
   .responsive-table {
     min-width: 600px;
   }
-}
-
-@media (min-width: 769px) and (max-width: 1200px) {
-  .map-container {
-    height: clamp(320px, 54vh, 560px);
+  .admin-card {
+    margin-top: 20px;
   }
 }
 </style>
