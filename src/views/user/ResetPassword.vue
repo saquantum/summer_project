@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Lock } from '@element-plus/icons-vue'
 import { ref } from 'vue'
-import { useGlobalLogout, useUserStore } from '@/stores/index.ts'
+import { useUserStore } from '@/stores/index.ts'
+import { useGlobalLogout } from '@/utils/logout'
 import {
   userGetEmailService,
   userEmailVerificationService,

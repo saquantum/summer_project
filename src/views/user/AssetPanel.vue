@@ -2,9 +2,9 @@
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ref, watch, computed } from 'vue'
-import { useUserStore, useAssetStore } from '@/stores/index.ts'
+import { useUserStore, useAssetStore } from '@/stores'
 import type { AssetWithWarnings } from '@/types'
-import { useResponsiveAction } from '@/composables/useResponsiveAction'
+import { useResponsiveAction } from '@/composables/useResponsiveAction.ts'
 import WarningLegend from '@/components/WarningLegend.vue'
 const assetStore = useAssetStore()
 const userStore = useUserStore()

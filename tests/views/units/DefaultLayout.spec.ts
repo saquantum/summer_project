@@ -84,11 +84,14 @@ const mockMailStore = {
 }
 
 vi.mock('@/stores/index.ts', () => ({
-  useGlobalLogout: () => ({
-    logout: mockLogout
-  }),
   useUserStore: () => mockUserStore,
   useMailStore: () => mockMailStore
+}))
+
+vi.mock('@/utils/logout.ts', () => ({
+  useGlobalLogout: () => ({
+    logout: mockLogout
+  })
 }))
 
 // Mock Element Plus - partial mock approach

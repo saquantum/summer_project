@@ -9,9 +9,10 @@ import {
   Lock
 } from '@element-plus/icons-vue'
 import { ref, watch, computed } from 'vue'
-import { useUserStore, useGlobalLogout, useMailStore } from '@/stores/index.ts'
+import { useUserStore, useMailStore } from '@/stores/index.ts'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { useGlobalLogout } from '@/utils/logout'
 
 const userStore = useUserStore()
 const mailStore = useMailStore()

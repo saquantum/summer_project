@@ -1,5 +1,5 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import AssetPanel from '@/views/myassets/AssetPanel.vue'
+import AssetPanel from '@/views/user/AssetPanel.vue'
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest'
 import { config } from '@vue/test-utils'
 import { nextTick } from 'vue'
@@ -98,7 +98,7 @@ vi.mock('@/components/TestSearch.vue', () => ({
     emits: ['update:input', 'update:visible', 'search', 'clearFilters']
   }
 }))
-vi.mock('@/views/myassets/AddAsset.vue', () => ({
+vi.mock('@/views/asset/AddAsset.vue', () => ({
   default: { name: 'AddAsset', template: '<div class="addasset-mock"></div>' }
 }))
 

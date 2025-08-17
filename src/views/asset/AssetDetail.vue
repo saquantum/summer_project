@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAssetStore, useUserStore } from '@/stores/index.ts'
+import { useAssetStore, useUserStore } from '@/stores'
 import { useRoute, useRouter } from 'vue-router'
 import { ref, computed, type ComponentPublicInstance } from 'vue'
 import type { Asset, AssetWithWarnings } from '@/types/asset'

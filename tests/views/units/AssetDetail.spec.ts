@@ -1,5 +1,5 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import AssetDetail from '@/views/assetdetail/index.vue'
+import AssetDetailDetail from '@/views/asset/AssetDetail.vue'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { config } from '@vue/test-utils'
 import { nextTick } from 'vue'
@@ -148,7 +148,7 @@ vi.mock('@/stores/index.ts', () => ({
   useAssetStore: () => mockAssetStore
 }))
 
-describe('AssetDetail', () => {
+describe('AssetDetailDetail', () => {
   beforeEach(() => {
     pushMock.mockClear()
     routeMock.params.id = '1'
@@ -160,7 +160,7 @@ describe('AssetDetail', () => {
   })
 
   const createWrapper = (options = {}) => {
-    return mount(AssetDetail, {
+    return mount(AssetDetailDetail, {
       ...options
     })
   }

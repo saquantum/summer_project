@@ -37,6 +37,7 @@ const handleBackToAdmin = () => {
 <template>
   <!-- user interface -->
   <el-menu
+    data-test="user-menu"
     :default-active="props.activeIndex"
     active-text-color="#0000"
     background-color="#f2f2f3"
@@ -111,6 +112,7 @@ const handleBackToAdmin = () => {
 
   <!-- admin interface -->
   <el-menu
+    data-test="admin-menu"
     active-text-color="#ffd04b"
     background-color="#f2f2f3"
     :default-active="props.activeIndex"

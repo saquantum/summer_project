@@ -39,15 +39,18 @@ const mockUserResetPasswordService = vi.mocked(userResetPasswordService)
 // Mock global logout function
 const mockLogout = vi.fn()
 vi.mock('@/stores/index.ts', () => ({
-  useGlobalLogout: () => ({
-    logout: mockLogout
-  }),
   useUserStore: () => ({
     user: {
       contactDetails: {
         email: 'test@example.com'
       }
     }
+  })
+}))
+
+vi.mock('@/utils/logout.ts', () => ({
+  useGlobalLogout: () => ({
+    logout: mockLogout
   })
 }))
 

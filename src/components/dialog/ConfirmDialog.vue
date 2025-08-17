@@ -71,10 +71,11 @@ const handleConfirm = () => {
     </slot>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="handleCancel">
+        <el-button @click="handleCancel" data-test="cancel">
           {{ cancelText || 'Cancel' }}
         </el-button>
         <el-button
+          data-test="confirm"
           type="primary"
           :disabled="confirmDisabled"
           @click="handleConfirm"

@@ -24,7 +24,7 @@ const router = createRouter({
       children: [
         {
           path: 'assets',
-          component: () => import('@/views/myassets/AssetPanel.vue')
+          component: () => import('@/views/user/AssetPanel.vue')
         },
         {
           path: 'user/profile',
@@ -32,11 +32,11 @@ const router = createRouter({
         },
         {
           path: 'assets/:id',
-          component: () => import('@/views/assetdetail/index.vue')
+          component: () => import('@/views/asset/AssetDetail.vue')
         },
         {
           path: 'assets/add',
-          component: () => import('@/views/myassets/AddAsset.vue')
+          component: () => import('@/views/asset/AddAsset.vue')
         },
         {
           path: 'admin/users',
@@ -64,7 +64,7 @@ const router = createRouter({
         },
         {
           path: 'message',
-          component: () => import('@/views/inbox/index.vue')
+          component: () => import('@/views/user/inbox/index.vue')
         },
         {
           path: 'admin/user/add',
@@ -72,7 +72,7 @@ const router = createRouter({
         },
         {
           path: 'admin/assets/add',
-          component: () => import('@/views/myassets/AddAsset.vue')
+          component: () => import('@/views/asset/AddAsset.vue')
         },
         {
           path: 'admin/assets',
@@ -104,7 +104,7 @@ const router = createRouter({
         },
         {
           path: 'admin/users/permission',
-          component: () => import('@/views/admin/AcessControl.vue')
+          component: () => import('@/views/admin/AccessControl.vue')
         }
       ]
     },

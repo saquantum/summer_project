@@ -1,10 +1,12 @@
-/* * usage: *
-<DatePicker :teleported="true" v-model="form.lastInspection" />
-* when teleported is true, it will enable vue teleport function to pass the *
-component to the body. Use v-model to bind the variable, the component will pass
-* a [Date, Date] array to its parent component. */
-
 <script setup lang="ts">
+/**
+ * usage:
+ * <DatePicker :teleported="true" v-model="form.lastInspection" />
+ *
+ * When teleported is true, it will enable Vue teleport function to pass the
+ * component to the body. Use v-model to bind the variable, the component will pass
+ * a [Date, Date] array to its parent component.
+ */
 import { useResponsiveAction } from '@/composables/useResponsiveAction'
 import {
   DArrowRight,

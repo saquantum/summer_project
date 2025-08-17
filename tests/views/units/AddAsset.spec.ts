@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { flushPromises, mount } from '@vue/test-utils'
-import AddAsset from '@/views/myassets/AddAsset.vue'
+import AddAsset from '@/views/asset/AddAsset.vue'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
@@ -117,11 +117,6 @@ describe('AddAsset.vue', () => {
   describe('Component Rendering', () => {
     it('renders the form correctly for regular users', () => {
       const wrapper = mount(AddAsset)
-      const vm = wrapper.vm as any
-
-      // Debug: Let's see what the store is returning
-      console.log('User store in test:', vm.userStore.user)
-      console.log('disableAddAsset:', vm.disableAddAsset)
 
       // Check specifically for the restriction message, not just any h3
       expect(wrapper.find('h3').text()).not.toBe(

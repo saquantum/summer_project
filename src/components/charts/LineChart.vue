@@ -8,10 +8,12 @@ interface Props {
   count: number
   id: string
   title: string
+  color?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  count: 0
+  count: 0,
+  color: ' #409eff'
 })
 
 let lineChart: ECharts | null = null
@@ -79,7 +81,7 @@ onUnmounted(() => {
     <div class="card-content">
       <!-- Left side: count number -->
       <div class="count-section">
-        <div class="count-number">
+        <div class="count-number" :style="{ color: props.color }">
           <ICountUp :end-val="props.count" :duration="2" />
         </div>
       </div>

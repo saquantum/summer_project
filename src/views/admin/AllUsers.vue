@@ -159,7 +159,10 @@ const selectAll = ref(false)
 const handleUpdatePermissionGroup = async (groupName: string) => {
   try {
     if (selectAll.value) {
-      await adminAssignUsersToGroup(groupName, userSearchBody.value.filters)
+      const filters = {
+        filters: userSearchBody.value.filters
+      }
+      await adminAssignUsersToGroup(groupName, filters)
     } else {
       const filters = {
         filters: {

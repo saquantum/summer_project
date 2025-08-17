@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useMailStore } from '@/stores/modules/mail'
+import { useMailStore } from '@/stores/modules/mail.ts'
 import type { Mail } from '@/types'
 import {
   Filter,
@@ -11,9 +11,9 @@ import {
 } from '@element-plus/icons-vue'
 import { ref, computed, onMounted, watch } from 'vue'
 
-import { deleteMailService, readMailService } from '@/api/mail'
+import { deleteMailService, readMailService } from '@/api/mail.ts'
 import { useUserStore } from '@/stores'
-import { useResponsiveAction } from '@/composables/useResponsiveAction'
+import { useResponsiveAction } from '@/composables/useResponsiveAction.ts'
 const mailStore = useMailStore()
 const userStore = useUserStore()
 

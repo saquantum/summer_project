@@ -7,13 +7,13 @@ import type { UserInfoForm } from '@/types'
 import { adminInsertUserService } from '@/api/admin'
 import {
   createRepasswordRules,
-  emailRules,
   firstNameRules,
   lastNameRules,
   passwordRules,
   phoneRules,
   postcodeRules,
   trimForm,
+  uniqueEmailRules,
   usernameRules
 } from '@/utils/formUtils'
 
@@ -61,7 +61,7 @@ const rules = ref<FormRules<typeof form>>({
   repassword: createRepasswordRules(() => form.value.password || ''),
   firstName: firstNameRules,
   lastName: lastNameRules,
-  'contactDetails.email': emailRules,
+  'contactDetails.email': uniqueEmailRules,
   'contactDetails.phone': phoneRules,
   'address.postcode': postcodeRules
 })
@@ -141,38 +141,46 @@ onMounted(async () => {})
       :rules="rules"
     >
       <el-form-item label="Username" prop="id">
-        <el-input v-model="form.id" />
+        <el-input v-model="form.id" data-test="id" />
       </el-form-item>
 
       <el-form-item label="Password" prop="password">
-        <el-input type="password" v-model="form.password" />
+        <el-input
+          type="password"
+          v-model="form.password"
+          data-test="password"
+        />
       </el-form-item>
 
       <el-form-item label="Type password again" prop="repassword">
-        <el-input type="password" v-model="form.repassword" />
+        <el-input
+          type="password"
+          v-model="form.repassword"
+          data-test="repassword"
+        />
       </el-form-item>
       <!-- name -->
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="First name" prop="firstName">
-            <el-input v-model="form.firstName" />
+            <el-input v-model="form.firstName" data-test="firstName" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="Last name" prop="lastName">
-            <el-input v-model="form.lastName" />
+            <el-input v-model="form.lastName" data-test="lastName" />
           </el-form-item>
         </el-col>
       </el-row>
 
       <!-- email -->
       <el-form-item label="Email" prop="contactDetails.email">
-        <el-input v-model="form.contactDetails.email" />
+        <el-input v-model="form.contactDetails.email" data-test="email" />
       </el-form-item>
 
       <!-- phone -->
       <el-form-item label="Phone" prop="contactDetails.phone">
-        <el-input v-model="form.contactDetails.phone" />
+        <el-input v-model="form.contactDetails.phone" data-test="phone" />
       </el-form-item>
 
       <!-- address -->
@@ -184,7 +192,7 @@ onMounted(async () => {})
               label-width="100px"
               prop="address.street"
             >
-              <el-input v-model="form.address.street" />
+              <el-input v-model="form.address.street" data-test="street" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -193,7 +201,7 @@ onMounted(async () => {})
               label-width="100px"
               prop="address.postcode"
             >
-              <el-input v-model="form.address.postcode" />
+              <el-input v-model="form.address.postcode" data-test="postcode" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -201,7 +209,7 @@ onMounted(async () => {})
         <el-row :gutter="20" style="width: 100%">
           <el-col :span="12">
             <el-form-item label="City" label-width="100px" prop="address.city">
-              <el-input v-model="form.address.city" />
+              <el-input v-model="form.address.city" data-test="city" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -210,35 +218,52 @@ onMounted(async () => {})
               label-width="100px"
               prop="address.country"
             >
-              <el-input v-model="form.address.country" />
+              <el-input v-model="form.address.country" data-test="city" />
             </el-form-item>
           </el-col>
         </el-row>
       </el-form-item>
 
       <el-form-item label="Contact preferences">
-        <el-checkbox label="Email" v-model="form.contactPreferences.email" />
-        <el-checkbox label="Phone" v-model="form.contactPreferences.phone" />
+        <el-checkbox
+          label="Email"
+          v-model="form.contactPreferences.email"
+          data-test="preference-email"
+        />
+        <el-checkbox
+          label="Phone"
+          v-model="form.contactPreferences.phone"
+          data-test="preference-phone"
+        />
         <el-checkbox
           label="WhatsApp"
           v-model="form.contactPreferences.whatsapp"
+          data-test="preference-whatsapp"
         />
         <el-checkbox
           label="Discord"
           v-model="form.contactPreferences.discord"
+          data-test="preference-discord"
         />
-        <el-checkbox label="Post" v-model="form.contactPreferences.post" />
+        <el-checkbox
+          label="Post"
+          v-model="form.contactPreferences.post"
+          data-test="preference-post"
+        />
         <el-checkbox
           label="Telegram"
           v-model="form.contactPreferences.telegram"
+          data-test="preference-telegram"
         />
       </el-form-item>
 
       <!--submit botton -->
       <el-form-item>
         <div style="display: flex; justify-content: center; width: 100%">
-          <el-button type="primary" @click="submit">Submit</el-button>
-          <el-button @click="reset">Reset</el-button>
+          <el-button type="primary" @click="submit" data-test="submit"
+            >Submit</el-button
+          >
+          <el-button @click="reset" data-test="reset">Reset</el-button>
         </div>
       </el-form-item>
     </el-form>

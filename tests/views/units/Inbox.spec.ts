@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { mount } from '@vue/test-utils'
-import InboxView from '@/views/inbox/index.vue'
+import InboxView from '@/views/user/inbox/index.vue'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { nextTick, ref } from 'vue'
 import type { Mail } from '@/types'

@@ -60,12 +60,15 @@ const mockFeatureGroup = {
 // Mock the Leaflet library
 vi.mock('leaflet', () => {
   class MockTileLayer {}
+  class MockMarker {}
+  class MockCircleMarker {}
 
   return {
     default: {
       map: vi.fn(() => mockMap),
       tileLayer: vi.fn(() => mockTileLayer),
-      marker: vi.fn(() => mockLayer),
+      Marker: MockMarker,
+      CircleMarker: MockCircleMarker,
       polygon: vi.fn(() => mockLayer),
       geoJSON: vi.fn(() => mockLayer),
       featureGroup: vi.fn(() => mockFeatureGroup),

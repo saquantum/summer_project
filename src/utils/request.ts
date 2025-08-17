@@ -1,4 +1,6 @@
 import axios, { type AxiosRequestConfig } from 'axios'
+import { useGlobalLogout } from './logout'
+
 const baseURL = '/api'
 
 const instance = axios.create({
@@ -103,10 +105,8 @@ instance.interceptors.response.use(
 
     // 401 permission denied or token expired
     if (error.response?.status === 401) {
-      import('@/stores').then(({ useGlobalLogout }) => {
-        const { logout } = useGlobalLogout()
-        logout()
-      })
+      const { logout } = useGlobalLogout()
+      logout()
     }
     // default
     return Promise.reject(error)

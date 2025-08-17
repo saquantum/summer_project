@@ -26,7 +26,8 @@ export default mergeConfig(
           'src/types/**',
           'src/api/**',
           'src/router/**',
-          'src/api/[...all].vue'
+          'src/views/[[]...all[]].vue',
+          'src/stores/index.ts'
         ]
       }
     }

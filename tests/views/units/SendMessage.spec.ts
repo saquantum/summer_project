@@ -3,24 +3,12 @@ import SendMessage from '@/views/admin/SendMessage.vue'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { ElMessage } from 'element-plus'
-import * as adminApi from '@/api/admin'
+import { adminSendMessageService } from '@/api/admin'
 import type { AxiosResponse } from 'axios'
 
 // Mock admin API
 vi.mock('@/api/admin', () => ({
   adminSendMessageService: vi.fn()
-}))
-
-// Mock user store
-vi.mock('@/stores', () => ({
-  useUserStore: vi.fn(() => ({
-    user: {
-      admin: true,
-      userId: 'admin123',
-      firstName: 'Admin',
-      lastName: 'User'
-    }
-  }))
 }))
 
 // Mock form utils
@@ -66,7 +54,7 @@ describe('SendMessage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(adminApi.adminSendMessageService).mockResolvedValue({
+    vi.mocked(adminSendMessageService).mockResolvedValue({
       data: 'success',
       status: 200,
       statusText: 'OK',
@@ -84,7 +72,7 @@ describe('SendMessage', () => {
     await flushPromises()
 
     // Check for form fields
-    expect(wrapper.find('[data-test="username-input"]').exists()).toBe(true)
+    expect(wrapper.find('[data-test="users"]').exists()).toBe(true)
     expect(wrapper.find('input[data-test="duration-input"]').exists()).toBe(
       true
     )
@@ -103,7 +91,7 @@ describe('SendMessage', () => {
     const wrapper = createWrapper()
     await flushPromises()
 
-    const usernameInput = wrapper.find('[data-test="username-input"]')
+    const usernameInput = wrapper.find('[data-test="users"]')
     const titleInput = wrapper.find('input[placeholder="Please input title"]')
 
     await usernameInput.setValue('testuser')
@@ -143,7 +131,7 @@ describe('SendMessage', () => {
     await flushPromises()
 
     // Fill in form data
-    await wrapper.find('[data-test="username-input"]').setValue('testuser')
+    await wrapper.find('[data-test="users"]').setValue('testuser')
     await wrapper.find('input[data-test="duration-input"]').setValue('30')
     await wrapper
       .find('input[placeholder="Please input title"]')
@@ -155,9 +143,9 @@ describe('SendMessage', () => {
     await flushPromises()
 
     // Verify API was called with correct form data (body will be handled by TiptapEditor)
-    expect(vi.mocked(adminApi.adminSendMessageService)).toHaveBeenCalledWith(
+    expect(vi.mocked(adminSendMessageService)).toHaveBeenCalledWith(
       expect.objectContaining({
-        userId: 'testuser',
+        users: 'testuser',
         duration: 30,
         title: 'Test Title'
         // body will be set by the actual TiptapEditor component
@@ -173,7 +161,7 @@ describe('SendMessage', () => {
     await flushPromises()
 
     // Fill in form data but leave duration empty
-    await wrapper.find('[data-test="username-input"]').setValue('testuser')
+    await wrapper.find('[data-test="users"]').setValue('testuser')
     await wrapper
       .find('input[placeholder="Please input title"]')
       .setValue('Test Title')
@@ -185,9 +173,9 @@ describe('SendMessage', () => {
     await flushPromises()
 
     // Verify API was called with duration as 9999999 (default for empty)
-    expect(vi.mocked(adminApi.adminSendMessageService)).toHaveBeenCalledWith(
+    expect(vi.mocked(adminSendMessageService)).toHaveBeenCalledWith(
       expect.objectContaining({
-        userId: 'testuser',
+        users: 'testuser',
         duration: 9999999,
         title: 'Test Title'
       })
@@ -200,7 +188,7 @@ describe('SendMessage', () => {
 
     // Set negative duration
     await wrapper.find('input[data-test="duration-input"]').setValue('-5')
-    await wrapper.find('[data-test="username-input"]').setValue('testuser')
+    await wrapper.find('[data-test="users"]').setValue('testuser')
     await wrapper
       .find('input[placeholder="Please input title"]')
       .setValue('Test Title')
@@ -211,7 +199,7 @@ describe('SendMessage', () => {
     await flushPromises()
 
     // Verify API was not called (form validation prevented submission)
-    expect(vi.mocked(adminApi.adminSendMessageService)).not.toHaveBeenCalled()
+    expect(vi.mocked(adminSendMessageService)).not.toHaveBeenCalled()
   })
 
   it('can trigger send button click', async () => {
@@ -231,15 +219,13 @@ describe('SendMessage', () => {
   })
 
   it('handles API error and shows error message', async () => {
-    vi.mocked(adminApi.adminSendMessageService).mockRejectedValue(
-      new Error('API Error')
-    )
+    vi.mocked(adminSendMessageService).mockRejectedValue(new Error('API Error'))
 
     const wrapper = createWrapper()
     await flushPromises()
 
     // Fill in valid form data
-    await wrapper.find('[data-test="username-input"]').setValue('testuser')
+    await wrapper.find('[data-test="users"]').setValue('testuser')
     await wrapper.find('input[data-test="duration-input"]').setValue('30')
     await wrapper
       .find('input[placeholder="Please input title"]')
@@ -262,7 +248,7 @@ describe('SendMessage', () => {
 
     // Set duration to 0
     await wrapper.find('input[data-test="duration-input"]').setValue('0')
-    await wrapper.find('[data-test="username-input"]').setValue('testuser')
+    await wrapper.find('[data-test="users"]').setValue('testuser')
     await wrapper
       .find('input[placeholder="Please input title"]')
       .setValue('Test Title')
@@ -272,19 +258,17 @@ describe('SendMessage', () => {
     await flushPromises()
 
     // Verify API was not called (form validation prevented submission)
-    expect(vi.mocked(adminApi.adminSendMessageService)).not.toHaveBeenCalled()
+    expect(vi.mocked(adminSendMessageService)).not.toHaveBeenCalled()
   })
 
   it('preserves form data after failed submission', async () => {
-    vi.mocked(adminApi.adminSendMessageService).mockRejectedValue(
-      new Error('API Error')
-    )
+    vi.mocked(adminSendMessageService).mockRejectedValue(new Error('API Error'))
 
     const wrapper = createWrapper()
     await flushPromises()
 
     // Fill in form data
-    const usernameInput = wrapper.find('[data-test="username-input"]')
+    const usernameInput = wrapper.find('[data-test="users"]')
     const durationInput = wrapper.find('input[data-test="duration-input"]')
     const titleInput = wrapper.find('input[placeholder="Please input title"]')
 

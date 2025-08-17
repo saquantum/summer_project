@@ -6,7 +6,7 @@ import type { FormItemRule } from 'element-plus'
 import { computed, ref } from 'vue'
 
 const form = ref({
-  userId: '',
+  users: '',
   duration: 0,
   title: '',
   body: ''
@@ -16,30 +16,13 @@ const form = ref({
 const durationInput = ref('')
 
 const rules = computed(() => ({
-  userId: sendToAll.value
-    ? []
-    : [
-        {
-          required: true,
-          message: 'Please input username',
-          trigger: 'blur'
-        },
-        {
-          validator: (
-            rule: FormItemRule,
-            value: string,
-            callback: (_error?: Error) => void
-          ) => {
-            const ids = form.value.userId.split(',')
-            if (!ids) {
-              callback(new Error('Invalid format'))
-            } else {
-              callback()
-            }
-          },
-          trigger: 'blur'
-        }
-      ],
+  users: [
+    {
+      required: true,
+      message: 'Please input username',
+      trigger: 'blur'
+    }
+  ],
   title: [{ required: true, message: 'Please input title', trigger: 'blur' }],
   duration: [
     {
@@ -65,8 +48,6 @@ const rules = computed(() => ({
     }
   ]
 }))
-
-const sendToAll = ref(false)
 
 const editorRef = ref()
 const isLoading = ref(false)
@@ -111,27 +92,8 @@ const handleSend = async () => {
     }
   }
 
-  let requestBody
-  if (sendToAll.value) {
-    requestBody = {
-      ...form.value,
-      filters: {}
-    }
-  } else {
-    const ids = form.value.userId.replace(/\s+/g, '').split(',')
-    requestBody = {
-      ...form.value,
-      filters: {
-        user_id: {
-          op: 'in',
-          list: ids
-        }
-      }
-    }
-  }
-
   try {
-    await adminSendMessageService(requestBody)
+    await adminSendMessageService(form.value)
     ElMessage.success('Message sent')
   } catch (e) {
     console.error(e)
@@ -140,9 +102,47 @@ const handleSend = async () => {
     isLoading.value = false
   }
 }
+
+const selectUserDialogVisible = ref(false)
+const selectAll = ref(false)
+
+const requestBody = ref<{ filters: Filters }>({ filters: {} })
+
+interface Filters {
+  user_id?: { op: string; val: string } | { list: string[] }
+  user_name?: { op: string; val: string }
+}
+
+const handleSelect = ({ filters }: { filters: Filters }) => {
+  requestBody.value = { filters: filters }
+  if (selectAll.value) {
+    if (filters.user_id && 'op' in filters.user_id) {
+      form.value.users = `All users where ID ${filters.user_id.op} "${filters.user_id.val.replace(/%/g, '')}"`
+    } else if (filters.user_name) {
+      form.value.users = `All users where Name ${filters.user_name.op} "${filters.user_name.val.replace(/%/g, '')}"`
+    } else {
+      form.value.users = 'All users'
+    }
+  } else {
+    if (filters.user_id && 'list' in filters.user_id) {
+      const list = filters.user_id.list.filter(Boolean)
+      const displayed = list.slice(0, 2).join(', ')
+      form.value.users =
+        list.length > 2 ? `${displayed} (${list.length} in total)` : displayed
+    } else {
+      form.value.users = ''
+    }
+  }
+  selectUserDialogVisible.value = false
+}
 </script>
 
 <template>
+  <SelectUserDialog
+    v-model:selectAll="selectAll"
+    v-model:visible="selectUserDialogVisible"
+    @confirm="handleSelect"
+  ></SelectUserDialog>
   <el-form
     ref="formRef"
     :model="form"
@@ -150,11 +150,12 @@ const handleSend = async () => {
     label-position="left"
     :rules="rules"
   >
-    <el-form-item label="Username" prop="userId">
+    <el-form-item label="Select users" prop="users">
       <el-input
-        v-model="form.userId"
-        data-test="username-input"
-        placeholder="Split username with ','"
+        data-test="users"
+        v-model="form.users"
+        readonly
+        @click="selectUserDialogVisible = true"
       ></el-input>
     </el-form-item>
     <el-form-item label="Duration" prop="duration">
@@ -173,13 +174,6 @@ const handleSend = async () => {
         data-test="title-input"
         placeholder="Please input title"
       ></el-input>
-    </el-form-item>
-
-    <el-form-item label="Send to all" prop="sendToAll">
-      <el-checkbox
-        v-model="sendToAll"
-        data-test="send-to-all-checkbox"
-      ></el-checkbox>
     </el-form-item>
   </el-form>
 

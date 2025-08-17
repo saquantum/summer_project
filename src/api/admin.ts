@@ -192,14 +192,16 @@ export const adminGetAllLiveWarningsService = (): Promise<
 // ): Promise<ApiResponse<Permission[]>> =>
 //   request.put(`/admin/permission/`, permission)
 
-export const adminGetPermissionGroupsService = () =>
-  request.get('/admin/access-group')
+export const adminGetPermissionGroupsService = (): Promise<
+  ApiResponse<PermissionGroup[]>
+> => request.get('/admin/access-group')
 
 export const adminUpdatePermissionGroupService = (obj: PermissionGroup) =>
   request.put('/admin/access-group', obj)
 
-export const adminInsertPermissionGroupService = (obj: PermissionGroup) =>
-  request.post('/admin/access-group', obj)
+export const adminInsertPermissionGroupService = (
+  obj: PermissionGroup
+): Promise<ApiResponse> => request.post('/admin/access-group', obj)
 
 export const adminAssignUsersToGroup = (groupName: string, obj: object) =>
   request.put(`/admin/access-group/assign/${groupName}`, obj)

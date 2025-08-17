@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import type { ECharts } from 'echarts'
 import {
   adminGetAssetDistributionService,
+  adminGetAssetsTotalService,
   adminGetContactPreferenceService,
   adminGetMetaDateService,
   adminGetUserDistributionService
@@ -34,6 +35,7 @@ const assetStore = useAssetStore()
 
 const userCount = ref(0)
 const assetCount = ref(0)
+const assetsInDanger = ref(0)
 
 const userDistribution = ref<Record<string, number>>({})
 const assetDistribution = ref<Record<string, number>>({})
@@ -112,33 +114,32 @@ const assetWarnings = computed(() => {
   return arr
 })
 
-// Separate data fetching logic
 const fetchDashboardData = async () => {
   try {
     const res = await adminGetMetaDateService()
-
     const user = res.data.find(
       (item: { tableName: string }) => item.tableName === 'users'
     )
     const asset = res.data.find(
       (item: { tableName: string }) => item.tableName === 'assets'
     )
-
     userCount.value = user?.totalCount || 0
     assetCount.value = asset?.totalCount || 0
-    const userDistributionRes = await adminGetUserDistributionService()
-    if (userDistributionRes && userDistributionRes.data) {
-      userDistribution.value = userDistributionRes.data
-    }
-    const percentage = await adminGetContactPreferenceService()
-    if (percentage && percentage.data) {
-      contactPreference.value = percentage.data
-    }
-    const assetDis = await adminGetAssetDistributionService()
-    if (assetDis && assetDis.data) {
-      assetDistribution.value = assetDis.data
-    }
-    console.log(assetDistribution.value)
+
+    const [userDistRes, contactPrefRes, assetDistRes, assetsTotalRes] =
+      await Promise.all([
+        adminGetUserDistributionService(),
+        adminGetContactPreferenceService(),
+        adminGetAssetDistributionService(),
+        adminGetAssetsTotalService({
+          filters: { warning_id: { op: 'notNull' } }
+        })
+      ])
+
+    if (userDistRes?.data) userDistribution.value = userDistRes.data
+    if (contactPrefRes?.data) contactPreference.value = contactPrefRes.data
+    if (assetDistRes?.data) assetDistribution.value = assetDistRes.data
+    if (assetsTotalRes?.data) assetsInDanger.value = assetsTotalRes.data
 
     await warningStore.getAllLiveWarnings()
   } catch (error) {
@@ -325,6 +326,18 @@ onBeforeUnmount(() => {
         </template>
       </LineChart>
       <LineChart :count="assetCount" id="asset-copy" title="Asset Statistics">
+        <template #icon>
+          <el-icon style="font-size: 18px; color: #409eff">
+            <Location />
+          </el-icon>
+        </template>
+      </LineChart>
+      <LineChart
+        :count="assetsInDanger"
+        id="asset-in-danger"
+        title="Assets in danger"
+        color="orange"
+      >
         <template #icon>
           <el-icon style="font-size: 18px; color: #409eff">
             <Location />

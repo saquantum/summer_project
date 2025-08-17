@@ -4,7 +4,7 @@ import { computed } from 'vue'
 const props = defineProps({
   status: {
     type: String,
-    default: 'OFF' // possible value：success, YELLOW, AMBER, RED
+    default: 'OFF' // possible value：SUCCESS, YELLOW, AMBER, RED
   }
 })
 
