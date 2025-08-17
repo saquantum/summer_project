@@ -135,333 +135,505 @@ const isMobile = computed(() => {
 </script>
 
 <template>
-  <el-card class="map-card">
-    <template #header>
-      <div class="card-header">
-        <span>{{ asset?.name }}</span>
-      </div>
-    </template>
-    <div class="map-container">
-      <MapCard
-        ref="mapCardRef"
-        :map-id="'mapdetail'"
-        v-model:locations="locations"
-        :asset="asset"
-        v-model:mode="mode"
-      ></MapCard>
-    </div>
-  </el-card>
-
-  <!-- action -->
-  <div
-    v-if="
-      userStore.user?.admin ||
-      userStore.user?.accessControlGroup.canUpdateAssetPolygon
-    "
-    class="admin-section"
-  >
-    <h3>Admin Actions</h3>
-    <div class="admin-controls">
-      <div class="control-row">
-        <label>Mode:</label>
-        <el-select v-model="mode" class="mode-select">
-          <el-option label="convex" value="convex"></el-option>
-          <el-option label="sequence" value="sequence"></el-option>
-        </el-select>
-      </div>
-
-      <div class="control-buttons">
-        <el-button @click="prevPolygon" :disabled="mapCardRef?.disablePrev"
-          >⬅</el-button
-        >
-        <el-button @click="nextPolygon" :disabled="mapCardRef?.disableNext"
-          >➡</el-button
-        >
-        <el-button @click="quickEscapePolygons">reset display</el-button>
-
-        <el-button
-          v-if="!isDrawing"
-          @click="beginDrawing"
-          :disabled="disableSetPolygon"
-          >Draw new polygon</el-button
-        >
-        <el-button
-          v-if="isDrawing"
-          @click="finishOneShape"
-          :disabled="disableSetPolygon"
-          >Finish one shape</el-button
-        >
-        <el-button
-          v-if="isDrawing"
-          @click="finishOnePolygon"
-          :disabled="disableSetPolygon"
-          >Finish one polygon</el-button
-        >
-        <el-button
-          v-if="isDrawing"
-          @click="clearCurrentPolygon"
-          :disabled="disableSetPolygon"
-          >Clear current polygon</el-button
-        >
-        <el-button
-          v-if="isDrawing"
-          @click="clearAll"
-          :disabled="disableSetPolygon"
-          >Clear all</el-button
-        >
-        <el-button
-          v-if="isDrawing"
-          @click="endDrawing"
-          :disabled="disableSetPolygon"
-          >End drawing</el-button
-        >
-        <el-button
-          v-if="isDrawing"
-          @click="cancelDrawing"
-          :disabled="disableSetPolygon"
-          >Cancel drawing</el-button
-        >
+  <div class="asset-detail-page">
+    <div class="page-header">
+      <div class="title-wrap">
+        <div class="asset-name">{{ asset?.name }}</div>
+        <div v-if="displayData.length" class="badge">
+          {{ displayData.length }} warnings
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- form -->
+    <!-- Warnings table -->
+    <el-card class="card-elevated table-card">
+      <template #header>
+        <div class="card-header">
+          <span>Warning Details</span>
+        </div>
+      </template>
 
-  <div class="table-section">
-    <h3>Warning Details</h3>
-    <div class="table-container">
-      <el-table
-        :data="displayData"
-        stripe
-        class="responsive-table"
-        :size="isMobile ? 'small' : 'default'"
-      >
-        <el-table-column
-          prop="weatherType"
-          label="Weather Type"
-          :width="isMobile ? undefined : 180"
-          :min-width="120"
-        />
-        <el-table-column
-          prop="warningLevel"
-          label="Warning Level"
-          :width="isMobile ? undefined : 180"
-          :min-width="120"
-        />
+      <div class="table-container">
+        <el-table
+          :data="displayData"
+          class="responsive-table equal-table"
+          :size="isMobile ? 'small' : 'default'"
+          table-layout="fixed"
+          :fit="true"
+          style="width: 100%"
+        >
+          <el-table-column
+            prop="weatherType"
+            label="Weather Type"
+            align="center"
+            header-align="center"
+          />
+          <el-table-column
+            prop="warningLevel"
+            label="Warning Level"
+            align="center"
+            header-align="center"
+          />
+          <el-table-column
+            prop="period"
+            label="Period"
+            align="center"
+            header-align="center"
+          />
+          <el-table-column label="Actions" align="center" header-align="center">
+            <template #default="scope">
+              <div class="action-cell">
+                <el-button
+                  text
+                  type="primary"
+                  :size="isMobile ? 'small' : 'default'"
+                  @click="handleShowDetail(scope.row)"
+                >
+                  Detail
+                </el-button>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+    </el-card>
 
-        <el-table-column
-          prop="period"
-          label="Period"
-          :width="isMobile ? undefined : 180"
-          :min-width="110"
-        />
-        <el-table-column label="Actions" :min-width="150" fixed="right">
-          <template #default="scope">
-            <div class="action-cell">
-              <el-button
-                text
-                type="primary"
-                :size="isMobile ? 'small' : 'default'"
-                @click="handleShowDetail(scope.row)"
-              >
-                Detail
-              </el-button>
+    <el-row :gutter="16" class="content-grid">
+      <!-- Left: Map -->
+      <el-col :xs="24" :lg="14">
+        <el-card class="card-elevated map-card">
+          <template #header>
+            <div class="card-header">
+              <span>Location</span>
             </div>
           </template>
-        </el-table-column>
-      </el-table>
-    </div>
-  </div>
+          <div class="map-container">
+            <MapCard
+              ref="mapCardRef"
+              :map-id="'mapdetail'"
+              v-model:locations="locations"
+              :asset="asset"
+              v-model:mode="mode"
+            />
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :lg="10" class="right-col">
+        <!-- Admin -->
+        <el-card
+          v-if="
+            userStore.user?.admin ||
+            userStore.user?.accessControlGroup.canUpdateAssetPolygon
+          "
+          class="card-elevated admin-card"
+        >
+          <template #header>
+            <div class="card-header">
+              <span>Admin Actions</span>
+            </div>
+          </template>
 
-  <div class="form-section">
-    <AssetForm
-      ref="assetFormRef"
-      v-model:isEdit="isEdit"
-      :item="item"
-    ></AssetForm>
+          <div class="admin-controls">
+            <div class="control-row">
+              <label>Mode</label>
+              <el-select v-model="mode" class="mode-select">
+                <el-option label="convex" value="convex" />
+                <el-option label="sequence" value="sequence" />
+              </el-select>
+            </div>
 
-    <div class="action-buttons">
-      <el-button v-if="!isEdit" @click="isEdit = true" type="primary">
-        Edit
-      </el-button>
-      <el-button v-else @click="isEdit = false"> Cancel </el-button>
-      <el-button v-if="isEdit" @click="submit" type="success">
-        Submit
-      </el-button>
-    </div>
+            <div class="toolbar">
+              <div class="toolbar-group">
+                <el-button
+                  @click="prevPolygon"
+                  :disabled="mapCardRef?.disablePrev"
+                >⬅</el-button
+                >
+                <el-button
+                  @click="nextPolygon"
+                  :disabled="mapCardRef?.disableNext"
+                >➡</el-button
+                >
+                <el-button
+                  class="styled-btn reset-btn"
+                  @click="quickEscapePolygons"
+                >Reset display</el-button
+                >
+                <div class="toolbar-group">
+                  <el-button
+                    class="styled-btn"
+                    v-if="!isDrawing"
+                    @click="beginDrawing"
+                    :disabled="disableSetPolygon"
+                    type="primary"
+                  >Draw polygon</el-button
+                  >
+                </div>
+                <div class="toolbar-group" v-if="isDrawing">
+                  <el-button
+                    v-if="isDrawing"
+                    @click="finishOneShape"
+                    :disabled="disableSetPolygon"
+                  >Finish shape</el-button
+                  >
+                  <el-button
+                    v-if="isDrawing"
+                    @click="finishOnePolygon"
+                    :disabled="disableSetPolygon"
+                  >Finish polygon</el-button
+                  >
+                  <el-button
+                    v-if="isDrawing"
+                    @click="clearCurrentPolygon"
+                    :disabled="disableSetPolygon"
+                  >Clear current</el-button
+                  >
+                  <el-button
+                    v-if="isDrawing"
+                    @click="clearAll"
+                    :disabled="disableSetPolygon"
+                  >Clear all</el-button
+                  >
+                  <el-button
+                    v-if="isDrawing"
+                    @click="endDrawing"
+                    :disabled="disableSetPolygon"
+                    type="success"
+                  >End drawing</el-button
+                  >
+                  <el-button
+                    v-if="isDrawing"
+                    @click="cancelDrawing"
+                    :disabled="disableSetPolygon"
+                    type="warning"
+                  >Cancel</el-button
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </el-card>
+
+        <!-- Asset form -->
+        <el-card class="card-elevated form-card">
+          <template #header>
+            <div class="card-header card-header-actions">
+              <span>Asset Details</span>
+              <div class="header-actions">
+                <el-button
+                  v-if="!isEdit"
+                  @click="isEdit = true"
+                  class="styled-btn"
+                  type="primary"
+                  size="small"
+                >Edit</el-button
+                >
+
+                <template v-else>
+                  <el-button
+                    class="styled-btn btn-cancel"
+                    @click="isEdit = false"
+                    size="small"
+                  >Cancel</el-button
+                  >
+                  <el-button
+                    @click="submit"
+                    class="styled-btn"
+                    type="success"
+                    size="small"
+                  >Submit</el-button
+                  >
+                </template>
+              </div>
+            </div>
+          </template>
+
+          <div class="form-section">
+            <AssetForm
+              ref="assetFormRef"
+              v-model:isEdit="isEdit"
+              :item="item"
+            />
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <style scoped>
-.main-content {
-  margin-bottom: 20px;
+.asset-detail-page {
+  --gap: 16px;
+  --gap-lg: 20px;
+  --radius: 14px;
+  --shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  --card-bg: #fff;
+  --soft-border: #ebeef5;
+  --header-bg: rgba(255, 255, 255, 0.88);
+  --header-border: #e8eaef;
+  --title: #1f2d3d;
+  --muted: #606266;
+  display: block;
+  padding: var(--gap);
 }
 
-.map-card {
-  height: 100%;
-  min-height: 400px;
-}
-
-.map-container {
-  height: 600px;
-}
-
-.form-section {
-  height: 100%;
+.page-header {
+  top: 0;
   display: flex;
-  flex-direction: column;
+  gap: var(--gap);
+  padding: 12px 16px;
+  background: var(--header-bg);
+  border-radius: 12px;
+  margin-bottom: var(--gap-lg);
 }
 
-.action-buttons {
-  margin-top: 20px;
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.asset-name {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--title);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge {
+  padding: 2px 8px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 999px;
+  background: rgba(237, 174, 174, 0.39);
+  color: #7c1b05;
+  border: 1px solid #fffbfb;
+}
+
+.header-actions {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
 }
 
-.table-section {
-  margin-bottom: 30px;
+.content-grid {
+  margin-top: var(--gap);
 }
 
-.table-section h3 {
+.card-elevated {
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--soft-border);
+  background: var(--card-bg);
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  font-weight: 600;
+  color: var(--title);
+}
+
+.map-card {
+  height: 100%;
+}
+
+.map-container {
+  height: clamp(320px, 60vh, 680px);
+}
+
+.right-col > .el-card + .el-card {
+  margin-top: var(--gap);
+}
+
+.admin-controls {
+  display: grid;
+  gap: 14px;
   margin-bottom: 15px;
-  color: #303133;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.control-row label {
+  min-width: 52px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.mode-select {
+  width: 180px;
+  max-width: 100%;
+}
+
+.toolbar {
+  display: grid;
+  gap: 10px;
+}
+.toolbar-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .table-container {
   overflow-x: auto;
 }
-
 .responsive-table {
   width: 100%;
-  min-width: 800px;
+  min-width: 720px;
 }
-
 .action-cell {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-.admin-section {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid #e4e7ed;
-}
-
-.admin-section h3 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  color: #303133;
-}
-
-.admin-controls {
+.form-section {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
 }
 
-.control-row {
+.content-grid .el-col > .el-card + .el-card {
+  margin-top: var(--gap);
+}
+
+.form-card .card-header.card-header-actions {
+  justify-content: space-between;
+}
+
+.form-card .header-actions {
   display: flex;
+  gap: 8px;
   align-items: center;
-  gap: 10px;
 }
 
-.control-row label {
-  min-width: 60px;
-  font-weight: 500;
+.styled-btn {
+  padding: 8px 20px;
+  font-weight: 600;
+  font-size: 16px;
+  border-radius: 8px;
+  color: #ffffff;
+  border: 1px solid #fff;
+  text-shadow: 0 4px 4px rgba(0, 0, 0, 0.5);
+  background-image: linear-gradient(
+    180deg,
+    #e4dfd8 0%,
+    #9bb7d4 60%,
+    rgba(58, 78, 107, 0.58) 100%
+  );
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
 }
 
-.mode-select {
-  width: 150px;
+.styled-btn:hover {
+  background: linear-gradient(
+    180deg,
+    #f0e6d2 0%,
+    rgba(125, 140, 163, 0.44) 100%
+  );
+  color: #39435b;
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  border: 1px solid #fff;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
 }
 
-.control-buttons {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+.btn-cancel {
+  background: linear-gradient(to bottom, #ffffff, #dfdcdc);
+  color: #7f0505;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
 }
 
-.multiline-text {
-  white-space: pre-wrap;
-  word-break: break-word;
+.btn-cancel:hover {
+  background-image: linear-gradient(
+    to bottom,
+    #782d2d 0%,
+    #852e2e 10%,
+    #903737 100%
+  );
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.reset-btn {
+  background: linear-gradient(
+    180deg,
+    #f0e6d2 0%,
+    rgba(125, 140, 163, 0.44) 100%
+  );
+  color: #39435b;
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.37);
+  border: 1px solid #fff;
+}
+
+.reset-btn:hover {
+  color: #ffffff;
+  border: 1px solid #fff;
+  text-shadow: 0 4px 4px rgba(0, 0, 0, 0.5);
+  background-image: linear-gradient(
+    180deg,
+    #e4dfd8 0%,
+    #9bb7d4 60%,
+    rgba(58, 78, 107, 0.58) 100%
+  );
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+}
+
+.equal-table :deep(.el-table__cell) {
+  border-right: 0 !important;
+}
+
+.equal-table :deep(.el-table__header th.el-table__cell) {
+  background-color: #f5f7fb;
+  font-weight: 600;
+}
+
+.equal-table :deep(.el-table__body td.el-table__cell) {
+  background-color: #fbfcff;
+}
+
+.equal-table
+:deep(.el-table--striped .el-table__body tr.el-table__row--striped td) {
+  background-color: #f2f6ff;
+}
+
+.equal-table :deep(.el-table__body tr:hover > td) {
+  background-color: #eaf3ff;
 }
 
 @media (max-width: 768px) {
-  .main-content {
-    margin-bottom: 15px;
+  .asset-detail-page {
+    --gap: 12px;
+    --gap-lg: 16px;
+    padding: var(--gap);
   }
-
+  .page-header {
+    padding: 10px 12px;
+    border-radius: 10px;
+  }
   .map-container {
-    height: 400px;
+    height: clamp(260px, 48vh, 420px);
   }
-
-  .action-buttons {
-    margin-top: 15px;
-  }
-
-  .action-buttons .el-button {
-    flex: 1;
-    min-width: 80px;
-  }
-
-  .table-container {
-    margin: 0 -10px;
-  }
-
-  .admin-section {
-    padding: 15px;
-    margin: 0 -10px;
-  }
-
-  .control-buttons {
-    justify-content: center;
-  }
-
-  .control-buttons .el-button {
-    flex: 1;
-    min-width: 100px;
-    margin-bottom: 5px;
-  }
-
-  .control-row {
-    justify-content: center;
-  }
-
   .mode-select {
-    width: 120px;
+    width: 140px;
   }
-}
-
-@media (max-width: 480px) {
-  :deep(.el-row) {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
-
-  :deep(.el-col) {
-    padding-left: 5px !important;
-    padding-right: 5px !important;
-  }
-
-  .map-container {
-    height: 300px;
-  }
-
   .responsive-table {
     min-width: 600px;
   }
-
-  .control-buttons .el-button {
-    min-width: 90px;
-    font-size: 12px;
-  }
 }
 
-@media (min-width: 769px) and (max-width: 1024px) {
+@media (min-width: 769px) and (max-width: 1200px) {
   .map-container {
-    height: 500px;
+    height: clamp(320px, 54vh, 560px);
   }
 }
 </style>
