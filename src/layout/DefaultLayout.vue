@@ -173,19 +173,25 @@ watch(
 .layout-container {
   height: 100vh;
 
+  .el-menu {
+    background-color: #f2f2f3;
+  }
   .el-main {
     background-color: #ffffff;
     padding: 20px;
   }
   ::v-deep(.el-menu > .el-menu-item),
   ::v-deep(.el-sub-menu__title) {
+    font-weight: 300;
+    line-height: 44px;
     font-size: 18px;
     color: #424242;
     border-radius: 12px;
-    margin: 0;
+    margin: 0 10px;
     padding-left: 16px !important;
     transition: background-color 0.3s;
   }
+
   ::v-deep(.el-sub-menu .el-menu .el-menu-item) {
     font-size: 16px;
     color: #424242;
@@ -198,11 +204,15 @@ watch(
   ::v-deep(.el-menu-item.is-active),
   ::v-deep(.el-sub-menu__title:hover),
   ::v-deep(.el-sub-menu__title.is-active) {
-    color: #000 !important;
-    font-weight: bold;
+    color: #08388a !important;
+    font-weight: 600;
     border-radius: 12px;
-    margin: 0;
-    background-color: rgba(163, 205, 168, 0.76);
+    background: linear-gradient(
+      -130deg,
+      rgba(120, 140, 165, 0.18) 0%,
+      rgba(95, 118, 170, 0.22) 40%,
+      rgba(230, 238, 248, 0.95) 100%
+    );
     position: relative;
     z-index: 2;
   }
@@ -211,6 +221,7 @@ watch(
     position: relative;
     margin-left: 30px;
     padding-left: 0;
+    background-color: #f2f2f3;
 
     &::before {
       content: '';
@@ -219,14 +230,9 @@ watch(
       left: 10px;
       width: 1px;
       height: 100%;
-      border-left: 1.2px dashed #636262;
+      border-left: 1.2px dashed rgba(17, 53, 115, 0.56);
       z-index: 0;
-    }
-
-    .el-menu-item {
-      position: relative;
-      padding-left: 20px;
-      min-width: 200px;
+      margin: 0;
     }
   }
 
@@ -305,7 +311,7 @@ watch(
 }
 
 ::v-deep(.el-dropdown-menu__item:hover) {
-  background-color: rgba(163, 205, 168, 0.76);
+  background-color: rgba(61, 121, 158, 0.32);
   color: #000;
 }
 
@@ -330,5 +336,12 @@ watch(
 }
 
 @media (max-width: 480px) {
+  .el-menu {
+    background-color: #ffffff !important;
+  }
+
+  ::v-deep(.el-sub-menu > .el-menu) {
+    background-color: #ffffff !important;
+  }
 }
 </style>
