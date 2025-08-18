@@ -120,7 +120,7 @@ const handleShowDetail = (row: WarningTableRow) => {
 const disableSetPolygon = computed(() => {
   if (
     !userStore.user?.admin &&
-    !userStore.user?.accessControlGroup.canSetPolygonOnCreate
+    !userStore.user?.accessControlGroup.canUpdateAssetPolygon
   )
     return true
   return false
@@ -220,16 +220,10 @@ const isMobile = computed(() => {
       </el-col>
       <el-col :xs="24" :sm="24" :md="10" :lg="10" class="right-col">
         <!-- Admin -->
-        <el-card
-          v-if="
-            userStore.user?.admin ||
-            userStore.user?.accessControlGroup.canUpdateAssetPolygon
-          "
-          class="card-elevated admin-card"
-        >
+        <el-card class="card-elevated admin-card">
           <template #header>
             <div class="card-header">
-              <span>Admin Actions</span>
+              <span>Map Actions</span>
             </div>
           </template>
 
@@ -257,6 +251,8 @@ const isMobile = computed(() => {
                 <el-button
                   class="styled-btn reset-btn"
                   @click="quickEscapePolygons"
+                  :disabled="disableSetPolygon"
+                  data-test="reset-display"
                   >Reset display</el-button
                 >
                 <div class="toolbar-group">
@@ -265,7 +261,7 @@ const isMobile = computed(() => {
                     v-if="!isDrawing"
                     @click="beginDrawing"
                     :disabled="disableSetPolygon"
-                    type="primary"
+                    data-test="draw-polyogn"
                     >Draw polygon</el-button
                   >
                 </div>

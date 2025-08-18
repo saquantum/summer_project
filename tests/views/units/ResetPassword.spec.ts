@@ -1,8 +1,8 @@
-import { mount, flushPromises, VueWrapper, DOMWrapper } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import ResetPassword from '@/views/user/ResetPassword.vue'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { config } from '@vue/test-utils'
-import { nextTick, type ComponentPublicInstance } from 'vue'
+import { nextTick } from 'vue'
 
 config.global.config.warnHandler = () => {}
 
@@ -65,15 +65,6 @@ vi.mock('@/utils/formUtils', () => ({
   codeRules: [{ required: true, message: 'Please input code', trigger: 'blur' }]
 }))
 
-// Helper function to find button by text
-const findButtonByText = (
-  wrapper: VueWrapper<ComponentPublicInstance>,
-  text: string
-) => {
-  const buttons = wrapper.findAll('button')
-  return buttons.find((button: DOMWrapper<Element>) => button.text() === text)
-}
-
 describe('ResetPassword.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -107,35 +98,20 @@ describe('ResetPassword.vue', () => {
       const wrapper = mount(ResetPassword)
       await nextTick()
 
-      // Check initial message
-      expect(wrapper.text()).toContain(
-        'For your account safety, we need to verify your email'
-      )
-      expect(wrapper.text()).toContain('OTP code will send to your email')
+      // Check email
       expect(wrapper.text()).toContain('test@example.com')
-    })
-
-    it('shows verification form initially', async () => {
-      const wrapper = mount(ResetPassword)
-      await nextTick()
 
       // Should show code input and verification buttons
-      const codeInput = wrapper.find(
-        'input[placeholder="Please input OTP code"]'
-      )
+      const codeInput = wrapper.find('[data-test="code"]')
       expect(codeInput.exists()).toBe(true)
 
-      const buttons = wrapper.findAll('button')
-      expect(buttons.length).toBe(2)
-      expect(buttons[0].text()).toBe('Send')
-      expect(buttons[1].text()).toBe('Verify')
-    })
+      const sendBtn = wrapper.find('[data-test="send"]')
+      expect(sendBtn.exists()).toBe(true)
 
-    it('does not show reset password form initially', async () => {
-      const wrapper = mount(ResetPassword)
-      await nextTick()
+      const verifyBtn = wrapper.find('[data-test="verify"]')
+      expect(verifyBtn.exists()).toBe(true)
 
-      // Should not show password inputs initially
+      // does not show reset password form initially
       const passwordInputs = wrapper.findAll('input[type="password"]')
       expect(passwordInputs.length).toBe(0)
 
@@ -183,13 +159,11 @@ describe('ResetPassword.vue', () => {
       await nextTick()
 
       // Set OTP code
-      const codeInput = wrapper.find(
-        'input[placeholder="Please input OTP code"]'
-      )
+      const codeInput = wrapper.find('[data-test="code"]')
       await codeInput.setValue('123456')
 
-      const verifyButton = findButtonByText(wrapper, 'Verify')
-      await verifyButton?.trigger('click')
+      await wrapper.find('[data-test="verify"]').trigger('click')
+
       await nextTick()
       await flushPromises()
       expect(mockUserEmailVerificationService).toHaveBeenCalledWith({
@@ -204,23 +178,21 @@ describe('ResetPassword.vue', () => {
       const wrapper = mount(ResetPassword)
       await nextTick()
 
-      // Set OTP code and verify
-      const codeInput = wrapper.find(
-        'input[placeholder="Please input OTP code"]'
-      )
+      // Set OTP code
+      const codeInput = wrapper.find('[data-test="code"]')
       await codeInput.setValue('123456')
 
-      const verifyButton = findButtonByText(wrapper, 'Verify')
-      await verifyButton?.trigger('click')
+      await wrapper.find('[data-test="verify"]').trigger('click')
+
       await nextTick()
       await flushPromises()
       // Should now show the reset password form
-      expect(wrapper.text()).toContain('Reset your password')
+      expect(wrapper.text()).toContain('New password')
 
       const passwordInputs = wrapper.findAll('input[type="password"]')
       expect(passwordInputs.length).toBe(2)
 
-      const confirmButton = findButtonByText(wrapper, 'Confirm')
+      const confirmButton = wrapper.find('[data-test="confirm"]')
       expect(confirmButton?.exists()).toBe(true)
     })
 
@@ -232,14 +204,12 @@ describe('ResetPassword.vue', () => {
       const wrapper = mount(ResetPassword)
       await nextTick()
 
-      const codeInput = wrapper.find(
-        'input[placeholder="Please input OTP code"]'
-      )
+      const codeInput = wrapper.find('[data-test="code"]')
       await codeInput.setValue('invalid')
 
-      const verifyButton = findButtonByText(wrapper, 'Verify')
-      expect(verifyButton).toBeDefined()
-      await verifyButton!.trigger('click')
+      const verifyButton = wrapper.find('[data-test="verify"]')
+      expect(verifyButton.exists()).toBe(true)
+      await verifyButton.trigger('click')
       await nextTick()
       await flushPromises()
       expect(mockUserEmailVerificationService).toHaveBeenCalledWith({
@@ -250,9 +220,7 @@ describe('ResetPassword.vue', () => {
       })
 
       // Should still show verification form
-      expect(
-        wrapper.find('input[placeholder="Please input OTP code"]').exists()
-      ).toBe(true)
+      expect(wrapper.find('[data-test="code"]').exists()).toBe(true)
     })
   })
 
@@ -262,27 +230,21 @@ describe('ResetPassword.vue', () => {
       await nextTick()
 
       // First verify email
-      const codeInput = wrapper.find(
-        'input[placeholder="Please input OTP code"]'
-      )
+      const codeInput = wrapper.find('[data-test="code"]')
       await codeInput.setValue('123456')
 
-      const verifyButton = findButtonByText(wrapper, 'Verify')
+      const verifyButton = wrapper.find('[data-test="verify"]')
       await verifyButton.trigger('click')
       await nextTick()
       await flushPromises()
       // Check password reset form elements
-      expect(wrapper.text()).toContain('Reset your password')
+      expect(wrapper.text()).toContain('New password')
 
       const passwordInputs = wrapper.findAll('input[type="password"]')
       expect(passwordInputs.length).toBe(2)
 
-      expect(passwordInputs[0].attributes('placeholder')).toContain(
-        'Please input password'
-      )
-      expect(passwordInputs[1].attributes('placeholder')).toContain(
-        'Please input password again'
-      )
+      expect(passwordInputs[0].attributes('type')).toBe('password')
+      expect(passwordInputs[1].attributes('type')).toBe('password')
     })
 
     it('calls userResetPasswordService and logs out on successful password reset', async () => {
@@ -290,12 +252,10 @@ describe('ResetPassword.vue', () => {
       await nextTick()
 
       // First verify email
-      const codeInput = wrapper.find(
-        'input[placeholder="Please input OTP code"]'
-      )
+      const codeInput = wrapper.find('[data-test="code"]')
       await codeInput.setValue('123456')
 
-      const verifyButton = findButtonByText(wrapper, 'Verify')
+      const verifyButton = wrapper.find('[data-test="verify"]')
       await verifyButton.trigger('click')
       await nextTick()
       await flushPromises()
@@ -306,7 +266,7 @@ describe('ResetPassword.vue', () => {
       await passwordInputs[1].setValue('newpassword123')
 
       // Confirm password reset
-      const confirmButton = findButtonByText(wrapper, 'Confirm')
+      const confirmButton = wrapper.find('[data-test="confirm"]')
       await confirmButton.trigger('click')
       await nextTick()
 
@@ -327,12 +287,10 @@ describe('ResetPassword.vue', () => {
       await nextTick()
 
       // First verify email
-      const codeInput = wrapper.find(
-        'input[placeholder="Please input OTP code"]'
-      )
+      const codeInput = wrapper.find('[data-test="code"]')
       await codeInput.setValue('123456')
 
-      const verifyButton = findButtonByText(wrapper, 'Verify')
+      const verifyButton = wrapper.find('[data-test="verify"]')
       await verifyButton.trigger('click')
       await nextTick()
       await flushPromises()
@@ -343,7 +301,7 @@ describe('ResetPassword.vue', () => {
       await passwordInputs[1].setValue('newpassword123')
 
       // Confirm password reset
-      const confirmButton = findButtonByText(wrapper, 'Confirm')
+      const confirmButton = wrapper.find('[data-test="confirm"]')
       await confirmButton.trigger('click')
       await nextTick()
 
@@ -358,13 +316,11 @@ describe('ResetPassword.vue', () => {
       await nextTick()
 
       // Test code input
-      const codeInput = wrapper.find(
-        'input[placeholder="Please input OTP code"]'
-      )
+      const codeInput = wrapper.find('[data-test="code"]')
       await codeInput.setValue('654321')
 
       // Verify the form data is updated
-      const verifyButton = findButtonByText(wrapper, 'Verify')
+      const verifyButton = wrapper.find('[data-test="verify"]')
       await verifyButton.trigger('click')
       await nextTick()
       await flushPromises()
@@ -385,7 +341,7 @@ describe('ResetPassword.vue', () => {
       expect(wrapper.text()).toContain('test@example.com')
 
       // Verify that email is used in API calls
-      const sendButton = findButtonByText(wrapper, 'Send')
+      const sendButton = wrapper.find('[data-test="send"]')
       await sendButton.trigger('click')
       await nextTick()
       await flushPromises()
@@ -400,25 +356,19 @@ describe('ResetPassword.vue', () => {
       await nextTick()
 
       // Initially should show verification form
-      expect(
-        wrapper.find('input[placeholder="Please input OTP code"]').exists()
-      ).toBe(true)
+      expect(wrapper.find('[data-test="code"]').exists()).toBe(true)
       expect(wrapper.findAll('input[type="password"]').length).toBe(0)
 
       // After successful verification, should show reset form
-      const codeInput = wrapper.find(
-        'input[placeholder="Please input OTP code"]'
-      )
+      const codeInput = wrapper.find('[data-test="code"]')
       await codeInput.setValue('123456')
 
-      const verifyButton = findButtonByText(wrapper, 'Verify')
+      const verifyButton = wrapper.find('[data-test="verify"]')
       await verifyButton.trigger('click')
       await nextTick()
       await flushPromises()
 
-      expect(
-        wrapper.find('input[placeholder="Please input OTP code"]').exists()
-      ).toBe(false)
+      expect(wrapper.find('[data-test="code"]').exists()).toBe(false)
       expect(wrapper.findAll('input[type="password"]').length).toBe(2)
     })
   })

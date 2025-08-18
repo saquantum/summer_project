@@ -15,6 +15,7 @@ import {
   passwordRules
 } from '@/utils/formUtils'
 import CodeUtil from '@/utils/codeUtil'
+import { ElMessage } from 'element-plus'
 const userStore = useUserStore()
 
 const { logout } = useGlobalLogout()
@@ -69,6 +70,8 @@ const handleVerify = async () => {
   try {
     const res = await userEmailVerificationService(form.value)
     if (CodeUtil.isBusinessError(res.code)) {
+      form.value.code = ''
+      ElMessage.error('Invalid code')
       throw new Error('Invalid code')
     }
     resetFormVisible.value = true
@@ -103,6 +106,7 @@ const handleConfirm = async () => {
               class="pill-btn ghost"
               @click="handleSendEmail"
               :disabled="sendDisabled"
+              data-test="send"
             >
               {{ sendDisabled ? `Send (${countdown})` : 'Send code' }}
             </el-button>
@@ -124,9 +128,13 @@ const handleConfirm = async () => {
                 <el-input
                   v-model="form.code"
                   placeholder="Enter the OTP code"
+                  data-test="code"
                 />
               </el-form-item>
-              <el-button class="pill-btn primary" @click="handleVerify"
+              <el-button
+                data-test="verify"
+                class="pill-btn primary"
+                @click="handleVerify"
                 >Verify</el-button
               >
             </div>
@@ -155,7 +163,10 @@ const handleConfirm = async () => {
         </el-form-item>
 
         <div class="sheet-actions">
-          <el-button class="pill-btn primary" @click="handleConfirm"
+          <el-button
+            class="pill-btn primary"
+            @click="handleConfirm"
+            data-test="confirm"
             >Save</el-button
           >
         </div>

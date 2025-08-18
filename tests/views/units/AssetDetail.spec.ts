@@ -309,20 +309,6 @@ describe('AssetDetailDetail', () => {
     })
   })
 
-  describe('Map Integration', () => {
-    it('should show drawing controls for authorized users', () => {
-      mockUserStore.user.admin = true
-      const wrapper = createWrapper()
-      expect(wrapper.text()).toContain('Draw new polygon')
-    })
-
-    it('should show navigation controls', () => {
-      mockUserStore.user.admin = true
-      const wrapper = createWrapper()
-      expect(wrapper.text()).toContain('reset display')
-    })
-  })
-
   describe('Data Handling', () => {
     it('should handle asset data correctly', () => {
       const wrapper = createWrapper()

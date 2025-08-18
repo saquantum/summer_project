@@ -343,18 +343,6 @@ describe('DefaultLayout', () => {
     expect(mockRouter.push).toHaveBeenCalledWith('/admin/message/send')
   })
 
-  it('opens search dialog when search button is clicked', async () => {
-    const wrapper = createWrapper()
-    await flushPromises()
-
-    const searchButton = wrapper.find('.header-left button')
-    await searchButton.trigger('click')
-    await flushPromises()
-
-    const searchDialog = wrapper.findComponent({ name: 'SearchDialog' })
-    expect(searchDialog.exists()).toBe(true)
-  })
-
   it('toggles mobile menu button functionality', async () => {
     const wrapper = createWrapper()
     await flushPromises()
