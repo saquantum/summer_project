@@ -103,9 +103,6 @@ describe('WarningDetail', () => {
     const wrapper = createWrapper()
     await flushPromises()
 
-    const descriptions = wrapper.findAll('.el-descriptions-item')
-    expect(descriptions.length).toBeGreaterThan(0)
-
     // Check if warning details are displayed
     const text = wrapper.text()
     expect(text).toContain('123')

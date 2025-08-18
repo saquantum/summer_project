@@ -107,9 +107,7 @@ const submit = async () => {
     if (hasTemplate.value) {
       await adminUpdateTemplateByTypesService(form.value)
     } else {
-      console.log(form.value)
-      const res = await adminInsertTemplateService(form.value)
-      console.log(res)
+      await adminInsertTemplateService(form.value)
     }
 
     isDirty.value = false
@@ -149,14 +147,13 @@ const handleBeforeUnload = (e: BeforeUnloadEvent) => {
 
 onMounted(async () => {
   const id = route.query.id as string
-  console.log(id)
+
   let template: Template
   if (typeof id === 'string') {
-    console.log(id)
     const res = await adminGetTemplateByIdService(id)
-    console.log(res)
+
     template = res.data
-    console.log(template)
+
     if (template) {
       form.value.assetTypeId = template.assetTypeId
       form.value.warningType = template.warningType
@@ -178,7 +175,6 @@ onMounted(async () => {
     form.value.body = placeholder
     hasTemplate.value = false
   }
-  console.log(form.value)
 
   // Now that initialization is complete, enable the watch
   await nextTick()
@@ -196,12 +192,6 @@ onBeforeUnmount(() => {
 watch(
   () => ({ ...form.value }),
   async (newForm, oldForm) => {
-    console.log('watch triggered', {
-      newForm,
-      oldForm,
-      isInitializing: isInitializing.value
-    })
-
     if (isInitializing.value) return
 
     // Check if dropdown values changed (not title/body changes)
@@ -212,7 +202,6 @@ watch(
         newForm.assetTypeId !== oldForm.assetTypeId ||
         newForm.contactChannel !== oldForm.contactChannel)
     ) {
-      console.log('dropdown changed, fetching template')
       // User changed dropdown, fetch new template
       const res = await adminGetTemplateByTypesService(
         newForm.assetTypeId,

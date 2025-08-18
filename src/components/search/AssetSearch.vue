@@ -85,27 +85,16 @@ const handleScroll = () => {
 
 const userStore = useUserStore()
 
-const handleRowClick = (id: string) => {
-  tags.value.push(id)
-  fuzzySearch(id)
-}
-
-const tags = ref<string[]>([])
 const input = ref<string>('')
 
 const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Enter' && !input.value.trim()) {
+    clearFilters()
+  }
   if (e.key === 'Enter' && input.value.trim()) {
     e.preventDefault()
-    tags.value.push(input.value.trim())
     fuzzySearch(input.value)
-    input.value = ''
-  } else if (e.key === 'Backspace' && !input.value && tags.value.length) {
-    tags.value.pop()
   }
-}
-
-const removeTag = (index: number) => {
-  tags.value.splice(index, 1)
 }
 
 const focusInput = async () => {
@@ -255,20 +244,20 @@ defineExpose({
 <template>
   <div class="search-container">
     <!-- Search input container -->
-    <div ref="containerRef" class="tag-input-wrapper">
-      <span class="tag" v-for="(tag, index) in tags" :key="index">
-        {{ tag }}
-        <span class="close" @click.stop="removeTag(index)">×</span>
-      </span>
+    <div ref="containerRef" class="search-input-wrapper">
       <input
         @click="focusInput"
         ref="inputRef"
         v-model="input"
         @keydown="handleKeydown"
-        class="tag-input"
+        class="search-input"
         placeholder="Search assets..."
       />
-      <el-button @click="handleFilterClick" class="seamless-button">
+      <el-button
+        @click="handleFilterClick"
+        class="seamless-button"
+        data-test="filter"
+      >
         <el-icon><Filter /></el-icon>
       </el-button>
     </div>
@@ -369,8 +358,12 @@ defineExpose({
           </el-form>
 
           <div style="margin-top: 20px">
-            <el-button @click="handleSearch">Search</el-button>
-            <el-button @click="clearFilters">Clear filters</el-button>
+            <el-button @click="handleSearch" data-test="search"
+              >Search</el-button
+            >
+            <el-button @click="clearFilters" data-test="clear"
+              >Clear filters</el-button
+            >
           </div>
         </div>
 
@@ -381,7 +374,7 @@ defineExpose({
             <li
               v-for="(item, index) in userStore.searchHistory.slice(0, 5)"
               :key="index"
-              @click="handleRowClick(item)"
+              @click="fuzzySearch(item)"
             >
               {{ item }}
             </li>
@@ -402,9 +395,8 @@ defineExpose({
   border-radius: 0;
 }
 
-.tag-input-wrapper {
+.search-input-wrapper {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   padding-left: 10px;
   border: 1px solid #dcdfe6;
@@ -415,24 +407,7 @@ defineExpose({
   background-color: white;
 }
 
-.tag {
-  background-color: #409eff;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 4px;
-  margin-right: 4px;
-  display: flex;
-  align-items: center;
-  font-size: 12px;
-}
-
-.close {
-  margin-left: 6px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.tag-input {
+.search-input {
   flex: 1;
   border: none;
   outline: none;

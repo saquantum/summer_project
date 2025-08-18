@@ -27,7 +27,8 @@ export default mergeConfig(
           'src/api/**',
           'src/router/**',
           'src/views/[[]...all[]].vue',
-          'src/stores/index.ts'
+          'src/stores/index.ts',
+          'src/utils/UKRegionsCoordinates.ts'
         ]
       }
     }

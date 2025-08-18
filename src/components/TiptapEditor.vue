@@ -180,18 +180,8 @@ const editor = useEditor({
 
 const linkUrl = ref('')
 
-const updateContent = debounce((html: string) => {
+const updateContent = (html: string) => {
   content.value = html
-}, 300)
-
-function debounce(fn: (_arg: string) => void, delay = 300) {
-  let timer: ReturnType<typeof setTimeout> | null = null
-  return function (_arg: string) {
-    if (timer) clearTimeout(timer)
-    timer = setTimeout(() => {
-      fn(_arg)
-    }, delay)
-  }
 }
 
 const getLink = () => {
@@ -486,7 +476,20 @@ defineExpose({
   compiledHTML,
   plainText,
   uploadAllImagesAndGetFinalContent,
-  cleanupPreviewUrls
+  cleanupPreviewUrls,
+  // Expose for testing - keep refs as refs
+  linkUrl: linkUrl,
+  setLink,
+  normalizeUrl,
+  handleImageUpload,
+  uploadSingleFile,
+  pendingFiles: pendingFiles,
+  previewUrls: previewUrls,
+  localUrlToFileMap: localUrlToFileMap,
+  restoreEscapedHtmlExceptCode,
+  updateContent,
+  handleCommand,
+  parseHtml: parseHtml
 })
 </script>
 
