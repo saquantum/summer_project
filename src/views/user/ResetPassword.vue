@@ -127,7 +127,7 @@ const handleConfirm = async () => {
                 />
               </el-form-item>
               <el-button class="pill-btn primary" @click="handleVerify"
-              >Verify</el-button
+                >Verify</el-button
               >
             </div>
           </el-form>
@@ -156,7 +156,7 @@ const handleConfirm = async () => {
 
         <div class="sheet-actions">
           <el-button class="pill-btn primary" @click="handleConfirm"
-          >Save</el-button
+            >Save</el-button
           >
         </div>
       </el-form>

@@ -54,6 +54,18 @@ const handleEdit = () => {
 
 const handleCancel = () => {
   userCardRef.value.cancelEdit()
+  showCropper.value = false
+
+  if (tempAvatar.value?.previewUrl) {
+    URL.revokeObjectURL(tempAvatar.value.previewUrl)
+    tempAvatar.value = undefined
+  }
+
+  if (userCardRef.value) {
+    userCardRef.value.form.avatar = user.value.avatar || ''
+    userCardRef.value.previewUrl = ''
+    userCardRef.value.avatarFile = null
+  }
 }
 
 const isDisabled = computed(() => {
@@ -77,15 +89,35 @@ const showCropper = ref(false)
 const tempAvatar = ref<{ previewUrl: string }>()
 
 function openCropperDialog(fileData?: { previewUrl: string }) {
-  if (fileData) {
-    tempAvatar.value = fileData
+  // cleanup
+  if (tempAvatar.value?.previewUrl) {
+    URL.revokeObjectURL(tempAvatar.value.previewUrl)
   }
+  tempAvatar.value = fileData
   showCropper.value = true
 }
+
+// listen windows close
+watch(showCropper, (newVal) => {
+  if (!newVal && tempAvatar.value?.previewUrl) {
+    URL.revokeObjectURL(tempAvatar.value.previewUrl)
+    tempAvatar.value = undefined
+  }
+})
 
 // New
 const handleCroppedAvatar = async (base64: string) => {
   try {
+    // identify Base64 valid
+    if (!base64.startsWith('data:image/')) {
+      throw new Error('Invalid image data')
+    }
+
+    // clean up
+    if (userCardRef.value?.previewUrl) {
+      URL.revokeObjectURL(userCardRef.value.previewUrl)
+    }
+
     const blob = await fetch(base64).then((r) => r.blob())
     const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
 
@@ -118,15 +150,15 @@ const handleCroppedAvatar = async (base64: string) => {
 
     <template v-if="!isEdit">
       <el-button class="styled-btn btn-edit" @click="handleEdit"
-      >Edit</el-button
+        >Edit</el-button
       >
     </template>
     <template v-else>
       <el-button class="styled-btn btn-cancel" @click="handleCancel"
-      >Cancel</el-button
+        >Cancel</el-button
       >
       <el-button class="styled-btn btn-submit" @click="submit"
-      >Submit</el-button
+        >Submit</el-button
       >
     </template>
   </div>

@@ -423,7 +423,7 @@ const saveField = async () => {
             >
               <el-avatar :src="previewUrl || imageUrl || currentUser?.avatar" />
               <span class="avatar-edit-dot" v-if="props.isEdit"
-              ><el-icon><Camera /></el-icon
+                ><el-icon><Camera /></el-icon
               ></span>
             </div>
             <div class="profile-name">{{ currentUser?.name }}</div>
@@ -436,32 +436,32 @@ const saveField = async () => {
               <el-checkbox
                 v-model="form.contactPreferences.email"
                 :disabled="!props.isEdit"
-              >Email</el-checkbox
+                >Email</el-checkbox
               >
               <el-checkbox
                 v-model="form.contactPreferences.discord"
                 :disabled="!props.isEdit"
-              >Discord</el-checkbox
+                >Discord</el-checkbox
               >
               <el-checkbox
                 v-model="form.contactPreferences.phone"
                 :disabled="!props.isEdit"
-              >Phone</el-checkbox
+                >Phone</el-checkbox
               >
               <el-checkbox
                 v-model="form.contactPreferences.post"
                 :disabled="!props.isEdit"
-              >Post</el-checkbox
+                >Post</el-checkbox
               >
               <el-checkbox
                 v-model="form.contactPreferences.telegram"
                 :disabled="!props.isEdit"
-              >Telegram</el-checkbox
+                >Telegram</el-checkbox
               >
               <el-checkbox
                 v-model="form.contactPreferences.whatsapp"
                 :disabled="!props.isEdit"
-              >Whatsapp</el-checkbox
+                >Whatsapp</el-checkbox
               >
             </div>
 
@@ -667,7 +667,7 @@ const saveField = async () => {
     <div class="sheet">
       <div class="sheet-header">
         <el-button text @click="sheetOpen = false"
-        ><el-icon><ArrowLeft /></el-icon
+          ><el-icon><ArrowLeft /></el-icon
         ></el-button>
         <div class="sheet-title">{{ sheetTitle }}</div>
         <el-button text @click="sheetOpen = false">Cancel</el-button>
@@ -678,7 +678,7 @@ const saveField = async () => {
         <el-input v-model="sheetValue" clearable />
         <div class="sheet-actions">
           <el-button round type="primary" class="save-btn" @click="saveField"
-          >Save</el-button
+            >Save</el-button
           >
         </div>
       </div>

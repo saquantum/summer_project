@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, onUnmounted } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted } from 'vue'
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
 
@@ -15,28 +15,41 @@ const emit = defineEmits<{
   (_event: 'crop-finish', _base64: string): void
 }>()
 
-function handleClose() {
-  emit('update:visible', false)
-  emit('close')
-}
-
 // Reactive data
+const fileInputRef = ref<HTMLInputElement>()
 const imgRef = ref<HTMLImageElement>()
 const imageSrc = ref('')
 const croppedBase64 = ref('')
+const isCompact = ref(false)
 let cropper: Cropper | null = null
 
 // Default cropper options
-const defaultOptions: Cropper.Options = {
+const copperOptions: Cropper.Options = {
   aspectRatio: 1, // 1:1 ratio
   viewMode: 1,
   autoCrop: true,
-  responsive: true,
-  cropBoxResizable: true,
-  cropBoxMovable: true,
+  autoCropArea: 0.8,
+  movable: true,
   zoomable: true,
+  cropBoxMovable: false,
+  cropBoxResizable: false,
   ready() {
     console.log('Cropper is ready')
+  }
+}
+
+function handleClose() {
+  emit('update:visible', false)
+  emit('close')
+  // clean cropper
+  imageSrc.value = ''
+  croppedBase64.value = ''
+  cropper?.destroy()
+  cropper = null
+
+  // clean input
+  if (fileInputRef.value) {
+    fileInputRef.value.value = ''
   }
 }
 
@@ -71,8 +84,15 @@ function onFileChange(event: Event) {
 // Initialize cropper
 function initCropper() {
   if (!imgRef.value) return
-
-  cropper = new Cropper(imgRef.value, defaultOptions)
+  // get contain width
+  const size = imgRef.value.parentElement?.clientWidth || 300
+  cropper = new Cropper(imgRef.value, {
+    ...copperOptions,
+    minContainerWidth: size,
+    minContainerHeight: size,
+    minCanvasWidth: size,
+    minCanvasHeight: size
+  })
 }
 
 // Get cropped image
@@ -82,19 +102,16 @@ function getCroppedImage() {
   const canvas = cropper.getCroppedCanvas({
     width: 300,
     height: 300,
-    imageSmoothingEnabled: true,
+    fillColor: '#fff',
     imageSmoothingQuality: 'high'
   })
 
   if (canvas) {
     // Convert to base64
-    // croppedBase64.value = canvas.toDataURL('image/jpeg', 0.8)
-    const base64 = canvas.toDataURL('image/jpeg', 0.8)
-    croppedBase64.value = base64
-    emit('crop-finish', base64)
-    handleClose()
+    croppedBase64.value = canvas.toDataURL('image/jpeg', 0.8)
+    // emit('crop-finish', croppedBase64.value)
 
-    // You can also convert to blob for upload
+    // Another convert to blob for upload
     canvas.toBlob(
       (blob) => {
         if (blob) {
@@ -116,6 +133,14 @@ function reset() {
   }
 }
 
+// Confirm cropper
+function confirmCrop() {
+  if (croppedBase64.value) {
+    emit('crop-finish', croppedBase64.value)
+  }
+  handleClose()
+}
+
 // Download image
 function downloadImage() {
   if (!croppedBase64.value) return
@@ -126,8 +151,14 @@ function downloadImage() {
   link.click()
 }
 
+onMounted(() => {
+  window.addEventListener('resize', () => cropper?.reset())
+  isCompact.value = window.innerWidth < 768
+})
+
 // Cleanup resources
 onUnmounted(() => {
+  window.removeEventListener('resize', () => cropper?.reset())
   if (cropper) {
     cropper.destroy()
   }
@@ -135,59 +166,98 @@ onUnmounted(() => {
     URL.revokeObjectURL(imageSrc.value)
   }
 })
+
+// Small size
+const checkCompactMode = () => {
+  isCompact.value = window.innerWidth < 768
+}
+
+onMounted(() => {
+  window.addEventListener('resize', checkCompactMode)
+  checkCompactMode()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkCompactMode)
+})
 </script>
 
 <template>
   <el-dialog
     :model-value="props.visible"
     title="Crop Avatar"
-    width="600px"
+    width="800px"
+    :class="{ 'compact-mode': isCompact }"
     @close="handleClose"
   >
     <!-- File Upload -->
     <input
+      v-if="!isCompact"
       type="file"
       accept="image/*"
       @change="onFileChange"
       class="file-input"
+      ref="fileInputRef"
     />
 
-    <!-- Cropper Area -->
-    <div v-if="imageSrc" class="cropper-wrapper">
-      <img
-        ref="imgRef"
-        :src="imageSrc"
-        alt="Image to crop"
-        style="max-width: 100%; max-height: 50vh"
-      />
-
-      <!-- Action Buttons -->
-      <div class="button-group">
-        <button @click="getCroppedImage">Get Cropped Result</button>
-        <button @click="reset">Reset</button>
-        <button @click="downloadImage" :disabled="!croppedBase64">
-          Download
-        </button>
+    <!-- cropper-main-container -->
+    <div class="cropper-main-container">
+      <!-- 左：裁剪区 -->
+      <div class="cropper-area">
+        <!-- Cropper Area -->
+        <div v-if="imageSrc" class="cropper-wrapper">
+          <img
+            ref="imgRef"
+            :src="imageSrc"
+            alt="Image to crop"
+            class="cropper-image"
+          />
+        </div>
+        <div v-else class="upload-hint">
+          <p>please select image</p>
+        </div>
       </div>
 
-      <!-- Preview Area -->
-      <div v-if="croppedBase64" class="preview">
-        <h4>Cropped Preview:</h4>
-        <img
-          :src="croppedBase64"
-          alt="Cropped Preview"
-          style="max-width: 200px"
-        />
+      <!-- Right：control-panel -->
+      <div class="control-panel">
+        <!-- Action Buttons -->
+        <div class="button-group">
+          <button @click="getCroppedImage">Get Cropped Result</button>
+          <button @click="confirmCrop" :disabled="!croppedBase64">
+            Confirm
+          </button>
+          <button @click="reset" :disabled="!croppedBase64">Reset</button>
+          <button @click="downloadImage" :disabled="!croppedBase64">
+            Download
+          </button>
+        </div>
+
+        <!-- Preview Area -->
+        <div v-if="croppedBase64" class="preview">
+          <h4>Cropped Preview:</h4>
+          <img
+            :src="croppedBase64"
+            alt="Cropped Preview"
+            class="preview-image"
+          />
+        </div>
       </div>
     </div>
   </el-dialog>
 </template>
 
 <style scoped>
-.cropper-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
+.cropper-main-container {
+  display: flex;
+  gap: 20px;
+  min-height: 400px;
+  align-items: flex-start;
+}
+
+/* left copper-area */
+.cropper-area {
+  flex: 1;
+  min-width: 0;
 }
 
 .file-input {
@@ -198,36 +268,65 @@ onUnmounted(() => {
 }
 
 .cropper-wrapper {
+  width: 100%;
+  height: 100%;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f8f8f8;
+}
+
+.cropper-image {
+  max-width: 100%;
+  max-height: 60vh;
+  display: block;
+}
+
+.upload-hint {
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+}
+
+.control-panel {
+  width: 280px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  border: 1px solid #eee;
-  padding: 10px;
+  gap: 20px;
 }
 
 .button-group {
   display: flex;
-  gap: 8px;
-  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
 }
 
-button {
-  padding: 8px 16px;
-  border: 1px solid #007bff;
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.button-group button {
+  padding: 10px 16px;
+  border: none;
   border-radius: 4px;
   background: #007bff;
   color: white;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+}
+.button-group button:hover {
+  background: #0069d9;
 }
 
-button:hover:not(:disabled) {
-  background: #0056b3;
-}
-
-button:disabled {
-  background: #6c757d;
-  border-color: #6c757d;
+.button-group button:disabled {
+  background: #cccccc;
   cursor: not-allowed;
 }
 
@@ -247,5 +346,32 @@ button:disabled {
 .preview img {
   border: 1px solid #dee2e6;
   border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+  .cropper-main-container {
+    flex-direction: column;
+  }
+
+  .control-panel {
+    width: 100%;
+    margin-top: 20px;
+  }
+
+  .file-input {
+    margin-bottom: 15px;
+  }
+
+  .cropper-image {
+    max-height: 50vh;
+  }
+}
+
+.compact-mode {
+  width: 90vw !important;
+}
+
+.compact-mode .cropper-main-container {
+  min-height: 300px;
 }
 </style>
