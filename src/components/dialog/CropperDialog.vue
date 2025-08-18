@@ -6,6 +6,7 @@ import 'cropperjs/dist/cropper.css'
 // Props:
 const props = defineProps<{
   visible: boolean
+  isMobile?: boolean
 }>()
 
 // Emits
@@ -13,6 +14,7 @@ const emit = defineEmits<{
   (_event: 'update:visible', _value: boolean): void
   (_event: 'close'): void
   (_event: 'crop-finish', _base64: string): void
+  // (_event: 'submit-form'): void
 }>()
 
 // Reactive data
@@ -21,6 +23,7 @@ const imgRef = ref<HTMLImageElement>()
 const imageSrc = ref('')
 const croppedBase64 = ref('')
 const isCompact = ref(false)
+// const isMobile = ref(false)
 let cropper: Cropper | null = null
 
 // Default cropper options
@@ -134,10 +137,15 @@ function reset() {
 }
 
 // Confirm cropper
-function confirmCrop() {
-  if (croppedBase64.value) {
-    emit('crop-finish', croppedBase64.value)
+async function confirmCrop() {
+  if (!croppedBase64.value) {
+    getCroppedImage()
   }
+
+  if (!croppedBase64.value) return
+
+  await emit('crop-finish', croppedBase64.value)
+
   handleClose()
 }
 
@@ -186,7 +194,8 @@ onUnmounted(() => {
   <el-dialog
     :model-value="props.visible"
     title="Crop Avatar"
-    width="800px"
+    :width="isMobile ? '100vw' : '800px'"
+    :fullscreen="isMobile"
     :class="{ 'compact-mode': isCompact }"
     @close="handleClose"
   >
@@ -201,7 +210,7 @@ onUnmounted(() => {
     />
 
     <!-- cropper-main-container -->
-    <div class="cropper-main-container">
+    <div v-if="!isMobile" class="cropper-main-container">
       <!-- 左：裁剪区 -->
       <div class="cropper-area">
         <!-- Cropper Area -->
@@ -242,6 +251,41 @@ onUnmounted(() => {
           />
         </div>
       </div>
+    </div>
+    <!-- 👉 Mobile 模式：单栏 + 全屏裁剪 + 底部 Confirm -->
+    <div v-else class="mobile-crop-container">
+      <div class="mobile-cropper-wrapper">
+        <!-- 没有图片时显示文件输入框 -->
+        <template v-if="!imageSrc">
+          <input
+            type="file"
+            accept="image/*"
+            @change="onFileChange"
+            ref="fileInputRef"
+            style="width: 100%; padding: 20px"
+          />
+        </template>
+
+        <!-- 已选择图片后显示裁剪区域 -->
+        <template v-else>
+          <img
+            ref="imgRef"
+            :src="imageSrc"
+            alt="Image to crop"
+            class="cropper-image"
+            style="width: 100%; height: 100%; object-fit: contain"
+          />
+        </template>
+      </div>
+
+      <!-- 底部 Confirm 按钮 -->
+      <button
+        class="mobile-confirm-btn"
+        @click="confirmCrop"
+        :disabled="!imageSrc"
+      >
+        Confirm
+      </button>
     </div>
   </el-dialog>
 </template>
@@ -373,5 +417,32 @@ onUnmounted(() => {
 
 .compact-mode .cropper-main-container {
   min-height: 300px;
+}
+
+.mobile-crop-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.mobile-cropper-wrapper {
+  flex: 1;
+  width: 100%;
+  height: 100vw; /* 正方形 */
+  overflow: hidden;
+}
+
+.mobile-confirm-btn {
+  width: 100%;
+  padding: 14px 0;
+  border: none;
+  background: #007bff;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  position: fixed;
+  bottom: 0;
+  left: 0;
 }
 </style>

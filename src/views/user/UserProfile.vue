@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import CropperDialog from '@/components/dialog/CropperDialog.vue'
@@ -11,6 +11,16 @@ const router = useRouter()
 const userCardRef = ref()
 const userStore = useUserStore()
 const route = useRoute()
+const isMobile = ref(window.innerWidth <= 480)
+const onResize = () => {
+  isMobile.value = window.innerWidth <= 480
+}
+onMounted(() => {
+  window.addEventListener('resize', onResize)
+})
+onUnmounted(() => {
+  window.removeEventListener('resize', onResize)
+})
 
 watch(
   () => route.query.tab,
@@ -129,6 +139,10 @@ const handleCroppedAvatar = async (base64: string) => {
 
     ElMessage.success('Avatar cropped! Ready to submit')
     showCropper.value = false
+
+    if (isMobile.value) {
+      submit()
+    }
   } catch (error) {
     console.error('Crop error:', error)
     ElMessage.error('Failed to process image')
@@ -166,8 +180,10 @@ const handleCroppedAvatar = async (base64: string) => {
   <CropperDialog
     :visible="showCropper"
     :initial-image="tempAvatar?.previewUrl"
+    :isMobile="isMobile"
     @close="showCropper = false"
     @crop-finish="handleCroppedAvatar"
+    @submit-form="submit"
   />
 
   <div class="page-surface">
