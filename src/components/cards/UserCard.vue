@@ -517,7 +517,11 @@ const saveField = async () => {
             <el-row :gutter="16">
               <el-col :xs="24" :sm="12" :md="12">
                 <div class="field-label">First Name</div>
-                <el-input v-model="form.firstName" :disabled="!props.isEdit" />
+                <el-input
+                  v-model="form.firstName"
+                  :disabled="!props.isEdit"
+                  data-test="firstName"
+                />
               </el-col>
               <el-col :xs="24" :sm="12" :md="12">
                 <div class="field-label">Last Name</div>
