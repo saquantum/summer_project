@@ -129,7 +129,6 @@ defineExpose({
 </script>
 
 <template>
-  <!-- display -->
   <el-descriptions v-if="!isEdit" :column="1" border class="asset-descriptions">
     <el-descriptions-item
       v-for="(item, index) in descriptionsItem"
@@ -140,7 +139,6 @@ defineExpose({
     </el-descriptions-item>
   </el-descriptions>
 
-  <!-- edit -->
   <el-form
     v-else
     ref="formRef"
@@ -149,81 +147,100 @@ defineExpose({
     label-position="top"
     class="asset-form"
   >
-    <el-form-item label="Owner Id" prop="ownerId">
-      <el-input
-        v-model="form.ownerId"
-        :disabled="userStore.user && !userStore.user.admin"
-      />
-    </el-form-item>
+    <el-row :gutter="12" class="form-grid">
+      <el-col :xs="24" :lg="12">
+        <el-form-item label="Owner Id" prop="ownerId">
+          <el-input
+            v-model="form.ownerId"
+            :disabled="userStore.user && !userStore.user.admin"
+          />
+        </el-form-item>
+      </el-col>
+      <el-col :xs="24" :lg="12">
+        <el-form-item label="Name" prop="name">
+          <el-input v-model="form.name" />
+        </el-form-item>
+      </el-col>
 
-    <el-form-item label="Name" prop="name">
-      <el-input v-model="form.name" />
-    </el-form-item>
+      <el-col :xs="24" :lg="12">
+        <el-form-item label="Type" prop="typeId">
+          <el-select v-model="form.typeId" placeholder="Select type">
+            <el-option
+              v-for="item in assetStore.typeOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+      </el-col>
+      <el-col :xs="24" :lg="12">
+        <el-form-item label="Capacity Litres" prop="capacityLitres">
+          <el-input-number v-model="form.capacityLitres" :min="0" />
+        </el-form-item>
+      </el-col>
+      <el-col :xs="24" :lg="12">
+        <el-form-item label="Asset material" prop="material">
+          <el-select v-model="form.material">
+            <el-option
+              v-for="item in materialOption"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+      </el-col>
+      <el-col :xs="24" :lg="12">
+        <el-form-item label="Asset status" prop="status">
+          <el-select v-model="form.status" placeholder="Select status">
+            <el-option
+              v-for="item in statusOption"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+      </el-col>
 
-    <el-form-item label="Type" prop="typeId">
-      <el-select v-model="form.material">
-        <el-option
-          v-for="item in assetStore.typeOptions"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
-        ></el-option>
-      </el-select>
-    </el-form-item>
-
-    <el-form-item label="Asset material" prop="material">
-      <el-select v-model="form.material">
-        <el-option
-          v-for="item in materialOption"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
-        ></el-option>
-      </el-select>
-    </el-form-item>
-
-    <el-form-item label="Asset status" prop="status">
-      <el-select v-model="form.status" placeholder="Select status">
-        <el-option
-          v-for="item in statusOption"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
-        ></el-option>
-      </el-select>
-    </el-form-item>
-    <el-form-item label="Capacity Litres">
-      <el-input-number v-model="form.capacityLitres" :min="0" />
-    </el-form-item>
-
-    <el-form-item label="Installed at" prop="installedAt">
-      <el-date-picker
-        v-model="form.installedAt"
-        type="date"
-        placeholder="Pick a day"
-        :disabled-date="disabledAfterToday"
-        value-format="YYYY-MM-DD"
-      />
-    </el-form-item>
-
-    <el-form-item label="Last inspection" prop="lastInspection">
-      <el-date-picker
-        v-model="form.lastInspection"
-        type="date"
-        placeholder="Pick a day"
-        :disabled-date="disabledAfterToday"
-        value-format="YYYY-MM-DD"
-      />
-    </el-form-item>
+      <el-col :xs="24" :lg="12">
+        <el-form-item label="Installed at" prop="installedAt">
+          <el-date-picker
+            v-model="form.installedAt"
+            type="date"
+            placeholder="Pick a day"
+            :disabled-date="disabledAfterToday"
+            value-format="YYYY-MM-DD"
+          />
+        </el-form-item>
+      </el-col>
+      <el-col :xs="24" :lg="12">
+        <el-form-item label="Last inspection" prop="lastInspection">
+          <el-date-picker
+            v-model="form.lastInspection"
+            type="date"
+            placeholder="Pick a day"
+            :disabled-date="disabledAfterToday"
+            value-format="YYYY-MM-DD"
+          />
+        </el-form-item>
+      </el-col>
+    </el-row>
   </el-form>
 </template>
 
 <style scoped>
-.asset-descriptions {
-  margin-bottom: 20px;
+.asset-descriptions :deep(.el-descriptions__cell) {
+  padding: 14px 16px;
+}
+.asset-descriptions :deep(.el-descriptions__label) {
+  font-weight: 600;
 }
 
-.asset-form {
-  max-width: 600px;
+@media (max-width: 768px) {
+  .form-grid .el-col {
+    width: 100%;
+  }
 }
 </style>
