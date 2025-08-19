@@ -60,6 +60,7 @@ const handleCancel = () => {
   emit('cancel')
 }
 const handleConfirm = () => {
+  visible.value = false
   emit('confirm')
 }
 </script>

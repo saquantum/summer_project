@@ -48,14 +48,6 @@ const handleEdit = (row: User) => {
   router.push({ path: '/admin/user/detail', query: { id: row.uid } })
 }
 
-const handleDelete = async () => {
-  if (deleteId.value.length === 0) return
-  await adminDeleteUserService(deleteId.value)
-  deleteId.value = []
-  dialogVisible.value = false
-  await fetchTableData()
-}
-
 const fetchTableData = async () => {
   try {
     isLoading.value = true
@@ -119,6 +111,17 @@ const triggerDelete = (rows: User[]) => {
   rows.forEach((element) => {
     deleteId.value.push(element.uid)
   })
+}
+
+const handleDelete = async () => {
+  if (deleteId.value.length === 0) return
+  await adminDeleteUserService(deleteId.value)
+  deleteId.value = []
+  await fetchTableData()
+}
+
+const handleCancel = () => {
+  deleteId.value = []
 }
 
 const mutipleSelection = ref<User[]>([])
@@ -320,7 +323,7 @@ defineExpose({
     content="This will permanently delete this user"
     :countdown-duration="5"
     @confirm="handleDelete"
-    @cancel="dialogVisible = false"
+    @cancel="handleCancel"
   />
 
   <PermissionDialog

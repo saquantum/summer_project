@@ -20,23 +20,27 @@ const handleCurrentChange = (val: PermissionGroup) => {
 }
 
 const fetchTableData = async () => {
-  const res = await adminGetPermissionGroupsService()
-  if (res && res.data) {
-    permissions.value = res.data
+  try {
+    const res = await adminGetPermissionGroupsService()
+    if (res && res.data) {
+      permissions.value = res.data
+    }
+  } catch (error) {
+    console.error('Failed to fetch permission groups:', error)
   }
 }
 
 const emit = defineEmits(['update-permission-group'])
 
 onMounted(async () => {
-  fetchTableData()
+  await fetchTableData()
 })
 </script>
 
 <template>
   <el-dialog v-model="visible">
     <span>Select All ({{ props.total }})</span>
-    <el-checkbox v-model="selectAll"></el-checkbox>
+    <el-checkbox v-model="selectAll" data-test="select-all"></el-checkbox>
     <el-table
       :data="permissions"
       highlight-current-row
@@ -63,8 +67,11 @@ onMounted(async () => {
     </el-table>
     <template #footer>
       <div>
-        <el-button @click="visible = false">Cancel</el-button>
+        <el-button @click="visible = false" data-test="cancel"
+          >Cancel</el-button
+        >
         <el-button
+          data-test="confirm"
           type="primary"
           @click="emit('update-permission-group', currentRow?.name ?? '')"
           >Confirm</el-button
