@@ -5,7 +5,20 @@ import { flushPromises } from '@vue/test-utils'
 import { ElMessage } from 'element-plus'
 import * as userApi from '@/api/user'
 import * as adminApi from '@/api/admin'
-import type { Permission } from '@/types'
+import type { PermissionGroup } from '@/types'
+
+// Mock router
+const pushMock = vi.fn()
+vi.mock('vue-router', async (importOriginal) => {
+  const actual = (await importOriginal()) as Record<string, unknown>
+  return {
+    ...actual,
+    useRouter: () => ({ push: pushMock }),
+    useRoute: () => ({
+      query: { id: 'test-user-id' }
+    })
+  }
+})
 
 // Mock stores
 const mockUserStore = {
@@ -16,7 +29,7 @@ const mockUserStore = {
     adminLevel: 1,
     avatar: 'https://example.com/avatar.png',
     name: 'John Doe',
-    permissionConfig: {} as Permission,
+    accessControlGroup: {} as PermissionGroup,
     address: {
       country: 'Mock Country',
       city: 'Mock City',
@@ -45,13 +58,6 @@ const mockUserStore = {
 
 vi.mock('@/stores/index.ts', () => ({
   useUserStore: () => mockUserStore
-}))
-
-// Mock router
-vi.mock('vue-router', () => ({
-  useRoute: () => ({
-    query: { id: 'test-user-id' }
-  })
 }))
 
 // Mock API services
@@ -114,7 +120,7 @@ describe('UserCard', () => {
         adminLevel: 1,
         avatar: 'https://example.com/avatar.png',
         name: 'Mock User',
-        permissionConfig: {} as Permission,
+        accessControlGroup: {} as PermissionGroup,
         address: {
           country: 'Mock Country',
           city: 'Mock City',
@@ -151,14 +157,6 @@ describe('UserCard', () => {
   afterEach(() => {
     // Restore console methods after each test
     vi.restoreAllMocks()
-  })
-
-  it('renders user info in description mode when isEdit is false', async () => {
-    const wrapper = createWrapper({ isEdit: false })
-    await flushPromises()
-
-    expect(wrapper.find('.el-descriptions').exists()).toBe(true)
-    expect(wrapper.find('.el-form').exists()).toBe(false)
   })
 
   it('renders form in edit mode when isEdit is true', async () => {
@@ -412,15 +410,28 @@ describe('UserCard', () => {
     mockUserStore.user.admin = false
   })
 
-  it('displays user information in description items', async () => {
+  it('displays user information in form inputs', async () => {
     const wrapper = createWrapper({ isEdit: false })
     await flushPromises()
 
-    // Check that user data is displayed
-    expect(wrapper.text()).toContain('John')
-    expect(wrapper.text()).toContain('Doe')
-    expect(wrapper.text()).toContain('john.doe@example.com')
-    expect(wrapper.text()).toContain('+1234567890')
+    // Check that user data is displayed in input values
+    const firstNameInput = wrapper.find('input[data-test="firstName"]')
+
+    expect(firstNameInput.element.value).toBe('John')
+    expect(wrapper.text()).toContain('John Doe') // This should be in the profile name section
+
+    // Check if email appears in any input value
+    const inputs = wrapper.findAll('input')
+    const emailFound = inputs.some(
+      (input) => input.element.value === 'john.doe@example.com'
+    )
+    expect(emailFound).toBe(true)
+
+    // Check if phone appears in any input value
+    const phoneFound = inputs.some(
+      (input) => input.element.value === '+1234567890'
+    )
+    expect(phoneFound).toBe(true)
   })
 
   it('display form data when in edit mode', async () => {

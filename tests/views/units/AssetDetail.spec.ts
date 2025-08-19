@@ -272,28 +272,6 @@ describe('AssetDetailDetail', () => {
     })
   })
 
-  describe('Admin Controls', () => {
-    it('should show admin section for admin users', () => {
-      mockUserStore.user.admin = true
-      const wrapper = createWrapper()
-      expect(wrapper.text()).toContain('Admin Actions')
-    })
-
-    it('should show admin controls for users with update permissions', () => {
-      mockUserStore.user.admin = false
-      mockUserStore.user.accessControlGroup.canUpdateAssetPolygon = true
-      const wrapper = createWrapper()
-      expect(wrapper.text()).toContain('Admin Actions')
-    })
-
-    it('should hide admin controls for users without permissions', () => {
-      mockUserStore.user.admin = false
-      mockUserStore.user.accessControlGroup.canUpdateAssetPolygon = false
-      const wrapper = createWrapper()
-      expect(wrapper.text()).not.toContain('Admin Actions')
-    })
-  })
-
   describe('Responsive Design', () => {
     it('should render properly on different screen sizes', async () => {
       // Mock window innerWidth

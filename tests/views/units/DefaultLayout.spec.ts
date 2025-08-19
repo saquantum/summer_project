@@ -121,15 +121,6 @@ vi.mock('@/components/CustomerService.vue', () => ({
   }
 }))
 
-vi.mock('@/components/SearchDialog.vue', () => ({
-  default: {
-    name: 'SearchDialog',
-    template: '<div data-test="search-dialog">SearchDialog</div>',
-    props: ['visible'],
-    emits: ['update:visible']
-  }
-}))
-
 describe('DefaultLayout', () => {
   const createWrapper = (userOverrides = {}) => {
     // Update mock user store with overrides

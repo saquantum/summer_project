@@ -43,8 +43,6 @@ const activeIndex = ref(route.path)
 
 const mobileMenuVisible = ref(false)
 
-const searchDialogVisible = ref(false)
-
 const showUserSideBar = computed(() => {
   if (!userStore.user?.admin) {
     return true
@@ -163,7 +161,6 @@ watch(
 
       <el-main>
         <router-view></router-view>
-        <SearchDialog v-model:visible="searchDialogVisible"></SearchDialog>
       </el-main>
     </el-container>
   </el-container>

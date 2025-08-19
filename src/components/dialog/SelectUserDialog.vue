@@ -210,7 +210,9 @@ defineExpose({
     <template #footer>
       <div>
         <el-button @click="visible = false">Cancel</el-button>
-        <el-button type="primary" @click="handleConfirm"> Confirm </el-button>
+        <el-button type="primary" @click="handleConfirm" data-test="confirm">
+          Confirm
+        </el-button>
       </div>
     </template>
   </el-dialog>
