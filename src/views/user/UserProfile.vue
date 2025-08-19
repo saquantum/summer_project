@@ -163,7 +163,10 @@ const handleCroppedAvatar = async (base64: string) => {
     </button>
 
     <template v-if="!isEdit">
-      <el-button class="styled-btn btn-edit" @click="handleEdit"
+      <el-button
+        class="styled-btn btn-edit"
+        @click="handleEdit"
+        data-test="edit-btn"
         >Edit</el-button
       >
     </template>
@@ -219,6 +222,7 @@ const handleCroppedAvatar = async (base64: string) => {
               class="styled-btn btn-edit"
               v-if="!isEdit"
               :disabled="isDisabled"
+              data-test="edit-btn"
               @click="handleEdit"
             >
               Edit
