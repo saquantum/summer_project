@@ -17,7 +17,7 @@
                asset_installed_at,
                asset_last_inspection,
                asset_last_modified,
-               asset_types.*,
+               asset_types.*
         from assets
                  left join asset_types
                            on asset_type_type_id = asset_type_id
