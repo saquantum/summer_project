@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useWarningStore } from '@/stores/index.ts'
 import type { Style } from '@/types'
 import type { MultiPolygon } from 'geojson'
+import PageTopTabs from '@/components/PageSurfaceTabs.vue'
 
-const activeNames = ref<string[]>(['live', 'expired'])
 const outdatedWarnings = ref<TableRow[]>([])
 const liveWarnings = ref<TableRow[]>([])
 const router = useRouter()
@@ -23,7 +23,17 @@ interface TableRow {
   validTo: string
   period: string
 }
-
+watch(
+  () => warningStore.allWarnings,
+  () => {
+    processWarnings()
+  },
+  { deep: true }
+)
+const route = useRoute()
+const tabsConfig = [
+  { label: 'Warnings', to: route.fullPath, match: () => true }
+]
 const handleShowDetail = (row: TableRow) => {
   router.push(`/warnings/${row.id}`)
 }
@@ -35,6 +45,7 @@ const handleDelete = (row: TableRow) => {
 
 const processWarnings = () => {
   warningPolygon.value = []
+  styles.value = []
   liveWarnings.value = warningStore.liveWarnings.map((item) => {
     styles.value.push(setWarningLevelStyle(item.warningLevel))
     warningPolygon.value.push(item.area)
@@ -65,10 +76,10 @@ const processWarnings = () => {
 }
 
 const getRowClass = (row: TableRow) => {
-  const level = row.warningLevel?.toLowerCase() || ''
-  if (level.includes('RED')) return 'row-red'
-  if (level.includes('AMBER')) return 'row-amber'
-  if (level.includes('YELLOW')) return 'row-yellow'
+  const level = (row.warningLevel || '').toLowerCase()
+  if (level.includes('red')) return 'row-red'
+  if (level.includes('amber')) return 'row-amber'
+  if (level.includes('yellow')) return 'row-yellow'
   return ''
 }
 
@@ -104,227 +115,197 @@ watch(
 </script>
 
 <template>
-  <div class="main-layout">
-    <!-- map -->
-    <div class="map-section">
-      <div class="map-card">
-        <div class="map-container">
-          <MapCard
-            v-if="warningPolygon.length > 0"
-            :map-id="mapId"
-            :locations="warningPolygon"
-            :styles="styles"
-          />
-        </div>
-      </div>
-    </div>
-    <el-collapse v-model="activeNames" class="table-section">
-      <!-- live-table -->
-      <el-collapse-item name="live">
-        <template #title>
-          <div class="collapse-title">live-warning</div>
-        </template>
-
-        <!--div class="table-section"-->
-
-        <div class="collapse-card warning-card">
-          <div class="table-scroll">
-            <el-table
-              :data="liveWarnings"
-              stripe
-              style="width: 100%"
-              table-layout="auto"
-              :row-class-name="getRowClass"
-              class="table1"
-            >
-              <el-table-column prop="id" label="ID" width="90" />
-              <el-table-column prop="weatherType" label="Type" width="100" />
-
-              <el-table-column label="Level" width="90" align="center">
-                <template #default="scope">
-                  <el-tooltip :content="scope.row.warningLevel" placement="top">
-                    <span
-                      class="level-badge"
-                      :class="scope.row.warningLevel?.toLowerCase()"
-                    ></span>
-                  </el-tooltip>
-                </template>
-              </el-table-column>
-
-              <el-table-column
-                prop="warningImpact"
-                label="Impact"
-                width="100"
-              />
-              <el-table-column
-                prop="warningLikelihood"
-                label="Likelihood"
-                width="120"
-              />
-
-              <el-table-column prop="period" label="Period" width="180" />
-
-              <el-table-column label="Actions" width="180">
-                <template #default="scope">
-                  <el-button
-                    text
-                    type="primary"
-                    size="small"
-                    @click="handleShowDetail(scope.row)"
-                    >Show Detail
-                  </el-button>
-                  <el-button
-                    text
-                    type="danger"
-                    size="small"
-                    @click="handleDelete(scope.row)"
-                    >Delete
-                  </el-button>
-                </template>
-              </el-table-column>
-            </el-table>
+  <div class="page-surface">
+    <PageTopTabs :tabs="tabsConfig" />
+    <div class="two-col">
+      <section class="left-map">
+        <div class="map-card">
+          <div class="map-container">
+            <MapCard
+              v-if="warningPolygon.length"
+              :map-id="mapId"
+              :locations="warningPolygon"
+              :styles="styles"
+            />
           </div>
         </div>
-      </el-collapse-item>
+      </section>
 
-      <el-collapse-item name="expired">
-        <template #title>
-          <div class="collapse-title">history-warning</div>
-        </template>
+      <section class="right-tables">
+        <el-card class="table-card">
+          <template #header>
+            <div class="card-hd">Live warnings</div>
+          </template>
 
-        <div
-          class="collapse-card expired-card"
-          v-if="activeNames.includes('expired')"
-        >
           <el-table
-            :data="outdatedWarnings"
+            :data="liveWarnings"
             stripe
-            style="width: 100%"
+            class="tbl"
             table-layout="auto"
-            class="expired-table"
+            :row-class-name="getRowClass"
+            height="100%"
           >
             <el-table-column prop="id" label="ID" width="90" />
-            <el-table-column prop="weatherType" label="Type" width="100" />
-            <el-table-column prop="warningLevel" label="Level" width="90" />
-            <el-table-column prop="warningImpact" label="Impact" width="100" />
+            <el-table-column prop="weatherType" label="Type" width="110" />
+            <el-table-column label="Level" width="90" align="center">
+              <template #default="scope">
+                <el-tooltip :content="scope.row.warningLevel" placement="top">
+                  <span
+                    class="level-badge"
+                    :class="scope.row.warningLevel?.toLowerCase()"
+                  />
+                </el-tooltip>
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="warningImpact" label="Impact" width="120" />
             <el-table-column
               prop="warningLikelihood"
               label="Likelihood"
-              width="120"
+              width="130"
             />
-            <el-table-column prop="period" label="Period" width="180" />
-            <el-table-column label="Actions" width="180">
+
+            <el-table-column prop="period" label="Period" min-width="220" />
+
+            <el-table-column label="Actions" fixed="right" min-width="180">
               <template #default="scope">
                 <el-button
-                  text
                   type="primary"
                   size="small"
                   @click="handleShowDetail(scope.row)"
+                  class="btn-edit"
                   >Show Detail
                 </el-button>
                 <el-button
-                  text
                   type="danger"
                   size="small"
                   @click="handleDelete(scope.row)"
+                  class="btn-del"
                   >Delete
                 </el-button>
               </template>
             </el-table-column>
           </el-table>
-        </div>
-      </el-collapse-item>
-    </el-collapse>
+        </el-card>
+
+        <el-card class="table-card">
+          <template #header
+            ><div class="card-hd">History warnings</div></template
+          >
+
+          <el-table
+            :data="outdatedWarnings"
+            stripe
+            class="tbl"
+            table-layout="auto"
+            height="100%"
+          >
+            <el-table-column prop="id" label="ID" width="90" />
+            <el-table-column prop="weatherType" label="Type" width="110" />
+            <el-table-column prop="warningLevel" label="Level" width="100" />
+            <el-table-column prop="warningImpact" label="Impact" width="120" />
+            <el-table-column
+              prop="warningLikelihood"
+              label="Likelihood"
+              width="130"
+            />
+            <el-table-column prop="period" label="Period" min-width="220" />
+            <el-table-column label="Actions" fixed="right" width="180">
+              <template #default="scope">
+                <el-button
+                  type="primary"
+                  size="small"
+                  class="btn-edit"
+                  @click="handleShowDetail(scope.row)"
+                >
+                  Show Detail
+                </el-button>
+                <el-button
+                  type="danger"
+                  size="small"
+                  class="btn-del"
+                  @click="handleDelete(scope.row)"
+                >
+                  Delete
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
+      </section>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.main-layout {
-  display: flex;
-  flex-direction: row;
-  height: calc(100vh - 80px);
-  padding: 16px;
-  gap: 16px;
+.page-surface {
+  position: relative;
+  background: #f3f5f7;
+  border: 1px solid #e6eaee;
+  border-radius: 3px;
+  padding: 20px;
+  margin: 60px auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  width: 1100px;
   box-sizing: border-box;
-  overflow-x: auto;
-  overflow-y: auto;
 }
 
-.map-card {
-  flex: 1;
+.two-col {
   display: flex;
-  flex-direction: column;
-  background-color: #fff;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.left-map {
+  flex: 1;
+  min-width: 380px;
+}
+.map-card {
+  background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   padding: 12px;
-  overflow: auto;
-}
-
-.map-section {
-  flex: 1.2;
+  height: 620px;
+  min-height: 420px;
   display: flex;
   flex-direction: column;
 }
-
 .map-container {
   flex: 1;
-  display: flex;
-  justify-content: center;
-  overflow: hidden;
 }
-
-.map-section {
-  min-width: 400px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.table-section {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* warning table cards */
-.warning-card,
-.expired-card {
-  display: flex;
-  flex-direction: column;
-  background-color: #fff;
-  padding: 16px;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  overflow: auto;
-}
-
-.warning-card .el-table,
-.expired-card .el-table {
-  flex: 1;
-  height: 100%;
-}
-
-.collapse-title {
-  font-size: 16px;
-  font-weight: bold;
-  background-color: #ffffff;
-  margin: 0;
-}
-
-.collapse-card {
-  background-color: #fff;
-  padding: 16px;
-
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-}
-
 ::v-deep(.leaflet-container) {
-  border-radius: 12px;
   width: 100%;
   height: 100%;
+  border-radius: 12px;
+}
+
+.right-tables {
+  flex: 1.4;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card-hd {
+  font-weight: 700;
+  font-size: 16px;
+  padding: 6px 0;
+}
+
+.tbl {
+  width: 100%;
+}
+::v-deep(.el-table__header-wrapper th) {
+  background: #f4f7fb;
+  font-weight: 600;
+  color: #445;
+}
+::v-deep(.el-table .cell) {
+  white-space: nowrap;
+}
+::v-deep(.el-table__body tr:hover > td) {
+  background: #f0f7ff;
 }
 
 .level-badge {
@@ -333,227 +314,115 @@ watch(
   height: 10px;
   border-radius: 6px;
 }
-
 .level-badge.yellow {
-  background-color: #f7e359;
+  background: #f7e359;
 }
-
 .level-badge.amber {
-  background-color: #f7b733;
+  background: #f7b733;
 }
-
 .level-badge.red {
-  background-color: #e74c3c;
+  background: #e74c3c;
 }
 
-/* table tweaks */
-::v-deep(.el-table) {
-  width: 100% !important;
-  table-layout: fixed;
-  background-color: transparent;
-  border-radius: 0;
-  box-shadow: none;
+.row-yellow > td {
+  background: rgba(247, 227, 89, 0.08) !important;
 }
-::v-deep(.el-table__header-wrapper) {
-  width: 100% !important;
-  overflow: auto;
+.row-amber > td {
+  background: rgba(247, 183, 51, 0.08) !important;
 }
-::v-deep(.el-table th.is-leaf > .cell),
-::v-deep(.el-table__header .el-table__cell) {
-  justify-content: center !important;
-  display: flex;
-  align-items: center;
+.row-red > td {
+  background: rgba(231, 76, 60, 0.08) !important;
 }
 
-::v-deep(.el-table__cell) {
-  white-space: nowrap;
-}
-::v-deep(.table1 td),
-::v-deep(.expired-table td),
-::v-deep(.el-table__header-wrapper th) {
-  font-size: 13px;
-  padding: 6px 8px;
-}
-::v-deep(.el-table__header-wrapper th) {
-  background-color: rgba(181, 219, 241, 0.26);
-  color: #444;
-  font-weight: 600;
-}
-::v-deep(.el-table__row) {
-  height: 42px;
+.btn-del {
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: rgba(104, 5, 5, 0.72);
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  background: rgba(234, 215, 184, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
-::v-deep(.table1 .el-table__body tr:nth-child(even) > td) {
-  background-color: rgba(246, 226, 189, 0.1);
+.btn-del:hover {
+  color: rgba(151, 5, 5, 0.72);
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  background: rgb(255, 255, 255);
 }
-::v-deep(.table1 .el-table__body tr:nth-child(odd) > td) {
-  background-color: #ffffff;
-}
-::v-deep(.table1 .el-button--text) {
-  padding: 4px 12px;
-  border-radius: 16px;
-  font-size: 10px;
-  font-weight: 300;
-  line-height: 1;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-::v-deep(.table1 .el-button--primary) {
-  background-color: #ebf5ff;
-  color: #409eff;
+
+.btn-edit {
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: #ffffff;
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  background: rgba(122, 164, 194, 0.78);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
   border: none;
 }
-::v-deep(.table1 .el-button--primary:hover) {
-  background-color: #409eff;
-  color: #fff;
-}
-
-::v-deep(.table1 .el-button--danger) {
-  background-color: #fff0f0;
-  color: #f56c6c;
+.btn-edit:hover {
+  background: rgba(244, 249, 251, 0.78);
+  color: rgb(34, 63, 112);
   border: none;
 }
-::v-deep(.table1 .el-button--danger:hover) {
-  background-color: #f56c6c;
-  color: #fff;
-}
-::v-deep(.table1 .el-table__body-wrapper tr:hover > td) {
-  background-color: #f0f7ff;
-  transition: background-color 0.2s ease;
+
+.two-col {
+  --panel-h: 620px;
 }
 
-::v-deep(.el-collapse-item) {
-  margin-bottom: 16px;
+.map-card {
+  height: var(--panel-h);
 }
 
-::v-deep(.el-collapse-item__header) {
+.right-tables {
+  height: var(--panel-h);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 6px;
+}
+
+.table-card {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 16px 20px;
-  font-size: 16px;
-  font-weight: bold;
-  background-color: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  position: relative;
-  cursor: pointer;
-  width: 100%;
-  box-sizing: border-box;
+  flex-direction: column;
+  height: 300px;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
-::v-deep(.el-collapse-item__wrap) {
-  background-color: transparent;
-  overflow: auto;
-  padding: 0;
+.table-card :deep(.el-card__body) {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-::v-deep(.el-collapse-item__content) {
-  padding: 0 !important;
+.tbl {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
-::v-deep(.el-collapse-item) {
-  margin-bottom: 0;
+.right-tables::-webkit-scrollbar {
+  width: 8px;
+}
+.right-tables::-webkit-scrollbar-thumb {
+  background: #c7ced9;
+  border-radius: 4px;
+}
+.right-tables::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-@media (min-width: 769px) and (max-width: 1024px) {
-  html,
-  body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    overflow-x: hidden;
-  }
-
-  .main-layout {
+@media (max-width: 900px) {
+  .two-col {
     flex-direction: column;
-    width: 100%;
-    height: 100vh;
-    overflow-x: hidden;
   }
-
-  .map-card,
-  .warning-card,
-  .expired-card {
-    flex: 1;
-    overflow: auto;
+  .right-tables {
+    height: auto;
+    overflow: visible;
   }
-
-  .map-container {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-  }
-
-  .el-collapse,
-  .map-section,
-  .table-section,
-  .map-card,
-  .warning-card,
-  .expired-card,
-  .el-collapse-item,
-  .el-collapse-item__wrap,
-  .el-collapse-item__content {
-    width: 100% !important;
-    min-width: 0;
-    box-sizing: border-box;
-  }
-
-  ::v-deep(.leaflet-container) {
-    width: 100% !important;
-    height: 100% !important;
-    border-radius: 12px;
-  }
-
-  ::v-deep(.el-table) {
-    width: 100% !important;
-    table-layout: fixed;
-  }
-}
-
-@media (max-width: 768px) {
-  .main-layout {
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    width: 100%;
-    max-width: 100vw;
-    padding: 16px;
-    gap: 16px;
-    box-sizing: border-box;
-  }
-
   .map-card {
-    min-height: 300px;
-  }
-
-  .map-container {
     height: 40vh;
-    min-height: 240px;
-    width: 100%;
-    overflow: hidden;
-  }
-
-  .map-section,
-  .map-card,
-  .warning-card,
-  .expired-card,
-  .table-section,
-  .el-collapse-item,
-  .el-collapse-item__header,
-  .el-collapse-item__wrap,
-  .el-collapse-item__content {
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  .card {
-    max-height: 800px;
-    overflow: auto;
-  }
-
-  ::v-deep(.leaflet-container) {
-    width: 100% !important;
-    height: 100% !important;
+    min-height: 300px;
   }
 }
 </style>
