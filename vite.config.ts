@@ -7,6 +7,7 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import compression from 'vite-plugin-compression'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 export default defineConfig({
   plugins: [
@@ -24,6 +25,12 @@ export default defineConfig({
       ext: '.gz',
       threshold: 10240,
       deleteOriginFile: false
+    }),
+    visualizer({
+      filename: './dist/stats.html',
+      open: true,
+      gzipSize: true,
+      brotliSize: true
     })
   ],
   resolve: {

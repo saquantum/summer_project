@@ -99,10 +99,6 @@ const router = createRouter({
           component: () => import('@/views/user/ResetPassword.vue')
         },
         {
-          path: 'admin/message/template/manage',
-          component: () => import('@/views/admin/AllTemplates.vue')
-        },
-        {
           path: 'admin/users/permission',
           component: () => import('@/views/admin/AccessControl.vue')
         }

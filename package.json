@@ -78,6 +78,7 @@
     "lint-staged": "^16.1.2",
     "pinia-plugin-persistedstate": "^4.4.1",
     "prettier": "3.5.3",
+    "rollup-plugin-visualizer": "^6.0.3",
     "sass": "^1.89.2",
     "typescript": "^5.8.3",
     "unplugin-auto-import": "^19.3.0",
