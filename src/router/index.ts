@@ -23,6 +23,66 @@ const router = createRouter({
       component: () => import('@/layout/DefaultLayout.vue'),
       children: [
         {
+          path: '/assets/my',
+          name: 'UserAssetPanel',
+          component: () => import('@/views/user/AssetPanel.vue')
+        },
+        {
+          path: '/assets/add',
+          name: 'UserAddAsset',
+          component: () => import('@/views/asset/AddAsset.vue'),
+          meta: { requireAuth: true }
+        },
+        {
+          path: 'admin/users',
+          name: 'AdminAllUsers',
+          component: () => import('@/views/admin/AllUsers.vue'),
+          alias: ['/admin/all-users']
+        },
+        {
+          path: 'admin/user/add',
+          name: 'AdminAddUser',
+          component: () => import('@/views/admin/AddUser.vue'),
+          alias: ['/admin/add-user']
+        },
+        {
+          path: 'admin/users/permission',
+          name: 'AdminAccessControl',
+          component: () => import('@/views/admin/AccessControl.vue'),
+          alias: ['/admin/access-control']
+        },
+        {
+          path: 'admin/user/detail',
+          name: 'AdminUserDetail',
+          component: () => import('@/views/admin/UserDetail.vue'),
+          alias: ['/admin/user/detail/']
+        },
+        {
+          path: '/admin/assets',
+          name: 'AdminAllAssets',
+          component: () => import('@/views/admin/AllAssets.vue')
+        },
+        {
+          path: '/admin/assets/add',
+          name: 'AdminAddAsset',
+          component: () => import('@/views/asset/AddAsset.vue')
+        },
+        {
+          path: '/admin/assets/types',
+          name: 'AdminAssetTypes',
+          component: () => import('@/views/admin/AssetTypes.vue')
+        },
+        {
+          path: 'admin/message/template',
+          name: 'AdminMessageTemplate',
+          component: () => import('@/views/admin/MessageTemplate.vue')
+        },
+        {
+          path: 'admin/message/send',
+          name: 'AdminSendMessage',
+          component: () => import('@/views/admin/SendMessage.vue')
+        },
+        {
           path: 'assets',
           component: () => import('@/views/user/AssetPanel.vue')
         },

@@ -5,10 +5,11 @@ import {
   adminDeleteUserService,
   adminGetUsersTotalService
 } from '@/api/admin'
-import { useRouter } from 'vue-router'
+import { type RouteLocationNormalized, useRouter } from 'vue-router'
 import type { PermissionGroup, UserItem, UserSearchBody } from '@/types'
 import { useUserStore } from '@/stores'
 import { ElMessage } from 'element-plus'
+import PageTopTabs from '@/components/PageSurfaceTabs.vue'
 
 interface User {
   uid: string
@@ -214,124 +215,154 @@ onMounted(async () => {
 defineExpose({
   users
 })
+
+const tabsConfig = [
+  {
+    label: 'Users',
+    to: { name: 'AdminAllUsers' },
+    match: (r: RouteLocationNormalized) =>
+      r.name === 'AdminAllUsers' || r.name === 'AdminUserDetail'
+  },
+  { label: 'Add User', to: { name: 'AdminAddUser' } },
+  {
+    label: 'Access Control',
+    to: { name: 'AdminAccessControl' },
+    match: (r: RouteLocationNormalized) =>
+      r.path?.startsWith('/admin/access-control')
+  }
+]
 </script>
 
 <template>
-  <div class="search-wrapper">
-    <UserSearch
-      :fetch-table-data="fetchTableData"
-      v-model:user-search-body="userSearchBody"
-    ></UserSearch>
-
-    <SortTool
-      v-model:multiSort="multiSort"
-      :columns="columns"
-      :fetch-table-data="fetchTableData"
-    ></SortTool>
-  </div>
-
-  <div>
-    <el-button
-      @click="permissionDialogVisible = true"
-      data-test="set-permission"
-      >Set permission</el-button
-    >
-    <el-button
-      v-show="mutipleSelection.length > 0"
-      type="danger"
-      @click="triggerDelete(mutipleSelection)"
-      data-test="delete-selected"
-      >Delete</el-button
-    >
-  </div>
-
-  <div class="collapse-wrapper">
-    <UserCollapse :users="users"></UserCollapse>
-  </div>
-  <el-table
-    v-loading="isLoading"
-    :data="users"
-    stripe
-    style="width: 100%"
-    @sort-change="handleSortChange"
-    :default-sort="multiSort[0] || {}"
-    @selection-change="handleSelectionChange"
-  >
-    <el-table-column
-      type="selection"
-      :selectable="(row: User) => row.role !== 'admin'"
-    >
-    </el-table-column>
-    <el-table-column
-      v-for="(item, index) in columns"
-      :key="index"
-      :label="item.label"
-      :prop="item.prop"
-      width="auto"
-      sortable="custom"
-    ></el-table-column>
-    <el-table-column label="Role" prop="role"> </el-table-column>
-    <el-table-column label="Permission">
-      <template #default="scope">
-        <div style="display: flex; gap: 3px">
-          <PermissionIndicator
-            v-for="(field, index) in permissionFields"
-            :key="index"
-            :status="getPermission(scope.row.uid)?.[field] || false"
-            :field="field"
-          />
+  <div class="page-surface">
+    <PageTopTabs :tabs="tabsConfig" />
+    <el-card class="info-card admin-users">
+      <template #header>
+        <div class="search-wrapper">
+          <UserSearch
+            :fetch-table-data="fetchTableData"
+            v-model:user-search-body="userSearchBody"
+          ></UserSearch>
         </div>
-      </template>
-    </el-table-column>
-    <el-table-column label="Actions">
-      <template #default="scope">
+
+        <SortTool
+          v-model:multiSort="multiSort"
+          :columns="columns"
+          :fetch-table-data="fetchTableData"
+        ></SortTool>
+
         <el-button
-          :disabled="scope.row.role === 'admin'"
-          text
-          type="primary"
-          size="small"
-          @click="handleEdit(scope.row)"
-          data-test="edit"
-          >Edit</el-button
+          @click="permissionDialogVisible = true"
+          data-test="set-permission"
+          class="styled-btn"
+          >Set permission</el-button
         >
         <el-button
-          :disabled="scope.row.role === 'admin'"
-          text
+          v-show="mutipleSelection.length > 0"
           type="danger"
-          size="small"
-          @click="triggerDelete([scope.row])"
-          data-test="delete"
+          @click="triggerDelete(mutipleSelection)"
+          data-test="delete-selected"
+          class="styled-btn btn-delete"
           >Delete</el-button
         >
       </template>
-    </el-table-column>
-  </el-table>
 
-  <el-pagination
-    background
-    layout="total, prev, pager, next, sizes"
-    :current-page="currentPage"
-    :page-size="pageSize"
-    :total="total"
-    @current-change="handlePageChange"
-    @size-change="handleSizeChange"
-  />
+      <div class="content-area">
+        <div class="collapse-wrapper">
+          <UserCollapse :users="users"></UserCollapse>
+        </div>
 
-  <ConfirmDialog
-    v-model="dialogVisible"
-    title="Warning"
-    content="This will permanently delete this user"
-    :countdown-duration="5"
-    @confirm="handleDelete"
-    @cancel="handleCancel"
-  />
+        <el-table
+          v-loading="isLoading"
+          :data="users"
+          stripe
+          style="width: 100%"
+          @sort-change="handleSortChange"
+          :default-sort="multiSort[0] || {}"
+          @selection-change="handleSelectionChange"
+        >
+          <el-table-column
+            type="selection"
+            :selectable="(row: User) => row.role !== 'admin'"
+          >
+          </el-table-column>
+          <el-table-column
+            v-for="(item, index) in columns"
+            :key="index"
+            :label="item.label"
+            :prop="item.prop"
+            width="auto"
+            sortable="custom"
+          ></el-table-column>
+          <el-table-column label="Role" prop="role"> </el-table-column>
+          <el-table-column label="Permission">
+            <template #default="scope">
+              <div style="display: flex; gap: 3px">
+                <PermissionIndicator
+                  v-for="(field, index) in permissionFields"
+                  :key="index"
+                  :status="getPermission(scope.row.uid)?.[field] || false"
+                  :field="field"
+                />
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="Actions">
+            <template #default="scope">
+              <el-button
+                :disabled="scope.row.role === 'admin'"
+                text
+                type="primary"
+                size="small"
+                @click="handleEdit(scope.row)"
+                data-test="edit"
+                class="btn-inner btn-edit"
+                >Edit</el-button
+              >
+              <el-button
+                :disabled="scope.row.role === 'admin'"
+                text
+                type="danger"
+                size="small"
+                @click="triggerDelete([scope.row])"
+                data-test="delete"
+                class="btn-inner btn-del"
+                >Delete</el-button
+              >
+            </template>
+          </el-table-column>
+        </el-table>
 
-  <PermissionDialog
-    v-model:permissionDialogVisible="permissionDialogVisible"
-    v-model:selectAll="selectAll"
-    :total="total"
-    @update-permission-group="handleUpdatePermissionGroup"
-  ></PermissionDialog>
+        <div class="pagination-row">
+          <el-pagination
+            background
+            layout="total, prev, pager, next, sizes"
+            :current-page="currentPage"
+            :page-size="pageSize"
+            :total="total"
+            @current-change="handlePageChange"
+            @size-change="handleSizeChange"
+          />
+        </div>
+      </div>
+
+      <ConfirmDialog
+        v-model="dialogVisible"
+        title="Warning"
+        content="This will permanently delete this user"
+        :countdown-duration="5"
+        @confirm="handleDelete"
+        @cancel="handleCancel"
+      />
+
+      <PermissionDialog
+        v-model:permissionDialogVisible="permissionDialogVisible"
+        v-model:selectAll="selectAll"
+        :total="total"
+        @update-permission-group="handleUpdatePermissionGroup"
+      ></PermissionDialog>
+    </el-card>
+  </div>
 </template>
 
 <style scoped>
@@ -341,17 +372,145 @@ defineExpose({
   align-items: flex-start;
   height: 35px;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-top: 20px;
+  margin-bottom: -35px;
+  border-color: #4c7dd1;
 }
 
-@media (min-width: 768px) {
+.page-surface {
+  position: relative;
+  background: #f3f5f7;
+  border: 1px solid #e6eaee;
+  border-radius: 3px;
+  padding: 20px;
+  margin: 60px auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  width: 1100px;
+  box-sizing: border-box;
+}
+
+.info-card {
+  border-radius: 12px;
+}
+.styled-btn {
+  padding: 8px 20px;
+  font-weight: 600;
+  font-size: 16px;
+  border-radius: 10px;
+  color: #ffffff;
+  border: 1px solid #fff;
+  text-shadow: 0 4px 4px rgba(0, 0, 0, 0.5);
+  background-image: linear-gradient(
+    180deg,
+    #e4dfd8 0%,
+    #9bb7d4 60%,
+    rgba(58, 78, 107, 0.58) 100%
+  );
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+  margin-bottom: 20px;
+}
+
+.styled-btn:hover {
+  background: linear-gradient(
+    180deg,
+    #f0e6d2 0%,
+    rgba(125, 140, 163, 0.44) 100%
+  );
+  color: #39435b;
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  border: 1px solid #fff;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+}
+
+.btn-delete {
+  background: linear-gradient(to bottom, #ffffff, #dfdcdc);
+  color: #7f0505;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.btn-delete :hover {
+  transform: translateY(-1px);
+  background-image: linear-gradient(
+    to bottom,
+    #782d2d 0%,
+    #852e2e 10%,
+    #903737 100%
+  );
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.admin-users :deep(.el-card__header) {
+  padding: 12px 16px;
+}
+
+.content-area {
+  display: grid;
+  gap: 16px;
+}
+
+.users-table :deep(.el-table__header-wrapper) {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.users-table :deep(.cell) {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.perm-cells {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.pagination-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-del {
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: rgba(104, 5, 5, 0.72);
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  background: rgba(234, 215, 184, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.btn-edit {
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: #ffffff;
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  background: rgba(122, 164, 194, 0.78);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+:deep(.el-button.is-disabled) {
+  opacity: 1;
+  box-shadow: none;
+}
+
+@media (min-width: 769px) {
   .collapse-wrapper {
     display: none !important;
   }
 }
 @media (max-width: 768px) {
-  .table {
+  .users-table {
     display: none !important;
+  }
+  .card-toolbar {
+    grid-template-columns: 1fr;
+  }
+  .right-actions {
+    justify-self: start;
+    flex-wrap: wrap;
+  }
+  .left-tools {
+    grid-auto-columns: 1fr;
   }
 }
 </style>

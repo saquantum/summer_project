@@ -6,9 +6,27 @@ import {
   adminUpdatePermissionGroupService
 } from '@/api/admin'
 import type { PermissionGroup } from '@/types'
+import PageTopTabs from '@/components/PageSurfaceTabs.vue'
+import type { RouteLocationNormalized } from 'vue-router'
 
 import { ElMessage } from 'element-plus'
 import { onMounted, ref } from 'vue'
+
+const tabsConfig = [
+  {
+    label: 'Users',
+    to: { name: 'AdminAllUsers' },
+    match: (r: RouteLocationNormalized) =>
+      r.name === 'AdminAllUsers' || r.name === 'AdminUserDetail'
+  },
+  { label: 'Add User', to: { name: 'AdminAddUser' } },
+  {
+    label: 'Access Control',
+    to: { name: 'AdminAccessControl' },
+    match: (r: RouteLocationNormalized) =>
+      String(r.path || '').startsWith('/admin/access-control')
+  }
+]
 
 const permissions = ref<PermissionGroup[]>([])
 
@@ -113,221 +131,343 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div>
-    <el-button @click="handleCreate" data-test="add-permission-group"
-      >Add permission group</el-button
+  <div class="page-surface">
+    <PageTopTabs :tabs="tabsConfig" />
+
+    <el-table :data="permissions" class="pg-table">
+      <el-table-column prop="rowId" label="Row id" width="120" />
+      <el-table-column prop="name" label="Name" width="120" />
+      <el-table-column prop="description" label="Description" width="120" />
+      <el-table-column prop="canCreateAsset" label="Create asset" width="120" />
+      <el-table-column
+        prop="canSetPolygonOnCreate"
+        label="set polygon on create"
+        width="180"
+      />
+      <el-table-column
+        prop="canUpdateAssetFields"
+        label="Update asset fields"
+        width="180"
+      />
+      <el-table-column
+        prop="canUpdateAssetPolygon"
+        label="Update asset polygon"
+        width="180"
+      />
+      <el-table-column prop="canDeleteAsset" label="Delete asset" width="120" />
+      <el-table-column
+        prop="canUpdateProfile"
+        label="Update profile"
+        width="120"
+      />
+      <el-table-column label="Actions" width="120">
+        <template #default="scope">
+          <el-button
+            class="styled-btn"
+            size="small"
+            @click="triggerEdit(scope.row)"
+            data-test="trigger-edit"
+          >
+            Edit
+          </el-button>
+          <el-button
+            class="styled-btn btn-delete"
+            type="danger"
+            size="small"
+            data-test="delete"
+            @click="triggerDelete(scope.row)"
+          >
+            Delete
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <el-dialog
+      v-model="editDialogVisible"
+      title="Update asset type"
+      width="500"
+      data-test="dialog-edit"
     >
-  </div>
+      <el-form :model="form" label-width="auto">
+        <el-form-item label="Id">
+          <el-input v-model="form.rowId" disabled data-test="input-id" />
+        </el-form-item>
+        <el-form-item label="Name">
+          <el-input v-model="form.name" data-test="input-name" />
+        </el-form-item>
+        <el-form-item label="Description">
+          <el-input v-model="form.description" data-test="input-description" />
+        </el-form-item>
 
-  <el-table :data="permissions">
-    <el-table-column prop="rowId" label="Row id" width="120" />
-    <el-table-column prop="name" label="Name" width="180" />
-    <el-table-column prop="description" label="Description" />
-    <el-table-column prop="canCreateAsset" label="Create asset" />
-    <el-table-column
-      prop="canSetPolygonOnCreate"
-      label="set polygon on create"
-    />
-    <el-table-column prop="canUpdateAssetFields" label="Update asset fields" />
-    <el-table-column
-      prop="canUpdateAssetPolygon"
-      label="Update asset polygon"
-    />
-    <el-table-column prop="canDeleteAsset" label="Delete asset" />
-    <el-table-column prop="canUpdateProfile" label="Update profile" />
-    <el-table-column label="Actions">
-      <template #default="scope">
-        <el-button
-          text
-          size="small"
-          @click="triggerEdit(scope.row)"
-          data-test="trigger-edit"
-        >
-          Edit
-        </el-button>
-        <el-button
-          text
-          type="danger"
-          size="small"
-          data-test="delete"
-          @click="triggerDelete(scope.row)"
-        >
-          Delete
-        </el-button>
+        <el-form-item label="Create asset">
+          <el-radio-group
+            v-model="form.canCreateAsset"
+            data-test="radio-canCreateAsset"
+          >
+            <el-radio :value="true">true</el-radio>
+            <el-radio :value="false">false</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="Set polygon on create">
+          <el-radio-group
+            v-model="form.canSetPolygonOnCreate"
+            data-test="radio-canSetPolygonOnCreate"
+          >
+            <el-radio :value="true">true</el-radio>
+            <el-radio :value="false">false</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="Update asset fields">
+          <el-radio-group
+            v-model="form.canUpdateAssetFields"
+            data-test="radio-canUpdateAssetFields"
+          >
+            <el-radio :value="true">true</el-radio>
+            <el-radio :value="false">false</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="Update asset polygon">
+          <el-radio-group
+            v-model="form.canUpdateAssetPolygon"
+            data-test="radio-canUpdateAssetPolygon"
+          >
+            <el-radio :value="true">true</el-radio>
+            <el-radio :value="false">false</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="Delete asset">
+          <el-radio-group
+            v-model="form.canDeleteAsset"
+            data-test="radio-canDeleteAsset"
+          >
+            <el-radio :value="true">true</el-radio>
+            <el-radio :value="false">false</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="Update profile">
+          <el-radio-group
+            v-model="form.canUpdateProfile"
+            data-test="radio-canUpdateProfile"
+          >
+            <el-radio :value="true">true</el-radio>
+            <el-radio :value="false">false</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button
+            @click="editDialogVisible = false"
+            data-test="cancel"
+            class="styled-btn btn-del"
+            >Cancel</el-button
+          >
+          <el-button
+            type="primary"
+            @click="update"
+            data-test="update"
+            class="styled-btn"
+          >
+            Submit
+          </el-button>
+        </div>
       </template>
-    </el-table-column>
-  </el-table>
-  <el-dialog
-    v-model="editDialogVisible"
-    title="Update asset type"
-    width="500"
-    data-test="dialog-edit"
-  >
-    <el-form :model="form" label-width="auto">
-      <el-form-item label="Id">
-        <el-input v-model="form.rowId" disabled data-test="input-id" />
-      </el-form-item>
-      <el-form-item label="Name">
-        <el-input v-model="form.name" data-test="input-name" />
-      </el-form-item>
-      <el-form-item label="Description">
-        <el-input v-model="form.description" data-test="input-description" />
-      </el-form-item>
-      <el-form-item label="Create asset">
-        <el-radio-group
-          v-model="form.canCreateAsset"
-          data-test="radio-canCreateAsset"
-        >
-          <el-radio :value="true">true</el-radio>
-          <el-radio :value="false">false</el-radio>
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="Set polygon on create">
-        <el-radio-group
-          v-model="form.canSetPolygonOnCreate"
-          data-test="radio-canSetPolygonOnCreate"
-        >
-          <el-radio :value="true">true</el-radio>
-          <el-radio :value="false">false</el-radio>
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="Update asset fields">
-        <el-radio-group
-          v-model="form.canUpdateAssetFields"
-          data-test="radio-canUpdateAssetFields"
-        >
-          <el-radio :value="true">true</el-radio>
-          <el-radio :value="false">false</el-radio>
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="Update asset polygon">
-        <el-radio-group
-          v-model="form.canUpdateAssetPolygon"
-          data-test="radio-canUpdateAssetPolygon"
-        >
-          <el-radio :value="true">true</el-radio>
-          <el-radio :value="false">false</el-radio>
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="Delete asset">
-        <el-radio-group
-          v-model="form.canDeleteAsset"
-          data-test="radio-canDeleteAsset"
-        >
-          <el-radio :value="true">true</el-radio>
-          <el-radio :value="false">false</el-radio>
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="Update profile">
-        <el-radio-group
-          v-model="form.canUpdateProfile"
-          data-test="radio-canUpdateProfile"
-        >
-          <el-radio :value="true">true</el-radio>
-          <el-radio :value="false">false</el-radio>
-        </el-radio-group>
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="editDialogVisible = false" data-test="cancel"
-          >Cancel</el-button
-        >
-        <el-button type="primary" @click="update" data-test="update">
-          Submit
-        </el-button>
-      </div>
-    </template>
-  </el-dialog>
+    </el-dialog>
 
-  <el-dialog
-    v-model="createDialogVisible"
-    title="Create permission group"
-    width="500"
-  >
-    <el-form :model="form" :rules="rules" label-width="auto">
-      <el-form-item label="Name" prop="name">
-        <el-input v-model="form.name" data-test="input-name" />
-      </el-form-item>
-      <el-form-item label="Description">
-        <el-input v-model="form.description" data-test="input-description" />
-      </el-form-item>
-      <el-form-item label="Create asset">
-        <el-radio-group
-          v-model="form.canCreateAsset"
-          data-test="radio-canCreateAsset"
-        >
-          <el-radio :value="true">true</el-radio>
-          <el-radio :value="false">false</el-radio>
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="Set polygon on create">
-        <el-radio-group
-          v-model="form.canSetPolygonOnCreate"
-          data-test="radio-canSetPolygonOnCreate"
-        >
-          <el-radio :value="true">true</el-radio>
-          <el-radio :value="false">false</el-radio>
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="Update asset fields">
-        <el-radio-group
-          v-model="form.canUpdateAssetFields"
-          data-test="radio-canUpdateAssetFields"
-        >
-          <el-radio :value="true">true</el-radio>
-          <el-radio :value="false">false</el-radio>
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="Update asset polygon">
-        <el-radio-group
-          v-model="form.canUpdateAssetPolygon"
-          data-test="radio-canUpdateAssetPolygon"
-        >
-          <el-radio :value="true">true</el-radio>
-          <el-radio :value="false">false</el-radio>
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="Delete asset">
-        <el-radio-group
-          v-model="form.canDeleteAsset"
-          data-test="radio-canDeleteAsset"
-        >
-          <el-radio :value="true">true</el-radio>
-          <el-radio :value="false">false</el-radio>
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="Update profile">
-        <el-radio-group
-          v-model="form.canUpdateProfile"
-          data-test="radio-canUpdateProfile"
-        >
-          <el-radio :value="true">true</el-radio>
-          <el-radio :value="false">false</el-radio>
-        </el-radio-group>
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <div>
-        <el-button @click="createDialogVisible = false" data-test="cancel"
-          >Cancel</el-button
-        >
-        <el-button
-          type="primary"
-          data-test="create"
-          @click="createPermissionGroup"
-        >
-          Submit
-        </el-button>
-      </div>
-    </template>
-  </el-dialog>
+    <el-dialog
+      v-model="createDialogVisible"
+      title="Create permission group"
+      width="500"
+    >
+      <el-form :model="form" :rules="rules" label-width="auto">
+        <el-form-item label="Name" prop="name">
+          <el-input v-model="form.name" data-test="input-name" />
+        </el-form-item>
+        <el-form-item label="Description">
+          <el-input v-model="form.description" data-test="input-description" />
+        </el-form-item>
+        <el-form-item label="Create asset">
+          <el-radio-group
+            v-model="form.canCreateAsset"
+            data-test="radio-canCreateAsset"
+          >
+            <el-radio :value="true">true</el-radio>
+            <el-radio :value="false">false</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="Set polygon on create">
+          <el-radio-group
+            v-model="form.canSetPolygonOnCreate"
+            data-test="radio-canSetPolygonOnCreate"
+          >
+            <el-radio :value="true">true</el-radio>
+            <el-radio :value="false">false</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="Update asset fields">
+          <el-radio-group
+            v-model="form.canUpdateAssetFields"
+            data-test="radio-canUpdateAssetFields"
+          >
+            <el-radio :value="true">true</el-radio>
+            <el-radio :value="false">false</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="Update asset polygon">
+          <el-radio-group
+            v-model="form.canUpdateAssetPolygon"
+            data-test="radio-canUpdateAssetPolygon"
+          >
+            <el-radio :value="true">true</el-radio>
+            <el-radio :value="false">false</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="Delete asset">
+          <el-radio-group
+            v-model="form.canDeleteAsset"
+            data-test="radio-canDeleteAsset"
+          >
+            <el-radio :value="true">true</el-radio>
+            <el-radio :value="false">false</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="Update profile">
+          <el-radio-group
+            v-model="form.canUpdateProfile"
+            data-test="radio-canUpdateProfile"
+          >
+            <el-radio :value="true">true</el-radio>
+            <el-radio :value="false">false</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
 
-  <ConfirmDialog
-    v-model="deleteDialogVisible"
-    title="Warning"
-    content="This will permanently delete this permission group"
-    :countdown-duration="5"
-    @confirm="handleDelete"
-  />
+      <template #footer>
+        <div>
+          <el-button
+            @click="createDialogVisible = false"
+            data-test="cancel"
+            class="styled-btn btn-del"
+            >Cancel</el-button
+          >
+          <el-button
+            type="primary"
+            data-test="create"
+            @click="createPermissionGroup"
+            class="styled-btn"
+          >
+            Submit
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <ConfirmDialog
+      v-model="deleteDialogVisible"
+      title="Warning"
+      content="This will permanently delete this permission group"
+      :countdown-duration="5"
+      @confirm="handleDelete"
+    />
+    <div class="toolbar">
+      <el-button
+        @click="handleCreate"
+        data-test="add-permission-group"
+        class="styled-btn"
+        >Add permission group</el-button
+      >
+    </div>
+  </div>
 </template>
+
+<style scoped>
+.page-surface {
+  position: relative;
+  background: #f3f5f7;
+  border: 1px solid #e6eaee;
+  border-radius: 3px;
+  padding: 20px;
+  margin: 60px auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  width: 1100px;
+  box-sizing: border-box;
+}
+.toolbar {
+  margin-bottom: 0px;
+}
+.pg-table :deep(.el-table__cell) {
+  vertical-align: middle;
+}
+
+.styled-btn {
+  padding: 8px 20px;
+  font-weight: 600;
+  font-size: 16px;
+  border-radius: 10px;
+  color: #ffffff;
+  border: 1px solid #fff;
+  text-shadow: 0 4px 4px rgba(0, 0, 0, 0.5);
+  background-image: linear-gradient(
+    180deg,
+    #e4dfd8 0%,
+    #9bb7d4 60%,
+    rgba(58, 78, 107, 0.58) 100%
+  );
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+  margin-top: 10px;
+}
+
+.styled-btn:hover {
+  background: linear-gradient(
+    180deg,
+    #f0e6d2 0%,
+    rgba(125, 140, 163, 0.44) 100%
+  );
+  color: #39435b;
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  border: 1px solid #fff;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+}
+
+.btn-del {
+  background: linear-gradient(to bottom, #ffffff, #dfdcdc);
+  color: #7f0505;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.btn-del :hover {
+  transform: translateY(-1px);
+  background-image: linear-gradient(
+    to bottom,
+    #782d2d 0%,
+    #852e2e 10%,
+    #903737 100%
+  );
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 768px) {
+  .page-surface {
+    width: min(1100px, calc(100vw - 24px));
+    margin: 40px auto;
+    padding: 16px;
+  }
+}
+@media (max-width: 480px) {
+  .page-surface {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+    margin-top: 24px;
+  }
+}
+</style>
