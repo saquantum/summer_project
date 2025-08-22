@@ -10,6 +10,23 @@ import { type AssetSearchBody, type AssetTableItem } from '@/types'
 import { useResponsiveAction } from '@/composables/useResponsiveAction'
 import AssetCard from '@/components/cards/AssetCard.vue'
 import { ElMessage } from 'element-plus'
+import PageTopTabs from '@/components/PageSurfaceTabs.vue'
+import type { RouteLocationNormalized } from 'vue-router'
+
+const tabsConfig = [
+  {
+    label: 'All Assets',
+    to: { name: 'AdminAllAssets' },
+    match: (r: RouteLocationNormalized) => r.name === 'AdminAllAssets'
+  },
+  { label: 'Add Assets', to: { name: 'AdminAddAsset' } },
+  {
+    label: 'Asset Types',
+    to: { name: 'AdminAssetTypes' },
+    match: (r: RouteLocationNormalized) =>
+      r.path?.startsWith('/admin/assets/types')
+  }
+]
 
 const assets = computed<AssetTableItem[]>(() => {
   if (!assetStore.allAssets || assetStore.allAssets.length <= 0) return []
@@ -198,96 +215,112 @@ defineExpose({
 </script>
 
 <template>
-  <div>
-    <div class="search-wrapper">
-      <AssetSearch
-        data-test="asset-search"
-        :fetch-table-data="fetchTableData"
-        v-model:asset-search-body="assetSearchBody"
-      ></AssetSearch>
-      <SortTool
-        v-model:multi-sort="multiSort"
-        :columns="columns"
-        :fetch-table-data="fetchTableData"
-      ></SortTool>
-    </div>
+  <div class="page-surface">
+    <PageTopTabs :tabs="tabsConfig" />
+    <div>
+      <div class="search-wrapper">
+        <AssetSearch
+          data-test="asset-search"
+          :fetch-table-data="fetchTableData"
+          v-model:asset-search-body="assetSearchBody"
+        ></AssetSearch>
+        <SortTool
+          v-model:multi-sort="multiSort"
+          :columns="columns"
+          :fetch-table-data="fetchTableData"
+        ></SortTool>
+      </div>
 
-    <div class="asset-list">
-      <AssetCard
-        v-for="item in assetStore.allAssets"
-        :key="item.asset.id"
-        :item="item"
-      />
-    </div>
+      <div class="asset-list">
+        <AssetCard
+          v-for="item in assetStore.allAssets"
+          :key="item.asset.id"
+          :item="item"
+        />
+      </div>
 
-    <div v-show="mutipleSelection.length > 0">
-      <el-button type="danger" @click="triggerDelete(mutipleSelection)"
-        >Delete</el-button
+      <div v-show="mutipleSelection.length > 0">
+        <el-button type="danger" @click="triggerDelete(mutipleSelection)"
+          >Delete</el-button
+        >
+      </div>
+      <el-table
+        data-test="assets-table"
+        :data="assets"
+        :row-class-name="tableRowClassName"
+        @sort-change="handleSortChange"
+        :default-sort="multiSort[0] || {}"
+        v-loading="isLoading"
+        @selection-change="handleSelectionChange"
       >
+        <el-table-column type="selection"> </el-table-column>
+        <el-table-column
+          v-for="column in columns"
+          :key="column.prop"
+          :prop="column.prop"
+          :label="column.label"
+          sortable="custom"
+          :width="column.width"
+        />
+        <el-table-column label="Actions" fixed="right" min-width="190">
+          <template #default="scope">
+            <el-button
+              type="primary"
+              size="small"
+              @click="handleShowDetail(scope.row)"
+              class="btn-edit"
+            >
+              Show Detail
+            </el-button>
+            <el-button
+              type="danger"
+              size="small"
+              @click="triggerDelete([scope.row])"
+              class="btn-del"
+            >
+              Delete
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div class="pagination-row">
+        <el-pagination
+          background
+          :layout="paginationLayout"
+          :current-page="currentPage"
+          :page-size="pageSize"
+          :total="total"
+          :pager-count="5"
+          @current-change="handlePageChange"
+          @size-change="handleSizeChange"
+        />
+
+        <ConfirmDialog
+          v-model="dialogVisible"
+          title="Warning"
+          content="This will permanently delete this asset"
+          :countdown-duration="5"
+          @confirm="handleDelete"
+          @cancel="dialogVisible = false"
+        />
+      </div>
     </div>
-    <el-table
-      data-test="assets-table"
-      :data="assets"
-      :row-class-name="tableRowClassName"
-      @sort-change="handleSortChange"
-      :default-sort="multiSort[0] || {}"
-      v-loading="isLoading"
-      @selection-change="handleSelectionChange"
-    >
-      <el-table-column type="selection"> </el-table-column>
-      <el-table-column
-        v-for="column in columns"
-        :key="column.prop"
-        :prop="column.prop"
-        :label="column.label"
-        sortable="custom"
-        :width="column.width"
-      />
-      <el-table-column label="Actions" fixed="right" min-width="120">
-        <template #default="scope">
-          <el-button
-            text
-            type="primary"
-            size="small"
-            @click="handleShowDetail(scope.row)"
-          >
-            Show Detail
-          </el-button>
-          <el-button
-            text
-            type="danger"
-            size="small"
-            @click="triggerDelete([scope.row])"
-          >
-            Delete
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <el-pagination
-      background
-      :layout="paginationLayout"
-      :current-page="currentPage"
-      :page-size="pageSize"
-      :total="total"
-      :pager-count="5"
-      @current-change="handlePageChange"
-      @size-change="handleSizeChange"
-    />
-
-    <ConfirmDialog
-      v-model="dialogVisible"
-      title="Warning"
-      content="This will permanently delete this asset"
-      :countdown-duration="5"
-      @confirm="handleDelete"
-      @cancel="dialogVisible = false"
-    />
   </div>
 </template>
 
 <style scoped>
+.page-surface {
+  position: relative;
+  background: #f3f5f7;
+  border: 1px solid #e6eaee;
+  border-radius: 3px;
+  padding: 20px;
+  margin: 60px auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  width: 1100px;
+  box-sizing: border-box;
+}
 .search-wrapper {
   display: flex;
   justify-content: center;
@@ -310,6 +343,42 @@ defineExpose({
 }
 :deep(.el-table .warning-yellow) {
   --el-table-tr-bg-color: var(--el-color-warning-light-8);
+}
+
+.btn-del {
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: rgba(104, 5, 5, 0.72);
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  background: rgba(234, 215, 184, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  border: none;
+}
+
+.btn-del:hover {
+  color: rgba(151, 5, 5, 0.72);
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  background: rgb(255, 255, 255);
+}
+
+.btn-edit {
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: #ffffff;
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  background: rgba(122, 164, 194, 0.78);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  border: none;
+}
+.btn-edit:hover {
+  background: rgba(244, 249, 251, 0.78);
+  color: rgb(34, 63, 112);
+  border: none;
+}
+
+.pagination-row {
+  display: flex;
+  justify-content: flex-end;
 }
 
 @media (max-width: 768px) {

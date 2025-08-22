@@ -10,10 +10,27 @@ import type { ComponentPublicInstance } from 'vue'
 import type MapCard from '@/components/MapCard.vue'
 import type { AssetForm, NominatimResult } from '@/types'
 import { createUserRules, trimForm } from '@/utils/formUtils'
+import PageTopTabs from '@/components/PageSurfaceTabs.vue'
+import type { RouteLocationNormalized } from 'vue-router'
 
 // user store
 const userStore = useUserStore()
 const assetStore = useAssetStore()
+const adminTabs = [
+  {
+    label: 'All Assets',
+    to: { name: 'AdminAllAssets' },
+    match: (r: RouteLocationNormalized) => r.name === 'AdminAllAssets'
+  },
+  { label: 'Add Assets', to: { name: 'AdminAddAsset' } },
+  {
+    label: 'Asset Types',
+    to: { name: 'AdminAssetTypes' },
+    match: (r: RouteLocationNormalized) =>
+      r.path?.startsWith('/admin/assets/types')
+  }
+]
+const isAdmin = computed(() => !!userStore.user?.admin)
 
 const convertToGeoJSON = (
   data: NominatimResult,
@@ -331,10 +348,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container">
-    <div>
+  <div class="page-surface">
+    <PageTopTabs v-if="isAdmin" :tabs="adminTabs" />
+
+    <div class="container">
       <h3 v-if="disableAddAsset">You can not add asset right now</h3>
       <el-form
+        class="asset-form"
         :model="form"
         ref="formRef"
         label-width="auto"
@@ -342,187 +362,593 @@ onMounted(() => {
         :rules="rules"
         :disabled="disableAddAsset"
       >
-        <el-form-item label="Username" prop="username">
-          <el-input v-model="form.username" :disabled="disableForUser" />
-        </el-form-item>
-        <el-form-item label="Asset name" prop="name">
-          <el-input v-model="form.name" />
-        </el-form-item>
-        <el-form-item label="Asset type" prop="typeId">
-          <el-select v-model="form.typeId" placeholder="Select type">
-            <el-option
-              v-for="item in assetStore.typeOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
+        <el-row :gutter="16" class="content-grid">
+          <el-col
+            v-if="form.locations.length"
+            :xs="24"
+            :sm="24"
+            :md="12"
+            :lg="12"
+          >
+            <el-card class="card-elevated map-card">
+              <template #header>
+                <div class="card-header">
+                  <span>Map</span>
+                  <span class="hint" v-if="!form.locations.length"
+                    >Search an address to preview polygon</span
+                  >
+                </div>
+              </template>
 
-        <el-form-item label="Asset material" prop="material">
-          <el-select v-model="form.material" placeholder="Select material">
-            <el-option
-              v-for="item in materialOption"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            ></el-option>
-          </el-select>
-        </el-form-item>
+              <div class="map-container">
+                <MapCard
+                  ref="mapCardRef"
+                  :map-id="'AddAsset'"
+                  v-model:locations="form.locations"
+                  v-model:mode="mode"
+                />
+              </div>
+            </el-card>
+          </el-col>
 
-        <el-form-item label="Asset status" prop="status">
-          <el-select v-model="form.status" placeholder="Select status">
-            <el-option
-              v-for="item in statusOption"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            ></el-option>
-          </el-select>
-        </el-form-item>
+          <el-col :xs="24" :sm="24" :md="12" :lg="12" class="right-col">
+            <div class="right-stack">
+              <el-card class="card-elevated draw-card">
+                <template #header>
+                  <div class="card-header">
+                    <span>Drawing tools</span>
+                    <span class="hint" v-if="isDrawing"
+                      >You are now drawing a polygon</span
+                    >
+                  </div>
+                </template>
 
-        <el-form-item label="Capacity litres" prop="capacityLitres">
-          <el-input-number v-model="form.capacityLitres" :min="0" />
-        </el-form-item>
+                <div class="admin-controls">
+                  <div class="control-row">
+                    <label>Mode</label>
+                    <el-select
+                      :disabled="isDrawing || disableSetPolygon"
+                      v-model="mode"
+                      class="mode-select"
+                    >
+                      <el-option label="convex" value="convex"></el-option>
+                      <el-option label="sequence" value="sequence"></el-option>
+                    </el-select>
 
-        <el-form-item label="Installed at" prop="installedAt">
-          <el-date-picker
-            v-model="form.installedAt"
-            type="date"
-            placeholder="Pick a day"
-            :disabled-date="disabledAfterToday"
-            value-format="YYYY-MM-DD"
-          />
-        </el-form-item>
+                    <el-button
+                      @click="prevPolygon"
+                      :disabled="mapCardRef?.disablePrev"
+                      class="arrow"
+                      >⬅</el-button
+                    >
+                    <el-button
+                      @click="nextPolygon"
+                      :disabled="mapCardRef?.disableNext"
+                      class="arrow"
+                      >➡</el-button
+                    >
+                  </div>
+                  <div class="toolbar">
+                    <div class="toolbar-group" :class="{ drawing: isDrawing }">
+                      <el-button
+                        @click="quickEscapePolygons"
+                        class="styled-btn reset-btn"
+                        >reset display</el-button
+                      >
+                      <el-button
+                        v-if="!isDrawing"
+                        @click="beginDrawing"
+                        class="styled-btn"
+                        :disabled="disableSetPolygon"
+                        >Draw new polygon</el-button
+                      >
+                    </div>
+                    <div class="else-btn">
+                      <el-button
+                        v-if="isDrawing"
+                        @click="finishOneShape"
+                        :disabled="disableSetPolygon"
+                        >Finish one shape</el-button
+                      >
+                      <el-button
+                        v-if="isDrawing"
+                        @click="finishOnePolygon"
+                        :disabled="disableSetPolygon"
+                        >Finish one polygon</el-button
+                      >
+                      <el-button
+                        v-if="isDrawing"
+                        @click="clearCurrentPolygon"
+                        :disabled="disableSetPolygon"
+                        >Clear current polygon</el-button
+                      >
+                      <el-button
+                        v-if="isDrawing"
+                        @click="clearAll"
+                        :disabled="disableSetPolygon"
+                        >Clear all</el-button
+                      >
+                      <el-button
+                        v-if="isDrawing"
+                        @click="endDrawing"
+                        :disabled="disableSetPolygon"
+                        >End drawing</el-button
+                      >
+                      <el-button
+                        v-if="isDrawing"
+                        @click="cancelDrawing"
+                        :disabled="disableSetPolygon"
+                        >Cancel drawing</el-button
+                      >
+                    </div>
+                  </div>
+                </div>
+              </el-card>
 
-        <el-form-item label="Last inspection" prop="lastInspection">
-          <el-date-picker
-            v-model="form.lastInspection"
-            type="date"
-            placeholder="Pick a day"
-            :disabled-date="disabledAfterToday"
-            value-format="YYYY-MM-DD"
-          />
-        </el-form-item>
+              <el-card class="card-elevated form-card">
+                <template #header>
+                  <div class="card-header"><span>Asset info</span></div>
+                </template>
 
-        <el-form-item label="Address">
-          <el-input
-            v-model="form.address"
-            type="textarea"
-            placeholder="Please input address"
-          /><el-button @click="searchLocation(form.address)">Search</el-button>
-        </el-form-item>
+                <el-row :gutter="16" class="asset-grid">
+                  <el-col :xs="24" :sm="12">
+                    <el-form-item label="Username" prop="username">
+                      <el-input
+                        v-model="form.username"
+                        :disabled="disableForUser"
+                      />
+                    </el-form-item>
+                  </el-col>
 
-        <el-form-item>
-          <div v-if="form.locations.length > 0">
-            <div><h3>Customise polygon</h3></div>
-            <div v-if="isDrawing">Your are now drawing new polygon</div>
-            <div class="map-container">
-              <MapCard
-                ref="mapCardRef"
-                :map-id="'AddAsset'"
-                v-model:locations="form.locations"
-                v-model:mode="mode"
-              ></MapCard>
+                  <el-col :xs="24" :sm="12">
+                    <el-form-item label="Asset name" prop="name">
+                      <el-input v-model="form.name" />
+                    </el-form-item>
+                  </el-col>
+
+                  <el-col :xs="24" :sm="12">
+                    <el-form-item label="Asset type" prop="typeId">
+                      <el-select
+                        v-model="form.typeId"
+                        placeholder="Select type"
+                      >
+                        <el-option
+                          v-for="item in assetStore.typeOptions"
+                          :key="item.value"
+                          :label="item.label"
+                          :value="item.value"
+                        />
+                      </el-select>
+                    </el-form-item>
+                  </el-col>
+
+                  <el-col :xs="24" :sm="12">
+                    <el-form-item label="Asset material" prop="material">
+                      <el-select
+                        v-model="form.material"
+                        placeholder="Select material"
+                      >
+                        <el-option
+                          v-for="item in materialOption"
+                          :key="item.value"
+                          :label="item.label"
+                          :value="item.value"
+                        ></el-option>
+                      </el-select>
+                    </el-form-item>
+                  </el-col>
+
+                  <el-col :xs="24" :sm="12">
+                    <el-form-item label="Asset status" prop="status">
+                      <el-select
+                        v-model="form.status"
+                        placeholder="Select status"
+                      >
+                        <el-option
+                          v-for="item in statusOption"
+                          :key="item.value"
+                          :label="item.label"
+                          :value="item.value"
+                        ></el-option>
+                      </el-select>
+                    </el-form-item>
+                  </el-col>
+
+                  <el-col :xs="24" :sm="12">
+                    <el-form-item label="Capacity litres" prop="capacityLitres">
+                      <el-input-number v-model="form.capacityLitres" :min="0" />
+                    </el-form-item>
+                  </el-col>
+
+                  <el-col :xs="24" :sm="12">
+                    <el-form-item label="Installed at" prop="installedAt">
+                      <el-date-picker
+                        v-model="form.installedAt"
+                        type="date"
+                        placeholder="Pick a day"
+                        :disabled-date="disabledAfterToday"
+                        value-format="YYYY-MM-DD"
+                      />
+                    </el-form-item>
+                  </el-col>
+
+                  <el-col :xs="24" :sm="12">
+                    <el-form-item label="Last inspection" prop="lastInspection">
+                      <el-date-picker
+                        v-model="form.lastInspection"
+                        type="date"
+                        placeholder="Pick a day"
+                        :disabled-date="disabledAfterToday"
+                        value-format="YYYY-MM-DD"
+                      />
+                    </el-form-item>
+                  </el-col>
+
+                  <el-col :xs="24" :sm="24">
+                    <el-form-item label="Address">
+                      <el-input
+                        v-model="form.address"
+                        type="textarea"
+                        placeholder="Please input address"
+                      /><el-button @click="searchLocation(form.address)"
+                        >Search</el-button
+                      >
+                    </el-form-item>
+                  </el-col>
+
+                  <el-col :span="24">
+                    <div class="form-button">
+                      <el-button
+                        type="primary"
+                        @click="adminSubmit"
+                        v-if="userStore.user?.admin"
+                        class="styled-btn"
+                        >Submit</el-button
+                      >
+                      <el-button
+                        type="primary"
+                        v-else
+                        @click="userSubmit"
+                        class="styled-btn"
+                        >Submit</el-button
+                      >
+                      <el-button @click="reset" class="styled-btn btn-cancel"
+                        >Reset</el-button
+                      >
+                    </div>
+                  </el-col>
+                </el-row>
+              </el-card>
             </div>
-            <el-select
-              :disabled="isDrawing || disableSetPolygon"
-              v-model="mode"
-              style="margin-top: 10px"
-            >
-              <el-option label="convex" value="convex"></el-option>
-              <el-option label="sequence" value="sequence"></el-option>
-            </el-select>
-            <div class="map-button">
-              <el-button
-                @click="prevPolygon"
-                :disabled="mapCardRef?.disablePrev"
-                >⬅</el-button
-              >
-              <el-button
-                @click="nextPolygon"
-                :disabled="mapCardRef?.disableNext"
-                >➡</el-button
-              >
-              <el-button @click="quickEscapePolygons">reset display</el-button>
-
-              <el-button
-                v-if="!isDrawing"
-                @click="beginDrawing"
-                :disabled="disableSetPolygon"
-                >Draw new polygon</el-button
-              >
-              <el-button
-                v-if="isDrawing"
-                @click="finishOneShape"
-                :disabled="disableSetPolygon"
-                >Finish one shape</el-button
-              >
-              <el-button
-                v-if="isDrawing"
-                @click="finishOnePolygon"
-                :disabled="disableSetPolygon"
-                >Finish one polygon</el-button
-              >
-              <el-button
-                v-if="isDrawing"
-                @click="clearCurrentPolygon"
-                :disabled="disableSetPolygon"
-                >Clear current polygon</el-button
-              >
-              <el-button
-                v-if="isDrawing"
-                @click="clearAll"
-                :disabled="disableSetPolygon"
-                >Clear all</el-button
-              >
-              <el-button
-                v-if="isDrawing"
-                @click="endDrawing"
-                :disabled="disableSetPolygon"
-                >End drawing</el-button
-              >
-              <el-button
-                v-if="isDrawing"
-                @click="cancelDrawing"
-                :disabled="disableSetPolygon"
-                >Cancel drawing</el-button
-              >
-            </div>
-          </div>
-        </el-form-item>
-
-        <el-form-item>
-          <div class="form-button">
-            <el-button
-              type="primary"
-              @click="adminSubmit"
-              v-if="userStore.user?.admin"
-              >Submit</el-button
-            >
-            <el-button type="primary" v-else @click="userSubmit"
-              >Submit</el-button
-            >
-            <el-button @click="reset">Reset</el-button>
-          </div>
-        </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
     </div>
   </div>
 </template>
 
 <style scoped>
-.container {
+.page-surface {
+  position: relative;
+  background: #f3f5f7;
+  border: 1px solid #e6eaee;
+  border-radius: 3px;
+  padding: 20px;
+  margin: 60px auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  width: 1100px;
+  box-sizing: border-box;
+}
+
+.card-elevated {
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  border: 1px solid #ebeef5;
+  background: #fff;
+  overflow: hidden;
+}
+.card-header {
   display: flex;
-  justify-content: center;
+  align-items: center;
+  min-height: 40px;
+  font-weight: 600;
+  color: #1f2d3d;
+}
+.card-header .hint {
+  margin-left: auto;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.map-card,
+.form-card,
+.admin-card {
+  height: auto;
+}
+
+.map-card :deep(.el-card__body),
+.form-card :deep(.el-card__body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
 }
 
 .map-container {
-  width: 600px;
-  height: 600px;
+  width: 100%;
+  height: 750px;
 }
 
-/* Extra small (phones) */
+.right-col {
+  margin-top: var(--gap);
+}
+.right-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  height: calc(var(--panel-h) + var(--card-header-h) + var(--card-body-p) * 2);
+}
+
+.form-card :deep(.el-card__body) {
+  display: flex;
+  flex-direction: column;
+  padding: var(--card-body-p) 16px;
+}
+.form-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.tool-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tool-buttons.drawing {
+  gap: 6px;
+}
+.mode-select {
+  min-width: 160px;
+}
+
+.admin-controls {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 15px;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.control-row label {
+  min-width: 52px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.mode-select {
+  width: 100px;
+}
+.toolbar {
+  display: grid;
+  gap: 10px;
+}
+.toolbar-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.arrow {
+  margin-left: 30px;
+  width: 70px;
+}
+.table-container {
+  overflow-x: auto;
+}
+.responsive-table {
+  width: 100%;
+  min-width: 720px;
+}
+.action-cell {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.content-grid .el-col > .el-card + .el-card {
+  margin-top: var(--gap);
+}
+
+.form-card .card-header.card-header-actions {
+  justify-content: space-between;
+}
+
+.form-card .header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.styled-btn {
+  padding: 8px 20px;
+  font-weight: 600;
+  font-size: 16px;
+  border-radius: 8px;
+  color: #ffffff;
+  border: 1px solid #fff;
+  text-shadow: 0 4px 4px rgba(0, 0, 0, 0.5);
+  background-image: linear-gradient(
+    180deg,
+    #e4dfd8 0%,
+    #9bb7d4 60%,
+    rgba(58, 78, 107, 0.58) 100%
+  );
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+}
+
+.styled-btn:hover {
+  background: linear-gradient(
+    180deg,
+    #f0e6d2 0%,
+    rgba(125, 140, 163, 0.44) 100%
+  );
+  color: #39435b;
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  border: 1px solid #fff;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+}
+
+.btn-cancel {
+  background: linear-gradient(to bottom, #ffffff, #dfdcdc);
+  color: #7f0505;
+  border: 1px solid #fff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+}
+
+.btn-cancel:hover {
+  background-image: linear-gradient(
+    to bottom,
+    #782d2d 0%,
+    #852e2e 10%,
+    #903737 100%
+  );
+  color: #ffffff;
+  border: 1px solid #fff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+}
+
+.reset-btn {
+  background: linear-gradient(
+    180deg,
+    #f0e6d2 0%,
+    rgba(125, 140, 163, 0.44) 100%
+  );
+  color: #39435b;
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.37);
+  border: 1px solid #fff;
+}
+
+.reset-btn:hover {
+  color: #ffffff;
+  border: 1px solid #fff;
+  text-shadow: 0 4px 4px rgba(0, 0, 0, 0.5);
+  background-image: linear-gradient(
+    180deg,
+    #e4dfd8 0%,
+    #9bb7d4 60%,
+    rgba(58, 78, 107, 0.58) 100%
+  );
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+}
+
+.equal-table :deep(.el-table__cell) {
+  border-right: 0 !important;
+}
+
+.equal-table :deep(.el-table__header th.el-table__cell) {
+  background-color: #f5f7fb;
+  font-weight: 600;
+}
+
+.equal-table :deep(.el-table__body td.el-table__cell) {
+  background-color: #fbfcff;
+}
+
+.equal-table
+  :deep(.el-table--striped .el-table__body tr.el-table__row--striped td) {
+  background-color: #f2f6ff;
+}
+
+.equal-table :deep(.el-table__body tr:hover > td) {
+  background-color: #eaf3ff;
+}
+
+.asset-form .form-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eaeef3;
+}
+
+.asset-grid {
+  margin-top: 6px;
+  padding: 20px;
+}
+
+.asset-form :deep(.el-form-item) {
+  margin-bottom: 14px;
+}
+.asset-form :deep(.el-form-item__label) {
+  font-weight: 600;
+  color: #334155;
+}
+
+.asset-form :deep(.el-input__wrapper),
+.asset-form :deep(.el-select__wrapper),
+.asset-form :deep(.el-textarea__inner),
+.asset-form :deep(.el-date-editor.el-input__wrapper),
+.asset-form :deep(.el-input-number) {
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  box-shadow: none;
+}
+.asset-form :deep(.el-input__wrapper:hover),
+.asset-form :deep(.el-select__wrapper:hover),
+.asset-form :deep(.el-textarea__inner:hover),
+.asset-form :deep(.el-date-editor.el-input__wrapper:hover),
+.asset-form :deep(.el-input-number:hover) {
+  border-color: #cbd5e1;
+}
+.asset-form :deep(.is-focus),
+.asset-form :deep(.el-textarea__inner:focus) {
+  border-color: #4c7dd1 !important;
+  box-shadow: 0 0 0 3px rgba(76, 125, 209, 0.18) !important;
+  background: #fff !important;
+}
+
+.asset-form :deep(.el-form-item.is-required > .el-form-item__label:before) {
+  color: #ef4444;
+}
+
+.address-item :deep(.el-form-item__content) {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: start;
+}
+.search-btn {
+  height: 36px;
+  padding: 0 16px;
+  margin-top: 20px;
+}
+
+.form-button {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px dashed #e5e7eb;
+  margin-top: 6px;
+}
+
 @media (max-width: 575px) {
   /* Styles for very small screens */
   .map-container {
