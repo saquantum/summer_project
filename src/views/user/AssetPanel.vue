@@ -218,10 +218,9 @@ defineExpose({
               </div>
 
               <div class="warning-container">
-                <div
-                  class="warning-bar"
-                  :class="`bar-${item.maxWarning?.warningLevel || 'SUCCESS'}`"
-                ></div>
+                <StatusIndicator
+                  :status="item.maxWarning?.warningLevel || 'SUCCESS'"
+                ></StatusIndicator>
                 <div class="warning-text">
                   {{
                     item.maxWarning?.warningLevel === 'RED'
@@ -470,14 +469,6 @@ defineExpose({
   width: 240px;
 }
 
-.warning-bar {
-  width: 40px;
-  height: 10px;
-  border-radius: 4px;
-  margin-left: 8px;
-  margin-top: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
 .warning-text {
   font-size: 12px;
   font-weight: 500;

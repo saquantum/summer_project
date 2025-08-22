@@ -146,18 +146,10 @@ const handleBackToAdmin = () => {
       <span>Send to Inbox</span>
     </el-menu-item>
 
-    <el-sub-menu index="4">
-      <template #title>
-        <el-icon><CopyDocument /></el-icon>
-        <span>Message Template</span>
-      </template>
-      <el-menu-item index="/admin/message/template/manage">
-        <span>Manage Template</span>
-      </el-menu-item>
-      <el-menu-item index="/admin/message/template">
-        <span>Edit Template</span>
-      </el-menu-item>
-    </el-sub-menu>
+    <el-menu-item index="/admin/message/template">
+      <el-icon><CopyDocument /></el-icon>
+      <span>Manage Template</span>
+    </el-menu-item>
 
     <el-divider style="margin: 8px 0" />
     <el-sub-menu index="1">

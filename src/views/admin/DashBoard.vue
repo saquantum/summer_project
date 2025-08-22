@@ -112,7 +112,7 @@ onMounted(async () => {
           </el-icon>
         </template>
       </LineChart>
-      <LineChart :count="activeUsers" id="active-users" title="Active users">
+      <LineChart :count="activeUsers" id="active-users" title="Active Users">
         <template #icon>
           <el-icon style="font-size: 18px; color: #409eff">
             <Location />

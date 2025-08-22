@@ -9,13 +9,18 @@ config.global.config.warnHandler = () => {}
 
 // Mock router
 const pushMock = vi.fn()
+const replaceMock = vi.fn()
 vi.mock('vue-router', async (importOriginal) => {
   const actual = (await importOriginal()) as Record<string, unknown>
   return {
     ...actual,
-    useRouter: () => ({ push: pushMock }),
+    useRouter: () => ({
+      push: pushMock,
+      replace: replaceMock
+    }),
     useRoute: () => ({
-      query: { id: 'test-user-id' }
+      query: { id: 'test-user-id' },
+      path: '/user/profile'
     })
   }
 })
@@ -77,6 +82,7 @@ vi.mock('@/stores', () => ({
 describe('UserProfile.vue', () => {
   beforeEach(() => {
     pushMock.mockClear()
+    replaceMock.mockClear()
     submitMock.mockClear()
     vi.clearAllMocks()
   })

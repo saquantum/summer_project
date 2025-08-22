@@ -186,7 +186,6 @@ describe('SidebarComponent', () => {
       // Should show admin interface menu items
       expect(wrapper.text()).toContain('Dashboard')
       expect(wrapper.text()).toContain('Send to Inbox')
-      expect(wrapper.text()).toContain('Message Template')
     })
 
     it('should render user management submenu', () => {
@@ -203,11 +202,6 @@ describe('SidebarComponent', () => {
 
     it('should render warning management submenu', () => {
       expect(wrapper.text()).toContain('All Warning')
-    })
-
-    it('should render message template submenu', () => {
-      expect(wrapper.text()).toContain('Manage Template')
-      expect(wrapper.text()).toContain('Edit Template')
     })
 
     it('should show current warning item when on warning page', () => {

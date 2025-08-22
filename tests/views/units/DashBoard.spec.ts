@@ -5,6 +5,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import DashBoard from '@/views/admin/DashBoard.vue'
 import {
+  adminGetActiveUsersService,
   adminGetAssetDistributionService,
   adminGetAssetsTotalService,
   adminGetContactPreferenceService,
@@ -14,6 +15,7 @@ import {
 
 // Mock the API services
 vi.mock('@/api/admin', () => ({
+  adminGetActiveUsersService: vi.fn(),
   adminGetAssetDistributionService: vi.fn(),
   adminGetAssetsTotalService: vi.fn(),
   adminGetContactPreferenceService: vi.fn(),
@@ -120,6 +122,10 @@ const mockAssetsInDanger = {
   data: 25
 }
 
+const mockActiveUsers = {
+  data: 42
+}
+
 describe('DashBoard', () => {
   beforeEach(() => {
     // Setup API mocks with default successful responses
@@ -135,6 +141,9 @@ describe('DashBoard', () => {
     )
     vi.mocked(adminGetAssetsTotalService).mockResolvedValue(
       mockAssetsInDanger as any
+    )
+    vi.mocked(adminGetActiveUsersService).mockResolvedValue(
+      mockActiveUsers as any
     )
   })
 
@@ -165,7 +174,7 @@ describe('DashBoard', () => {
 
     const lineCharts = wrapper.findAll('[data-testid="line-chart"]')
     expect(lineCharts[0].attributes('data-title')).toBe('User Statistics')
-    expect(lineCharts[1].attributes('data-title')).toBe('Asset Statistics')
+    expect(lineCharts[1].attributes('data-title')).toBe('Active Users')
     expect(lineCharts[2].attributes('data-title')).toBe('Asset Statistics')
     expect(lineCharts[3].attributes('data-title')).toBe('Assets in danger')
 
@@ -191,6 +200,7 @@ describe('DashBoard', () => {
     expect(adminGetUserDistributionService).toHaveBeenCalled()
     expect(adminGetContactPreferenceService).toHaveBeenCalled()
     expect(adminGetAssetDistributionService).toHaveBeenCalled()
+    expect(adminGetActiveUsersService).toHaveBeenCalled()
     expect(adminGetAssetsTotalService).toHaveBeenCalledWith({
       filters: { warning_id: { op: 'notNull' } }
     })
@@ -201,7 +211,8 @@ describe('DashBoard', () => {
     // Check that data is correctly passed to chart components through props
     const lineCharts = wrapper.findAllComponents({ name: 'LineChart' })
     expect(lineCharts[0].props('count')).toBe(150) // userCount
-    expect(lineCharts[1].props('count')).toBe(300) // assetCount
+    expect(lineCharts[1].props('count')).toBe(42) // activeUsers
+    expect(lineCharts[2].props('count')).toBe(300) // assetCount
     expect(lineCharts[3].props('count')).toBe(25) // assetsInDanger
 
     const barChart = wrapper.findComponent({ name: 'BarChart' })
@@ -341,7 +352,8 @@ describe('DashBoard', () => {
     // Should default to 0 when table data is not found
     const lineCharts = wrapper.findAllComponents({ name: 'LineChart' })
     expect(lineCharts[0].props('count')).toBe(0) // userCount
-    expect(lineCharts[1].props('count')).toBe(0) // assetCount
+    expect(lineCharts[1].props('count')).toBe(42) // activeUsers - still from mock
+    expect(lineCharts[2].props('count')).toBe(0) // assetCount
   })
 
   it('passes correct props to chart components', async () => {
