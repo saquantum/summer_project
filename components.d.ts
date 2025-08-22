@@ -79,6 +79,7 @@ declare module 'vue' {
     SideMenu: typeof import('./src/layout/components/SideMenu.vue')['default']
     SortTool: typeof import('./src/components/search/SortTool.vue')['default']
     StatusIndicator: typeof import('./src/components/StatusIndicator.vue')['default']
+    TestCom: typeof import('./src/components/TestCom.vue')['default']
     TestSearch: typeof import('./src/components/TestSearch.vue')['default']
     TiptapEditor: typeof import('./src/components/TiptapEditor.vue')['default']
     UserCard: typeof import('./src/components/cards/UserCard.vue')['default']

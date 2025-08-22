@@ -169,7 +169,7 @@ export const adminGetAssetsTotalService = (obj: object) =>
  */
 
 export const adminGetAllWarningsService = (): Promise<ApiResponse<Warning[]>> =>
-  request.get('/warning')
+  request.get('/admin/warning/all')
 
 export const adminGetAllLiveWarningsService = (): Promise<
   ApiResponse<Warning[]>
@@ -234,3 +234,6 @@ export const adminGetContactPreferenceService = () =>
 
 export const adminGetAssetDistributionService = () =>
   request.get('/admin/dashboard/assets/region')
+
+export const adminGetActiveUsersService = () =>
+  request.get('/admin/dashboard/login')

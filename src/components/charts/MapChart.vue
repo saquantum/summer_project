@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, nextTick, ref, watch, computed } from 'vue'
+import { onMounted, onUnmounted, nextTick, watch, computed } from 'vue'
 import * as echarts from 'echarts'
 import type { ECharts } from 'echarts'
 import { ukRegionsCoordinates } from '@/utils/UKRegionsCoordinates'
@@ -11,25 +11,24 @@ interface Props {
   id: string
   title?: string
   data?: Record<string, number>
-  loading?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  title: 'Asset Distribution Map',
-  loading: false
+  title: 'Asset Distribution Map'
 })
 
 const loadUKMap = () => import('@/assets/ukmap.json')
 
 let mapChart: ECharts | null = null
-const isMapLoading = ref(true)
 
 const warningStore = useWarningStore()
 const assetStore = useAssetStore()
 
 const handleResize = () => {
   if (mapChart) {
-    mapChart.resize()
+    if (mapChart) {
+      mapChart.resize()
+    }
   }
 }
 
@@ -37,23 +36,10 @@ const handleResize = () => {
 const mapData = computed(() => {
   if (!props.data) return []
   const sortedEntries = Object.entries(props.data).sort((a, b) => b[1] - a[1])
-  return sortedEntries.slice(0, 5)
+  return sortedEntries
 })
 
-const citys = computed(() => {
-  if (!mapData.value.length) return []
-  return mapData.value.map(([city]) => city)
-})
-
-type ScatterData = [number, number, number]
-
-const locations = computed(() => {
-  const newArr: ScatterData[] = []
-  mapData.value.forEach((item) => {
-    newArr.push([...ukRegionsCoordinates[item[0]], item[1]])
-  })
-  return newArr
-})
+// Removed unused computed properties citys and locations
 
 const assetWarnings = computed(() => {
   if (!mapData.value.length) return []
@@ -72,175 +58,173 @@ const assetWarnings = computed(() => {
   return arr
 })
 
-const initializeMap = async () => {
-  try {
-    // Load ECharts and map data in parallel
-    const [echart, { default: ukmap }] = await Promise.all([
-      Promise.resolve(echarts),
-      loadUKMap()
-    ])
+const initMapChart = async () => {
+  const { default: mapData } = await loadUKMap()
+  await nextTick()
+  await nextTick()
+  const container = document.getElementById(props.id)
+  if (!container) return
 
-    // Wait for DOM update to ensure element is rendered
-    await nextTick()
-
-    // Set loading to false first to make container visible
-    isMapLoading.value = false
-
-    // Wait for DOM update after container becomes visible
-    await nextTick()
-
-    // Wait a short time to ensure DOM is fully rendered and styles are applied
-    await new Promise((resolve) => setTimeout(resolve, 200))
-
-    // Ensure DOM element exists
-    const container = document.getElementById(props.id)
-    if (!container) {
-      console.error('Map container not found')
-      return
-    }
-
-    // Check if container has valid dimensions
-    if (container.clientWidth === 0 || container.clientHeight === 0) {
-      console.error('Map container has zero dimensions:', {
-        width: container.clientWidth,
-        height: container.clientHeight
-      })
-      return
-    }
-
-    mapChart = echart.init(container)
-    mapChart.showLoading()
-
-    // Register map
+  if (!mapChart) {
+    mapChart = echarts.init(container)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    echart.registerMap('UK', ukmap as any)
+    echarts.registerMap('UK', mapData as any)
+    window.addEventListener('resize', handleResize)
+  }
+}
 
-    // Scatter plot data
-    const scatterData = locations.value
-    const cityNames = citys.value
+const updateMapData = async () => {
+  if (!mapChart || !props.data || Object.keys(props.data).length === 0) return
 
-    const warningColors: Record<string, string> = {
-      RED: '#ff4757',
-      AMBER: '#ffa502',
-      YELLOW: '#ffda3a',
-      NONE: '#409eff'
-    }
+  // Prepare region data for coloring
+  const regionData = mapData.value.map(([regionName, value]) => ({
+    name: regionName,
+    value: value
+  }))
 
-    const option = {
-      tooltip: {
-        trigger: 'item',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        formatter: function (params: any) {
-          if (params.seriesType === 'effectScatter') {
-            return `${params.name}<br/>Value: ${params.value[2]}`
-          }
-          return params.name
+  // Find min and max values for color scaling
+  const values = regionData.map((item) => item.value)
+  const minValue = Math.min(...values)
+  const maxValue = Math.max(...values)
+
+  const warningColors: Record<string, string[]> = {
+    RED: ['#ff6b6b', '#ff4757', '#ff3742'],
+    AMBER: ['#ffb84d', '#ffa502', '#ff9500'],
+    YELLOW: ['#ffe55c', '#ffda3a', '#ffd32a'],
+    NONE: ['#5dade2', '#409eff', '#3490dc']
+  }
+
+  // Function to get color based on value within warning level
+  const getWarningColor = (
+    warningLevel: string,
+    value: number,
+    maxValue: number
+  ) => {
+    const colors = warningColors[warningLevel]
+    if (!colors || colors.length === 0) return colors?.[0] || '#409eff'
+
+    // Calculate intensity based on asset count (0 = lightest, 1 = darkest)
+    const intensity = maxValue > 0 ? Math.min(value / maxValue, 1) : 0
+    const colorIndex = Math.floor(intensity * (colors.length - 1))
+    return colors[colorIndex] || colors[colors.length - 1]
+  }
+
+  const option = {
+    tooltip: {
+      trigger: 'item',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      formatter: function (params: any) {
+        if (params.data) {
+          const assetCount = params.data.actualValue || params.data.value || 0
+          const warningLevel = params.data.warningLevel
+          const warningText =
+            warningLevel && warningLevel !== 'NONE'
+              ? ` (${warningLevel} Alert)`
+              : ''
+          return `${params.name}<br/>Assets: ${assetCount}${warningText}`
         }
+        return params.name
+      }
+    },
+    visualMap: {
+      min: minValue,
+      max: maxValue,
+      left: 'left',
+      top: 'bottom',
+      text: ['High', 'Low'],
+      seriesIndex: [0],
+      inRange: {
+        color: ['#e6f3ff', '#1890ff', '#0050b3']
       },
-      legend: {
-        show: true,
-        left: 'center',
-        top: '10px',
-        textStyle: {
-          color: '#333'
-        }
-      },
-      geo: {
+      calculable: true,
+      show: false // Hide visual map when regions have warning colors
+    },
+    series: [
+      {
+        name: 'Asset Distribution',
+        type: 'map',
         map: 'UK',
         roam: true,
-        left: '0%',
-        right: '0%',
-        top: '10%',
-        bottom: '5%',
-        layoutCenter: ['44%', '50%'],
-        layoutSize: '100%',
-        itemStyle: {
-          areaColor: '#e7e8ea',
-          borderColor: '#999'
-        },
         emphasis: {
-          itemStyle: {
-            areaColor: '#c1e0ff'
+          label: {
+            show: true
           }
-        }
-      },
-      series: ['RED', 'AMBER', 'YELLOW', 'NONE'].map((level) => ({
-        name: level,
-        type: 'effectScatter',
-        coordinateSystem: 'geo',
-        geoIndex: 0,
+        },
         itemStyle: {
-          color: warningColors[level]
+          borderColor: '#999',
+          borderWidth: 1
         },
-        symbolSize: (params: number[]) => {
-          return (params[2] / 100) * 100 + 8
-        },
-        data: scatterData
-          .map((item, index) => {
-            const warningLevel =
-              assetWarnings.value[index]?.warningLevel || 'NONE'
-            if (warningLevel !== level) return null
-            let rippleConfig = {}
-            if (warningLevel === 'RED') {
-              rippleConfig = { period: 2, scale: 4 }
-            } else if (warningLevel === 'AMBER') {
-              rippleConfig = { period: 3, scale: 3 }
-            } else {
-              rippleConfig = { period: 6, scale: 2 }
-            }
-            return {
-              name: cityNames[index],
-              value: item,
-              itemStyle: {
-                color: warningColors[warningLevel] || '#409eff',
-                opacity: 0.8
-              },
-              emphasis: {
-                itemStyle: {
-                  color: '#ff6b6b',
+        data: regionData.map((item) => {
+          const regionIndex = mapData.value.findIndex(
+            ([name]) => name === item.name
+          )
+          const warning =
+            regionIndex >= 0 ? assetWarnings.value[regionIndex] : null
+          const warningLevel = warning?.warningLevel || 'NONE'
+
+          // If there's a warning, use warning color for the area
+          // Otherwise, let the visualMap handle the coloring based on value
+          const hasWarning = warningLevel !== 'NONE'
+
+          // Get appropriate color with gradient effect based on asset count
+          const warningColor = hasWarning
+            ? getWarningColor(warningLevel, item.value, maxValue)
+            : undefined
+
+          return {
+            name: item.name,
+            value: hasWarning ? null : item.value, // Set value to null for warning regions to avoid visualMap coloring
+            actualValue: item.value, // Store actual value for tooltip
+            warningLevel: warningLevel,
+            itemStyle: hasWarning
+              ? {
+                  areaColor: warningColor,
+                  borderColor: '#fff',
+                  borderWidth: 2,
                   opacity: 1
                 }
-              },
-              rippleEffect: rippleConfig
+              : {
+                  borderColor: '#999',
+                  borderWidth: 1
+                },
+            emphasis: {
+              itemStyle: {
+                areaColor: hasWarning ? warningColor : '#ffeb3b',
+                shadowOffsetX: 0,
+                shadowOffsetY: 0,
+                shadowBlur: 20,
+                borderWidth: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.5)',
+                opacity: 1
+              }
             }
-          })
-          .filter(Boolean)
-      }))
-    }
-
-    mapChart.hideLoading()
-    mapChart.setOption(option)
-  } catch (error) {
-    console.error('Failed to initialize map:', error)
-    isMapLoading.value = false
+          }
+        })
+      }
+    ]
   }
+
+  mapChart.hideLoading()
+  mapChart.setOption(option)
 }
 
 // Watch for data changes and update the chart
 watch(
   () => props.data,
-  () => {
-    if (mapChart && props.data) {
-      initializeMap()
+  async () => {
+    if (mapChart === null) {
+      await initMapChart()
     }
+    updateMapData()
   },
   { deep: true }
 )
 
-watch(
-  () => props.loading,
-  (newLoading) => {
-    if (!newLoading && props.data) {
-      initializeMap()
-    }
+onMounted(async () => {
+  if (props.data && Object.keys(props.data).length > 0) {
+    await initMapChart()
+    updateMapData()
   }
-)
-
-onMounted(() => {
-  if (!props.loading && props.data) {
-    initializeMap()
-  }
-  window.addEventListener('resize', handleResize)
 })
 
 onUnmounted(() => {
@@ -264,15 +248,7 @@ onUnmounted(() => {
     <div class="card-content">
       <!-- Map chart -->
       <div class="chart-section">
-        <div v-if="isMapLoading || loading" class="map-loading">
-          <div class="loading-spinner"></div>
-          <p>Loading Map...</p>
-        </div>
-        <div
-          v-show="!isMapLoading && !loading"
-          :id="id"
-          class="chart-container"
-        ></div>
+        <div :id="id" class="chart-container"></div>
         <div
           v-if="!props.data || Object.keys(props.data).length === 0"
           class="no-data"
@@ -334,47 +310,44 @@ onUnmounted(() => {
   min-height: 300px;
 }
 
-.map-loading {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: #f9f9f9;
-  border-radius: 4px;
-  min-height: 300px;
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #409eff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 15px;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.map-loading p {
-  color: #666;
-  font-size: 14px;
-  margin: 0;
-}
-
 .no-data {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 300px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .map-chart-card {
+    min-width: 280px;
+    max-width: 100%;
+    height: 450px !important;
+  }
+
+  .chart-section {
+    min-height: 350px;
+  }
+
+  .chart-container {
+    min-height: 350px;
+  }
+}
+
+@media (max-width: 576px) {
+  .map-chart-card {
+    min-width: 250px;
+    width: 100%;
+    height: 400px !important;
+  }
+
+  .chart-section {
+    min-height: 300px;
+  }
+
+  .chart-container {
+    min-height: 300px;
+  }
 }
 </style>

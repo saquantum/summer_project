@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, nextTick, ref, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import * as echarts from 'echarts'
 import type { ECharts } from 'echarts'
 
@@ -15,11 +15,7 @@ let barChart: ECharts | null = null
 
 const handleResize = () => {
   if (barChart) {
-    setTimeout(() => {
-      if (barChart) {
-        barChart.resize()
-      }
-    }, 100)
+    barChart.resize()
   }
 }
 const chartData = ref<Array<{ value: number; name: string }>>([])
@@ -37,102 +33,101 @@ const processData = (apiData: Record<string, number> | undefined) => {
 
 const initChart = () => {
   const chartDom = document.getElementById(props.id)
-  if (chartDom) {
+  if (chartDom && !barChart) {
     barChart = echarts.init(chartDom)
-
-    const categories = chartData.value.map((item) => item.name)
-    const values = chartData.value.map((item) => item.value)
-
-    const barOption = {
-      tooltip: {
-        trigger: 'axis',
-        formatter: '{b}: {c}'
-      },
-      grid: {
-        left: 40,
-        right: 20,
-        top: 20,
-        bottom: 50
-      },
-      xAxis: {
-        show: true,
-        type: 'category',
-        data: categories,
-        axisLabel: {
-          fontSize: 12,
-          color: '#606266',
-          rotate: 0
-        }
-      },
-      yAxis: {
-        show: true,
-        type: 'value',
-        axisLabel: {
-          fontSize: 10,
-          color: '#606266'
-        },
-        splitLine: {
-          show: false
-        }
-      },
-      series: [
-        {
-          data: values,
-          type: 'bar',
-          itemStyle: {
-            color: '#409eff',
-            borderRadius: [2, 2, 0, 0]
-          },
-          barWidth: '60%'
-        }
-      ]
-    }
-    barChart.setOption(barOption)
+    window.addEventListener('resize', handleResize)
   }
 }
 
 const updateChart = () => {
-  if (barChart && chartData.value.length > 0) {
-    const categories = chartData.value.map((item) => item.name)
-    const values = chartData.value.map((item) => item.value)
+  if (!barChart || chartData.value.length === 0) return
 
-    barChart.setOption({
-      xAxis: {
-        data: categories
+  const categories = chartData.value.map((item) => item.name)
+  const values = chartData.value.map((item) => item.value)
+
+  const barOption = {
+    tooltip: {
+      trigger: 'axis',
+      formatter: '{b}: {c}'
+    },
+    grid: {
+      left: 40,
+      right: 20,
+      top: 20,
+      bottom: 50
+    },
+    xAxis: {
+      show: true,
+      type: 'category',
+      data: categories,
+      axisLabel: {
+        show: true,
+        fontSize: 12,
+        color: '#606266',
+        rotate: 0
       },
-      series: [
-        {
-          data: values
-        }
-      ]
-    })
+      axisLine: {
+        show: true
+      },
+      axisTick: {
+        show: true
+      }
+    },
+    yAxis: {
+      show: true,
+      type: 'value',
+      axisLabel: {
+        fontSize: 10,
+        color: '#606266'
+      },
+      splitLine: {
+        show: false
+      }
+    },
+    series: [
+      {
+        data: values,
+        type: 'bar',
+        itemStyle: {
+          color: '#409eff',
+          borderRadius: [2, 2, 0, 0]
+        },
+        barWidth: '60%'
+      }
+    ]
   }
+  barChart.setOption(barOption)
 }
 
-// Watch for data changes
+// Watch for data changes and update the chart
 watch(
   () => props.data,
-  (newData) => {
+  async (newData) => {
     chartData.value = processData(newData)
-    if (barChart) {
-      updateChart()
+    if (barChart === null) {
+      await nextTick()
+      initChart()
     }
+    updateChart()
   },
-  { immediate: true }
+  { deep: true }
 )
 
 onMounted(async () => {
-  await nextTick()
-  setTimeout(() => {
+  console.log(props.data)
+  if (props.data && Object.keys(props.data).length > 0) {
+    chartData.value = processData(props.data)
+    await nextTick()
     initChart()
-  }, 100)
-  window.addEventListener('resize', handleResize)
+    updateChart()
+  }
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
   if (barChart) {
     barChart.dispose()
+    barChart = null
   }
 })
 </script>

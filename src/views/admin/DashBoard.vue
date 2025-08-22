@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import {
+  adminGetActiveUsersService,
   adminGetAssetDistributionService,
   adminGetAssetsTotalService,
   adminGetContactPreferenceService,
@@ -17,6 +18,7 @@ import { useWarningStore } from '@/stores'
 const warningStore = useWarningStore()
 
 const userCount = ref(0)
+const activeUsers = ref(0)
 const assetCount = ref(0)
 const assetsInDanger = ref(0)
 
@@ -67,20 +69,27 @@ const fetchDashboardData = async () => {
     userCount.value = user?.totalCount || 0
     assetCount.value = asset?.totalCount || 0
 
-    const [userDistRes, contactPrefRes, assetDistRes, assetsTotalRes] =
-      await Promise.all([
-        adminGetUserDistributionService(),
-        adminGetContactPreferenceService(),
-        adminGetAssetDistributionService(),
-        adminGetAssetsTotalService({
-          filters: { warning_id: { op: 'notNull' } }
-        })
-      ])
+    const [
+      userDistRes,
+      contactPrefRes,
+      assetDistRes,
+      assetsTotalRes,
+      activeUsersRes
+    ] = await Promise.all([
+      adminGetUserDistributionService(),
+      adminGetContactPreferenceService(),
+      adminGetAssetDistributionService(),
+      adminGetAssetsTotalService({
+        filters: { warning_id: { op: 'notNull' } }
+      }),
+      adminGetActiveUsersService()
+    ])
 
     if (userDistRes?.data) userDistribution.value = userDistRes.data
     if (contactPrefRes?.data) contactPreference.value = contactPrefRes.data
     if (assetDistRes?.data) assetDistribution.value = assetDistRes.data
     if (assetsTotalRes?.data) assetsInDanger.value = assetsTotalRes.data
+    if (activeUsersRes?.data) activeUsers.value = activeUsersRes.data
 
     await warningStore.getAllLiveWarnings()
   } catch (error) {
@@ -103,7 +112,7 @@ onMounted(async () => {
           </el-icon>
         </template>
       </LineChart>
-      <LineChart :count="assetCount" id="asset" title="Asset Statistics">
+      <LineChart :count="activeUsers" id="active-users" title="Active users">
         <template #icon>
           <el-icon style="font-size: 18px; color: #409eff">
             <Location />

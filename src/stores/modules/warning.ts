@@ -14,6 +14,7 @@ export const useWarningStore = defineStore(
 
     const getAllWarnings = async () => {
       const res = await adminGetAllWarningsService()
+      console.log(res.data)
       if (res.data && res.data.length > 0) allWarnings.value = res.data
     }
     const getAllLiveWarnings = async () => {
