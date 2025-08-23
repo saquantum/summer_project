@@ -23,13 +23,7 @@ interface TableRow {
   validTo: string
   period: string
 }
-watch(
-  () => warningStore.allWarnings,
-  () => {
-    processWarnings()
-  },
-  { deep: true }
-)
+
 const route = useRoute()
 const tabsConfig = [
   { label: 'Warnings', to: route.fullPath, match: () => true }
@@ -122,7 +116,6 @@ watch(
         <div class="map-card">
           <div class="map-container">
             <MapCard
-              v-if="warningPolygon.length"
               :map-id="mapId"
               :locations="warningPolygon"
               :styles="styles"

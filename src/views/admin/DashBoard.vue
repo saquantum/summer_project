@@ -103,210 +103,285 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="stats-container">
-    <div class="stats-cards">
-      <LineChart :count="userCount" id="user" title="User Statistics">
-        <template #icon>
-          <el-icon style="font-size: 18px; color: #409eff">
-            <User />
-          </el-icon>
-        </template>
-      </LineChart>
-      <LineChart :count="activeUsers" id="active-users" title="Active Users">
-        <template #icon>
-          <el-icon style="font-size: 18px; color: #409eff">
-            <Location />
-          </el-icon>
-        </template>
-      </LineChart>
-      <LineChart :count="assetCount" id="asset-copy" title="Asset Statistics">
-        <template #icon>
-          <el-icon style="font-size: 18px; color: #409eff">
-            <Location />
-          </el-icon>
-        </template>
-      </LineChart>
-      <LineChart
-        :count="assetsInDanger"
-        id="asset-in-danger"
-        title="Assets in danger"
-        color="orange"
-      >
-        <template #icon>
-          <el-icon style="font-size: 18px; color: #409eff">
-            <Location />
-          </el-icon>
-        </template>
-      </LineChart>
-    </div>
-  </div>
+  <div class="page-surface cards-page">
+    <section class="layout-2col">
+      <aside class="left-col">
+        <div class="mini-grid">
+          <el-card class="kpi-card">
+            <div class="kpi-header">
+              <div class="kpi-title">
+                <el-icon><User /></el-icon><span>User Statistics </span>
+              </div>
+            </div>
 
-  <!-- Map and Dashboard Layout -->
-  <div class="map-dashboard-container">
-    <!-- Left Side: Map Area -->
-    <div class="map-section">
-      <MapChart
-        id="asset-distribution-map"
-        title="Asset Distribution Map"
-        :data="assetDistribution"
-      >
-        <!-- <template #icon>
-          <el-icon style="font-size: 18px; color: #409eff">
-            <Location />
-          </el-icon>
-        </template> -->
-      </MapChart>
-    </div>
+            <div class="kpi-spark">
+              <LineChart
+                :count="userCount"
+                title=""
+                id="user"
+                style="border: none"
+              >
+                <template #icon>
+                  <el-icon style="font-size: 18px; color: #409eff">
+                    <User />
+                  </el-icon>
+                </template>
+              </LineChart>
+            </div>
+          </el-card>
 
-    <!-- Right Side: Dashboard Area -->
-    <div class="dashboard-section">
-      <BarChart
-        id="contact-preference"
-        title="Contact preference"
-        :data="contactPreference"
-      >
-        <template #icon>
-          <el-icon><Message /></el-icon>
-        </template>
-      </BarChart>
-      <PieChart
-        id="regional-pie-chart"
-        title="User Distribution"
-        :data="pieChartData"
-        chart-type="normal"
-      />
-    </div>
+          <el-card class="kpi-card">
+            <div class="kpi-header">
+              <div class="kpi-title">
+                <el-icon><User /></el-icon><span>Active Users</span>
+              </div>
+            </div>
+            <div class="kpi-spark">
+              <LineChart
+                :count="activeUsers"
+                title=""
+                id="active-users"
+                style="border: none"
+              >
+                <template #icon>
+                  <el-icon style="font-size: 18px; color: #409eff">
+                    <Location />
+                  </el-icon>
+                </template>
+              </LineChart>
+            </div>
+          </el-card>
+
+          <el-card class="kpi-card">
+            <div class="kpi-header">
+              <div class="kpi-title">
+                <el-icon><User /></el-icon><span>Asset Statistics</span>
+              </div>
+            </div>
+
+            <div class="kpi-spark">
+              <LineChart
+                :count="assetCount"
+                title=""
+                id="asset-copy"
+                style="border: none"
+              >
+                <template #icon>
+                  <el-icon style="font-size: 18px; color: #409eff">
+                    <Location />
+                  </el-icon>
+                </template>
+              </LineChart>
+            </div>
+          </el-card>
+
+          <el-card class="kpi-card">
+            <div class="kpi-header">
+              <div class="kpi-title">
+                <el-icon><User /></el-icon><span>Assets in danger</span>
+              </div>
+            </div>
+
+            <div class="kpi-spark">
+              <LineChart
+                :count="assetsInDanger"
+                id="asset-in-danger"
+                title=""
+                color="orange"
+                style="border: none"
+              >
+                <template #icon>
+                  <el-icon style="font-size: 18px; color: #409eff">
+                    <Location />
+                  </el-icon>
+                </template>
+              </LineChart>
+            </div>
+          </el-card>
+        </div>
+
+        <div class="left-bottom-grid">
+          <el-card class="chart-card">
+            <div class="card-hd">
+              <div class="title">Contact preference</div>
+              <el-icon><Message /></el-icon>
+            </div>
+
+            <BarChart
+              class="chart"
+              id="contact-preference"
+              style="border: none"
+              title=""
+              :data="contactPreference"
+            />
+          </el-card>
+
+          <el-card class="chart-card">
+            <div class="card-hd">
+              <div class="title">User distribution</div>
+            </div>
+
+            <div class="pie-wrap">
+              <PieChart
+                class="chart"
+                id="regional-pie-chart"
+                style="border: none"
+                title=""
+                :data="pieChartData"
+                chart-type="normal"
+              />
+            </div>
+          </el-card>
+        </div>
+      </aside>
+
+      <main class="right-col">
+        <el-card class="map-card">
+          <div class="card-hd">
+            <div class="title">Asset Distribution Map</div>
+            <el-tag round type="info">Live</el-tag>
+          </div>
+
+          <div class="map-wrap">
+            <MapChart
+              id="asset-distribution-map"
+              style="border: none"
+              title=""
+              :data="assetDistribution"
+            />
+          </div>
+        </el-card>
+      </main>
+    </section>
   </div>
 </template>
 
 <style scoped>
-.page-loading {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+.cards-page {
+  background: #f3f5f7;
+  border: 1px solid #e6eaee;
+  border-radius: 16px;
+  padding: 18px;
+  margin: 28px auto;
+  box-shadow: 0 8px 26px rgba(16, 24, 40, 0.04);
+  width: min(1280px, calc(100vw - 24px));
+  box-sizing: border-box;
+}
+
+.layout-2col {
+  display: grid;
+  grid-template-columns: 600px 2fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.left-col {
   display: flex;
   flex-direction: column;
+  gap: 18px;
+}
+
+.mini-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  height: 350px;
+}
+.kpi-card {
+  border-radius: 14px;
+  overflow: hidden;
+}
+.kpi-header {
+  padding: 8px 10px 0;
+  margin: -10px;
+}
+.kpi-title {
+  display: flex;
+  gap: 8px;
   align-items: center;
-  justify-content: center;
-  background-color: rgba(255, 255, 255, 0.9);
-  z-index: 9999;
+  font-weight: 700;
+  color: #0f172a;
 }
 
-.page-loading .loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #409eff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 20px;
+.left-bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  height: 300px;
 }
-
-.page-loading p {
-  color: #666;
-  font-size: 16px;
-  margin: 0;
-}
-
-.middle-container {
-  height: 100%;
+.chart-card {
+  border-radius: 16px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+}
+.card-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-hd .title {
+  font-weight: 800;
+  color: #0f172a;
 }
 
-.stats-container {
+.right-col {
   display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
-  align-items: stretch;
+  flex-direction: column;
 }
-
-.stats-cards {
+.map-card {
+  border-radius: 16px;
+  overflow: hidden;
   display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
+  flex-direction: column;
+}
+.map-wrap {
+  height: 65vh;
+  min-height: 520px;
+}
+::v-deep(.leaflet-container) {
   width: 100%;
-  align-items: stretch;
+  height: 100%;
+  border-radius: 12px;
 }
 
-/* Responsive Layout */
-.map-dashboard-container {
-  display: flex;
-  gap: 20px;
-  height: 650px;
+.kpi-spark {
+  margin: -20px;
 }
 
-.map-section {
-  flex: 3;
-  min-height: 0;
+.kpi-spark :deep(canvas) {
+  width: 60% !important;
 }
 
-.dashboard-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  min-height: 0;
+.pie-wrap {
+  width: 300px;
+  height: 300px;
+  margin: -20px -20px;
 }
 
-.dashboard-section :deep(.bar-chart-card) {
-  flex: 1;
+.pie-wrap :deep(canvas),
+.pie-wrap :deep(svg) {
+  width: 90% !important;
+  height: 90% !important;
 }
 
-/* Small Screen Responsive - Below 768px */
-@media (max-width: 768px) {
-  .map-dashboard-container {
-    flex-direction: column;
-    height: auto;
-    gap: 20px;
-  }
-
-  .map-section {
-    flex: none;
-    height: 500px;
-  }
-
-  .dashboard-section {
-    flex: none;
-    flex-direction: row;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-}
-
-/* Smaller Screen - Below 576px */
-@media (max-width: 576px) {
-  .dashboard-section {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .map-section {
-    height: 500px;
-  }
-
-  .stats-container {
-    flex-direction: column;
-    gap: 10px;
-  }
-}
-
-/* Extra responsive styles for stats container */
 @media (max-width: 1200px) {
-  .stats-container {
-    gap: 12px;
+  .layout-2col {
+    grid-template-columns: 1fr;
+  }
+  .map-wrap {
+    height: 56vh;
   }
 }
-
 @media (max-width: 768px) {
-  .stats-container {
-    gap: 10px;
-    justify-content: center;
+  .mini-grid {
+    grid-template-columns: 1fr;
+  }
+  .left-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+  .map-wrap {
+    height: 48vh;
   }
 }
 </style>
