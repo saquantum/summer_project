@@ -264,15 +264,20 @@ onMounted(async () => {
   padding: 18px;
   margin: 28px auto;
   box-shadow: 0 8px 26px rgba(16, 24, 40, 0.04);
-  width: min(1280px, calc(100vw - 24px));
+  /*width: min(1280px, calc(100vw - 24px));*/
+  width: min(80vw, 1600px);
+  max-width: calc(100% - 2rem);
   box-sizing: border-box;
 }
 
 .layout-2col {
   display: grid;
-  grid-template-columns: 600px 2fr;
+  grid-template-columns: 1fr 1fr;
   gap: 18px;
-  align-items: start;
+  align-items: stretch;
+  /*align-items: start;*/
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 .left-col {
@@ -285,11 +290,17 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 18px;
-  height: 350px;
+  min-height: 200px;
+  height: auto;
 }
 .kpi-card {
   border-radius: 14px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 120px;
+  height: 100%;
+  padding: 12px;
 }
 .kpi-header {
   padding: 8px 10px 0;
@@ -307,14 +318,17 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 18px;
-  height: 300px;
+  min-height: 250px;
+  height: auto;
 }
 .chart-card {
   border-radius: 16px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-height: 250px;
 }
+
 .card-hd {
   display: flex;
   align-items: center;
@@ -328,21 +342,30 @@ onMounted(async () => {
 .right-col {
   display: flex;
   flex-direction: column;
+  min-height: 500px;
 }
 .map-card {
   border-radius: 16px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  flex: 1;
 }
 .map-wrap {
-  height: 65vh;
-  min-height: 520px;
+  /*height: 65vh;*/
+  /*min-height: 520px;*/
+  height: 100%;
+  min-height: 400px;
+  max-height: 65vh;
+  flex: 1;
+  display: flex;
 }
 ::v-deep(.leaflet-container) {
-  width: 100%;
-  height: 100%;
+  width: 100% !important;
+  height: 100% !important;
   border-radius: 12px;
+  flex: 1;
 }
 
 .kpi-spark {
@@ -370,7 +393,9 @@ onMounted(async () => {
     grid-template-columns: 1fr;
   }
   .map-wrap {
-    height: 56vh;
+    /*height: 56vh;*/
+    max-height: 56vh;
+    min-height: 350px;
   }
 }
 @media (max-width: 768px) {
@@ -382,6 +407,21 @@ onMounted(async () => {
   }
   .map-wrap {
     height: 48vh;
+  }
+  .bar-chart-container,
+  .pie-chart-container {
+    min-height: 150px;
+  }
+
+  .pie-wrap :deep(canvas),
+  .pie-wrap :deep(svg) {
+    max-width: 180px;
+    max-height: 180px;
+  }
+
+  #contact-preference {
+    width: 95% !important;
+    height: 95% !important;
   }
 }
 </style>

@@ -404,7 +404,9 @@ watch(
   padding: 20px;
   margin: 60px auto;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  width: 1100px;
+  /*width: 1100px;*/
+  width: min(80vw, 1600px);
+  max-width: calc(100% - 2rem);
   box-sizing: border-box;
 }
 
