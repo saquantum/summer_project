@@ -371,7 +371,7 @@ const cleanupPreviewUrls = () => {
  */
 
 const mockData = {
-  'asset-model': 'Water tank',
+  asset_model: 'Water tank',
   contact_name: 'Alice',
   post_town: 'London'
 }
