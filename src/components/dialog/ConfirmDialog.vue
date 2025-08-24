@@ -51,7 +51,7 @@ watch(visible, (val) => {
       clearInterval(timer)
       timer = null
     }
-    confirmDisabled.value = true
+    confirmDisabled.value = false
   }
 })
 

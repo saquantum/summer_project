@@ -65,6 +65,7 @@ declare module 'vue' {
     LoginCard: typeof import('./src/components/cards/LoginCard.vue')['default']
     MapCard: typeof import('./src/components/MapCard.vue')['default']
     MapChart: typeof import('./src/components/charts/MapChart.vue')['default']
+    PageSurfaceTabs: typeof import('./src/components/PageSurfaceTabs.vue')['default']
     PermissionDialog: typeof import('./src/components/dialog/PermissionDialog.vue')['default']
     PermissionIndicator: typeof import('./src/components/PermissionIndicator.vue')['default']
     PieChart: typeof import('./src/components/charts/PieChart.vue')['default']

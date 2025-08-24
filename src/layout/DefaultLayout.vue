@@ -133,7 +133,11 @@ watch(
             </el-icon>
           </el-badge>
 
-          <el-dropdown placement="bottom-end" @command="handleCommand">
+          <el-dropdown
+            placement="bottom-end"
+            @command="handleCommand"
+            v-if="!userStore.user?.admin"
+          >
             <span class="el-dropdown__box">
               <el-avatar :src="userStore.user?.avatar" />
               <el-icon><CaretBottom /></el-icon>
@@ -156,6 +160,9 @@ watch(
               </el-dropdown-menu>
             </template>
           </el-dropdown>
+          <span class="el-dropdown__box" v-else>
+            <el-avatar :src="userStore.user?.avatar" />
+          </span>
         </div>
       </el-header>
 

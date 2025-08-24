@@ -18,14 +18,15 @@ export const useMailStore = defineStore(
         const userStore = useUserStore()
         if (userStore.user && !userStore.user.admin) {
           const res = await getMailService(userStore.user.id)
+          console.log(res)
           if (res.data) {
-            mails.value = res.data
+            mails.value = res.data ?? []
           }
         } else if (userStore.user && userStore.user.admin) {
           // change api later
           const res = await getMailService(userStore.proxyId)
           if (res.data) {
-            mails.value = res.data
+            mails.value = res.data ?? []
           }
         }
       } catch (e) {

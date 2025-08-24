@@ -63,21 +63,76 @@ const handlePageChange = (page: number) => {
 // delete dialog
 const dialogVisible = ref(false)
 
-const deleteId = ref<string[]>([])
+let deleteId: number | null = null
 
-const triggerDelete = (rows: string[]) => {
+const triggerDelete = (rowId: number) => {
   dialogVisible.value = true
-  deleteId.value = [...rows]
+  deleteId = rowId
 }
 
 const handleDelete = async () => {
-  if (deleteId.value.length === 0 || !userStore.user) return
-  const res = await deleteMailService(userStore.user.id, deleteId.value)
+  if (!deleteId || !userStore.user) return
+  const res = await deleteMailService(userStore.user.id, deleteId)
   console.log(res)
-  deleteId.value = []
+  deleteId = null
 
-  mailStore.getMails()
-  dialogVisible.value = false
+  await mailStore.getMails()
+
+  updateCurrentMails()
+}
+
+const updateCurrentMails = () => {
+  if (!mailStore.mails || mailStore.mails.length === 0) {
+    currentMails.value = []
+    currentPage.value = 1
+    return
+  }
+
+  let mails =
+    filter.value === 'all'
+      ? mailStore.mails.slice()
+      : mailStore.mails.filter((item) => item.hasRead === false)
+
+  const keyword = searchKeyword.value.trim().toLowerCase()
+  if (keyword) {
+    mails = mails.filter(
+      (item) =>
+        (item.title && item.title.toLowerCase().includes(keyword)) ||
+        (item.message && item.message.toLowerCase().includes(keyword))
+    )
+  }
+
+  if (sort.value === 'date') {
+    mails.sort((a, b) => {
+      const t1 =
+        typeof a.issuedDate === 'number'
+          ? a.issuedDate
+          : new Date(a.issuedDate).getTime()
+      const t2 =
+        typeof b.issuedDate === 'number'
+          ? b.issuedDate
+          : new Date(b.issuedDate).getTime()
+      return sortOrder.value === 'asc' ? t1 - t2 : t2 - t1
+    })
+  } else if (sort.value === 'subject') {
+    mails.sort((a, b) => {
+      const s1 = a.title?.toLowerCase() || ''
+      const s2 = b.title?.toLowerCase() || ''
+      return sortOrder.value === 'asc'
+        ? s1.localeCompare(s2)
+        : s2.localeCompare(s1)
+    })
+  }
+
+  currentMails.value = mails
+
+  // check whether there exist mails on current page
+  const totalPages = Math.ceil(mails.length / pageSize)
+  if (currentPage.value > totalPages && totalPages > 0) {
+    currentPage.value = totalPages
+  } else if (totalPages === 0) {
+    currentPage.value = 1
+  }
 }
 
 onMounted(() => {
@@ -87,44 +142,7 @@ onMounted(() => {
 watch(
   [searchKeyword, filter, sort, sortOrder, () => mailStore.mails],
   () => {
-    if (!mailStore.mails || mailStore.mails.length === 0) return
-    let mails =
-      filter.value === 'all'
-        ? mailStore.mails.slice()
-        : mailStore.mails.filter((item) => item.hasRead === false)
-
-    const keyword = searchKeyword.value.trim().toLowerCase()
-    if (keyword) {
-      mails = mails.filter(
-        (item) =>
-          (item.title && item.title.toLowerCase().includes(keyword)) ||
-          (item.message && item.message.toLowerCase().includes(keyword))
-      )
-    }
-
-    if (sort.value === 'date') {
-      mails.sort((a, b) => {
-        const t1 =
-          typeof a.issuedDate === 'number'
-            ? a.issuedDate
-            : new Date(a.issuedDate).getTime()
-        const t2 =
-          typeof b.issuedDate === 'number'
-            ? b.issuedDate
-            : new Date(b.issuedDate).getTime()
-        return sortOrder.value === 'asc' ? t1 - t2 : t2 - t1
-      })
-    } else if (sort.value === 'subject') {
-      mails.sort((a, b) => {
-        const s1 = a.title?.toLowerCase() || ''
-        const s2 = b.title?.toLowerCase() || ''
-        return sortOrder.value === 'asc'
-          ? s1.localeCompare(s2)
-          : s2.localeCompare(s1)
-      })
-    }
-    currentMails.value = mails
-    currentPage.value = 1
+    updateCurrentMails()
   },
   {
     immediate: true
@@ -365,9 +383,7 @@ useResponsiveAction((width) => {
             </div>
           </div>
           <div class="mail-actions">
-            <el-button
-              @click="triggerDelete([String(mail.rowId)])"
-              style="border: none"
+            <el-button @click="triggerDelete(mail.rowId)" style="border: none"
               ><el-icon><Delete /></el-icon
             ></el-button>
           </div>

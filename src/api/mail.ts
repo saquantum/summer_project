@@ -6,7 +6,6 @@ export const getMailService = (id: string) =>
 export const readMailService = (uid: string, id: string) =>
   request.put(`/user/uid/${uid}/inbox/${id}`)
 
-export const deleteMailService = (uid: string, ids: string[]) =>
-  request.delete(`/user/uid/${uid}/inbox`, {
-    data: { ids: ids }
-  })
+// currently only support single delete at a time
+export const deleteMailService = (uid: string, id: number) =>
+  request.delete(`/user/uid/${uid}/inbox/${id}`)
