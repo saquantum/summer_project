@@ -75,13 +75,22 @@
             <if test="body != null and body != ''">
                 template_body = #{body},
             </if>
+            template_id = #{id}
         </set>
         where template_id = #{id}
     </update>
 
     <update id="updateNotificationTemplateMessageByTypes">
         update templates
-        set template_title = #{title}, template_body = #{body}
+        <set>
+            <if test="title != null and title != ''">
+                template_title = #{title},
+            </if>
+            <if test="body != null and body != ''">
+                template_body = #{body},
+            </if>
+            template_id = #{id}
+        </set>
         where LOWER(template_asset_type_id) = LOWER(#{assetTypeId})
           and LOWER(template_weather_warning_type) = LOWER(#{warningType})
           and LOWER(template_severity) = LOWER(#{severity})
@@ -155,6 +164,7 @@
             <if test="message != null and message != ''">
                 inbox_message = #{message}
             </if>
+            inbox_row_id = #{rowId}
         </set>
         where inbox_row_id = #{rowId} and inbox_user_id = #{userId}
     </update>

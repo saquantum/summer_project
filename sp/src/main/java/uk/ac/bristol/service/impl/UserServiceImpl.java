@@ -73,7 +73,7 @@ public class UserServiceImpl implements UserService {
                                Integer offset) {
         return userMapper.selectUsers(
                 QueryTool.formatFilters(filters),
-                QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "permission_configs"),
+                QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "access_control_groups"),
                 limit, offset);
     }
 
@@ -87,7 +87,7 @@ public class UserServiceImpl implements UserService {
             }
             anchor = list.get(0);
         }
-        List<Map<String, String>> formattedOrderList = QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "permission_configs");
+        List<Map<String, String>> formattedOrderList = QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "access_control_groups");
         return userMapper.selectUsers(
                 QueryTool.formatCursoredDeepPageFilters(filters, anchor, formattedOrderList),
                 formattedOrderList,
@@ -106,7 +106,7 @@ public class UserServiceImpl implements UserService {
         filters.put("user_is_admin", false);
         return userMapper.selectUsers(
                 QueryTool.formatFilters(filters),
-                QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "permission_configs"),
+                QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "access_control_groups"),
                 limit, offset);
     }
 
@@ -122,7 +122,7 @@ public class UserServiceImpl implements UserService {
             return userMapper.selectUsersWithAccumulator(
                     function, column,
                     QueryTool.formatFilters(filters),
-                    QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "permission_configs", "accumulation"),
+                    QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "access_control_groups", "accumulation"),
                     limit, offset);
         }
         throw new SpExceptions.GetMethodException("function " + function + " is not supported at current stage");
@@ -139,7 +139,7 @@ public class UserServiceImpl implements UserService {
                 }
                 anchor = list.get(0);
             }
-            List<Map<String, String>> formattedOrderList = QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "permission_configs", "accumulation");
+            List<Map<String, String>> formattedOrderList = QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "access_control_groups", "accumulation");
             return userMapper.selectUsersWithAccumulator(
                     function, column,
                     QueryTool.formatCursoredDeepPageFilters(filters, anchor, formattedOrderList),
@@ -414,7 +414,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int updateUser(User user) {
-        if (user.getId() == null || user.getId().isBlank()) {
+        if (user.getId() == null || user.getId().isBlank() || !testUIDExistence(user.getId())) {
             throw new SpExceptions.BadRequestException("Invalid user id");
         }
         int n = userMapper.updateUserByUserId(user);
@@ -452,6 +452,9 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public int deleteUserByUserIds(List<String> ids) {
+        if(ids.isEmpty()){
+            return 0;
+        }
         int n1 = userMapper.deleteAddressByUserIds(ids);
         int n2 = userMapper.deleteContactDetailsByUserIds(ids);
         int n3 = userMapper.deleteContactPreferencesByUserIds(ids);

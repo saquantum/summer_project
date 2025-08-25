@@ -241,19 +241,19 @@ public class ContactServiceImpl implements ContactService {
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
         String savedCode = ops.get(key);
         if (savedCode == null) {
-            return new ResponseBody(Code.BUSINESS_ERR, null, "Verification code doesn't exists or has expired!");
+            return new ResponseBody(Code.BUSINESS_ERR, null, "Verification code doesn't exists or has expired");
         }
 
         Long ttl = redisTemplate.getExpire(key);
         if (ttl == null || ttl <= 0) {
-            return new ResponseBody(Code.BUSINESS_ERR, null, "Verification code has expired!");
+            return new ResponseBody(Code.BUSINESS_ERR, null, "Verification code has expired");
         }
 
         if (!savedCode.equals(code)) {
-            return new ResponseBody(Code.BUSINESS_ERR, null, "You entered wrong verification code!");
+            return new ResponseBody(Code.BUSINESS_ERR, null, "You entered wrong verification code");
         }
         redisTemplate.delete(key);
-        return new ResponseBody(Code.SUCCESS, null, "Verification code has been validated!");
+        return new ResponseBody(Code.SUCCESS, null, "Verification code has been validated");
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)

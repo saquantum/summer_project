@@ -209,6 +209,7 @@
             <if test="installedAt != null">asset_installed_at = #{installedAt},</if>
             <if test="lastInspection != null">asset_last_inspection = #{lastInspection},</if>
             <if test="lastModified != null">asset_last_modified = #{lastModified},</if>
+            asset_id = #{id}
         </set>
         where asset_id = #{id};
     </update>
@@ -252,6 +253,7 @@
         <set>
             <if test="name != null and name != ''">asset_type_name = #{name},</if>
             <if test="description != null and description != ''">asset_type_description = #{description},</if>
+            asset_type_type_id = #{id}
         </set>
         where asset_type_type_id = #{id};
     </update>

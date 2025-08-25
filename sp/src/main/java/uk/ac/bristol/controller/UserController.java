@@ -218,7 +218,6 @@ public class UserController {
         return new ResponseBody(Code.UPDATE_OK, userService.updateUserBatch(list));
     }
 
-    // TODO: Consider soft delete.
     @DeleteMapping("/admin/user")
     public ResponseBody deleteUserByUserIds(@RequestBody Map<String, Object> body) {
         List<String> ids = (List<String>) body.get("ids");

@@ -170,6 +170,7 @@
             <if test="warningFurtherDetails != null and warningFurtherDetails != ''">warning_further_details = #{warningFurtherDetails},</if>
             <if test="warningUpdateDescription != null and warningUpdateDescription != ''">warning_update_description = #{warningUpdateDescription},</if>
             <if test="area != null and area != ''">warning_area = ST_Multi(ST_GeomFromGeoJSON(#{areaAsJson})),</if>
+            warning_id = #{id}
         </set>
         where warning_id = #{id};
     </update>

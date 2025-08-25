@@ -20,9 +20,10 @@ public class ServiceExceptionsAdvice {
     public Object classifyExceptions(ProceedingJoinPoint jp) throws Throwable {
         try {
             return jp.proceed();
-        } catch (SpExceptions e) {
+        } catch (SpExceptions | IllegalArgumentException e) {
             throw e;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             StackTraceElement[] stackTrace = e.getStackTrace();
             StackTraceElement caller = Arrays.stream(stackTrace)
                     .filter(el -> el.getClassName().startsWith("uk.ac.bristol."))

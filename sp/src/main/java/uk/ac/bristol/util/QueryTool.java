@@ -113,7 +113,7 @@ public final class QueryTool {
                     throw new IllegalArgumentException("In conditions must have a correctly formatted list of values");
                 }
                 if (list == null || list.isEmpty()) {
-                    throw new IllegalArgumentException("In conditions must have a list of values");
+                    throw new IllegalArgumentException("In conditions must have a non-empty list of values");
                 }
                 filterList.add(FilterItemDTO.in(column, list));
             } else if ("notNull".equalsIgnoreCase(operator)) {

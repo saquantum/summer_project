@@ -78,6 +78,7 @@
             <if test="canUpdateProfile != null">
                 access_control_can_update_profile = #{canUpdateProfile},
             </if>
+            access_control_group_row_id = #{rowId}
         </set>
         where access_control_group_row_id = #{rowId}
     </update>

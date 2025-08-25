@@ -237,15 +237,10 @@
             <if test="name != null and name != ''">
                 user_name = #{name},
             </if>
-            <if test="admin != null">
-                user_is_admin = #{admin},
-            </if>
-            <if test="adminLevel != null">
-                user_admin_level = #{adminLevel},
-            </if>
             <if test="lastModified != null">
                 user_last_modified = #{lastModified},
             </if>
+            user_id = #{id}
         </set>
         where user_id = #{id};
     </update>

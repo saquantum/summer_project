@@ -37,6 +37,7 @@ public class Code {
 
     public static final int BAD_REQUEST = 40000;
     public static final int DUPLICATE_FIELD = 40001;
+    public static final int ILLEGAL_ARGUMENT = 40002;
     public static final int UNAUTHORISED = 40100;
     public static final int LOGIN_TOKEN_ERR = 40101;
     public static final int LOGIN_TOKEN_MISSING = 40111;

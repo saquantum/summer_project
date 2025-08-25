@@ -23,6 +23,13 @@ public class SpExceptionHandler {
         return new ResponseBody(Code.DUPLICATE_FIELD, null, e.getMessage());
     }
 
+    @ExceptionHandler({IllegalArgumentException.class})
+    public ResponseBody handleIllegalArgumentException(HttpServletResponse response, IllegalArgumentException e) {
+        e.printStackTrace();
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        return new ResponseBody(Code.ILLEGAL_ARGUMENT, null, e.getMessage());
+    }
+
     @ExceptionHandler({SpExceptions.UnauthorisedException.class})
     public ResponseBody handleUnauthorisedException(HttpServletResponse response, SpExceptions.UnauthorisedException e) {
         e.printStackTrace();
