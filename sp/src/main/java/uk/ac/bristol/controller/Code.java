@@ -32,12 +32,11 @@ public class Code {
     public static final int UPDATE_OK = 20031;
     public static final int SELECT_ERR = 20040;
     public static final int SELECT_OK = 20041;
-    public static final int HEAD_OK = 20050;
-    public static final int HEAD_ERR = 20051;
 
     public static final int NOT_MODIFIED = 30400;
 
     public static final int BAD_REQUEST = 40000;
+    public static final int DUPLICATE_FIELD = 40001;
     public static final int UNAUTHORISED = 40100;
     public static final int LOGIN_TOKEN_ERR = 40101;
     public static final int LOGIN_TOKEN_MISSING = 40111;

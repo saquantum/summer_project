@@ -31,6 +31,7 @@ public final class QueryTool {
     public final static Map<String, Set<String>> registeredTableColumnMap;
     public final static Map<String, ColumnTriple> columnAsKeyMap = new HashMap<>();
 
+    // initialisation of cached metadata
     static {
         Set<String> columnBlacklist = Set.of(
                 "user_password",
@@ -67,6 +68,7 @@ public final class QueryTool {
 
         List<FilterItemDTO> filterList = new ArrayList<>();
 
+        // loop through all key-value pairs
         for (Map.Entry<String, Object> entry : filters.entrySet()) {
             String column = entry.getKey();
             Object condition = entry.getValue();
@@ -125,7 +127,7 @@ public final class QueryTool {
         return filterList;
     }
 
-
+    // convert values to safe strings to avoid SQL injection
     private static String wrapValue(Object val) {
         if (val == null) {
             throw new IllegalArgumentException("To wrap a value it must not be null");
@@ -153,6 +155,7 @@ public final class QueryTool {
 
         List<FilterItemDTO> result = new ArrayList<>();
 
+        // format the cursor condition, according to the order list
         List<String> cursorConditionParts = new ArrayList<>();
         for (int i = 0; i < formattedOrderList.size(); i++) {
             Map<String, String> item = formattedOrderList.get(i);
@@ -173,11 +176,13 @@ public final class QueryTool {
 
                 cursorConditionParts.add("(" + String.join(" and ", subParts) + ")");
             } catch (IllegalArgumentException e) {
-                throw new SpExceptions.SystemException("A column is found from the formatted order list," +
+                throw new SpExceptions.SystemException(
+                        "A column is found from the formatted order list," +
                         " but failed to be found from the anchor," +
                         " which indicates the joint tables of the query does not match permitted tables when formatting order list");
             }
         }
+        // join condition segments with OR and append the condition as a raw string
         result.add(FilterItemDTO.raw(String.join(" or ", cursorConditionParts)));
         result.addAll(formatFilters(filters));
         return result;
@@ -199,6 +204,7 @@ public final class QueryTool {
         }
         List<Map<String, String>> list = new ArrayList<>();
         for (int i = 0; i < items.size(); i += 2) {
+            // column and direction should be placed alternatively
             String column = items.get(i).trim();
             String direction = items.get(i + 1).trim().toLowerCase();
 
@@ -247,7 +253,7 @@ public final class QueryTool {
                 })
                 .toList();
 
-        // 3. insert row id to rightmost
+        // 3. insert row id to the rightmost to stabilize deep page cursor
         List<Map<String, String>> result = new ArrayList<>(filtered);
         result.add(Map.of("column", mainTableRowIdName, "direction", "asc"));
         return result;
@@ -311,9 +317,9 @@ public final class QueryTool {
 
     public static AccessControlGroup getAccessControlGroupByUserId(String uid) {
         List<AccessControlGroup> list = QueryToolConfig.accessControlService.getAccessControlGroupByUserId(uid);
-        if (list.size() != 1){
+        if (list.size() != 1) {
             return new AccessControlGroup();
-        }else{
+        } else {
             return AccessControlGroup.formatSystemShutdown(list.get(0));
         }
     }

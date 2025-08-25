@@ -42,6 +42,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public String login(User user) {
+        // fetch the user from database
         List<User> list = userMapper.selectUsers(
                 QueryTool.formatFilters(Map.of("user_id", user.getId())),
                 null, null, null);
@@ -49,10 +50,12 @@ public class UserServiceImpl implements UserService {
             throw new SpExceptions.UnauthorisedException("User not found or password incorrect.");
         }
 
+        // verify password
         if (!verifyPassword(user.getPassword(), userMapper.selectPasswordByUserId(user.getId()))) {
             throw new SpExceptions.UnauthorisedException("User not found or password incorrect.");
         }
 
+        // format the claims and return a JWT
         User u = list.get(0);
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", u.getId());
@@ -364,13 +367,16 @@ public class UserServiceImpl implements UserService {
         String phone = ((String) data.get("phone")).trim();
         Boolean wouldLikeContact = (Boolean) data.get("contact");
 
-        if (id.isBlank() || password.isBlank() || repassword.isBlank() || name.isBlank() || email.isBlank() || phone.isBlank()) {
+        if (id.isBlank() || password.isBlank() || repassword.isBlank() || name.isBlank() || email.isBlank() || phone.isBlank() || wouldLikeContact == null) {
             throw new SpExceptions.BadRequestException("Key fields missing during registration.");
         }
 
         // check uid not duplicate
         if (testUIDExistence(id)) {
-            throw new SpExceptions.BadRequestException("Duplicate user id, failed to register.");
+            throw new SpExceptions.DuplicateFieldException("Duplicate user id, failed to register.");
+        }
+        if (testEmailAddressExistence(email)) {
+            throw new SpExceptions.DuplicateFieldException("Duplicate email, failed to register.");
         }
 
         // check password validity

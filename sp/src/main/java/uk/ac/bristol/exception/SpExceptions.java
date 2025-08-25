@@ -80,6 +80,16 @@ public class SpExceptions extends RuntimeException {
         }
     }
 
+    public static class DuplicateFieldException extends SpExceptions {
+        public DuplicateFieldException(String message) {
+            super(message);
+        }
+
+        public DuplicateFieldException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
     public static class UnauthorisedException extends SpExceptions {
         public UnauthorisedException(String message) {
             super(message);

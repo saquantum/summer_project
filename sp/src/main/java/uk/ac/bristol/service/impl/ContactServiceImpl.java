@@ -206,10 +206,10 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public ResponseBody generateCode(String email) {
         if (email == null) {
-            return new ResponseBody(Code.BUSINESS_ERR, null, "Failed to send email because email address is null");
+            return new ResponseBody(Code.SELECT_ERR, null, "Failed to send email because email address is null");
         }
         if (!userService.testEmailAddressExistence(email)) {
-            return new ResponseBody(Code.BUSINESS_ERR, null, "Failed to send email because email address doesn't exist");
+            return new ResponseBody(Code.SELECT_ERR, null, "Failed to send email because email address doesn't exist");
         }
         String code = String.valueOf(new Random().nextInt(899999) + 100000);
         saveEmailCode(email, code);
