@@ -19,8 +19,8 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
 
   mail:
-    username: alchemistbackydian@gmail.com
-    password: ijllbowymtlavkvx
+    username: ourrainwatersender@gmail.com
+    password: iatlngoazwhxgfyi
     host: smtp.gmail.com
     port: 465
     properties:

@@ -85,4 +85,10 @@ public interface UserMapper {
     boolean upsertContactPreferencesByUserId(@Param("id") String uid, Map<String, Boolean> map);
 
     int deleteContactPreferencesByUserIds(@Param("ids") List<String> ids);
+
+    /* new function */
+
+    int saveLoginTime(@Param("id") String id);
+
+    int countLoginWithinTwoDays();
 }

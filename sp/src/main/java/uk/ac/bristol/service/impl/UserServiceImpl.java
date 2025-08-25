@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
     }
 
     // checks uid and password, returns a jwt token
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public String login(User user) {
         // fetch the user from database
@@ -60,6 +60,8 @@ public class UserServiceImpl implements UserService {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", u.getId());
         claims.put("isAdmin", u.isAdmin());
+
+        userMapper.saveLoginTime(user.getId());
         return JwtUtil.generateJWT(claims);
     }
 
@@ -459,6 +461,12 @@ public class UserServiceImpl implements UserService {
         }
         metaDataMapper.increaseTotalCountByTableName("users", -n1);
         return n1;
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public int getLoginCount() {
+        return userMapper.countLoginWithinTwoDays();
     }
 
     private void passwordValidation(String password) {

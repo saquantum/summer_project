@@ -68,7 +68,8 @@
             user_admin_level        int check (user_admin_level >= 0),
             user_avatar             text,
             user_name               varchar(200),
-            user_last_modified      timestamp without time zone default current_timestamp
+            user_last_modified      timestamp without time zone default current_timestamp,
+            user_last_logintime     timestamp default null
         );
 
         create index index_users_user_name on users using GIN (user_name gin_trgm_ops);

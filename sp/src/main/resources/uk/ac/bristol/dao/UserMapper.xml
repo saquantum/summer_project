@@ -379,4 +379,16 @@
         where contact_preferences_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
+
+    <update id="saveLoginTime">
+        update users
+        set user_last_logintime = NOW()
+        where user_id = #{id}
+    </update>
+
+    <select id="countLoginWithinTwoDays" resultType="int">
+        select COUNT(*)
+        from users
+        where user_last_logintime >= NOW() - interval '2 days'
+    </select>
 </mapper>
