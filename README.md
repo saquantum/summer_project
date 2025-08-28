@@ -1,48 +1,53 @@
 # Summer Project Front-end
 
-This is the front-end of the summer project. You can run the project by following these steps:
+This is the front-end of the summer project, detail information is in the main branch.
 
-## Project Setup
+## Development Setup
+
+As this is the front-end of the project, this part will not cover how to start the entire project, click this link if you do want to. This guide will help you set up a complete development environment for this project
+
+### Required software
+
+- **Node.js 20+** - [Download Node.js](https://nodejs.org/)
+- **pnpm** - you can install it with `npm install -g pnpm` after Node.js is installed
+- **Git** - [Download Git](https://git-scm.com/)
+
+### Source Code Setup
+
+#### Clone Repository
+
+```
+# Clone the main repository
+git clone git@github.com:saquantum/summer_project.git
+cd summer_project/vue
+```
+
+If your prefer working without backend code, there is a copy of the front-end source code
+
+```
+git clone git@github.com:redial17/summer_project_frontend.git
+cd summer_project_front_end
+```
+
+#### Install dependencies
 
 ```sh
 pnpm install
 ```
 
-### Compile and Hot-Reload for Development
+#### Compile and Hot-Reload for Development
 
 ```sh
 pnpm dev
 ```
 
-### Compile and Minify for Production
+#### Compile and Minify for Production
 
 ```sh
 pnpm build
 ```
 
-### Docker
-
-You can build the front-end alone in the root folder with:
-
-```sh
-docker build -t myapp .
-```
-
-To run the whole project, you need to start the backend server first. Further information is available in the main branch.
-
-## Dependencies
-
-
-
-This web application relies on the following core dependencies:
-
-- **Element Plus**: The core UI library. Most components are designed based on it.
-- **Tiptap**: A rich text editor used for editing message templates that will be sent to users.
-- **Leaflet**: Used for geographic components in the project.
-
-## Project Structure
-
-The project structure is as follows:
+#### Project Structure
 
 - `/api`: Contains abstracted API communication layers for backend integration
 - `/assets`: Contains static resources including images, stylesheets, and configuration files
@@ -56,7 +61,49 @@ The project structure is as follows:
 - `/tests`: Contains unit test specifications
 - `/cypress`: Contains end-to-end testing suites
 
-## Image Upload
+### Docker
+
+You can build the front-end alone in the root folder with:
+
+```sh
+docker build -t myapp .
+```
+
+To run the whole project, you need to start the backend server first. Further information is available in the main branch.
+
+# Testing
+
+You can run all unit tests with:
+
+```shell
+pnpm test
+```
+
+---
+
+To run the E2E tests, you need to start the web application first. Further information is available in the main branch. Once the server is ready, you can run all E2E tests. The commands are as follows:
+
+Run all E2E tests with:
+
+```shell
+pnpm cy:run
+```
+
+If you prefer a GUI, add `--headed`:
+
+```shell
+pnpm cy:run --headed
+```
+
+You can also run tests manually using the Cypress GUI:
+
+```shell
+pnpm cy:open
+```
+
+### Configuration
+
+#### Image upload
 
 The image upload function is implemented in the utils folder. It uses an environment file for configuration.
 
@@ -93,34 +140,4 @@ export const getUploadData = () => ({
   uid: uploadConfig.auth.uid,
   token: uploadConfig.auth.token
 }
-```
-
-# Testing
-
-You can run all unit tests with:
-
-```shell
-pnpm test
-```
-
----
-
-To run the E2E tests, you need to start the web application first. Further information is available in the main branch. Once the server is ready, you can run all E2E tests. The commands are as follows:
-
-Run all E2E tests with:
-
-```shell
-pnpm cy:run
-```
-
-If you prefer a GUI, add `--headed`:
-
-```shell
-pnpm cy:run --headed
-```
-
-You can also run tests manually using the Cypress GUI:
-
-```shell
-pnpm cy:open
 ```
