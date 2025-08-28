@@ -194,10 +194,12 @@ onUnmounted(() => {
   <el-dialog
     :model-value="props.visible"
     title="Crop Avatar"
-    :width="isMobile ? '100vw' : '800px'"
-    :fullscreen="isMobile"
+    :width="props.isMobile ? '92vw' : '720px'"
+    :fullscreen="false"
     :class="{ 'compact-mode': isCompact }"
     @close="handleClose"
+    modal-class="confirm-dialog-overlay"
+    class="confirm-dialog"
   >
     <!-- File Upload -->
     <input
@@ -211,7 +213,6 @@ onUnmounted(() => {
 
     <!-- cropper-main-container -->
     <div v-if="!isMobile" class="cropper-main-container">
-      <!-- 左：裁剪区 -->
       <div class="cropper-area">
         <!-- Cropper Area -->
         <div v-if="imageSrc" class="cropper-wrapper">
@@ -223,20 +224,32 @@ onUnmounted(() => {
           />
         </div>
         <div v-else class="upload-hint">
-          <p>please select image</p>
+          <div class="hint">please select image</div>
         </div>
       </div>
 
-      <!-- Right：control-panel -->
+      <!-- Right: control-panel -->
       <div class="control-panel">
         <!-- Action Buttons -->
         <div class="button-group">
-          <button @click="getCroppedImage">Get Cropped Result</button>
-          <button @click="confirmCrop" :disabled="!croppedBase64">
+          <button @click="getCroppedImage" class="styled-btn">
+            Get Cropped Result
+          </button>
+          <button
+            @click="confirmCrop"
+            :disabled="!croppedBase64"
+            class="styled-btn"
+          >
             Confirm
           </button>
-          <button @click="reset" :disabled="!croppedBase64">Reset</button>
-          <button @click="downloadImage" :disabled="!croppedBase64">
+          <button @click="reset" :disabled="!croppedBase64" class="styled-btn">
+            Reset
+          </button>
+          <button
+            @click="downloadImage"
+            :disabled="!croppedBase64"
+            class="styled-btn"
+          >
             Download
           </button>
         </div>
@@ -252,10 +265,8 @@ onUnmounted(() => {
         </div>
       </div>
     </div>
-    <!-- 👉 Mobile 模式：单栏 + 全屏裁剪 + 底部 Confirm -->
     <div v-else class="mobile-crop-container">
       <div class="mobile-cropper-wrapper">
-        <!-- 没有图片时显示文件输入框 -->
         <template v-if="!imageSrc">
           <input
             type="file"
@@ -266,7 +277,6 @@ onUnmounted(() => {
           />
         </template>
 
-        <!-- 已选择图片后显示裁剪区域 -->
         <template v-else>
           <img
             ref="imgRef"
@@ -278,12 +288,7 @@ onUnmounted(() => {
         </template>
       </div>
 
-      <!-- 底部 Confirm 按钮 -->
-      <button
-        class="mobile-confirm-btn"
-        @click="confirmCrop"
-        :disabled="!imageSrc"
-      >
+      <button class="styled-btn" @click="confirmCrop" :disabled="!imageSrc">
         Confirm
       </button>
     </div>
@@ -304,11 +309,53 @@ onUnmounted(() => {
   min-width: 0;
 }
 
+.hint {
+  font-size: 20px;
+  font-weight: 600;
+}
+
 .file-input {
   margin-bottom: 20px;
   padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border: 1px dashed #9bb7d4;
+  border-radius: 12px;
+  background: #f9fafc;
+  font-size: 14px;
+  color: #39435b;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.file-input:hover {
+  background: #eef2f7;
+  border-color: #3b72e7;
+}
+
+.file-input::-webkit-file-upload-button {
+  padding: 8px 20px;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 12px;
+  color: #ffffff;
+  border: 1px solid #fff;
+  background-image: linear-gradient(
+    180deg,
+    #e4dfd8 0%,
+    #9bb7d4 60%,
+    rgba(58, 78, 107, 0.58) 100%
+  );
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.file-input::-webkit-file-upload-button:hover {
+  background: linear-gradient(
+    180deg,
+    #f0e6d2 0%,
+    rgba(125, 140, 163, 0.44) 100%
+  );
+  color: #39435b;
 }
 
 .cropper-wrapper {
@@ -350,28 +397,12 @@ onUnmounted(() => {
   gap: 10px;
 }
 
-.button-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.button-group button {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 4px;
-  background: #007bff;
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.button-group button:hover {
-  background: #0069d9;
-}
-
 .button-group button:disabled {
-  background: #cccccc;
+  background: #cbcfde;
   cursor: not-allowed;
+  color: #ffffff;
+  border: 1px solid #fff;
+  text-shadow: 0 4px 4px rgba(0, 0, 0, 0.5);
 }
 
 .preview {
@@ -392,57 +423,147 @@ onUnmounted(() => {
   border-radius: 4px;
 }
 
-@media (max-width: 768px) {
-  .cropper-main-container {
-    flex-direction: column;
-  }
-
-  .control-panel {
-    width: 100%;
-    margin-top: 20px;
-  }
-
-  .file-input {
-    margin-bottom: 15px;
-  }
-
-  .cropper-image {
-    max-height: 50vh;
-  }
+.styled-btn {
+  padding: 8px 20px;
+  font-weight: 600;
+  font-size: 16px;
+  border-radius: 12px;
+  color: #ffffff;
+  border: 1px solid #fff;
+  text-shadow: 0 4px 4px rgba(0, 0, 0, 0.5);
+  background-image: linear-gradient(
+    180deg,
+    #e4dfd8 0%,
+    #9bb7d4 60%,
+    rgba(58, 78, 107, 0.58) 100%
+  );
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
 }
 
-.compact-mode {
-  width: 90vw !important;
+.styled-btn:hover {
+  background: linear-gradient(
+    180deg,
+    #f0e6d2 0%,
+    rgba(125, 140, 163, 0.44) 100%
+  );
+  color: #39435b;
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  border: 1px solid #fff;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
 }
 
-.compact-mode .cropper-main-container {
-  min-height: 300px;
-}
-
-.mobile-crop-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-}
-
-.mobile-cropper-wrapper {
-  flex: 1;
-  width: 100%;
-  height: 100vw; /* 正方形 */
+:deep(.el-dialog.confirm-dialog) {
+  border-radius: 16px;
+  box-shadow: 0 18px 60px rgba(15, 23, 42, 0.12);
   overflow: hidden;
 }
 
-.mobile-confirm-btn {
-  width: 100%;
-  padding: 14px 0;
-  border: none;
-  background: #007bff;
-  color: #fff;
-  font-size: 16px;
-  cursor: pointer;
-  position: fixed;
-  bottom: 0;
-  left: 0;
+:deep(.el-dialog.confirm-dialog .el-dialog__header) {
+  padding: 16px 20px 8px;
+  border-bottom: 1px solid #eef2f7;
+}
+:deep(.el-dialog.confirm-dialog .el-dialog__title) {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: 0.2px;
+}
+:deep(.el-dialog.confirm-dialog .el-dialog__body) {
+  padding: 16px 20px;
+  color: #334155;
+  line-height: 1.7;
+  background: #fff;
+}
+:deep(.el-dialog.confirm-dialog .el-dialog__footer) {
+  padding: 14px 16px 16px;
+  background: #fafbfd;
+  border-top: 1px solid #eef2f7;
+}
+
+:deep(.el-overlay.confirm-dialog-overlay) {
+  backdrop-filter: blur(2px);
+  background-color: rgba(15, 23, 42, 0.35);
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .mobile-crop-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 16px 16px calc(88px + env(safe-area-inset-bottom));
+    gap: 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .file-input {
+    width: 100%;
+    margin-bottom: 16px;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px dashed #9bb7d4;
+    border-radius: 12px;
+    background: #f9fafc;
+  }
+
+  .mobile-cropper-wrapper {
+    flex: 1;
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 1 / 1;
+    max-height: min(80dvh, 100vw);
+    overflow: hidden;
+    border: 1px dashed #e5e7eb;
+    border-radius: 12px;
+    background: #f9fafc;
+  }
+
+  .cropper-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    max-height: none;
+    display: block;
+  }
+
+  .mobile-confirm-btn,
+  .styled-btn.mobile-confirm-btn {
+    position: sticky;
+    bottom: env(safe-area-inset-bottom);
+    width: 100%;
+    padding: 14px 18px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    display: inline-block;
+  }
+
+  .cropper-main-container {
+    flex-direction: column;
+  }
+  .control-panel {
+    width: 100%;
+    margin-top: 16px;
+    gap: 16px;
+  }
+  :deep(.el-dialog.confirm-dialog) {
+    --el-dialog-width: 600px !important;
+    margin: 20px auto !important;
+    max-height: 90vh;
+    border-radius: 12px;
+  }
+
+  :deep(.el-dialog__body) {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
 }
 </style>
