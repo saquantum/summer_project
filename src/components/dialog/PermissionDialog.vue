@@ -42,7 +42,7 @@ onMounted(async () => {
     v-model="visible"
     modal-class="confirm-dialog-overlay"
     class="confirm-dialog"
-    width="800px"
+    style="width: auto; margin: 80px 50px; min-width: 200px"
   >
     <el-checkbox v-model="selectAll" data-test="select-all">
       Select All ({{ props.total }})
@@ -184,5 +184,18 @@ onMounted(async () => {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .confirm-dialog {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh !important;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 16px 16px calc(88px + env(safe-area-inset-bottom));
+    gap: 16px;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 </style>
