@@ -397,6 +397,10 @@ onMounted(() => {
                 <template #header>
                   <div class="card-header">
                     <span>Drawing tools</span>
+                    <HelpTip
+                      title="How to draw an asset"
+                      content="An asset is a multipolygon, a multipolygon is consist of different polygons, while a polygon is consist of diffenrt rings. As a reusult, in order to draw a multipolygon, you need to draw a ring and then click the 'finish one shape' button, once a polygon is finish, you need to click finish one polygon button"
+                    ></HelpTip>
                     <span class="hint" v-if="isDrawing"
                       >You are now drawing a polygon</span
                     >

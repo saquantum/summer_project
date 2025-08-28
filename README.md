@@ -1,10 +1,10 @@
 # Summer Project Front-end
 
-This is the front-end of the summer project, detail information is in the main branch.
+This is the front-end of the summer project, detail information is in the [main branch](https://github.com/saquantum/summer_project).
 
 ## Development Setup
 
-As this is the front-end of the project, this part will not cover how to start the entire project, click this link if you do want to. This guide will help you set up a complete development environment for this project
+As this is the front-end of the project, this part will not cover how to start the entire project, click this [link](https://github.com/saquantum/summer_project) if you do want to. This guide will help you set up a complete development environment for this project
 
 ### Required software
 
@@ -22,7 +22,7 @@ git clone git@github.com:saquantum/summer_project.git
 cd summer_project/vue
 ```
 
-If your prefer working without backend code, there is a copy of the front-end source code
+If your prefer working without backend code, there is a copy of the front-end source code via this [link](https://github.com/redial17/summer_project_frontend)
 
 ```
 git clone git@github.com:redial17/summer_project_frontend.git
@@ -71,7 +71,7 @@ docker build -t myapp .
 
 To run the whole project, you need to start the backend server first. Further information is available in the main branch.
 
-# Testing
+### Testing
 
 You can run all unit tests with:
 
@@ -101,9 +101,9 @@ You can also run tests manually using the Cypress GUI:
 pnpm cy:open
 ```
 
-### Configuration
+## Configuration
 
-#### Image upload
+### Image upload
 
 The image upload function is implemented in the utils folder. It uses an environment file for configuration.
 
