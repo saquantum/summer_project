@@ -9,7 +9,7 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import compression from 'vite-plugin-compression'
 import { visualizer } from 'rollup-plugin-visualizer'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     vue(),
     vueDevTools(),
@@ -28,7 +28,7 @@ export default defineConfig({
     }),
     visualizer({
       filename: './dist/stats.html',
-      open: true,
+      open: mode === 'development',
       gzipSize: true,
       brotliSize: true
     })
@@ -48,4 +48,4 @@ export default defineConfig({
       }
     }
   }
-})
+}))

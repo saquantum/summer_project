@@ -32,6 +32,8 @@ To run the whole project, you need to start the backend server first. Further in
 
 ## Dependencies
 
+
+
 This web application relies on the following core dependencies:
 
 - **Element Plus**: The core UI library. Most components are designed based on it.
@@ -58,6 +60,26 @@ The project structure is as follows:
 
 The image upload function is implemented in the utils folder. It uses an environment file for configuration.
 
+Under development environment, the following configuration is in `.env.development` file. It use a free image server, so the server only takes 10 images a day.
+
+```
+# Upload Configuration
+VITE_UPLOAD_UID=0859f8d62389ad10bdaf599d6b5840d8
+VITE_UPLOAD_TOKEN=b623ba4c187c69f60f3fe3ac0a4e665e
+
+# File Size Limits (in MB)
+VITE_UPLOAD_AVATAR_SIZE_LIMIT=5
+VITE_UPLOAD_DOC_SIZE_LIMIT=10
+VITE_UPLOAD_IMAGE_SIZE_LIMIT=8
+
+# Upload URLs
+VITE_UPLOAD_AVATAR_URL=https://www.imgurl.org/api/v2/upload
+VITE_UPLOAD_DOC_URL=https://www.imgurl.org/api/v2/upload
+VITE_UPLOAD_IMAGE_URL=https://www.imgurl.org/api/v2/upload
+```
+
+Here are some helper functions that export the upload config:
+
 ```ts
 export const uploadConfig: UploadConfig = {
   auth: {
@@ -70,10 +92,8 @@ export const uploadConfig: UploadConfig = {
 export const getUploadData = () => ({
   uid: uploadConfig.auth.uid,
   token: uploadConfig.auth.token
-})
+}
 ```
-
-In the development environment, we use a free image server. You can change it to your own server configuration.
 
 # Testing
 
