@@ -307,6 +307,8 @@ defineExpose({
 .assets-container {
   padding: 16px;
   min-height: 100vh;
+  width: min(80vw, 1600px); /* 调整为更适合1080p的宽度 */
+  max-width: calc(100% - 2rem);
 }
 
 .asset-list {
@@ -318,11 +320,13 @@ defineExpose({
 .card-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
-  max-width: calc(300px * 4 + 20px * 3);
+  gap: 24px;
+  /*max-width: calc(300px * 4 + 20px * 3);*/
+  max-width: calc(320px * 4 + 24px * 3);
   margin-left: auto;
   margin-right: auto;
   justify-content: flex-start;
+  width: 100%; /* 添加这个 */
 }
 
 .asset-card {

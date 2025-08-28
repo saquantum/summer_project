@@ -404,7 +404,9 @@ watch(
   padding: 20px;
   margin: 60px auto;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  width: 1100px;
+  /*width: 1100px;*/
+  width: min(80vw, 1600px);
+  max-width: calc(100% - 2rem);
   box-sizing: border-box;
 }
 
@@ -585,5 +587,47 @@ watch(
 }
 .preview-panel :deep(a:hover) {
   text-decoration: none;
+}
+@media (max-width: 768px) {
+  .page-surface {
+    width: calc(100% - 24px);
+    max-width: none;
+    margin: 16px auto;
+    padding: 12px;
+  }
+  .filters-form :deep(.el-row) {
+    flex-direction: column;
+  }
+  .filters-form :deep(.el-col) {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  .editor-grid {
+    flex-direction: column;
+    gap: 16px;
+    flex-wrap: nowrap;
+    overflow-x: hidden;
+  }
+  .editor-panel,
+  .preview-panel {
+    min-width: 0;
+    width: 100%;
+    min-height: 360px;
+  }
+  .editor-panel :deep(.ProseMirror) {
+    min-height: 360px;
+    padding: 12px 14px;
+  }
+  .preview-content {
+    min-height: 360px;
+    padding: 14px 16px;
+  }
+
+  .actions-row {
+    justify-content: flex-start;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
 }
 </style>

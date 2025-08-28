@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import {
   adminGetActiveUsersService,
   adminGetAssetDistributionService,
@@ -100,11 +100,35 @@ const fetchDashboardData = async () => {
 onMounted(async () => {
   await fetchDashboardData()
 })
+
+const isMobile = ref(false)
+const activeMobileTab = ref<'charts' | 'map'>('charts')
+let mql: MediaQueryList
+let mqlHandler: (_e?: MediaQueryListEvent) => void
+
+onMounted(() => {
+  mql = window.matchMedia('(max-width: 480px)')
+  mqlHandler = (e?: MediaQueryListEvent) => {
+    isMobile.value = e ? e.matches : mql.matches
+  }
+  mqlHandler()
+  if (mql.addEventListener) mql.addEventListener('change', mqlHandler)
+  else mql.addListener(mqlHandler)
+})
+
+onBeforeUnmount(() => {
+  if (!mql) return
+  if (mql.removeEventListener) mql.removeEventListener('change', mqlHandler)
+  else mql.removeListener(mqlHandler)
+})
+
+const formatNumber = (n: number | undefined) =>
+  new Intl.NumberFormat().format(n ?? 0)
 </script>
 
 <template>
   <div class="page-surface cards-page">
-    <section class="layout-2col">
+    <section v-if="!isMobile" class="layout-2col">
       <aside class="left-col">
         <div class="mini-grid">
           <el-card class="kpi-card">
@@ -122,7 +146,7 @@ onMounted(async () => {
                 style="border: none"
               >
                 <template #icon>
-                  <el-icon style="font-size: 18px; color: #409eff">
+                  <el-icon class="kpi-icon">
                     <User />
                   </el-icon>
                 </template>
@@ -144,7 +168,7 @@ onMounted(async () => {
                 style="border: none"
               >
                 <template #icon>
-                  <el-icon style="font-size: 18px; color: #409eff">
+                  <el-icon class="kpi-icon">
                     <Location />
                   </el-icon>
                 </template>
@@ -167,7 +191,7 @@ onMounted(async () => {
                 style="border: none"
               >
                 <template #icon>
-                  <el-icon style="font-size: 18px; color: #409eff">
+                  <el-icon class="kpi-icon">
                     <Location />
                   </el-icon>
                 </template>
@@ -191,7 +215,7 @@ onMounted(async () => {
                 style="border: none"
               >
                 <template #icon>
-                  <el-icon style="font-size: 18px; color: #409eff">
+                  <el-icon class="kpi-icon">
                     <Location />
                   </el-icon>
                 </template>
@@ -206,7 +230,6 @@ onMounted(async () => {
               <div class="title">Contact preference</div>
               <el-icon><Message /></el-icon>
             </div>
-
             <BarChart
               class="chart"
               id="contact-preference"
@@ -220,7 +243,6 @@ onMounted(async () => {
             <div class="card-hd">
               <div class="title">User distribution</div>
             </div>
-
             <div class="pie-wrap">
               <PieChart
                 class="chart"
@@ -253,47 +275,202 @@ onMounted(async () => {
         </el-card>
       </main>
     </section>
+
+    <section v-else class="layout-mobile">
+      <div class="mini-grid">
+        <el-card class="kpi-card">
+          <div class="kpi-header">
+            <div class="kpi-title">
+              <el-icon><User /></el-icon><span>User Statistics</span>
+            </div>
+          </div>
+          <div class="kpi-value">{{ formatNumber(userCount) }}</div>
+          <div class="kpi-spark">
+            <LineChart
+              :count="userCount"
+              title=""
+              id="user-m"
+              style="border: none"
+            >
+              <template #icon>
+                <el-icon class="kpi-icon"><Location /></el-icon>
+              </template>
+            </LineChart>
+          </div>
+        </el-card>
+
+        <el-card class="kpi-card">
+          <div class="kpi-header">
+            <div class="kpi-title">
+              <el-icon><User /></el-icon><span>Active Users</span>
+            </div>
+          </div>
+          <div class="kpi-value">{{ formatNumber(activeUsers) }}</div>
+          <div class="kpi-spark">
+            <LineChart
+              :count="activeUsers"
+              title=""
+              id="active-users-m"
+              style="border: none"
+            >
+              <template #icon>
+                <el-icon class="kpi-icon"><Location /></el-icon>
+              </template>
+            </LineChart>
+          </div>
+        </el-card>
+
+        <el-card class="kpi-card">
+          <div class="kpi-header">
+            <div class="kpi-title">
+              <el-icon><User /></el-icon><span>Asset Statistics</span>
+            </div>
+          </div>
+          <div class="kpi-value">{{ formatNumber(assetCount) }}</div>
+          <div class="kpi-spark">
+            <LineChart
+              :count="assetCount"
+              title=""
+              id="asset-copy-m"
+              style="border: none"
+            >
+              <template #icon>
+                <el-icon class="kpi-icon"><Location /></el-icon>
+              </template>
+            </LineChart>
+          </div>
+        </el-card>
+
+        <el-card class="kpi-card">
+          <div class="kpi-header">
+            <div class="kpi-title">
+              <el-icon><User /></el-icon><span>Assets in danger</span>
+            </div>
+          </div>
+          <div class="kpi-value">{{ formatNumber(assetsInDanger) }}</div>
+          <div class="kpi-spark">
+            <LineChart
+              :count="assetsInDanger"
+              title=""
+              id="asset-in-danger-m"
+              color="orange"
+              style="border: none"
+            >
+              <template #icon>
+                <el-icon class="kpi-icon"><Location /></el-icon>
+              </template>
+            </LineChart>
+          </div>
+        </el-card>
+      </div>
+
+      <!-- Tabs:Charts / Map -->
+      <el-tabs v-model="activeMobileTab" class="mobile-tabs" stretch>
+        <el-tab-pane label="Charts" name="charts">
+          <div class="left-bottom-grid onecol">
+            <el-card class="chart-card">
+              <div class="card-hd">
+                <div class="title">Contact preference</div>
+                <el-icon><Message /></el-icon>
+              </div>
+              <BarChart
+                class="chart"
+                id="contact-preference-m"
+                style="border: none"
+                title=""
+                :data="contactPreference"
+              />
+            </el-card>
+
+            <el-card class="chart-card">
+              <div class="card-hd">
+                <div class="title">User distribution</div>
+              </div>
+              <div class="pie-wrap">
+                <PieChart
+                  class="chart"
+                  id="regional-pie-chart-m"
+                  style="border: none"
+                  title=""
+                  :data="pieChartData"
+                  chart-type="normal"
+                />
+              </div>
+            </el-card>
+          </div>
+        </el-tab-pane>
+
+        <el-tab-pane label="Map" name="map">
+          <el-card class="map-card">
+            <div class="card-hd">
+              <div class="title">Asset Distribution Map</div>
+              <el-tag round type="info">Live</el-tag>
+            </div>
+            <div class="map-wrap">
+              <MapChart
+                v-if="activeMobileTab === 'map'"
+                :key="'map-' + activeMobileTab"
+                id="asset-distribution-map-m"
+                style="border: none"
+                title=""
+                :data="assetDistribution"
+              />
+            </div>
+          </el-card>
+        </el-tab-pane>
+      </el-tabs>
+    </section>
   </div>
 </template>
 
 <style scoped>
 .cards-page {
+  position: relative;
   background: #f3f5f7;
   border: 1px solid #e6eaee;
-  border-radius: 16px;
-  padding: 18px;
-  margin: 28px auto;
-  box-shadow: 0 8px 26px rgba(16, 24, 40, 0.04);
-  width: min(1280px, calc(100vw - 24px));
+  border-radius: 3px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  margin: 60px auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  width: min(80vw, 1600px);
+  max-width: calc(100% - 2rem);
   box-sizing: border-box;
 }
 
 .layout-2col {
   display: grid;
-  grid-template-columns: 600px 2fr;
+  grid-template-columns: 1fr 1fr;
   gap: 18px;
-  align-items: start;
+  align-items: stretch;
+  margin: 0 auto;
 }
 
 .left-col {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  padding-left: 20px;
 }
 
 .mini-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 18px;
-  height: 350px;
+  min-height: 200px;
+  height: auto;
 }
 .kpi-card {
   border-radius: 14px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 120px;
+  height: 100%;
+  padding: 12px;
 }
 .kpi-header {
   padding: 8px 10px 0;
-  margin: -10px;
 }
 .kpi-title {
   display: flex;
@@ -307,14 +484,17 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 18px;
-  height: 300px;
+  min-height: 250px;
+  height: auto;
 }
 .chart-card {
   border-radius: 16px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-height: 250px;
 }
+
 .card-hd {
   display: flex;
   align-items: center;
@@ -328,60 +508,227 @@ onMounted(async () => {
 .right-col {
   display: flex;
   flex-direction: column;
+  min-height: 500px;
+  padding-right: 20px;
 }
 .map-card {
   border-radius: 16px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  flex: 1;
 }
 .map-wrap {
-  height: 65vh;
-  min-height: 520px;
+  height: 100%;
+  min-height: 400px;
+  max-height: 65vh;
+  flex: 1;
+  display: flex;
 }
 ::v-deep(.leaflet-container) {
-  width: 100%;
-  height: 100%;
+  width: 100% !important;
+  height: 100% !important;
   border-radius: 12px;
-}
-
-.kpi-spark {
-  margin: -20px;
+  flex: 1;
 }
 
 .kpi-spark :deep(canvas) {
-  width: 60% !important;
+  width: 90% !important;
 }
 
 .pie-wrap {
-  width: 300px;
-  height: 300px;
-  margin: -20px -20px;
+  width: min(360px, 100%);
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+  padding: 8px;
 }
 
 .pie-wrap :deep(canvas),
 .pie-wrap :deep(svg) {
-  width: 90% !important;
-  height: 90% !important;
+  width: 100% !important;
+  height: 100% !important;
 }
 
-@media (max-width: 1200px) {
-  .layout-2col {
-    grid-template-columns: 1fr;
+.kpi-card {
+  text-align: left;
+}
+.kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.kpi-spark {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.kpi-spark :deep(canvas),
+.kpi-spark :deep(svg) {
+  max-width: 260px;
+}
+
+.kpi-icon {
+  color: #409eff;
+}
+
+@media (min-width: 769px) {
+  .cards-page {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
-  .map-wrap {
-    height: 56vh;
+
+  .kpi-spark :deep(svg) {
+    color: transparent;
+  }
+
+  .mini-grid {
+    grid-template-columns: repeat(2, minmax(360px, 1fr));
+    gap: 18px;
+  }
+
+  .left-bottom-grid {
+    grid-template-columns: repeat(2, minmax(360px, 1fr));
+    gap: 18px;
+  }
+  .kpi-spark :deep(canvas),
+  .kpi-spark :deep(svg) {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
   }
 }
+
 @media (max-width: 768px) {
-  .mini-grid {
+  .cards-page {
+    background: #f3f5f7;
+    border: 1px solid #e6eaee;
+    border-radius: 16px;
+    padding: 18px;
+    margin: 28px auto;
+    box-shadow: 0 8px 26px rgba(16, 24, 40, 0.04);
+    max-width: 1600px;
+    width: min(100%, calc(100vw - 24px));
+    box-sizing: border-box;
+  }
+
+  .layout-2col {
     grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .mini-grid {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 14px;
   }
   .left-bottom-grid {
     grid-template-columns: 1fr;
+    gap: 14px;
   }
   .map-wrap {
-    height: 48vh;
+    min-height: 340px;
+    max-height: 56vh;
+  }
+  .kpi-spark {
+    height: 120px;
+    padding-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: visible;
+  }
+  .kpi-spark :deep(.kpi-count),
+  .kpi-spark :deep(.count),
+  .kpi-spark :deep(.value) {
+    position: static;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #409eff;
+  }
+  .kpi-spark :deep(canvas),
+  .kpi-spark :deep(svg) {
+    width: 120% !important;
+    height: 68px !important;
+    max-width: none !important;
+  }
+  .left-col {
+    padding-left: 0;
+  }
+  .right-col {
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .cards-page {
+    background: #f3f5f7;
+    border: 1px solid #e6eaee;
+    border-radius: 16px;
+    padding: 18px;
+    margin: 28px auto;
+    box-shadow: 0 8px 26px rgba(16, 24, 40, 0.04);
+    width: min(100%, calc(100vw - 24px));
+    box-sizing: border-box;
+  }
+
+  .layout-mobile {
+    display: grid;
+    gap: 12px;
+  }
+  .mini-grid,
+  .left-bottom-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  :deep(.el-card__body) {
+    padding: 10px 12px;
+  }
+  .kpi-card,
+  .chart-card,
+  .map-card {
+    min-height: auto;
+  }
+
+  .kpi-spark {
+    height: 92px;
+    padding-bottom: 10px;
+    margin-left: -79px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: visible;
+  }
+  .kpi-spark :deep(.kpi-count),
+  .kpi-spark :deep(.count),
+  .kpi-spark :deep(.value) {
+    position: static;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #409eff;
+  }
+  .kpi-spark :deep(canvas),
+  .kpi-spark :deep(svg) {
+    width: 100% !important;
+    height: 56px !important;
+    max-width: none !important;
+  }
+  .map-wrap {
+    min-height: 260px;
+    height: 45vh;
+    max-height: 45vh;
+  }
+
+  .kpi-value {
+    font-size: 20px;
+    font-weight: 600;
+    color: #409eff;
+    margin-top: 15px;
   }
 }
 </style>

@@ -251,7 +251,9 @@ const handleSelect = ({ filters }: { filters: Filters }) => {
   padding: 20px;
   margin: 60px auto;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  width: 1100px;
+  /*width: 1100px;*/
+  width: min(80vw, 1600px);
+  max-width: calc(100% - 2rem);
   box-sizing: border-box;
 }
 
@@ -373,5 +375,32 @@ const handleSelect = ({ filters }: { filters: Filters }) => {
   text-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
   border: 1px solid #fff;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+}
+@media (max-width: 768px) {
+  .filters-form :deep(.el-row) {
+    flex-direction: column;
+  }
+  .filters-form :deep(.el-col) {
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+
+  .editor-grid {
+    flex-direction: column;
+    gap: 16px;
+    flex-wrap: nowrap;
+    overflow-x: hidden;
+  }
+  .editor-panel,
+  .preview-panel {
+    min-width: 0;
+    width: 100%;
+    min-height: 360px;
+
+    .editor-panel :deep(.ProseMirror) {
+      min-height: 360px;
+      padding: 12px 14px;
+    }
+  }
 }
 </style>
