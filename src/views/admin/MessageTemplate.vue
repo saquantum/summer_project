@@ -588,4 +588,51 @@ watch(
 .preview-panel :deep(a:hover) {
   text-decoration: none;
 }
+@media (max-width: 768px) {
+  /* Page 容器更紧凑（可按需） */
+  .page-surface {
+    width: calc(100% - 24px);
+    max-width: none;
+    margin: 16px auto;
+    padding: 12px;
+  }
+
+  /* 过滤表单：三/四列 -> 一列 */
+  .filters-form :deep(.el-row) {
+    flex-direction: column;
+  }
+  .filters-form :deep(.el-col) {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* 编辑器 + 预览：左右 -> 上下 */
+  .editor-grid {
+    flex-direction: column;
+    gap: 16px;
+    flex-wrap: nowrap;
+    overflow-x: hidden; /* 关闭横向滚动 */
+  }
+  .editor-panel,
+  .preview-panel {
+    min-width: 0; /* 关键：允许缩到 100% */
+    width: 100%;
+    min-height: 360px; /* 移动端高度稍降 */
+  }
+  .editor-panel :deep(.ProseMirror) {
+    min-height: 360px;
+    padding: 12px 14px;
+  }
+  .preview-content {
+    min-height: 360px;
+    padding: 14px 16px;
+  }
+
+  /* 按钮一行占满（可选） */
+  .actions-row {
+    justify-content: flex-start;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+}
 </style>

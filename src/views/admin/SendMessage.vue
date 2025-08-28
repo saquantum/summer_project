@@ -376,4 +376,31 @@ const handleSelect = ({ filters }: { filters: Filters }) => {
   border: 1px solid #fff;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
 }
+@media (max-width: 768px) {
+  .filters-form :deep(.el-row) {
+    flex-direction: column;
+  }
+  .filters-form :deep(.el-col) {
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+
+  .editor-grid {
+    flex-direction: column;
+    gap: 16px;
+    flex-wrap: nowrap;
+    overflow-x: hidden;
+  }
+  .editor-panel,
+  .preview-panel {
+    min-width: 0;
+    width: 100%;
+    min-height: 360px;
+
+    .editor-panel :deep(.ProseMirror) {
+      min-height: 360px;
+      padding: 12px 14px;
+    }
+  }
+}
 </style>
