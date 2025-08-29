@@ -246,6 +246,7 @@ defineExpose({
       </div>
       <el-table
         data-test="assets-table"
+        class="asset-table"
         :data="assets"
         :row-class-name="tableRowClassName"
         @sort-change="handleSortChange"
@@ -383,14 +384,17 @@ defineExpose({
   justify-content: flex-end;
 }
 
-@media (max-width: 768px) {
-  .table {
+@media (min-width: 769px) {
+  .asset-list {
     display: none !important;
   }
 }
 
-@media (min-width: 768px) {
-  .asset-list {
+@media (max-width: 768px) {
+  .table {
+    display: none !important;
+  }
+  .asset-table {
     display: none !important;
   }
 }
