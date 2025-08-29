@@ -668,9 +668,6 @@ onMounted(() => {
   color: #94a3b8;
 }
 
-.map-card {
-  height: calc(var(--panel-h) + var(--card-header-h) + var(--card-body-p) * 2);
-}
 .form-card,
 .admin-card {
   height: 100%;
@@ -681,7 +678,6 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-
   width: 100%;
 }
 
@@ -739,10 +735,14 @@ onMounted(() => {
   font-weight: 500;
   color: var(--muted);
 }
-
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .mode-select {
-  width: 100%;
-  min-width: 300px;
+  flex: 1;
+  min-width: 200px;
 }
 .toolbar {
   display: grid;
@@ -955,6 +955,15 @@ onMounted(() => {
   padding-top: 8px;
   border-top: 1px dashed #e5e7eb;
   margin-top: 6px;
+}
+
+@media (min-width: 768px) {
+  .content-grid {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 16px;
+  }
 }
 
 @media (max-width: 575px) {
