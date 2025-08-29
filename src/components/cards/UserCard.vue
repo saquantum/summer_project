@@ -413,171 +413,178 @@ const saveField = async () => {
     label-width="auto"
     class="edit-form"
   >
-    <el-row :gutter="20" class="profile-grid">
-      <el-col :xs="24" :sm="8" :md="8" class="col-left">
-        <div class="left-stack">
-          <el-card class="card profile-card">
-            <div
-              class="avatar-wrap"
-              @click="props.isEdit && emit('open-cropper')"
-            >
-              <el-avatar :src="previewUrl || imageUrl || currentUser?.avatar" />
-              <span class="avatar-edit-dot" v-if="props.isEdit"
-                ><el-icon><Camera /></el-icon
-              ></span>
-            </div>
-            <div class="profile-name">{{ currentUser?.name }}</div>
-            <div class="uid">uid {{ currentUser?.id }}</div>
-          </el-card>
+    <div class="grid-scroller">
+      <el-row :gutter="20" class="profile-grid">
+        <el-col :xs="24" :sm="8" :md="8" class="col-left">
+          <div class="left-stack">
+            <el-card class="card profile-card">
+              <div
+                class="avatar-wrap"
+                @click="props.isEdit && emit('open-cropper')"
+              >
+                <el-avatar
+                  :src="previewUrl || imageUrl || currentUser?.avatar"
+                />
+                <span class="avatar-edit-dot" v-if="props.isEdit"
+                  ><el-icon><Camera /></el-icon
+                ></span>
+              </div>
+              <div class="profile-name">{{ currentUser?.name }}</div>
+              <div class="uid">uid {{ currentUser?.id }}</div>
+            </el-card>
 
-          <el-card class="card pref-card" v-if="currentUser">
-            <div class="card-title-sub">Contact Preferences</div>
-            <div class="pref-list pref-grid" v-if="!isTagMode">
-              <el-checkbox
-                v-model="form.contactPreferences.email"
-                :disabled="!props.isEdit"
-                >Email</el-checkbox
-              >
-              <el-checkbox
-                v-model="form.contactPreferences.discord"
-                :disabled="!props.isEdit"
-                >Discord</el-checkbox
-              >
-              <el-checkbox
-                v-model="form.contactPreferences.phone"
-                :disabled="!props.isEdit"
-                >Phone</el-checkbox
-              >
-              <el-checkbox
-                v-model="form.contactPreferences.post"
-                :disabled="!props.isEdit"
-                >Post</el-checkbox
-              >
-              <el-checkbox
-                v-model="form.contactPreferences.telegram"
-                :disabled="!props.isEdit"
-                >Telegram</el-checkbox
-              >
-              <el-checkbox
-                v-model="form.contactPreferences.whatsapp"
-                :disabled="!props.isEdit"
-                >Whatsapp</el-checkbox
-              >
-            </div>
-
-            <div
-              class="pref-list tag-grid"
-              v-else
-              :class="{ 'is-edit': props.isEdit }"
-            >
-              <el-check-tag
-                v-for="opt in prefOptions"
-                :key="opt.key"
-                v-show="
-                  props.isEdit ||
-                  form.contactPreferences[
-                    opt.key as keyof UserInfoForm['contactPreferences']
-                  ]
-                "
-                :checked="
-                  form.contactPreferences[
-                    opt.key as keyof UserInfoForm['contactPreferences']
-                  ]
-                "
-                @change="
-                  (val: boolean) => {
-                    if (!props.isEdit) return
-                    ;(form.contactPreferences as any)[opt.key] = val
-                  }
-                "
-                :class="{ 'is-disabled': !props.isEdit }"
-              >
-                {{ opt.label }}
-              </el-check-tag>
-            </div>
-          </el-card>
-        </div>
-      </el-col>
-
-      <el-col :xs="24" :sm="16" :md="16" class="col-right">
-        <el-card class="card info-card edit-form">
-          <div class="info-card__header">
-            <div class="card-title">Information</div>
-            <div class="actions">
-              <slot name="header-actions"></slot>
-            </div>
-          </div>
-          <el-divider
-            style="
-              --el-border-color: rgba(133, 165, 220, 0.27);
-              border-top-width: 2px;
-            "
-          />
-          <div>
-            <el-row :gutter="16">
-              <el-col :xs="24" :sm="12" :md="12">
-                <div class="field-label">First Name</div>
-                <el-input
-                  v-model="form.firstName"
+            <el-card class="card pref-card" v-if="currentUser">
+              <div class="card-title-sub">Contact Preferences</div>
+              <div class="pref-list pref-grid" v-if="!isTagMode">
+                <el-checkbox
+                  v-model="form.contactPreferences.email"
                   :disabled="!props.isEdit"
-                  data-test="firstName"
+                  >Email</el-checkbox
+                >
+                <el-checkbox
+                  v-model="form.contactPreferences.discord"
+                  :disabled="!props.isEdit"
+                  >Discord</el-checkbox
+                >
+                <el-checkbox
+                  v-model="form.contactPreferences.phone"
+                  :disabled="!props.isEdit"
+                  >Phone</el-checkbox
+                >
+                <el-checkbox
+                  v-model="form.contactPreferences.post"
+                  :disabled="!props.isEdit"
+                  >Post</el-checkbox
+                >
+                <el-checkbox
+                  v-model="form.contactPreferences.telegram"
+                  :disabled="!props.isEdit"
+                  >Telegram</el-checkbox
+                >
+                <el-checkbox
+                  v-model="form.contactPreferences.whatsapp"
+                  :disabled="!props.isEdit"
+                  >Whatsapp</el-checkbox
+                >
+              </div>
+
+              <div
+                class="pref-list tag-grid"
+                v-else
+                :class="{ 'is-edit': props.isEdit }"
+              >
+                <el-check-tag
+                  v-for="opt in prefOptions"
+                  :key="opt.key"
+                  v-show="
+                    props.isEdit ||
+                    form.contactPreferences[
+                      opt.key as keyof UserInfoForm['contactPreferences']
+                    ]
+                  "
+                  :checked="
+                    form.contactPreferences[
+                      opt.key as keyof UserInfoForm['contactPreferences']
+                    ]
+                  "
+                  @change="
+                    (val: boolean) => {
+                      if (!props.isEdit) return
+                      ;(form.contactPreferences as any)[opt.key] = val
+                    }
+                  "
+                  :class="{ 'is-disabled': !props.isEdit }"
+                >
+                  {{ opt.label }}
+                </el-check-tag>
+              </div>
+            </el-card>
+          </div>
+        </el-col>
+
+        <el-col :xs="24" :sm="16" :md="16" class="col-right">
+          <el-card class="card info-card edit-form">
+            <div class="info-card__header">
+              <div class="card-title">Information</div>
+              <div class="actions">
+                <slot name="header-actions"></slot>
+              </div>
+            </div>
+            <el-divider
+              style="
+                --el-border-color: rgba(133, 165, 220, 0.27);
+                border-top-width: 2px;
+              "
+            />
+            <div>
+              <el-row :gutter="16">
+                <el-col :xs="24" :sm="12" :md="12">
+                  <div class="field-label">First Name</div>
+                  <el-input
+                    v-model="form.firstName"
+                    :disabled="!props.isEdit"
+                    data-test="firstName"
+                  />
+                </el-col>
+                <el-col :xs="24" :sm="12" :md="12">
+                  <div class="field-label">Last Name</div>
+                  <el-input v-model="form.lastName" :disabled="!props.isEdit" />
+                </el-col>
+              </el-row>
+            </div>
+            <el-row :gutter="16" class="mt-12">
+              <el-col :xs="24" :sm="12" :md="12">
+                <div class="field-label">Email Address</div>
+                <el-input
+                  v-model="form.contactDetails.email"
+                  :disabled="!props.isEdit"
                 />
               </el-col>
               <el-col :xs="24" :sm="12" :md="12">
-                <div class="field-label">Last Name</div>
-                <el-input v-model="form.lastName" :disabled="!props.isEdit" />
+                <div class="field-label">Phone Number</div>
+                <el-input
+                  v-model="form.contactDetails.phone"
+                  :disabled="!props.isEdit"
+                />
               </el-col>
             </el-row>
-          </div>
-          <el-row :gutter="16" class="mt-12">
-            <el-col :xs="24" :sm="12" :md="12">
-              <div class="field-label">Email Address</div>
-              <el-input
-                v-model="form.contactDetails.email"
-                :disabled="!props.isEdit"
-              />
-            </el-col>
-            <el-col :xs="24" :sm="12" :md="12">
-              <div class="field-label">Phone Number</div>
-              <el-input
-                v-model="form.contactDetails.phone"
-                :disabled="!props.isEdit"
-              />
-            </el-col>
-          </el-row>
 
-          <el-row :gutter="16" class="mt-12">
-            <el-col :xs="24" :sm="8" :md="8">
-              <div class="field-label">Country</div>
-              <el-input
-                v-model="form.address.country"
-                :disabled="!props.isEdit"
-              />
-            </el-col>
-            <el-col :xs="24" :sm="8" :md="8">
-              <div class="field-label">City</div>
-              <el-input v-model="form.address.city" :disabled="!props.isEdit" />
-            </el-col>
-            <el-col :xs="24" :sm="8" :md="8">
-              <div class="field-label">Postcode</div>
-              <el-input
-                v-model="form.address.postcode"
-                :disabled="!props.isEdit"
-              />
-            </el-col>
-          </el-row>
-          <el-row :gutter="16" class="mt-12">
-            <el-col :xs="24">
-              <div class="field-label">Street</div>
-              <el-input
-                v-model="form.address.street"
-                :disabled="!props.isEdit"
-              />
-            </el-col>
-          </el-row>
-        </el-card>
-      </el-col>
-    </el-row>
+            <el-row :gutter="16" class="mt-12">
+              <el-col :xs="24" :sm="8" :md="8">
+                <div class="field-label">Country</div>
+                <el-input
+                  v-model="form.address.country"
+                  :disabled="!props.isEdit"
+                />
+              </el-col>
+              <el-col :xs="24" :sm="8" :md="8">
+                <div class="field-label">City</div>
+                <el-input
+                  v-model="form.address.city"
+                  :disabled="!props.isEdit"
+                />
+              </el-col>
+              <el-col :xs="24" :sm="8" :md="8">
+                <div class="field-label">Postcode</div>
+                <el-input
+                  v-model="form.address.postcode"
+                  :disabled="!props.isEdit"
+                />
+              </el-col>
+            </el-row>
+            <el-row :gutter="16" class="mt-12">
+              <el-col :xs="24">
+                <div class="field-label">Street</div>
+                <el-input
+                  v-model="form.address.street"
+                  :disabled="!props.isEdit"
+                />
+              </el-col>
+            </el-row>
+          </el-card>
+        </el-col>
+      </el-row>
+    </div>
   </el-form>
 
   <div v-if="isPhone && !sheetOpen" class="mobile-list">
@@ -926,27 +933,83 @@ const saveField = async () => {
   display: none;
 }
 
-@media (max-width: 768px) {
-  .list-item {
+@media (max-width: 1450px) and (min-width: 768px) {
+  .grid-scroller {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+
+  .profile-grid {
+    display: flex;
+    gap: 20px;
+    width: max-content;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .profile-grid::before,
+  .profile-grid::after {
     display: none;
   }
+  .profile-grid > .el-col {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .col-left,
+  .col-right {
+    flex: 0 0 auto;
+  }
+
+  .col-left {
+    min-width: 360px;
+  }
+  .col-right {
+    min-width: 820px;
+  }
   .info-card {
-    height: 400px;
-  }
-  .profile-name {
-    font-size: 20px;
-  }
-  .card-title-sub {
-    font-size: 14px;
+    min-width: 820px;
   }
 
-  .avatar-wrap .el-avatar {
-    width: 90px;
-    height: 90px;
+  .el-card__body {
+    overflow: visible;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-grid {
+    display: block;
+    height: auto !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  .col-left,
+  .col-right {
+    display: block;
+    width: 100%;
+    min-width: 0;
   }
 
-  .edit-form :deep(.el-input__inner) {
-    font-size: 12px;
+  .info-card,
+  .pref-card {
+    height: auto !important;
+    margin-top: 20px;
+  }
+  .card,
+  .info-card,
+  .pref-card {
+    overflow: visible;
+  }
+
+  .edit-form {
+    overflow: visible;
+    padding: 0 10px;
+  }
+
+  .edit-form :deep(.el-input__wrapper) {
+    min-height: 40px;
+    border-radius: 10px;
   }
   .tag-grid {
     display: flex;
@@ -995,27 +1058,6 @@ const saveField = async () => {
     font-size: 12px;
     color: #b30d0d;
     pointer-events: none;
-  }
-
-  .profile-grid {
-    display: flex;
-    align-items: stretch;
-    height: 400px;
-  }
-
-  .col-left {
-    display: flex;
-  }
-  .left-stack {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 12px;
-    flex: 1;
-    min-height: 100%;
-  }
-  .pref-card {
-    margin-top: 0 !important;
   }
 }
 
