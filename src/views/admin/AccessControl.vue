@@ -283,70 +283,155 @@ onMounted(async () => {
 
     <el-dialog
       v-model="createDialogVisible"
-      title="Create permission group"
-      width="500"
+      title=" "
+      class="pg-dialog create-perm-dialog"
+      :append-to-body="true"
+      max-width="600px"
     >
-      <el-form :model="form" :rules="rules" label-width="auto">
-        <el-form-item label="Name" prop="name">
-          <el-input v-model="form.name" data-test="input-name" />
-        </el-form-item>
-        <el-form-item label="Description">
-          <el-input v-model="form.description" data-test="input-description" />
-        </el-form-item>
-        <el-form-item label="Create asset">
-          <el-radio-group
-            v-model="form.canCreateAsset"
-            data-test="radio-canCreateAsset"
-          >
-            <el-radio :value="true">true</el-radio>
-            <el-radio :value="false">false</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="Set polygon on create">
-          <el-radio-group
-            v-model="form.canSetPolygonOnCreate"
-            data-test="radio-canSetPolygonOnCreate"
-          >
-            <el-radio :value="true">true</el-radio>
-            <el-radio :value="false">false</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="Update asset fields">
-          <el-radio-group
-            v-model="form.canUpdateAssetFields"
-            data-test="radio-canUpdateAssetFields"
-          >
-            <el-radio :value="true">true</el-radio>
-            <el-radio :value="false">false</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="Update asset polygon">
-          <el-radio-group
-            v-model="form.canUpdateAssetPolygon"
-            data-test="radio-canUpdateAssetPolygon"
-          >
-            <el-radio :value="true">true</el-radio>
-            <el-radio :value="false">false</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="Delete asset">
-          <el-radio-group
-            v-model="form.canDeleteAsset"
-            data-test="radio-canDeleteAsset"
-          >
-            <el-radio :value="true">true</el-radio>
-            <el-radio :value="false">false</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="Update profile">
-          <el-radio-group
-            v-model="form.canUpdateProfile"
-            data-test="radio-canUpdateProfile"
-          >
-            <el-radio :value="true">true</el-radio>
-            <el-radio :value="false">false</el-radio>
-          </el-radio-group>
-        </el-form-item>
+      <div class="title">Create permission group</div>
+      <el-form
+        :model="form"
+        :rules="rules"
+        label-position="left"
+        label-width="auto"
+        class="pg-form"
+      >
+        <div class="perm-radios">
+          <el-form-item label="Name" prop="name">
+            <el-input v-model="form.name" data-test="input-name" />
+          </el-form-item>
+          <el-form-item label="Description">
+            <el-input
+              v-model="form.description"
+              data-test="input-description"
+            />
+          </el-form-item>
+          <el-form-item label="Create asset">
+            <el-radio-group
+              v-model="form.canCreateAsset"
+              data-test="radio-canCreateAsset"
+            >
+              <el-radio :value="true">true</el-radio>
+              <el-radio :value="false">false</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="Set polygon on create">
+            <el-radio-group
+              v-model="form.canSetPolygonOnCreate"
+              data-test="radio-canSetPolygonOnCreate"
+            >
+              <el-radio :value="true">true</el-radio>
+              <el-radio :value="false">false</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="Update asset fields">
+            <el-radio-group
+              v-model="form.canUpdateAssetFields"
+              data-test="radio-canUpdateAssetFields"
+            >
+              <el-radio :value="true">true</el-radio>
+              <el-radio :value="false">false</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="Update asset polygon">
+            <el-radio-group
+              v-model="form.canUpdateAssetPolygon"
+              data-test="radio-canUpdateAssetPolygon"
+            >
+              <el-radio :value="true">true</el-radio>
+              <el-radio :value="false">false</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="Delete asset">
+            <el-radio-group
+              v-model="form.canDeleteAsset"
+              data-test="radio-canDeleteAsset"
+            >
+              <el-radio :value="true">true</el-radio>
+              <el-radio :value="false">false</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="Update profile">
+            <el-radio-group
+              v-model="form.canUpdateProfile"
+              data-test="radio-canUpdateProfile"
+            >
+              <el-radio :value="true">true</el-radio>
+              <el-radio :value="false">false</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </div>
+
+        <div class="perm-card">
+          <el-form-item label="Name" prop="name" label-position="top">
+            <el-input
+              v-model="form.name"
+              data-test="input-name"
+              class="input"
+            />
+          </el-form-item>
+          <el-form-item label="Description" label-position="top">
+            <el-input
+              v-model="form.description"
+              data-test="input-description"
+              class="input"
+            />
+          </el-form-item>
+          <div class="perm-item">
+            <span class="perm-label">Create asset</span>
+            <el-switch
+              v-model="form.canCreateAsset"
+              :active-value="true"
+              :inactive-value="false"
+              data-test="radio-canCreateAsset"
+            />
+          </div>
+          <div class="perm-item">
+            <span class="perm-label">Set polygon on create</span>
+            <el-switch
+              v-model="form.canSetPolygonOnCreate"
+              :active-value="true"
+              :inactive-value="false"
+              data-test="radio-canSetPolygonOnCreate"
+            />
+          </div>
+          <div class="perm-item">
+            <span class="perm-label">Update asset fields</span>
+            <el-switch
+              v-model="form.canUpdateAssetFields"
+              :active-value="true"
+              :inactive-value="false"
+              data-test="radio-canUpdateAssetFields"
+            />
+          </div>
+          <div class="perm-item">
+            <span class="perm-label">Update asset polygon</span>
+            <el-switch
+              v-model="form.canUpdateAssetPolygon"
+              :active-value="true"
+              :inactive-value="false"
+              data-test="radio-canUpdateAssetPolygon"
+            />
+          </div>
+          <div class="perm-item">
+            <span class="perm-label">Delete asset</span>
+            <el-switch
+              v-model="form.canDeleteAsset"
+              :active-value="true"
+              :inactive-value="false"
+              data-test="radio-canDeleteAsset"
+            />
+          </div>
+          <div class="perm-item">
+            <span class="perm-label">Update profile</span>
+            <el-switch
+              v-model="form.canUpdateProfile"
+              :active-value="true"
+              :inactive-value="false"
+              data-test="radio-canUpdateProfile"
+            />
+          </div>
+        </div>
       </el-form>
 
       <template #footer>
@@ -397,7 +482,7 @@ onMounted(async () => {
   margin: 60px auto;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   /*width: 1100px;*/
-  width: min(80vw, 1600px); /* 视窗80%，最大1600px */
+  width: min(80vw, 1600px);
   max-width: calc(100% - 2rem);
   box-sizing: border-box;
 }
@@ -407,7 +492,11 @@ onMounted(async () => {
 .pg-table :deep(.el-table__cell) {
   vertical-align: middle;
 }
-
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 30px;
+}
 .styled-btn {
   padding: 8px 20px;
   font-weight: 600;
@@ -456,20 +545,52 @@ onMounted(async () => {
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
 }
 
+.perm-card {
+  display: none;
+}
+
+.perm-card {
+  margin-top: 12px;
+  border: 1px solid #eef2f7;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+.perm-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #f2f4f8;
+}
+.perm-item:last-child {
+  border-bottom: 0;
+}
+.perm-label {
+  font-size: 14px;
+  color: #1f2937;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
 @media (max-width: 768px) {
   .page-surface {
     width: min(1100px, calc(100vw - 24px));
     margin: 40px auto;
     padding: 16px;
   }
-}
-@media (max-width: 480px) {
-  .page-surface {
-    background: transparent;
-    border: 0;
-    box-shadow: none;
-    padding: 0;
-    margin-top: 24px;
+
+  .perm-radios {
+    display: none;
+  }
+  .perm-card {
+    display: block;
+  }
+  .title {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 30px;
   }
 }
 </style>
