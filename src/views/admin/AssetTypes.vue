@@ -95,40 +95,66 @@ defineExpose({
 <template>
   <div class="page-surface">
     <PageTopTabs :tabs="tabsConfig" />
-    <el-button @click="triggerAdd" data-test="add-btn" class="styled-btn"
-      >Add asset type</el-button
-    >
-    <el-table
-      :data="assetStore.assetTypes"
-      class="table-card balanced-table"
-      stripe
-      :table-layout="'fixed'"
-    >
-      <el-table-column prop="id" label="Type ID" />
-      <el-table-column prop="name" label="Type Name" />
-      <el-table-column prop="description" label="Description" />
-      <el-table-column label="Actions" width="160">
-        <template #default="scope">
-          <el-button
-            class="btn-edit"
-            size="small"
-            @click="triggerEdit(scope.row)"
-            data-test="edit"
+    <div class="canvas-wrap">
+      <div class="canvas">
+        <el-button @click="triggerAdd" data-test="add-btn" class="styled-btn"
+          >Add asset type</el-button
+        >
+        <el-table
+          :data="assetStore.assetTypes"
+          class="table-card balanced-table type-table"
+          stripe
+          :table-layout="'fixed'"
+        >
+          <el-table-column prop="id" label="Type ID" />
+          <el-table-column prop="name" label="Type Name" />
+          <el-table-column prop="description" label="Description" />
+          <el-table-column label="Actions" width="160">
+            <template #default="scope">
+              <el-button
+                class="btn-edit"
+                size="small"
+                @click="triggerEdit(scope.row)"
+                data-test="edit"
+              >
+                Edit
+              </el-button>
+              <el-button
+                class="btn-del"
+                type="danger"
+                size="small"
+                @click="triggerDelete(scope.row)"
+                data-test="delete"
+              >
+                Delete
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+    </div>
+
+    <div class="type-list-mobile">
+      <div class="type-item" v-for="t in assetStore.assetTypes" :key="t.id">
+        <div class="type-item__head">
+          <div class="type-item__title">{{ t.name }}</div>
+          <div class="type-item__id">ID: {{ t.id }}</div>
+        </div>
+        <div class="type-item__desc">{{ t.description }}</div>
+        <div class="type-item__actions">
+          <el-button size="small" class="btn-edit" @click="triggerEdit(t)"
+            >Edit</el-button
           >
-            Edit
-          </el-button>
           <el-button
+            size="small"
             class="btn-del"
             type="danger"
-            size="small"
-            @click="triggerDelete(scope.row)"
-            data-test="delete"
+            @click="triggerDelete(t)"
+            >Delete</el-button
           >
-            Delete
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+        </div>
+      </div>
+    </div>
 
     <el-dialog
       v-model="addDialogVisible"
@@ -167,7 +193,7 @@ defineExpose({
     <el-dialog
       v-model="editDialogVisible"
       title="Update asset type"
-      width="500"
+      style="width: auto; margin: 80px 50px; min-width: 200px"
       data-test="edit-dialog"
     >
       <el-form :model="form" label-width="auto">
@@ -286,5 +312,91 @@ defineExpose({
 
 .balanced-table :deep(.el-button--text) {
   padding: 0 6px;
+}
+.canvas-wrap {
+  overflow-x: auto;
+}
+
+.type-list-mobile {
+  display: none;
+}
+
+.table-card {
+  width: 100%;
+}
+
+.styled-btn {
+  max-width: 100%;
+}
+
+@media (min-width: 1200px) {
+  .canvas {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .type-table {
+    display: none;
+  }
+
+  .type-list-mobile {
+    display: grid;
+    gap: 10px;
+  }
+
+  .type-item {
+    border-radius: 12px;
+    border: 1px solid #ebeef5;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 12px;
+  }
+
+  .type-item__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .type-item__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2d3d;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .type-item__id {
+    font-size: 12px;
+    color: #64748b;
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+
+  .type-item__desc {
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  .type-item__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .type-item__actions .el-button {
+    width: 90%;
+    height: 38px;
+    border-radius: 10px;
+  }
 }
 </style>
