@@ -269,6 +269,7 @@ const handleCardClick = () => {
       font-size: 14px;
       line-height: 1.4;
       min-height: 20px;
+      margin-bottom: 10px;
     }
 
     .asset-description {
@@ -280,9 +281,7 @@ const handleCardClick = () => {
     }
   }
 }
-
-// Extra small screen responsive
-@media (max-width: 480px) {
+@media (min-width: 480px) {
   .asset-card-inner {
     height: 140px;
     margin-bottom: 4px;
@@ -304,6 +303,36 @@ const handleCardClick = () => {
     .asset-details {
       grid-template-columns: 1fr 1fr;
       gap: 2px 4px;
+    }
+  }
+}
+
+// Extra small screen responsive
+@media (max-width: 479px) {
+  .asset-card-inner {
+    height: 190px;
+    margin-bottom: 4px;
+  }
+
+  .asset-title {
+    font-size: 12px !important;
+  }
+
+  .asset-image-container {
+    width: 100px;
+    height: 190px;
+    .asset-icon {
+      width: 30px !important;
+      height: 30px !important;
+    }
+  }
+
+  .asset-info {
+    padding-left: 4px;
+
+    .asset-details {
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 4px;
     }
   }
 }

@@ -162,12 +162,12 @@ const tabsConfig = [
         <!-- Account -->
         <div class="section-title">Account</div>
         <el-row :gutter="20">
-          <el-col :span="8">
+          <el-col :span="8" :lg="8" :md="12" :sm="24">
             <el-form-item label="Username" prop="id">
               <el-input v-model="form.id" data-test="id" />
             </el-form-item>
           </el-col>
-          <el-col :span="8">
+          <el-col :span="8" :lg="8" :md="12" :sm="24">
             <el-form-item label="Password" prop="password">
               <el-input
                 type="password"
@@ -176,7 +176,7 @@ const tabsConfig = [
               />
             </el-form-item>
           </el-col>
-          <el-col :span="8">
+          <el-col :span="8" :lg="8" :md="12" :sm="24">
             <el-form-item label="Type password again" prop="repassword">
               <el-input
                 type="password"
@@ -189,12 +189,12 @@ const tabsConfig = [
         <!-- name -->
         <div class="section-title">Name</div>
         <el-row :gutter="20">
-          <el-col :span="12">
+          <el-col :span="12" :lg="12" :md="12" :sm="24">
             <el-form-item label="First name" prop="firstName">
               <el-input v-model="form.firstName" data-test="firstName" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="12" :lg="12" :md="12" :sm="24">
             <el-form-item label="Last name" prop="lastName">
               <el-input v-model="form.lastName" data-test="lastName" />
             </el-form-item>
@@ -205,13 +205,13 @@ const tabsConfig = [
         <div class="section-title">Contact</div>
         <!-- email -->
         <el-row :gutter="20">
-          <el-col :span="12">
+          <el-col :span="12" :lg="12" :md="12" :sm="24">
             <el-form-item label="Email" prop="contactDetails.email">
               <el-input v-model="form.contactDetails.email" data-test="email" />
             </el-form-item>
           </el-col>
           <!-- phone -->
-          <el-col :span="12">
+          <el-col :span="12" :lg="12" :md="12" :sm="24">
             <el-form-item label="Phone" prop="contactDetails.phone">
               <el-input v-model="form.contactDetails.phone" data-test="phone" />
             </el-form-item>
@@ -221,12 +221,12 @@ const tabsConfig = [
         <!-- address -->
         <div class="section-title">Address</div>
         <el-row :gutter="20">
-          <el-col :span="12">
+          <el-col :span="12" :lg="12" :md="12" :sm="24">
             <el-form-item label="Street" prop="address.street">
               <el-input v-model="form.address.street" data-test="street" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="12" :lg="12" :md="12" :sm="24">
             <el-form-item label="Post Code" prop="address.postcode">
               <el-input v-model="form.address.postcode" data-test="postcode" />
             </el-form-item>
@@ -234,12 +234,12 @@ const tabsConfig = [
         </el-row>
 
         <el-row :gutter="20">
-          <el-col :span="12">
+          <el-col :span="12" :lg="12" :md="12" :sm="24">
             <el-form-item label="City" prop="address.city">
               <el-input v-model="form.address.city" data-test="city" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="12" :lg="12" :md="12" :sm="24">
             <el-form-item label="Country" prop="address.country">
               <el-input v-model="form.address.country" data-test="city" />
             </el-form-item>
@@ -416,7 +416,13 @@ const tabsConfig = [
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   justify-items: start;
+  gap: 10px 12px;
   padding-bottom: 20px;
+}
+.pref-grid :deep(.el-checkbox__label) {
+  white-space: normal;
+  line-height: 1.2;
+  font-size: 15px;
 }
 .pref-grid:deep(.el-checkbox.is-checked .el-checkbox__inner) {
   background-color: rgba(54, 94, 145, 0.91);
@@ -431,20 +437,41 @@ const tabsConfig = [
   font-size: 15px;
 }
 
-@media (max-width: 768px) {
-  .page-surface {
-    width: min(1100px, calc(100vw - 24px));
-    margin: 40px auto;
-    padding: 16px;
+@media (min-width: 768px) and (max-width: 1024px) {
+  .pref-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px 12px;
+  }
+  .pref-grid :deep(.el-checkbox__label) {
+    font-size: 14px;
   }
 }
-@media (max-width: 480px) {
-  .page-surface {
-    background: transparent;
-    border: 0;
-    box-shadow: none;
-    padding: 0;
-    margin-top: 24px;
+
+@media (max-width: 768px) {
+  .edit-form :deep(.el-row > .el-col) {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .edit-form :deep(.el-form-item__label) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+  }
+
+  .section-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .pref-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 10px;
+  }
+  .pref-grid :deep(.el-checkbox) {
+    width: 100%;
   }
 }
 </style>

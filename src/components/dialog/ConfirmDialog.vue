@@ -69,7 +69,7 @@ const handleConfirm = () => {
   <el-dialog
     v-model="visible"
     :title="title"
-    width="460"
+    style="width: 90%; margin: 80px auto; height: 150px; max-width: 600px"
     align-center
     class="confirm-dialog"
   >
@@ -105,43 +105,6 @@ const handleConfirm = () => {
 </template>
 
 <style scoped>
-.confirm-dialog :deep(.el-dialog) {
-  border-radius: 16px;
-  box-shadow: 0 18px 60px rgba(15, 23, 42, 0.12);
-  overflow: hidden;
-}
-
-.confirm-dialog :deep(.el-dialog__header) {
-  padding: 16px 20px 8px;
-  border-bottom: 1px solid #eef2f7;
-}
-
-.confirm-dialog :deep(.el-dialog__title) {
-  font-size: 18px;
-  font-weight: 700;
-  color: #0f172a;
-  letter-spacing: 0.2px;
-}
-
-.confirm-dialog :deep(.el-dialog__body) {
-  padding: 16px 20px;
-  color: #334155;
-  line-height: 1.7;
-  background: #fff;
-}
-
-.confirm-dialog :deep(.el-dialog__footer) {
-  padding: 14px 16px 16px;
-  background: #fafbfd;
-  border-top: 1px solid #eef2f7;
-}
-
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
 .styled-btn {
   padding: 8px 20px;
   font-weight: 600;

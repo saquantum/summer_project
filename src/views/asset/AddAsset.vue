@@ -419,18 +419,20 @@ onMounted(() => {
                       <el-option label="sequence" value="sequence"></el-option>
                     </el-select>
 
-                    <el-button
-                      @click="prevPolygon"
-                      :disabled="mapCardRef?.disablePrev"
-                      class="arrow"
-                      >⬅</el-button
-                    >
-                    <el-button
-                      @click="nextPolygon"
-                      :disabled="mapCardRef?.disableNext"
-                      class="arrow"
-                      >➡</el-button
-                    >
+                    <div class="arrow-group">
+                      <el-button
+                        @click="prevPolygon"
+                        :disabled="mapCardRef?.disablePrev"
+                        class="arrow"
+                        >⬅</el-button
+                      >
+                      <el-button
+                        @click="nextPolygon"
+                        :disabled="mapCardRef?.disableNext"
+                        class="arrow"
+                        >➡</el-button
+                      >
+                    </div>
                   </div>
                   <div class="toolbar">
                     <div class="toolbar-group" :class="{ drawing: isDrawing }">
@@ -666,10 +668,9 @@ onMounted(() => {
   color: #94a3b8;
 }
 
-.map-card,
 .form-card,
 .admin-card {
-  height: auto;
+  height: 100%;
 }
 
 .map-card :deep(.el-card__body),
@@ -677,13 +678,12 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-
   width: 100%;
 }
 
 .map-container {
   width: 100%;
-  height: 750px;
+  height: 600px;
 }
 
 .right-col {
@@ -716,9 +716,6 @@ onMounted(() => {
 .tool-buttons.drawing {
   gap: 6px;
 }
-.mode-select {
-  min-width: 160px;
-}
 
 .admin-controls {
   display: grid;
@@ -727,10 +724,10 @@ onMounted(() => {
 }
 
 .control-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  column-gap: 8px;
 }
 
 .control-row label {
@@ -738,9 +735,14 @@ onMounted(() => {
   font-weight: 500;
   color: var(--muted);
 }
-
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .mode-select {
-  width: 100px;
+  flex: 1;
+  min-width: 200px;
 }
 .toolbar {
   display: grid;
@@ -955,11 +957,143 @@ onMounted(() => {
   margin-top: 6px;
 }
 
+@media (min-width: 768px) {
+  .content-grid {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 16px;
+  }
+}
+
 @media (max-width: 575px) {
-  /* Styles for very small screens */
-  .map-container {
-    width: 375px;
-    height: 375px;
+  .page-surface {
+    padding: 12px;
+    margin: 24px auto;
+  }
+
+  .content-grid {
+    row-gap: 12px;
+  }
+
+  .map-card :deep(.el-card__body) {
+    padding: 10px;
+  }
+
+  .form-card :deep(.el-card__body) {
+    padding: 10px !important;
+  }
+
+  .asset-form :deep(.el-form-item__label) {
+    float: none;
+    display: block;
+    width: auto !important;
+    text-align: left;
+    padding: 0 0 6px 0;
+    line-height: 1.2;
+  }
+  .asset-form :deep(.el-form-item__content) {
+    margin-left: 0 !important;
+  }
+
+  .asset-form :deep(.el-input__wrapper),
+  .asset-form :deep(.el-select__wrapper),
+  .asset-form :deep(.el-textarea__inner),
+  .asset-form :deep(.el-date-editor.el-input__wrapper),
+  .asset-form :deep(.el-input-number) {
+    width: 100%;
+  }
+
+  .asset-grid {
+    padding: 10px !important;
+    margin-top: 0;
+  }
+  .asset-form :deep(.el-form-item) {
+    margin-bottom: 12px;
+  }
+
+  .address-item :deep(.el-form-item__content) {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .search-btn {
+    width: 100%;
+    height: 36px;
+    margin-top: 0;
+  }
+
+  .toolbar {
+    gap: 8px;
+  }
+  .toolbar-group {
+    gap: 8px;
+  }
+  .arrow {
+    margin-left: auto;
+    width: 48px;
+    padding: 0;
+  }
+
+  .form-button {
+    justify-content: stretch;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 6px;
+    margin-left: 0;
+  }
+  .form-button .styled-btn {
+    width: 100%;
+  }
+
+  .asset-form :deep(.el-form-item__label) {
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .control-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .mode-select {
+    min-width: 120px;
+    max-width: 200px;
+  }
+  .arrow {
+    width: 44px;
+    height: 36px;
+    padding: 0;
+  }
+
+  .arrow-group {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .toolbar {
+    display: grid;
+    gap: 10px;
+  }
+  .toolbar-group,
+  .else-btn {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    justify-items: center;
+  }
+
+  .toolbar-group .el-button,
+  .else-btn .el-button {
+    width: auto;
+    min-width: 180px;
+    max-width: 90%;
+    height: 40px;
+    white-space: nowrap;
+  }
+  .styled-btn {
+    margin: 0;
   }
 }
 </style>

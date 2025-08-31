@@ -125,7 +125,7 @@ watch(
       </section>
 
       <section class="right-tables">
-        <el-card class="table-card">
+        <el-card class="table-card desktop-only">
           <template #header>
             <div class="card-hd">Live warnings</div>
           </template>
@@ -181,7 +181,7 @@ watch(
           </el-table>
         </el-card>
 
-        <el-card class="table-card">
+        <el-card class="table-card desktop-only">
           <template #header
             ><div class="card-hd">History warnings</div></template
           >
@@ -225,6 +225,104 @@ watch(
             </el-table-column>
           </el-table>
         </el-card>
+
+        <h4 class="mobile-section-title">Live warnings</h4>
+        <div class="mobile-cards">
+          <div
+            v-for="w in liveWarnings"
+            :key="w.id"
+            class="warn-card"
+            :class="getRowClass(w)"
+          >
+            <div class="warn-card__head">
+              <div class="warn-card__type">{{ w.weatherType }}</div>
+              <span
+                class="level-badge"
+                :class="w.warningLevel?.toLowerCase()"
+              ></span>
+            </div>
+            <div class="warn-card__row">
+              <span>ID</span><b>{{ w.id }}</b>
+            </div>
+            <div class="warn-card__row">
+              <span>Impact</span><b>{{ w.warningImpact }}</b>
+            </div>
+            <div class="warn-card__row">
+              <span>Likelihood</span><b>{{ w.warningLikelihood }}</b>
+            </div>
+            <div class="warn-card__row">
+              <span>Period</span><b>{{ w.period }}</b>
+            </div>
+
+            <div class="warn-card__actions">
+              <el-button
+                type="primary"
+                size="small"
+                class="btn-edit"
+                @click="handleShowDetail(w)"
+              >
+                Show Detail
+              </el-button>
+              <el-button
+                type="danger"
+                size="small"
+                class="btn-del"
+                @click="handleDelete(w)"
+              >
+                Delete
+              </el-button>
+            </div>
+          </div>
+
+          <h4 class="mobile-section-title">History warnings</h4>
+          <div class="mobile-cards">
+            <div
+              v-for="w in outdatedWarnings"
+              :key="w.id"
+              class="warn-card"
+              :class="getRowClass(w)"
+            >
+              <div class="warn-card__head">
+                <div class="warn-card__type">{{ w.weatherType }}</div>
+                <span
+                  class="level-badge"
+                  :class="w.warningLevel?.toLowerCase()"
+                ></span>
+              </div>
+              <div class="warn-card__row">
+                <span>ID</span><b>{{ w.id }}</b>
+              </div>
+              <div class="warn-card__row">
+                <span>Level</span><b>{{ w.warningLevel }}</b>
+              </div>
+              <div class="warn-card__row">
+                <span>Impact</span><b>{{ w.warningImpact }}</b>
+              </div>
+              <div class="warn-card__row">
+                <span>Likelihood</span><b>{{ w.warningLikelihood }}</b>
+              </div>
+              <div class="warn-card__row">
+                <span>Period</span><b>{{ w.period }}</b>
+              </div>
+              <div class="warn-card__actions">
+                <el-button
+                  type="primary"
+                  size="small"
+                  class="btn-edit"
+                  @click="handleShowDetail(w)"
+                  >Show Detail</el-button
+                >
+                <el-button
+                  type="danger"
+                  size="small"
+                  class="btn-del"
+                  @click="handleDelete(w)"
+                  >Delete</el-button
+                >
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
     </div>
   </div>
@@ -406,8 +504,22 @@ watch(
 .right-tables::-webkit-scrollbar-track {
   background: transparent;
 }
-
-@media (max-width: 900px) {
+.desktop-only {
+  display: block;
+}
+.mobile-cards {
+  display: none;
+}
+.mobile-section-title {
+  display: none;
+}
+@media (max-width: 900px) and (min-width: 480px) {
+  .desktop-only {
+    display: block;
+  }
+  .mobile-cards {
+    display: none;
+  }
   .two-col {
     flex-direction: column;
   }
@@ -418,6 +530,119 @@ watch(
   .map-card {
     height: 40vh;
     min-height: 300px;
+  }
+}
+@media (max-width: 480px) {
+  .desktop-only {
+    display: none;
+  }
+  .mobile-cards {
+    display: grid;
+    gap: 12px;
+  }
+
+  .two-col {
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+  .left-map {
+    min-width: 0;
+    width: 100%;
+  }
+  .map-card {
+    height: 40vh;
+    min-height: 300px;
+  }
+  .right-tables {
+    height: auto;
+    overflow: visible;
+  }
+
+  .warn-card {
+    border-radius: 12px;
+    border: 1px solid #ebeef5;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    padding: 12px;
+  }
+
+  .warn-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .warn-card__type {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1f2d3d;
+  }
+
+  .warn-card__row {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 6px;
+    padding: 4px 0;
+    border-top: 1px dashed #eef2f6;
+  }
+  .warn-card__row:first-of-type {
+    border-top: 0;
+  }
+  .warn-card__row span {
+    font-size: 12px;
+    color: #64748b;
+  }
+  .warn-card__row b {
+    font-size: 13px;
+    color: #0f172a;
+    font-weight: 600;
+  }
+
+  .warn-card__actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .warn-card__actions .el-button {
+    flex: 1;
+    height: 34px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+
+  .level-badge {
+    width: 20px;
+    height: 8px;
+    border-radius: 4px;
+  }
+
+  .warn-card.row-yellow {
+    background: rgba(247, 227, 89, 0.06);
+  }
+  .warn-card.row-amber {
+    background: rgba(247, 183, 51, 0.06);
+  }
+  .warn-card.row-red {
+    background: rgba(231, 76, 60, 0.06);
+  }
+  .mobile-section-title {
+    display: block;
+    margin: 10px 0 6px;
+    padding-top: 10px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    position: relative;
+  }
+  .mobile-section-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 1px;
+    background: #e5e7eb;
   }
 }
 </style>

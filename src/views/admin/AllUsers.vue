@@ -238,33 +238,39 @@ const tabsConfig = [
     <PageTopTabs :tabs="tabsConfig" />
     <el-card class="info-card admin-users">
       <template #header>
-        <div class="search-wrapper">
-          <UserSearch
-            :fetch-table-data="fetchTableData"
-            v-model:user-search-body="userSearchBody"
-          ></UserSearch>
+        <div class="header-toolbar">
+          <div class="left-tools">
+            <div class="search-wrapper">
+              <UserSearch
+                :fetch-table-data="fetchTableData"
+                v-model:user-search-body="userSearchBody"
+              ></UserSearch>
+            </div>
+
+            <SortTool
+              v-model:multiSort="multiSort"
+              :columns="columns"
+              :fetch-table-data="fetchTableData"
+            ></SortTool>
+          </div>
+
+          <div class="right-actions">
+            <el-button
+              @click="permissionDialogVisible = true"
+              data-test="set-permission"
+              class="styled-btn"
+              >Set permission</el-button
+            >
+            <el-button
+              v-show="mutipleSelection.length > 0"
+              type="danger"
+              @click="triggerDelete(mutipleSelection)"
+              data-test="delete-selected"
+              class="styled-btn btn-delete"
+              >Delete</el-button
+            >
+          </div>
         </div>
-
-        <SortTool
-          v-model:multiSort="multiSort"
-          :columns="columns"
-          :fetch-table-data="fetchTableData"
-        ></SortTool>
-
-        <el-button
-          @click="permissionDialogVisible = true"
-          data-test="set-permission"
-          class="styled-btn"
-          >Set permission</el-button
-        >
-        <el-button
-          v-show="mutipleSelection.length > 0"
-          type="danger"
-          @click="triggerDelete(mutipleSelection)"
-          data-test="delete-selected"
-          class="styled-btn btn-delete"
-          >Delete</el-button
-        >
       </template>
 
       <div class="content-area">
@@ -272,66 +278,69 @@ const tabsConfig = [
           <UserCollapse :users="users"></UserCollapse>
         </div>
 
-        <el-table
-          v-loading="isLoading"
-          :data="users"
-          stripe
-          style="width: 100%"
-          @sort-change="handleSortChange"
-          :default-sort="multiSort[0] || {}"
-          @selection-change="handleSelectionChange"
-        >
-          <el-table-column
-            type="selection"
-            :selectable="(row: User) => row.role !== 'admin'"
+        <div class="table-wrapper users-table">
+          <el-table
+            v-loading="isLoading"
+            :data="users"
+            stripe
+            style="width: 100%"
+            @sort-change="handleSortChange"
+            :default-sort="multiSort[0] || {}"
+            @selection-change="handleSelectionChange"
           >
-          </el-table-column>
-          <el-table-column
-            v-for="(item, index) in columns"
-            :key="index"
-            :label="item.label"
-            :prop="item.prop"
-            width="auto"
-            sortable="custom"
-          ></el-table-column>
-          <el-table-column label="Role" prop="role"> </el-table-column>
-          <el-table-column label="Permission">
-            <template #default="scope">
-              <div style="display: flex; gap: 3px">
-                <PermissionIndicator
-                  v-for="(field, index) in permissionFields"
-                  :key="index"
-                  :status="getPermission(scope.row.uid)?.[field] || false"
-                  :field="field"
-                />
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column label="Actions">
-            <template #default="scope">
-              <el-button
-                :disabled="scope.row.role === 'admin'"
-                text
-                type="primary"
-                size="small"
-                @click="handleEdit(scope.row)"
-                data-test="edit"
-                class="btn-inner btn-edit"
-                >Edit</el-button
-              >
-              <el-button
-                :disabled="scope.row.role === 'admin'"
-                text
-                type="danger"
-                size="small"
-                @click="triggerDelete([scope.row])"
-                data-test="delete"
-                class="btn-inner btn-del"
-                >Delete</el-button
-              >
-            </template>
-          </el-table-column>
-        </el-table>
+            <el-table-column
+              type="selection"
+              :selectable="(row: User) => row.role !== 'admin'"
+            >
+            </el-table-column>
+            <el-table-column
+              v-for="(item, index) in columns"
+              :key="index"
+              :label="item.label"
+              :prop="item.prop"
+              min-width="180px"
+              sortable="custom"
+            ></el-table-column>
+            <el-table-column label="Role" prop="role" min-width="180px">
+            </el-table-column>
+            <el-table-column label="Permission" min-width="180px">
+              <template #default="scope">
+                <div style="display: flex; gap: 3px">
+                  <PermissionIndicator
+                    v-for="(field, index) in permissionFields"
+                    :key="index"
+                    :status="getPermission(scope.row.uid)?.[field] || false"
+                    :field="field"
+                  />
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column label="Actions" fixed="right" min-width="130">
+              <template #default="scope">
+                <el-button
+                  :disabled="scope.row.role === 'admin'"
+                  text
+                  type="primary"
+                  size="small"
+                  @click="handleEdit(scope.row)"
+                  data-test="edit"
+                  class="btn-edit"
+                  >Edit</el-button
+                >
+                <el-button
+                  :disabled="scope.row.role === 'admin'"
+                  text
+                  type="danger"
+                  size="small"
+                  @click="triggerDelete([scope.row])"
+                  data-test="delete"
+                  class="btn-del"
+                  >Delete</el-button
+                >
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
 
         <div class="pagination-row">
           <el-pagination
@@ -377,6 +386,53 @@ const tabsConfig = [
   border-color: #4c7dd1;
 }
 
+.header-toolbar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 12px 16px;
+  margin-bottom: 10px;
+}
+
+.left-tools {
+  display: grid;
+  grid-auto-flow: column;
+  align-items: start;
+  gap: 12px;
+}
+
+.right-actions {
+  display: flex;
+  gap: 10px;
+  justify-self: end;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent column squish: keep a reasonable min width so the wrapper scrolls */
+.users-el-table {
+  min-width: 1100px; /* tune as needed */
+}
+
+/* Keep permission indicators from wrapping too tightly */
+.perm-cells {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+/* Existing buttons and visual styles kept */
+.info-card {
+  border-radius: 12px;
+}
+
 .page-surface {
   position: relative;
   background: #f3f5f7;
@@ -385,9 +441,7 @@ const tabsConfig = [
   padding: 20px;
   margin: 60px auto;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  /*width: 1100px;*/
-  width: min(80vw, 1600px);
-  max-width: calc(100% - 2rem);
+
   box-sizing: border-box;
 }
 
@@ -442,13 +496,10 @@ const tabsConfig = [
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
 }
 
-.admin-users :deep(.el-card__header) {
-  padding: 12px 16px;
-}
-
 .content-area {
   display: grid;
   gap: 16px;
+  width: 100%;
 }
 
 .users-table :deep(.el-table__header-wrapper) {
@@ -456,20 +507,21 @@ const tabsConfig = [
   top: 0;
   z-index: 1;
 }
+
 .users-table :deep(.cell) {
-  overflow: hidden;
   white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.perm-cells {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .pagination-row {
   display: flex;
   justify-content: flex-end;
+}
+
+:deep(.el-button.is-disabled) {
+  opacity: 1;
+  box-shadow: none;
 }
 
 .btn-del {
@@ -499,20 +551,38 @@ const tabsConfig = [
   .collapse-wrapper {
     display: none !important;
   }
+  .page-surface {
+    width: min(80vw, 1600px);
+    max-width: calc(100% - 2rem);
+  }
 }
 @media (max-width: 768px) {
   .users-table {
     display: none !important;
   }
-  .card-toolbar {
-    grid-template-columns: 1fr;
+
+  .pagination-row {
+    display: none !important;
   }
-  .right-actions {
-    justify-self: start;
-    flex-wrap: wrap;
+  .content-area {
+    display: grid;
+    gap: 16px;
+    width: 100%;
+  }
+  .header-toolbar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
   }
   .left-tools {
-    grid-auto-columns: 1fr;
+    display: grid;
+    gap: 10px;
+    grid-auto-flow: row;
+  }
+  .search-wrapper {
+    margin: 0;
+    height: auto;
   }
 }
 </style>
