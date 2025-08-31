@@ -7,157 +7,146 @@ import com.password4j.types.Argon2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import uk.ac.bristol.dao.AssetHolderMapper;
-import uk.ac.bristol.dao.AssetMapper;
+import uk.ac.bristol.controller.Code;
+import uk.ac.bristol.dao.ContactMapper;
 import uk.ac.bristol.dao.MetaDataMapper;
 import uk.ac.bristol.dao.UserMapper;
 import uk.ac.bristol.exception.SpExceptions;
-import uk.ac.bristol.pojo.*;
-import uk.ac.bristol.service.PermissionConfigService;
+import uk.ac.bristol.pojo.User;
+import uk.ac.bristol.pojo.UserWithAssets;
+import uk.ac.bristol.pojo.UserWithExtraColumns;
 import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
 import uk.ac.bristol.util.QueryTool;
 
 import java.time.Instant;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final MetaDataMapper metaDataMapper;
-    private final AssetHolderMapper assetHolderMapper;
     private final UserMapper userMapper;
-    private final AssetMapper assetMapper;
-    private final PermissionConfigService permissionConfigService;
+    private final MetaDataMapper metaDataMapper;
+    private final ContactMapper contactMapper;
 
-    public UserServiceImpl(MetaDataMapper metaDataMapper, AssetHolderMapper assetHolderMapper, UserMapper userMapper, AssetMapper assetMapper, PermissionConfigService permissionConfigService) {
-        this.metaDataMapper = metaDataMapper;
-        this.assetHolderMapper = assetHolderMapper;
+    public UserServiceImpl(UserMapper userMapper, MetaDataMapper metaDataMapper, ContactMapper contactMapper) {
         this.userMapper = userMapper;
-        this.assetMapper = assetMapper;
-        this.permissionConfigService = permissionConfigService;
+        this.metaDataMapper = metaDataMapper;
+        this.contactMapper = contactMapper;
     }
 
     // checks uid and password, returns a jwt token
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Transactional(propagation = Propagation.REQUIRED)
     @Override
-    public User login(User user) {
+    public String login(User user) {
+        // fetch the user from database
         List<User> list = userMapper.selectUsers(
                 QueryTool.formatFilters(Map.of("user_id", user.getId())),
                 null, null, null);
         if (list.size() != 1) {
-            throw new SpExceptions.UnauthorisedException("User not found or password not correct.");
+            throw new SpExceptions.UnauthorisedException("User not found or password incorrect.");
         }
 
+        // verify password
         if (!verifyPassword(user.getPassword(), userMapper.selectPasswordByUserId(user.getId()))) {
-            throw new SpExceptions.UnauthorisedException("User not found or password not correct.");
+            throw new SpExceptions.UnauthorisedException("User not found or password incorrect.");
         }
 
+        // format the claims and return a JWT
         User u = list.get(0);
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", u.getId());
-        if (u.getAssetHolderId() != null) {
-            claims.put("assetHolderId", u.getAssetHolderId());
-        }
         claims.put("isAdmin", u.isAdmin());
-        u.setToken(JwtUtil.generateJWT(claims));
-        return u;
+
+        userMapper.saveLoginTime(user.getId());
+        return JwtUtil.generateJWT(claims);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<User> getAllUsers(Map<String, Object> filters,
-                                  List<Map<String, String>> orderList,
-                                  Integer limit,
-                                  Integer offset) {
+    public List<User> getUsers(Map<String, Object> filters,
+                               List<Map<String, String>> orderList,
+                               Integer limit,
+                               Integer offset) {
         return userMapper.selectUsers(
                 QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList(orderList, "users", "asset_holders"),
+                QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "access_control_groups"),
+                limit, offset);
+    }
+
+    @Override
+    public List<User> getCursoredUsers(Long lastUserRowId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
+        Map<String, Object> anchor = null;
+        if (lastUserRowId != null) {
+            List<Map<String, Object>> list = userMapper.selectUserAnchor(lastUserRowId);
+            if (list.size() != 1) {
+                throw new SpExceptions.GetMethodException("Found " + list.size() + " anchors using user row id " + lastUserRowId);
+            }
+            anchor = list.get(0);
+        }
+        List<Map<String, String>> formattedOrderList = QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "access_control_groups");
+        return userMapper.selectUsers(
+                QueryTool.formatCursoredDeepPageFilters(filters, anchor, formattedOrderList),
+                formattedOrderList,
                 limit, offset);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<User> getAllUsersWithAssetHolder(Map<String, Object> filters,
-                                                 List<Map<String, String>> orderList,
-                                                 Integer limit,
-                                                 Integer offset) {
-        return userMapper.selectUsers(
-                QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList(orderList, "users", "asset_holders"),
-                limit, offset);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-    @Override
-    public List<User> getAllUnauthorisedUsersWithAssetHolder(Map<String, Object> filters,
-                                                             List<Map<String, String>> orderList,
-                                                             Integer limit,
-                                                             Integer offset) {
+    public List<User> getUnauthorisedUsers(Map<String, Object> filters,
+                                           List<Map<String, String>> orderList,
+                                           Integer limit,
+                                           Integer offset) {
         if (filters == null) {
             filters = new HashMap<>();
         }
         filters.put("user_is_admin", false);
         return userMapper.selectUsers(
                 QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList(orderList, "users", "asset_holders"),
+                QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "access_control_groups"),
                 limit, offset);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<Map<String, Object>> getAllAssetHoldersWithAssetIds(Map<String, Object> filters,
-                                                                    List<Map<String, String>> orderList,
-                                                                    Integer limit,
-                                                                    Integer offset) {
-        List<AssetHolder> assetHolders = assetHolderMapper.selectAssetHolders(
-                QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList(orderList, "asset_holders"),
-                limit, offset);
-        List<Asset> assets = assetMapper.selectAssets(null, null, null, null);
-        Map<String, List<String>> mapping = new HashMap<>();
-        assets.forEach(asset -> {
-            if (!mapping.containsKey(asset.getOwnerId())) {
-                mapping.put(asset.getOwnerId(), new ArrayList<>());
-            }
-            mapping.get(asset.getOwnerId()).add(asset.getId());
-        });
-        List<Map<String, Object>> result = new ArrayList<>();
-        for (AssetHolder ah : assetHolders) {
-            List<String> ids = mapping.getOrDefault(ah.getId(), new ArrayList<>());
-            result.add(Map.of("assetHolder", ah, "assetIds", ids));
-        }
-        return result;
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-    @Override
-    public List<UserWithExtraColumns> getAllUsersWithAccumulator(String function,
-                                                                 String column,
-                                                                 Map<String, Object> filters,
-                                                                 List<Map<String, String>> orderList,
-                                                                 Integer limit,
-                                                                 Integer offset) {
+    public List<UserWithExtraColumns> getUsersWithAccumulator(String function,
+                                                              String column,
+                                                              Map<String, Object> filters,
+                                                              List<Map<String, String>> orderList,
+                                                              Integer limit,
+                                                              Integer offset) {
         if ("count".equalsIgnoreCase(function)) {
             return userMapper.selectUsersWithAccumulator(
                     function, column,
                     QueryTool.formatFilters(filters),
-                    QueryTool.filterOrderList(orderList, "users", "asset_holders", "accumulation"),
+                    QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "access_control_groups", "accumulation"),
                     limit, offset);
         }
         throw new SpExceptions.GetMethodException("function " + function + " is not supported at current stage");
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public User getUserByAssetHolderId(String aid) {
-        List<User> user = userMapper.selectUsers(
-                QueryTool.formatFilters(Map.of("asset_holder_id", aid)),
-                null, null, null);
-        if (user.size() != 1) {
-            throw new SpExceptions.GetMethodException("Get " + user.size() + " users using asset holder id " + aid);
+    public List<UserWithExtraColumns> getCursoredUsersWithAccumulator(String function, String column, Long lastUserRowId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
+        if ("count".equalsIgnoreCase(function)) {
+            Map<String, Object> anchor = null;
+            if (lastUserRowId != null) {
+                List<Map<String, Object>> list = userMapper.selectUserWithAccumulatorAnchor(function, column, lastUserRowId);
+                if (list.size() != 1) {
+                    throw new SpExceptions.GetMethodException("Found " + list.size() + " anchors using user row id " + lastUserRowId);
+                }
+                anchor = list.get(0);
+            }
+            List<Map<String, String>> formattedOrderList = QueryTool.formatOrderList("user_row_id", orderList, "users", "address", "contact_details", "contact_preferences", "access_control_groups", "accumulation");
+            return userMapper.selectUsersWithAccumulator(
+                    function, column,
+                    QueryTool.formatCursoredDeepPageFilters(filters, anchor, formattedOrderList),
+                    formattedOrderList,
+                    limit, offset);
         }
-        return user.get(0);
+        throw new SpExceptions.GetMethodException("function " + function + " is not supported at current stage");
     }
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
@@ -172,11 +161,7 @@ public class UserServiceImpl implements UserService {
         return user.get(0);
     }
 
-    @Override
-    public Long getUserRowIdByUserId(String uid) {
-        return userMapper.selectUserRowIdByUserId(uid);
-    }
-
+    // true: UID exists
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public boolean testUIDExistence(String id) {
@@ -186,11 +171,15 @@ public class UserServiceImpl implements UserService {
         return !list.isEmpty();
     }
 
+    // true: email exists
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public boolean testEmailAddressExistence(String email) {
-        Boolean b = assetHolderMapper.testEmailAddressExistence(email);
-        return b != null && b;
+        List<User> list = userMapper.selectUsers(
+                QueryTool.formatFilters(Map.of("contact_details_email", email)),
+                null, null, null
+        );
+        return !list.isEmpty();
     }
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
@@ -199,288 +188,297 @@ public class UserServiceImpl implements UserService {
         return userMapper.groupUsersWithOwnedAssetsByWarningId(limit, cursor, waringId, getDiff, newAreaAsJson);
     }
 
+    private Map<String, Integer> groupUserAddressPostcodeByOption(Map<String, Object> filters, String option) {
+        if (option == null || option.isBlank()) {
+            return new HashMap<>();
+        }
+
+        int limit = Code.PAGINATION_MAX_LIMIT;
+        long cursor = 0L;
+        int length = 0;
+        Map<String, Integer> result = new HashMap<>();
+
+        do {
+            List<User> list = getCursoredUsers(cursor, filters, null, limit, null);
+            if (list == null) {
+                throw new SpExceptions.SystemException("Failed to access database or data integrity is broken.");
+            }
+            length = list.size();
+            if (length == 0) break;
+
+            for (User user : list) {
+                Map<String, String> address = user.getAddress();
+                String postcodeCountry = address.get("postcodeCountry");
+                String postcodeRegion = address.get("postcodeRegion");
+                postcodeRegion = postcodeRegion.isBlank() ? postcodeCountry : postcodeRegion;
+                String postcodeAdminDistrict = address.get("postcodeAdminDistrict");
+
+                String key = switch (option) {
+                    case "country" -> postcodeCountry;
+                    case "region" -> postcodeRegion;
+                    case "district" -> postcodeAdminDistrict;
+                    default -> null;
+                };
+                if (key != null && !key.isBlank()) {
+                    result.put(key, result.getOrDefault(key, 0) + 1);
+                }
+            }
+            cursor = list.get(list.size() - 1).getRowId();
+        } while (length > 0);
+        return result;
+    }
+
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public int countUsersWithFilter(Map<String, Object> filters) {
+    public Map<String, Integer> groupUserAddressPostcodeByCountry(Map<String, Object> filters) {
+        return groupUserAddressPostcodeByOption(filters, "country");
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public Map<String, Integer> groupUserAddressPostcodeByRegion(Map<String, Object> filters) {
+        return groupUserAddressPostcodeByOption(filters, "region");
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public Map<String, Integer> groupUserAddressPostcodeByAdminDistrict(Map<String, Object> filters) {
+        return groupUserAddressPostcodeByOption(filters, "district");
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public Map<String, Integer> getUserContactPreferencesPercentage(Map<String, Object> filters) {
+        int limit = Code.PAGINATION_MAX_LIMIT;
+        long cursor = 0L;
+        int length = 0;
+        Map<String, Integer> result = new HashMap<>();
+
+        do {
+            List<User> list = getCursoredUsers(cursor, filters, null, limit, null);
+            if (list == null) {
+                throw new SpExceptions.SystemException("Failed to access database or data integrity is broken.");
+            }
+            length = list.size();
+            if (length == 0) break;
+
+            for (User user : list) {
+                Map<String, Boolean> contactPreferences = user.getContactPreferences();
+                for (Map.Entry<String, Boolean> entry : contactPreferences.entrySet()) {
+                    String key = entry.getKey();
+                    Boolean value = entry.getValue();
+                    if (value == true) {
+                        result.put(key, result.getOrDefault(key, 0) + 1);
+                    }
+                }
+                result.put("total", result.getOrDefault("total", 0) + 1);
+            }
+            cursor = list.get(list.size() - 1).getRowId();
+        } while (length > 0);
+        return result;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public long countUsersWithFilter(Map<String, Object> filters) {
         return userMapper.countUsers(QueryTool.formatFilters(filters));
     }
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
     public boolean compareUserLastModified(String uid, Long timestamp) {
-        User user = getUserByUserId(uid);
-        if(user.getAssetHolder() == null){
-            throw new SpExceptions.GetMethodException("User with id " + uid + " does not own assets");
+        return !getUserByUserId(uid)
+                .getLastModified()
+                .isAfter(Instant.ofEpochMilli(timestamp));
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public boolean upsertAddress(User user) {
+        if (user.getAddress() == null || user.getId() == null || !testUIDExistence(user.getId())) {
+            return false;
         }
-        System.out.println(user.getAssetHolder().getLastModified());
-        System.out.println(Instant.ofEpochMilli(timestamp));
-        return !user.getAssetHolder().getLastModified().isAfter(Instant.ofEpochMilli(timestamp));
+        if (userMapper.upsertAddressByUserId(user.getId(), user.getAddress())) {
+            metaDataMapper.increaseTotalCountByTableName("address", 1);
+        }
+        return true;
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public boolean upsertContactDetails(User user) {
+        if (user.getContactDetails() == null || user.getId() == null || !testUIDExistence(user.getId())) {
+            return false;
+        }
+        if (userMapper.upsertContactDetailsByUserId(user.getId(), user.getContactDetails())) {
+            metaDataMapper.increaseTotalCountByTableName("contact_details", 1);
+        }
+        return true;
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public boolean upsertContactPreferences(User user) {
+        if (user.getContactPreferences() == null || user.getId() == null || !testUIDExistence(user.getId())) {
+            return false;
+        }
+        if (userMapper.upsertContactPreferencesByUserId(user.getId(), user.getContactPreferences())) {
+            metaDataMapper.increaseTotalCountByTableName("contact_preferences", 1);
+        }
+        return true;
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int insertUser(User user) {
-        if (user.getAssetHolder() != null) {
-            AssetHolder emptyAH = new AssetHolder();
-            emptyAH.setAddressId(UUID.randomUUID().toString());
-            emptyAH.setContactPreferencesId(UUID.randomUUID().toString());
-
-            AssetHolder ah = user.getAssetHolder();
-            ah.setId(assetHolderMapper.generateAssetHolderId(emptyAH));
-            ah.setAddressId(ah.getId());
-            ah.getAddress().put("assetHolderId", ah.getAddressId());
-            ah.setContactPreferencesId(ah.getId());
-            ah.getContactPreferences().put("assetHolderId", ah.getContactPreferencesId());
-            ah.setLastModified(Instant.now());
-
-            int n3 = assetHolderMapper.updateAssetHolder(ah);
-            if (n3 != 1) {
-                throw new SpExceptions.PostMethodException("Failed to insert asset holder for user " + user.getId());
-            }
-
-            int n1 = assetHolderMapper.insertAddress(ah.getAddress());
-            if (n1 != 1) {
-                throw new SpExceptions.PostMethodException("Failed to insert address for user " + user.getId());
-            }
-
-            int n2 = assetHolderMapper.insertContactPreferences(ah.getContactPreferences());
-            if (n2 != 1) {
-                throw new SpExceptions.PostMethodException("Failed to insert contact preferences for user " + user.getId());
-            }
-
-            metaDataMapper.increaseTotalCountByTableName("asset_holders", 1);
-            metaDataMapper.increaseTotalCountByTableName("address", 1);
-            metaDataMapper.increaseTotalCountByTableName("contact_preferences", 1);
-
-            user.setAssetHolderId(user.getAssetHolder().getId());
+        if (user.getId() == null || user.getId().isBlank()) {
+            throw new SpExceptions.BadRequestException("Invalid user id");
         }
-
+        user.setId(user.getId());
+        user.setName(user.getName());
         user.setPasswordPlainText(user.getPassword());
         user.setPassword(hashPassword(user.getPassword()));
-
-        int n4 = userMapper.insertUser(user);
-        if (n4 != 1) {
+        int n = userMapper.insertUser(user);
+        if (n != 1) {
             throw new SpExceptions.PostMethodException("Failed to insert user " + user.getId());
         }
         metaDataMapper.increaseTotalCountByTableName("users", 1);
-        return n4;
+        upsertAddress(user);
+        upsertContactDetails(user);
+        upsertContactPreferences(user);
+        return n;
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
-    public void registerNewUser(User user) {
-        if (user.getId() == null) {
-            throw new SpExceptions.PostMethodException("No valid user id is provided.");
+    public int insertUserBatch(List<User> list) {
+        for (User user : list) {
+            insertUser(user);
         }
-        List<User> duplicateUsers = userMapper.selectUsers(
-                QueryTool.formatFilters(Map.of("user_id", user.getId())),
-                null, null, null);
-        if (!duplicateUsers.isEmpty()) {
-            throw new SpExceptions.PostMethodException("Duplicate user id, failed to register.");
+        return list.size();
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public void registerNewUser(Map<String, Object> data) {
+        String id = ((String) data.get("id")).trim();
+        String password = ((String) data.get("password")).trim();
+        String repassword = ((String) data.get("repassword")).trim();
+        String name = ((String) data.get("name")).trim();
+        String email = ((String) data.get("email")).trim();
+        String phone = ((String) data.get("phone")).trim();
+        Boolean wouldLikeContact = (Boolean) data.get("contact");
+
+        if (id.isBlank() || password.isBlank() || repassword.isBlank() || name.isBlank() || email.isBlank() || phone.isBlank() || wouldLikeContact == null) {
+            throw new SpExceptions.BadRequestException("Key fields missing during registration.");
         }
 
-        if (user.getPassword() == null) {
-            throw new SpExceptions.PostMethodException("No valid password is provided.");
+        // check uid not duplicate
+        if (testUIDExistence(id)) {
+            throw new SpExceptions.DuplicateFieldException("Duplicate user id, failed to register.");
         }
-        if (user.getPassword().length() < 6) {
-            throw new SpExceptions.PostMethodException("Password is too short.");
-        }
-
-        if (user.getAssetHolder() == null) {
-            throw new SpExceptions.PostMethodException("No valid user personal profile is provided.");
+        if (testEmailAddressExistence(email)) {
+            throw new SpExceptions.DuplicateFieldException("Duplicate email, failed to register.");
         }
 
-        AssetHolder ah = user.getAssetHolder();
-
-        if (ah.getName() == null || ah.getName().isBlank()) {
-            throw new SpExceptions.PostMethodException("No valid user's name is provided.");
+        // check password validity
+        passwordValidation(password);
+        if (!password.equals(repassword)) {
+            throw new SpExceptions.BadRequestException("Two passwords don't match.");
         }
 
-        if (ah.getEmail() == null || ah.getEmail().isBlank()) {
-            throw new SpExceptions.PostMethodException("No valid user's email is provided.");
+        User user = new User();
+        user.setId(id);
+        user.setName(name);
+        user.setPassword(password);
+        user.setAddress(Map.of());
+        user.setContactDetails(Map.of("email", email, "phone", phone));
+        if (wouldLikeContact) {
+            user.setContactPreferences(Map.of("email", true));
+        } else {
+            user.setContactPreferences(Map.of());
         }
+        insertUser(user);
 
-        if (ah.getPhone() == null || ah.getPhone().isBlank()) {
-            throw new SpExceptions.PostMethodException("No valid user's phone is provided.");
-        }
-
-        String assetHolderId = "$" + user.getId();
-        user.setAssetHolderId(assetHolderId);
-        ah.setId(assetHolderId);
-        ah.setAddressId(assetHolderId);
-        if (ah.getAddress() == null) {
-            Map<String, String> address = new HashMap<>();
-            ah.setAddress(address);
-        }
-        ah.getAddress().put("assetHolderId", ah.getAddressId());
-        ah.setContactPreferencesId(assetHolderId);
-        if (ah.getContactPreferences() == null) {
-            Map<String, Object> cp = new HashMap<>();
-            ah.setContactPreferences(cp);
-        }
-        ah.getContactPreferences().put("assetHolderId", ah.getContactPreferencesId());
-        ah.setLastModified(Instant.now());
-
-        int n3 = assetHolderMapper.insertAssetHolder(ah);
-        if (n3 != 1) {
-            throw new SpExceptions.PostMethodException("Failed to insert asset holder for user " + user.getId());
-        }
-        int n1 = assetHolderMapper.insertAddress(ah.getAddress());
-        if (n1 != 1) {
-            throw new SpExceptions.PostMethodException("Failed to insert address for user " + user.getId());
-        }
-        int n2 = assetHolderMapper.insertContactPreferences(ah.getContactPreferences());
-        if (n2 != 1) {
-            throw new SpExceptions.PostMethodException("Failed to insert contact preferences for user " + user.getId());
-        }
-
-        user.setPassword(hashPassword(user.getPassword()));
-
-        int n4 = userMapper.insertUser(user);
-        if (n4 != 1) {
-            throw new SpExceptions.PostMethodException("Failed to insert user " + user.getId());
-        }
-
-        int n5 = permissionConfigService.insertPermissionConfig(new PermissionConfig(user.getId()));
-        if (n5 != 1) {
-            throw new SpExceptions.PostMethodException("Failed to insert permission config for user " + user.getId());
-        }
-
-        metaDataMapper.increaseTotalCountByTableName("asset_holders", 1);
-        metaDataMapper.increaseTotalCountByTableName("address", 1);
-        metaDataMapper.increaseTotalCountByTableName("contact_preferences", 1);
-        metaDataMapper.increaseTotalCountByTableName("users", 1);
+        LocalDateTime now = LocalDateTime.now();
+        contactMapper.insertInboxMessageToUser(Map.of(
+                "userId", user.getId(),
+                "hasRead", false,
+                "issuedDate", now,
+                "validUntil", now.plusYears(100),
+                "title", user.getName() + ", your account has been activated",
+                "message", "If you encounter any issues using our system, please feel free to contact us.")
+        );
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int updateUser(User user) {
-
-        user.setPassword(hashPassword(user.getPassword()));
-
-        int n1 = userMapper.updateUserByUserId(user);
-        Integer n2 = null;
-        if (user.getAssetHolder() != null) {
-            n2 = this.updateAssetHolder(user.getAssetHolder());
+        if (user.getId() == null || user.getId().isBlank() || !testUIDExistence(user.getId())) {
+            throw new SpExceptions.BadRequestException("Invalid user id");
         }
-        if (n2 != null && n1 != n2) {
-            throw new SpExceptions.PutMethodException("Error updating user " + user.getId() + ": affected rows not compatible");
-        }
-        return n1;
+        int n = userMapper.updateUserByUserId(user);
+        upsertAddress(user);
+        upsertContactDetails(user);
+        upsertContactPreferences(user);
+        return n;
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
-    public int updateAssetHolder(AssetHolder ah) {
-        String aid = ah.getId();
-        if (aid == null || aid.isBlank()) {
-            throw new SpExceptions.BadRequestException("No valid asset holder id is provided.");
+    public int updateUserBatch(List<User> list) {
+        for (User user : list) {
+            updateUser(user);
         }
-        Integer n1 = null, n2 = null;
-        if (ah.getAddress() != null) {
-            ah.setAddressId(aid);
-            ah.getAddress().put("assetHolderId", aid);
-            n1 = assetHolderMapper.updateAddressByAssetHolderId(ah.getAddress());
-        }
-        if (ah.getContactPreferences() != null) {
-            ah.setContactPreferencesId(aid);
-            ah.getContactPreferences().put("assetHolderId", aid);
-            n2 = assetHolderMapper.updateContactPreferencesByAssetHolderId(ah.getContactPreferences());
-        }
-        ah.setLastModified(Instant.now());
-        int n3 = assetHolderMapper.updateAssetHolder(ah);
-        if ((n1 != null && n3 != n1) || (n2 != null && n3 != n2)) {
-            throw new SpExceptions.PutMethodException("Error updating asset holder " + ah.getId() + ": affected rows not compatible");
-        }
-        return n3;
+        return list.size();
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
-    public int updatePasswordByEmail(String email, String password) {
-        List<User> list = userMapper.selectUsersPuttingAssetHoldersTableMain(
-                QueryTool.formatFilters(Map.of("asset_holder_email", email)),
+    public int updateUserPasswordByEmail(String email, String password) {
+        passwordValidation(password);
+        List<User> list = userMapper.selectUsers(
+                QueryTool.formatFilters(Map.of("contact_details_email", email)),
                 null, null, null);
         if (list.size() != 1) {
             throw new SpExceptions.GetMethodException("Found" + list.size() + " users by email");
         }
-
         User user = list.get(0);
-
         user.setPasswordPlainText(password);
         user.setPassword(hashPassword(password));
-
         return userMapper.updateUserPasswordByUserId(user);
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
-    public int deleteUserByUserIds(String[] ids) {
-        return this.deleteUserByUserIds(Arrays.asList(ids));
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    @Override
     public int deleteUserByUserIds(List<String> ids) {
-        int sum = 0;
-        for (String id : ids) {
-            User user = this.getUserByUserId(id);
-            Integer n1 = null;
-            if (user.getAssetHolderId() != null) {
-                n1 = this.deleteAssetHolderByAssetHolderIds(new String[]{user.getAssetHolderId()});
-            }
-            int n2 = userMapper.deleteUserByIds(new String[]{id});
-            if (n1 != null && n1 != n2) {
-                throw new SpExceptions.DeleteMethodException("Error in deleting user " + id + ": affected rows not compatible");
-            }
-            sum += n2;
+        if(ids.isEmpty()){
+            return 0;
         }
-        metaDataMapper.increaseTotalCountByTableName("users", -sum);
-        return sum;
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    @Override
-    public int deleteUserByAssetHolderIds(String[] ids) {
-        return this.deleteUserByAssetHolderIds(Arrays.asList(ids));
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    @Override
-    public int deleteUserByAssetHolderIds(List<String> ids) {
-        int sum = 0;
-        for (String id : ids) {
-            int n1 = this.deleteAssetHolderByAssetHolderIds(new String[]{id});
-            if (n1 == 0) {
-                throw new SpExceptions.GetMethodException("Error in deleting asset holder " + id + ": the asset holder does not exist");
-            }
-            int n2 = userMapper.deleteUserByAssetHolderIDs(new String[]{id});
-            if (n1 != n2) {
-                throw new SpExceptions.DeleteMethodException("Error in deleting user " + id + ": affected rows not compatible");
-            }
-            sum += n2;
+        int n1 = userMapper.deleteAddressByUserIds(ids);
+        int n2 = userMapper.deleteContactDetailsByUserIds(ids);
+        int n3 = userMapper.deleteContactPreferencesByUserIds(ids);
+        int n4 = userMapper.deleteUserByUserIds(ids);
+        if (n1 != n2 || n2 != n3 || n3 != n4) {
+            throw new SpExceptions.DeleteMethodException("Failed to delete users by ids due to misaligned deletion");
         }
-        metaDataMapper.increaseTotalCountByTableName("users", -sum);
-        return sum;
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    @Override
-    public int deleteAssetHolderByAssetHolderIds(String[] ids) {
-        return this.deleteAssetHolderByAssetHolderIds(Arrays.asList(ids));
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    @Override
-    public int deleteAssetHolderByAssetHolderIds(List<String> ids) {
-        int n1 = assetHolderMapper.deleteAddressByAssetHolderIds(ids);
-        int n2 = assetHolderMapper.deleteContactPreferencesByAssetHolderIds(ids);
-        int n3 = assetHolderMapper.deleteAssetHolderByAssetHolderIDs(ids);
-        if (n1 != n2 || n3 != n2) {
-            throw new SpExceptions.DeleteMethodException("Error deleting asset holders: affected rows not compatible");
-        }
-        metaDataMapper.increaseTotalCountByTableName("asset_holders", -n1);
+        metaDataMapper.increaseTotalCountByTableName("users", -n1);
         return n1;
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public int getLoginCount() {
+        return userMapper.countLoginWithinTwoDays();
+    }
+
+    private void passwordValidation(String password) {
+        if (password == null || password.length() < 6 || password.length() > 64) {
+            throw new SpExceptions.BadRequestException("The length of password should be between 6 and 64 characters");
+        }
+        if (!password.matches("^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?~`]+$")) {
+            throw new SpExceptions.BadRequestException("Invalid password: empty or contains improper characters");
+        }
     }
 
     private String hashPassword(String password) {

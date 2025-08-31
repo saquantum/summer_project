@@ -2,7 +2,6 @@
 
 describe('LayoutContainer', () => {
   beforeEach(() => {
-    // Login first if needed
     cy.visit('/login')
     cy.get('input[placeholder="Username"]').type('user_017')
     cy.get('input[placeholder="Password"]').type('123456')
@@ -38,19 +37,9 @@ describe('LayoutContainer', () => {
     cy.url().should('include', '/login')
   })
 
-  it('opens profile dropdown and tries to change avatar', () => {
-    cy.get('.el-dropdown__box').click()
-    cy.contains('Change avatar').should('be.visible')
-  })
-
   it('clicks mail icon and navigates', () => {
     cy.get('.bell').click()
     // Assert navigation, e.g.:
     // cy.url().should('include', '/message')
-  })
-
-  it('opens search dialog', () => {
-    cy.get('.header-left button').eq(1).click()
-    cy.get('.el-dialog, .el-drawer, [role="dialog"]').should('be.visible')
   })
 })

@@ -1,11 +1,48 @@
 <script setup lang="ts">
+import { useAssetStore } from '@/stores'
 import { Filter } from '@element-plus/icons-vue'
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 
-const props = defineProps<{
-  input: string
-  visible: boolean
-}>()
+interface FilterType {
+  assetName: string
+  warningLevel: string
+  assetType: string
+}
+
+const assetStore = useAssetStore()
+
+const filters = defineModel<FilterType>('filters', {
+  default: () => ({
+    assetName: '',
+    warningLevel: '',
+    assetType: ''
+  })
+})
+const visible = defineModel<boolean>('visible', { default: false })
+
+// select value
+const warningLevelOptions = [
+  {
+    value: 'NO',
+    label: 'No Warning',
+    text: 'No Warning'
+  },
+  {
+    value: 'YELLOW',
+    label: 'Yellow Warning',
+    text: 'Yellow Warning'
+  },
+  {
+    value: 'AMBER',
+    label: 'Amber Warning',
+    text: 'Amber Warning'
+  },
+  {
+    value: 'RED',
+    label: 'Red Warning',
+    text: 'Red Warning'
+  }
+]
 
 const emit = defineEmits([
   'update:input',
@@ -13,18 +50,6 @@ const emit = defineEmits([
   'search',
   'clearFilters'
 ])
-
-const input = computed({
-  get: () => props.input,
-  set: (val: string) => emit('update:input', val)
-})
-
-const visible = computed({
-  get: () => props.visible,
-  set: (val: boolean) => emit('update:visible', val)
-})
-
-const detail = ref<boolean>(false)
 
 const popoverRef = ref<{ popperRef?: { contentRef: HTMLElement } } | null>(null)
 const referenceRef = ref<{ $el: HTMLElement } | null>(null)
@@ -47,39 +72,12 @@ const handleClickOutside = (e: MouseEvent) => {
   }
 }
 
-const tags = ref<string[]>([])
-
-const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Enter' && input.value.trim()) {
-    e.preventDefault()
-    tags.value.push(input.value.trim())
-    fuzzySearch(input.value)
-    input.value = ''
-  } else if (e.key === 'Backspace' && !input.value && tags.value.length) {
-    tags.value.pop()
-  }
-}
-
-const fuzzySearch = (input: string) => {
-  console.log(input)
-}
-
-const removeTag = (index: number) => {
-  tags.value.splice(index, 1)
-}
-
 const focusInput = () => {
   inputRef.value?.focus()
-  visible.value = true
-  detail.value = false
 }
 
 const handleFilterClick = () => {
-  if (detail.value === true && visible.value === true) visible.value = false
-  else {
-    detail.value = true
-    visible.value = true
-  }
+  visible.value = !visible.value
 }
 
 onMounted(() => {
@@ -104,15 +102,10 @@ defineExpose({})
   >
     <template #reference>
       <div class="tag-input-wrapper">
-        <span class="tag" v-for="(tag, index) in tags" :key="index">
-          {{ tag }}
-          <span class="close" @click.stop="removeTag(index)">×</span>
-        </span>
         <input
           @click="focusInput"
           ref="inputRef"
-          v-model="input"
-          @keydown="handleKeydown"
+          v-model="filters.assetName"
           class="tag-input"
           placeholder="Search assets..."
         />
@@ -125,10 +118,35 @@ defineExpose({})
         </el-button></div
     ></template>
 
-    <slot></slot>
+    <el-select
+      v-model="filters.warningLevel"
+      placeholder="Select warning level"
+      :teleported="false"
+      clearable
+    >
+      <el-option
+        v-for="item in warningLevelOptions"
+        :key="item.value"
+        :label="item.label"
+        :value="item.value"
+      ></el-option>
+    </el-select>
+
+    <el-select
+      v-model="filters.assetType"
+      placeholder="Select Asset Type"
+      :teleported="false"
+      clearable
+    >
+      <el-option
+        v-for="item in assetStore.typeOptions"
+        :key="item.value"
+        :label="item.label"
+        :value="item.value"
+      ></el-option>
+    </el-select>
 
     <div style="margin-top: 20px">
-      <el-button @click="emit('search')">Search</el-button>
       <el-button @click="emit('clearFilters')">Clear filters</el-button>
     </div>
   </el-popover>

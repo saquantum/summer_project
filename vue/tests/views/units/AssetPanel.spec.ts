@@ -1,8 +1,9 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import AssetPanel from '@/views/myassets/AssetPanel.vue'
+import AssetPanel from '@/views/user/AssetPanel.vue'
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest'
 import { config } from '@vue/test-utils'
 import { nextTick } from 'vue'
+import WarningLegend from '@/components/WarningLegend.vue'
 config.global.config.warnHandler = () => {}
 
 // Mock router
@@ -97,7 +98,7 @@ vi.mock('@/components/TestSearch.vue', () => ({
     emits: ['update:input', 'update:visible', 'search', 'clearFilters']
   }
 }))
-vi.mock('@/views/myassets/AddAsset.vue', () => ({
+vi.mock('@/views/asset/AddAsset.vue', () => ({
   default: { name: 'AddAsset', template: '<div class="addasset-mock"></div>' }
 }))
 
@@ -119,21 +120,8 @@ describe('AssetPanel.vue', () => {
 
     // Check basic structure
     expect(wrapper.find('.search-bar').exists()).toBe(true)
-    expect(wrapper.find('.legend').exists()).toBe(true)
+    expect(wrapper.findComponent(WarningLegend).exists()).toBe(true)
     expect(wrapper.find('.assets-container').exists()).toBe(true)
-  })
-
-  it('displays legend items correctly', async () => {
-    const wrapper = mount(AssetPanel)
-    await nextTick()
-
-    const legendItems = wrapper.findAll('.legend-item')
-    expect(legendItems).toHaveLength(4)
-
-    expect(wrapper.text()).toContain('No Warning')
-    expect(wrapper.text()).toContain('Yellow Warning')
-    expect(wrapper.text()).toContain('Amber Warning')
-    expect(wrapper.text()).toContain('Red Warning')
   })
 
   it('renders asset cards correctly', async () => {
@@ -176,7 +164,7 @@ describe('AssetPanel.vue', () => {
     await flushPromises()
 
     // Set filter to NO warning
-    wrapper.vm.assetWarningLevel = 'NO'
+    wrapper.vm.filters.warningLevel = 'NO'
     await nextTick()
     await flushPromises()
 
@@ -192,7 +180,7 @@ describe('AssetPanel.vue', () => {
     await flushPromises()
 
     // Set filter to YELLOW warning
-    wrapper.vm.assetWarningLevel = 'YELLOW'
+    wrapper.vm.filters.warningLevel = 'YELLOW'
     await nextTick()
     await flushPromises()
 
@@ -212,7 +200,7 @@ describe('AssetPanel.vue', () => {
     await flushPromises()
 
     // Set filter to type A
-    wrapper.vm.assetType = 'A'
+    wrapper.vm.filters.assetType = 'A'
     await nextTick()
     await flushPromises()
 
@@ -228,7 +216,7 @@ describe('AssetPanel.vue', () => {
     await flushPromises()
 
     // Set name filter
-    wrapper.vm.assetName = 'Asset 2'
+    wrapper.vm.filters.assetName = 'Asset 2'
     await nextTick()
     await flushPromises()
 
@@ -244,8 +232,8 @@ describe('AssetPanel.vue', () => {
     await flushPromises()
 
     // Set multiple filters: type B and YELLOW warning
-    wrapper.vm.assetType = 'B'
-    wrapper.vm.assetWarningLevel = 'YELLOW'
+    wrapper.vm.filters.assetType = 'B'
+    wrapper.vm.filters.warningLevel = 'YELLOW'
     await nextTick()
     await flushPromises()
 
@@ -267,15 +255,15 @@ describe('AssetPanel.vue', () => {
     await flushPromises()
 
     // Set some filters
-    wrapper.vm.assetName = 'Asset 1'
-    wrapper.vm.assetType = 'A'
-    wrapper.vm.assetWarningLevel = 'NO'
+    wrapper.vm.filters.assetName = 'Asset 1'
+    wrapper.vm.filters.assetType = 'A'
+    wrapper.vm.filters.warningLevel = 'NO'
     await nextTick()
 
     // Clear filters
-    wrapper.vm.assetName = ''
-    wrapper.vm.assetType = ''
-    wrapper.vm.assetWarningLevel = ''
+    wrapper.vm.filters.assetName = ''
+    wrapper.vm.filters.assetType = ''
+    wrapper.vm.filters.warningLevel = ''
     await nextTick()
     await flushPromises()
 
@@ -333,17 +321,5 @@ describe('AssetPanel.vue', () => {
   it('calls getUserAssets on mount', () => {
     mount(AssetPanel)
     expect(getUserAssetsMock).toHaveBeenCalled()
-  })
-
-  it('exposes the correct properties', async () => {
-    const wrapper = mount(AssetPanel)
-    await nextTick()
-
-    // Check that exposed properties are accessible
-    expect(wrapper.vm.assetWarningLevel).toBeDefined()
-    expect(wrapper.vm.assetName).toBeDefined()
-    expect(wrapper.vm.assetType).toBeDefined()
-    expect(wrapper.vm.currentAssets).toBeDefined()
-    expect(wrapper.vm.currentPageAssets).toBeDefined()
   })
 })

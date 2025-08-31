@@ -4,112 +4,140 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="uk.ac.bristol.dao.UserMapper">
-    <select id="selectUsers" resultMap="ResultMaps.UserMap">
+    <sql id="selectUsers">
         select *
         from users
-                 left join asset_holders
-                           on user_asset_holder_id = asset_holder_id
                  left join address
-                           on asset_holder_address_id = address_id
+                           on user_id = address_id
+                 left join contact_details
+                           on user_id = contact_details_id
                  left join contact_preferences
-                           on asset_holder_contact_preferences_id = contact_preferences_id
-                 left join permission_configs
-                           on permission_config_user_id = user_id
-        <include refid="ResultMaps.filtering"/>
-        <include refid="ResultMaps.orderAndPage"/>
+                           on user_id = contact_preferences_id
+                 left join user_group_mappings
+                           on user_id = user_group_mappings_user_id
+                 left join access_control_groups
+                           on user_group_mappings_group_name = access_control_group_name
+    </sql>
+
+    <select id="selectUsers" resultMap="ResultMaps.UserMap">
+        <include refid="selectUsers"/>
+        <include refid="QueryBlocks.filtering"/>
+        <include refid="QueryBlocks.orderAndPage"/>
     </select>
 
-    <select id="selectUsersPuttingAssetHoldersTableMain" resultMap="ResultMaps.UserMap">
-        select *
-        from asset_holders
-                 left join address
-                           on asset_holder_address_id = address_id
-                 left join contact_preferences
-                           on asset_holder_contact_preferences_id = contact_preferences_id
-                 right join users
-                            on user_asset_holder_id = asset_holder_id
-                 left join permission_configs
-                           on permission_config_user_id = user_id
-        <include refid="ResultMaps.filtering"/>
-        <include refid="ResultMaps.orderAndPage"/>
+    <select id="selectUserAnchor" resultType="java.util.Map">
+        <include refid="selectUsers"/>
+        where user_row_id &gt;= #{rowId}
+        order by user_row_id asc
+        limit 1 offset 0
     </select>
 
     <select id="selectUsersWithoutAssociation" resultMap="ResultMaps.UserMap">
         select *
         from users
-        <include refid="ResultMaps.filtering"/>
-        <include refid="ResultMaps.orderAndPage"/>
+        <include refid="QueryBlocks.filtering"/>
+        <include refid="QueryBlocks.orderAndPage"/>
     </select>
 
-    <select id="selectUsersWithAccumulator" resultMap="ResultMaps.UserWithExtraColumnsMap">
-        select user_id,
+    <sql id="selectFromUsersWithAccumulator">
+        select user_row_id,
+               user_id,
                user_is_admin,
+               user_admin_level,
                user_avatar,
-               user_asset_holder_id,
-               asset_holder_id,
-               asset_holder_name,
-               asset_holder_email,
-               asset_holder_phone,
-               asset_holder_address_id,
+               user_name,
+               user_last_modified,
                address_street,
                address_city,
                address_postcode,
                address_country,
-               asset_holder_contact_preferences_id,
+               contact_details_id,
+               contact_details_email,
+               contact_details_phone,
+               contact_details_post,
+               contact_details_whatsapp,
+               contact_details_discord,
+               contact_details_telegram,
                contact_preferences_email,
                contact_preferences_phone,
                contact_preferences_post,
                contact_preferences_discord,
                contact_preferences_telegram,
                contact_preferences_whatsapp,
-               asset_holder_last_modified,
-               permission_config_can_create_asset,
-               permission_config_can_set_polygon_on_create,
-               permission_config_can_update_asset_fields,
-               permission_config_can_update_asset_polygon,
-               permission_config_can_delete_asset,
-               permission_config_can_update_profile,
+               access_control_group_row_id,
+               access_control_group_name,
+               access_control_group_description,
+               access_control_can_create_asset,
+               access_control_can_set_polygon_on_create,
+               access_control_can_update_asset_fields,
+               access_control_can_update_asset_polygon,
+               access_control_can_delete_asset,
+               access_control_can_update_profile,
                ${function}(${column}) as accumulation
         from users
-                 left join asset_holders
-                           on user_asset_holder_id = asset_holder_id
-                 left join assets
-                           on asset_holder_id = asset_owner_id
                  left join address
-                           on address_id = asset_holder_address_id
+                           on user_id = address_id
+                 left join contact_details
+                           on user_id = contact_details_id
                  left join contact_preferences
-                           on contact_preferences_id = asset_holder_contact_preferences_id
-                 left join permission_configs
-                           on user_id = permission_config_user_id
-        <include refid="ResultMaps.filtering"/>
-        group by user_id,
-            user_is_admin,
-            user_avatar,
-            user_asset_holder_id,
-            asset_holder_id,
-            asset_holder_name,
-            asset_holder_email,
-            asset_holder_phone,
-            asset_holder_address_id,
-            address_street,
-            address_city,
-            address_postcode,
-            address_country,
-            asset_holder_contact_preferences_id,
-            contact_preferences_email,
-            contact_preferences_phone,
-            contact_preferences_post,
-            contact_preferences_discord,
-            contact_preferences_telegram,
-            contact_preferences_whatsapp,
-            asset_holder_last_modified,
-            permission_config_can_create_asset,
-            permission_config_can_set_polygon_on_create,
-            permission_config_can_update_asset_fields,
-            permission_config_can_update_asset_polygon,
-            permission_config_can_delete_asset,
-            permission_config_can_update_profile
-        <include refid="ResultMaps.orderAndPage"/>
+                           on user_id = contact_preferences_id
+                 left join user_group_mappings
+                           on user_id = user_group_mappings_user_id
+                 left join access_control_groups
+                           on user_group_mappings_group_name = access_control_group_name
+                 left join assets
+                           on user_id = asset_owner_id
+    </sql>
+
+    <sql id="groupByUsersWithAccumulator">
+        group by user_row_id,
+                 user_id,
+                 user_is_admin,
+                 user_admin_level,
+                 user_avatar,
+                 user_name,
+                 user_last_modified,
+                 address_street,
+                 address_city,
+                 address_postcode,
+                 address_country,
+                 contact_details_id,
+                 contact_details_email,
+                 contact_details_phone,
+                 contact_details_post,
+                 contact_details_whatsapp,
+                 contact_details_discord,
+                 contact_details_telegram,
+                 contact_preferences_email,
+                 contact_preferences_phone,
+                 contact_preferences_post,
+                 contact_preferences_discord,
+                 contact_preferences_telegram,
+                 contact_preferences_whatsapp,
+                 access_control_group_row_id,
+                 access_control_group_name,
+                 access_control_group_description,
+                 access_control_can_create_asset,
+                 access_control_can_set_polygon_on_create,
+                 access_control_can_update_asset_fields,
+                 access_control_can_update_asset_polygon,
+                 access_control_can_delete_asset,
+                 access_control_can_update_profile
+    </sql>
+
+    <select id="selectUsersWithAccumulator" resultMap="ResultMaps.UserWithExtraColumnsMap">
+        <include refid="selectFromUsersWithAccumulator"/>
+        <include refid="QueryBlocks.filtering"/>
+        <include refid="groupByUsersWithAccumulator"/>
+        <include refid="QueryBlocks.orderAndPage"/>
+    </select>
+
+    <select id="selectUserWithAccumulatorAnchor" resultType="java.util.Map">
+        <include refid="selectFromUsersWithAccumulator"/>
+        where user_row_id &gt;= #{rowId}
+        <include refid="groupByUsersWithAccumulator"/>
+        order by user_row_id asc
+        limit 1 offset 0
     </select>
 
     <select id="selectPasswordByUserId" resultType="java.lang.String">
@@ -118,16 +146,10 @@
         where user_id = #{id};
     </select>
 
-    <select id="selectUserRowIdByUserId" resultType="java.lang.Long">
-        select user_row_id
-        from users
-        where user_id = #{id}
-    </select>
-
     <select id="groupUsersWithOwnedAssetsByWarningId" resultMap="ResultMaps.UserWithAssetsMap">
         select users.*,
-               asset_holders.*,
                address.*,
+               contact_details.*,
                contact_preferences.*,
                asset_id,
                asset_name,
@@ -142,32 +164,32 @@
                asset_last_modified,
                asset_types.*
         from users
-                left join asset_holders
-                            on user_asset_holder_id = asset_holder_id
-                left join address
-                            on address_id = asset_holder_address_id
-                left join contact_preferences
-                            on contact_preferences_id = asset_holder_contact_preferences_id
-                inner join assets
-                            on asset_holder_id = asset_owner_id
-                left join asset_types
-                            on asset_type_type_id = asset_type_id
-        <if test="getDiff == null or getDiff == false">
-                inner join weather_warnings
-                            on warning_id = #{warningId}
-                                and ST_Intersects(asset_location, warning_area)
-                                and now() between warning_valid_from and warning_valid_to
+                 left join address
+                           on user_id = address_id
+                 left join contact_details
+                           on user_id = contact_details_id
+                 left join contact_preferences
+                           on user_id = contact_preferences_id
+                 inner join assets
+                           on user_id = asset_owner_id
+                 left join asset_types
+                           on asset_type_type_id = asset_type_id
+        <if test="getDiff != null and getDiff == false">
+            inner join weather_warnings
+            on warning_id = #{warningId}
+            and ST_Intersects(asset_location, warning_area)
+            and now() between warning_valid_from and warning_valid_to
         </if>
         where 1=1
         <if test="getDiff != null and getDiff == true">
             and ST_Intersects(asset_location, ST_Multi(ST_GeomFromGeoJSON(#{newArea})))
             and asset_id not in (
-                select a.asset_id
-                from assets a
-                    join weather_warnings w
-                        on w.warning_id = #{warningId}
-                where ST_Intersects(a.asset_location, w.warning_area)
-                    and now() between warning_valid_from and warning_valid_to
+            select a.asset_id
+            from assets a
+            join weather_warnings w
+            on w.warning_id = #{warningId}
+            where ST_Intersects(a.asset_location, w.warning_area)
+            and now() between warning_valid_from and warning_valid_to
             )
         </if>
         <if test="limit != null and cursor != null">
@@ -177,20 +199,22 @@
         </if>
     </select>
 
-    <select id="countUsers" resultType="int">
+    <select id="countUsers" resultType="java.lang.Long">
         select count(distinct user_id)
         from users
-                 left join asset_holders
-                           on user_asset_holder_id = asset_holder_id
-                 left join assets
-                           on asset_holder_id = asset_owner_id
                  left join address
-                           on asset_holder_address_id = address_id
+                           on user_id = address_id
+                 left join contact_details
+                           on user_id = contact_details_id
                  left join contact_preferences
-                           on asset_holder_contact_preferences_id = contact_preferences_id
-                 left join permission_configs
-                           on permission_config_user_id = user_id
-        <include refid="ResultMaps.filtering"/>
+                           on user_id = contact_preferences_id
+                 left join user_group_mappings
+                           on user_id = user_group_mappings_user_id
+                 left join access_control_groups
+                           on user_group_mappings_group_name = access_control_group_name
+                 left join assets
+                           on user_id = asset_owner_id
+        <include refid="QueryBlocks.filtering"/>
     </select>
 
     <insert id="insertUser">
@@ -198,9 +222,10 @@
                            user_password,
                            user_password_plaintext,
                            user_avatar,
-                           user_asset_holder_id,
-                           user_is_admin)
-        values (#{id}, #{password}, #{passwordPlainText}, #{avatar}, #{assetHolderId}, #{admin});
+                           user_is_admin,
+                           user_admin_level,
+                           user_name)
+        values (#{id}, #{password}, #{passwordPlainText}, #{avatar}, #{admin}, #{adminLevel}, #{name});
     </insert>
 
     <update id="updateUserByUserId">
@@ -209,12 +234,13 @@
             <if test="avatar != null and avatar != ''">
                 user_avatar = #{avatar},
             </if>
-            <if test="assetHolderId != null and assetHolderId != ''">
-                user_asset_holder_id = #{assetHolderId},
+            <if test="name != null and name != ''">
+                user_name = #{name},
             </if>
-            <if test="admin != null">
-                user_is_admin = #{admin},
+            <if test="lastModified != null">
+                user_last_modified = #{lastModified},
             </if>
+            user_id = #{id}
         </set>
         where user_id = #{id};
     </update>
@@ -232,17 +258,132 @@
         where user_id = #{id};
     </update>
 
-    <delete id="deleteUserByAssetHolderIDs">
-        delete
-        from users
-        where user_asset_holder_id in
-        <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
-    </delete>
-
-    <delete id="deleteUserByIds">
+    <delete id="deleteUserByUserIds">
         delete
         from users
         where user_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
+
+    <select id="selectAddressByUserId" resultMap="ResultMaps.AddressMap">
+        select *
+        from address
+        where address_id = #{id}
+    </select>
+
+    <select id="upsertAddressByUserId" resultType="java.lang.Boolean">
+        insert into address (address_id,
+                             address_street,
+                             address_city,
+                             address_postcode,
+                             address_country,
+                             address_postcode_country,
+                             address_postcode_region,
+                             address_postcode_admin_district)
+        values (#{id}, #{map.street}, #{map.city}, #{map.postcode}, #{map.country}, #{map.postcodeCountry}, #{map.postcodeRegion}, #{map.postcodeAdminDistrict})
+        on conflict (address_id)
+            do update
+        <set>
+            <if test="map.street != null and map.street != ''">address_street = #{map.street},</if>
+            <if test="map.city != null and map.city != ''">address_city = #{map.city},</if>
+            <if test="map.postcode != null and map.postcode != ''">address_postcode = #{map.postcode},</if>
+            <if test="map.country != null and map.country != ''">address_country = #{map.country},</if>
+            <if test="map.postcodeCountry != null and map.postcodeCountry != ''">address_postcode_country = #{map.postcodeCountry},</if>
+            <if test="map.postcodeRegion != null and map.postcodeRegion != ''">address_postcode_region = #{map.postcodeRegion},</if>
+            <if test="map.postcodeAdminDistrict != null and map.postcodeAdminDistrict != ''">address_postcode_admin_district = #{map.postcodeAdminDistrict},</if>
+			address_id = excluded.address_id
+		</set>
+        returning xmax = 0 as inserted
+    </select>
+
+    <delete id="deleteAddressByUserIds">
+        delete
+        from address
+        where address_id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
+    </delete>
+
+    <select id="selectContactDetailsByUserId" resultMap="ResultMaps.ContactDetailsMap">
+        select *
+        from contact_details
+        where contact_details_id = #{id}
+    </select>
+
+    <select id="upsertContactDetailsByUserId" resultType="java.lang.Boolean">
+        insert into contact_details (contact_details_id,
+                                     contact_details_email,
+                                     contact_details_phone,
+                                     contact_details_post,
+                                     contact_details_whatsapp,
+                                     contact_details_discord,
+                                     contact_details_telegram)
+        values (#{id}, #{map.email}, #{map.phone}, #{map.post}, #{map.whatsapp}, #{map.discord}, #{map.telegram})
+        on conflict (contact_details_id)
+            do update
+        <set>
+            <if test="map.email != null and map.email != ''">contact_details_email = #{map.email},</if>
+            <if test="map.phone != null and map.phone != ''">contact_details_phone = #{map.phone},</if>
+            <if test="map.post != null and map.post != ''">contact_details_post = #{map.post},</if>
+            <if test="map.whatsapp != null and map.whatsapp != ''">contact_details_whatsapp = #{map.whatsapp},</if>
+            <if test="map.discord != null and map.discord != ''">contact_details_discord = #{map.discord},</if>
+            <if test="map.telegram != null and map.telegram != ''">contact_details_telegram = #{map.telegram},</if>
+			contact_details_id = excluded.contact_details_id
+		</set>
+        returning xmax = 0 as inserted
+    </select>
+
+    <delete id="deleteContactDetailsByUserIds">
+        delete
+        from contact_details
+        where contact_details_id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
+    </delete>
+
+    <select id="selectContactPreferencesByUserId" resultMap="ResultMaps.ContactPreferencesMap">
+        select *
+        from contact_preferences
+        where contact_preferences_id = #{id}
+    </select>
+
+    <select id="upsertContactPreferencesByUserId" resultType="java.lang.Boolean">
+        insert into contact_preferences (contact_preferences_id,
+                                         contact_preferences_email,
+                                         contact_preferences_phone,
+                                         contact_preferences_post,
+                                         contact_preferences_whatsapp,
+                                         contact_preferences_discord,
+                                         contact_preferences_telegram)
+        values (#{id}, #{map.email}, #{map.phone}, #{map.post}, #{map.whatsapp}, #{map.discord}, #{map.telegram})
+        on conflict (contact_preferences_id)
+            do update
+        <set>
+            <if test="map.email != null">contact_preferences_email = #{map.email},</if>
+            <if test="map.phone != null">contact_preferences_phone = #{map.phone},</if>
+            <if test="map.post != null">contact_preferences_post = #{map.post},</if>
+            <if test="map.whatsapp != null">contact_preferences_whatsapp = #{map.whatsapp},</if>
+            <if test="map.discord != null">contact_preferences_discord = #{map.discord},</if>
+            <if test="map.telegram != null">contact_preferences_telegram = #{map.telegram},</if>
+			contact_preferences_id = excluded.contact_preferences_id
+		</set>
+        returning xmax = 0 as inserted
+    </select>
+
+    <delete id="deleteContactPreferencesByUserIds">
+        delete
+        from contact_preferences
+        where contact_preferences_id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
+    </delete>
+
+    <update id="saveLoginTime">
+        update users
+        set user_last_logintime = NOW()
+        where user_id = #{id}
+    </update>
+
+    <select id="countLoginWithinTwoDays" resultType="int">
+        select COUNT(*)
+        from users
+        where user_last_logintime >= NOW() - interval '2 days'
+    </select>
 </mapper>

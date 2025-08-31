@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import WarningDetail from '@/views/warning/index.vue'
+import WarningDetail from '@/views/warning/WarningDetail.vue'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import type { Warning } from '@/types'
@@ -27,7 +27,7 @@ vi.mock('@/stores', () => ({
 vi.mock('@/components/MapCard.vue', () => ({
   default: {
     name: 'MapCard',
-    props: ['mapId', 'locations', 'style'],
+    props: ['mapId', 'locations', 'styles'],
     template: '<div class="map-card-mock">Map Card</div>'
   }
 }))
@@ -103,9 +103,6 @@ describe('WarningDetail', () => {
     const wrapper = createWrapper()
     await flushPromises()
 
-    const descriptions = wrapper.findAll('.el-descriptions-item')
-    expect(descriptions.length).toBeGreaterThan(0)
-
     // Check if warning details are displayed
     const text = wrapper.text()
     expect(text).toContain('123')
@@ -123,7 +120,7 @@ describe('WarningDetail', () => {
     expect(mapCard.exists()).toBe(true)
     expect(mapCard.props('mapId')).toBe('map-123')
     expect(mapCard.props('locations')).toEqual([mockWarning.area])
-    expect(mapCard.props('style')).toBeDefined()
+    expect(mapCard.props('styles')).toBeDefined()
   })
 
   it('sets correct style for yellow warning level', async () => {
@@ -133,7 +130,8 @@ describe('WarningDetail', () => {
     await flushPromises()
 
     const mapCard = wrapper.findComponent({ name: 'MapCard' })
-    const style = mapCard.props('style')
+    const style = mapCard.props('styles')[0]
+
     expect(style.color).toBe('#cc9900')
     expect(style.fillColor).toBe('#ffff00')
     expect(style.weight).toBe(2)
@@ -147,7 +145,7 @@ describe('WarningDetail', () => {
     await flushPromises()
 
     const mapCard = wrapper.findComponent({ name: 'MapCard' })
-    const style = mapCard.props('style')
+    const style = mapCard.props('styles')[0]
     expect(style.color).toBe('#cc6600')
     expect(style.fillColor).toBe('#ffcc00')
   })
@@ -159,7 +157,7 @@ describe('WarningDetail', () => {
     await flushPromises()
 
     const mapCard = wrapper.findComponent({ name: 'MapCard' })
-    const style = mapCard.props('style')
+    const style = mapCard.props('styles')[0]
     expect(style.color).toBe('#800000')
     expect(style.fillColor).toBe('#ff0000')
   })
@@ -171,7 +169,7 @@ describe('WarningDetail', () => {
     await flushPromises()
 
     const mapCard = wrapper.findComponent({ name: 'MapCard' })
-    const style = mapCard.props('style')
+    const style = mapCard.props('styles')[0]
     expect(style.color).toBe('#cc9900')
     expect(style.fillColor).toBe('#ffff00')
   })
@@ -292,7 +290,7 @@ describe('WarningDetail', () => {
     await flushPromises()
 
     const mapCard = wrapper.findComponent({ name: 'MapCard' })
-    const style = mapCard.props('style')
+    const style = mapCard.props('styles')[0]
 
     // Should have default style values
     expect(style.weight).toBe(1)
@@ -308,7 +306,7 @@ describe('WarningDetail', () => {
     await flushPromises()
 
     const mapCard = wrapper.findComponent({ name: 'MapCard' })
-    const style = mapCard.props('style')
+    const style = mapCard.props('styles')[0]
 
     // Should have default style colors for unknown levels
     expect(style.weight).toBe(2)

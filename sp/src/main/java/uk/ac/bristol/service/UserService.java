@@ -1,6 +1,5 @@
 package uk.ac.bristol.service;
 
-import uk.ac.bristol.pojo.AssetHolder;
 import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.pojo.UserWithAssets;
 import uk.ac.bristol.pojo.UserWithExtraColumns;
@@ -10,40 +9,40 @@ import java.util.Map;
 
 public interface UserService {
 
-    User login(User user);
+    String login(User user);
 
-    List<User> getAllUsers(Map<String, Object> filters,
-                           List<Map<String, String>> orderList,
-                           Integer limit,
-                           Integer offset);
+    List<User> getUsers(Map<String, Object> filters,
+                        List<Map<String, String>> orderList,
+                        Integer limit,
+                        Integer offset);
 
-    List<User> getAllUsersWithAssetHolder(Map<String, Object> filters,
-                                          List<Map<String, String>> orderList,
-                                          Integer limit,
-                                          Integer offset);
+    List<User> getCursoredUsers(Long lastUserRowId,
+                                Map<String, Object> filters,
+                                List<Map<String, String>> orderList,
+                                Integer limit,
+                                Integer offset);
 
-    List<User> getAllUnauthorisedUsersWithAssetHolder(Map<String, Object> filters,
-                                                      List<Map<String, String>> orderList,
-                                                      Integer limit,
-                                                      Integer offset);
+    List<User> getUnauthorisedUsers(Map<String, Object> filters,
+                                    List<Map<String, String>> orderList,
+                                    Integer limit,
+                                    Integer offset);
 
-    List<Map<String, Object>> getAllAssetHoldersWithAssetIds(Map<String, Object> filters,
-                                                             List<Map<String, String>> orderList,
-                                                             Integer limit,
-                                                             Integer offset);
+    List<UserWithExtraColumns> getUsersWithAccumulator(String function,
+                                                       String column,
+                                                       Map<String, Object> filters,
+                                                       List<Map<String, String>> orderList,
+                                                       Integer limit,
+                                                       Integer offset);
 
-    List<UserWithExtraColumns> getAllUsersWithAccumulator(String function,
-                                                          String column,
-                                                          Map<String, Object> filters,
-                                                          List<Map<String, String>> orderList,
-                                                          Integer limit,
-                                                          Integer offset);
-
-    User getUserByAssetHolderId(String aid);
+    List<UserWithExtraColumns> getCursoredUsersWithAccumulator(String function,
+                                                               String column,
+                                                               Long lastUserRowId,
+                                                               Map<String, Object> filters,
+                                                               List<Map<String, String>> orderList,
+                                                               Integer limit,
+                                                               Integer offset);
 
     User getUserByUserId(String uid);
-
-    Long getUserRowIdByUserId(String uid);
 
     boolean testUIDExistence(String id);
 
@@ -55,29 +54,37 @@ public interface UserService {
                                                               boolean getDiff,
                                                               String newAreaAsJson);
 
-    int countUsersWithFilter(Map<String, Object> filters);
+    Map<String, Integer> groupUserAddressPostcodeByCountry(Map<String, Object> filters);
+
+    Map<String, Integer> groupUserAddressPostcodeByRegion(Map<String, Object> filters);
+
+    Map<String, Integer> groupUserAddressPostcodeByAdminDistrict(Map<String, Object> filters);
+
+    Map<String, Integer> getUserContactPreferencesPercentage(Map<String, Object> filters);
+
+    long countUsersWithFilter(Map<String, Object> filters);
 
     boolean compareUserLastModified(String uid, Long timestamp);
 
+    boolean upsertAddress(User user);
+
+    boolean upsertContactDetails(User user);
+
+    boolean upsertContactPreferences(User user);
+
     int insertUser(User user);
 
-    void registerNewUser(User user);
+    int insertUserBatch(List<User> list);
+
+    void registerNewUser(Map<String, Object> data);
 
     int updateUser(User user);
 
-    int updateAssetHolder(AssetHolder assetHolder);
+    int updateUserBatch(List<User> list);
 
-    int updatePasswordByEmail(String email, String password);
-
-    int deleteUserByUserIds(String[] ids);
+    int updateUserPasswordByEmail(String email, String password);
 
     int deleteUserByUserIds(List<String> ids);
 
-    int deleteUserByAssetHolderIds(String[] ids);
-
-    int deleteUserByAssetHolderIds(List<String> ids);
-
-    int deleteAssetHolderByAssetHolderIds(String[] ids);
-
-    int deleteAssetHolderByAssetHolderIds(List<String> ids);
+    int getLoginCount();
 }

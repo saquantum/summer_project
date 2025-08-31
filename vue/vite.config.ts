@@ -6,8 +6,10 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import compression from 'vite-plugin-compression'
+import { visualizer } from 'rollup-plugin-visualizer'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     vue(),
     vueDevTools(),
@@ -15,7 +17,20 @@ export default defineConfig({
       resolvers: [ElementPlusResolver()]
     }),
     Components({
+      dirs: ['src/components', 'src/layout/components'],
       resolvers: [ElementPlusResolver()]
+    }),
+    compression({
+      algorithm: 'gzip',
+      ext: '.gz',
+      threshold: 10240,
+      deleteOriginFile: false
+    }),
+    visualizer({
+      filename: './dist/stats.html',
+      open: mode === 'development',
+      gzipSize: true,
+      brotliSize: true
     })
   ],
   resolve: {
@@ -33,4 +48,4 @@ export default defineConfig({
       }
     }
   }
-})
+}))

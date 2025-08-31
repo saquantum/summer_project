@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-// import { useRouter } from 'vue-router'
 import { useAssetStore } from '@/stores/index'
 import {
   adminDeleteAssetTypeService,
@@ -8,10 +7,28 @@ import {
   adminUpdateAssetTypeService
 } from '@/api/admin'
 import { type AssetType } from '@/types'
+import { trimForm } from '@/utils/formUtils'
+import PageTopTabs from '@/components/PageSurfaceTabs.vue'
+import type { RouteLocationNormalized } from 'vue-router'
+
+const tabsConfig = [
+  {
+    label: 'All Assets',
+    to: { name: 'AdminAllAssets' },
+    match: (r: RouteLocationNormalized) => r.name === 'AdminAllAssets'
+  },
+  { label: 'Add Assets', to: { name: 'AdminAddAsset' } },
+  {
+    label: 'Asset Types',
+    to: { name: 'AdminAssetTypes' },
+    match: (r: RouteLocationNormalized) =>
+      r.path?.startsWith('/admin/assets/types')
+  }
+]
 
 const assetStore = useAssetStore()
 
-const dialogVisible = ref(false)
+const addDialogVisible = ref(false)
 const editDialogVisible = ref(false)
 
 const form = ref<AssetType>({
@@ -21,22 +38,33 @@ const form = ref<AssetType>({
 })
 
 const addAssetType = async () => {
+  trimForm(form.value)
   await adminInsetAssetTypeService(form.value)
   assetStore.getAssetTypes()
-  dialogVisible.value = false
-  form.value = { name: '', description: '' }
+  addDialogVisible.value = false
+  form.value = { id: '', name: '', description: '' }
+}
+
+const triggerAdd = () => {
+  form.value = {
+    id: '',
+    name: '',
+    description: ''
+  }
+  addDialogVisible.value = true
 }
 
 const triggerEdit = async (row: AssetType) => {
-  console.log(row)
   editDialogVisible.value = true
   form.value.id = row.id
+  form.value.name = row.name
+  form.value.description = row.description
 }
 
 const handleEdit = async () => {
   await adminUpdateAssetTypeService(form.value)
   assetStore.getAssetTypes()
-  dialogVisible.value = false
+  addDialogVisible.value = false
   form.value = { id: '', name: '', description: '' }
   editDialogVisible.value = false
 }
@@ -50,8 +78,7 @@ const triggerDelete = (row: AssetType) => {
   deleteId.value.push(row.id as string)
 }
 
-const handleDelete = async (row: AssetType) => {
-  console.log(row)
+const handleDelete = async () => {
   try {
     await adminDeleteAssetTypeService(deleteId.value)
     assetStore.getAssetTypes()
@@ -60,73 +87,316 @@ const handleDelete = async (row: AssetType) => {
     console.error(e)
   }
 }
+
+defineExpose({
+  deleteDialogVisible
+})
 </script>
 <template>
-  <el-button @click="dialogVisible = true">Add asset type</el-button>
-  <el-table :data="assetStore.assetTypes" class="table">
-    <el-table-column type="selection"> </el-table-column>
-    <el-table-column prop="id" label="Type ID" width="120" />
-    <el-table-column prop="name" label="Type Name" width="180" />
-    <el-table-column prop="description" label="Description" />
-    <el-table-column label="Actions">
-      <template #default="scope">
-        <el-button text size="small" @click="triggerEdit(scope.row)">
-          Edit
-        </el-button>
-        <el-button
-          text
-          type="danger"
-          size="small"
-          @click="triggerDelete(scope.row)"
+  <div class="page-surface">
+    <PageTopTabs :tabs="tabsConfig" />
+    <div class="canvas-wrap">
+      <div class="canvas">
+        <el-button @click="triggerAdd" data-test="add-btn" class="styled-btn"
+          >Add asset type</el-button
         >
-          Delete
-        </el-button>
+        <el-table
+          :data="assetStore.assetTypes"
+          class="table-card balanced-table type-table"
+          stripe
+          :table-layout="'fixed'"
+        >
+          <el-table-column prop="id" label="Type ID" />
+          <el-table-column prop="name" label="Type Name" />
+          <el-table-column prop="description" label="Description" />
+          <el-table-column label="Actions" width="160">
+            <template #default="scope">
+              <el-button
+                class="btn-edit"
+                size="small"
+                @click="triggerEdit(scope.row)"
+                data-test="edit"
+              >
+                Edit
+              </el-button>
+              <el-button
+                class="btn-del"
+                type="danger"
+                size="small"
+                @click="triggerDelete(scope.row)"
+                data-test="delete"
+              >
+                Delete
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+    </div>
+
+    <div class="type-list-mobile">
+      <div class="type-item" v-for="t in assetStore.assetTypes" :key="t.id">
+        <div class="type-item__head">
+          <div class="type-item__title">{{ t.name }}</div>
+          <div class="type-item__id">ID: {{ t.id }}</div>
+        </div>
+        <div class="type-item__desc">{{ t.description }}</div>
+        <div class="type-item__actions">
+          <el-button size="small" class="btn-edit" @click="triggerEdit(t)"
+            >Edit</el-button
+          >
+          <el-button
+            size="small"
+            class="btn-del"
+            type="danger"
+            @click="triggerDelete(t)"
+            >Delete</el-button
+          >
+        </div>
+      </div>
+    </div>
+
+    <el-dialog
+      v-model="addDialogVisible"
+      title="Add asset type"
+      width="500"
+      data-test="add-dialog"
+    >
+      <el-form :model="form" label-width="auto">
+        <el-form-item label="name">
+          <el-input v-model="form.name" data-test="name" />
+        </el-form-item>
+        <el-form-item label="discription">
+          <el-input v-model="form.description" data-test="description" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div>
+          <el-button
+            @click="addDialogVisible = false"
+            data-test="cancel"
+            class="styled-btn btn-del"
+            >Cancel</el-button
+          >
+          <el-button
+            type="primary"
+            @click="addAssetType"
+            data-test="submit"
+            class="styled-btn"
+          >
+            Submit
+          </el-button>
+        </div>
       </template>
-    </el-table-column>
-  </el-table>
+    </el-dialog>
 
-  <el-dialog v-model="dialogVisible" title="Add asset type" width="500">
-    <el-form :model="form" label-width="auto">
-      <el-form-item label="name">
-        <el-input v-model="form.name" />
-      </el-form-item>
-      <el-form-item label="discription">
-        <el-input v-model="form.description" />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="dialogVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="addAssetType"> Submit </el-button>
-      </div>
-    </template>
-  </el-dialog>
+    <el-dialog
+      v-model="editDialogVisible"
+      title="Update asset type"
+      style="width: auto; margin: 80px 50px; min-width: 200px"
+      data-test="edit-dialog"
+    >
+      <el-form :model="form" label-width="auto">
+        <el-form-item label="id">
+          <el-input v-model="form.id" disabled />
+        </el-form-item>
+        <el-form-item label="name">
+          <el-input v-model="form.name" data-test="name" />
+        </el-form-item>
+        <el-form-item label="description">
+          <el-input v-model="form.description" data-test="description" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div>
+          <el-button
+            @click="editDialogVisible = false"
+            data-test="cancel"
+            class="styled-btn btn-del"
+            >Cancel</el-button
+          >
+          <el-button
+            type="primary"
+            @click="handleEdit"
+            data-test="submit"
+            class="styled-btn"
+          >
+            Submit
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
 
-  <el-dialog v-model="editDialogVisible" title="Update asset type" width="500">
-    <el-form :model="form" label-width="auto">
-      <el-form-item label="id">
-        <el-input v-model="form.id" disabled="true" />
-      </el-form-item>
-      <el-form-item label="name">
-        <el-input v-model="form.name" />
-      </el-form-item>
-      <el-form-item label="discription">
-        <el-input v-model="form.description" />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="dialogVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="handleEdit"> Submit </el-button>
-      </div>
-    </template>
-  </el-dialog>
-
-  <ConfirmDialog
-    v-model="deleteDialogVisible"
-    title="Warning"
-    content="This will permanently delete this asset type"
-    :countdown-duration="5"
-    @confirm="handleDelete"
-  />
+    <ConfirmDialog
+      v-model="deleteDialogVisible"
+      title="Warning"
+      content="This will permanently delete this asset type"
+      :countdown-duration="5"
+      @confirm="handleDelete"
+    />
+  </div>
 </template>
+
+<style>
+.page-surface {
+  position: relative;
+  background: #f3f5f7;
+  border: 1px solid #e6eaee;
+  border-radius: 3px;
+  padding: 20px;
+  margin: 60px auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  /*width: 1100px;*/
+  width: min(80vw, 1600px); /* vw80%，max1600px */
+  max-width: calc(100% - 2rem);
+  box-sizing: border-box;
+}
+
+.styled-btn {
+  padding: 8px 20px;
+  font-weight: 600;
+  font-size: 16px;
+  border-radius: 12px;
+  color: #ffffff;
+  border: 1px solid #fff;
+  text-shadow: 0 4px 4px rgba(0, 0, 0, 0.5);
+  background-image: linear-gradient(
+    180deg,
+    #e4dfd8 0%,
+    #9bb7d4 60%,
+    rgba(58, 78, 107, 0.58) 100%
+  );
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+  margin-bottom: 20px;
+}
+
+.styled-btn:hover {
+  background: linear-gradient(
+    180deg,
+    #f0e6d2 0%,
+    rgba(125, 140, 163, 0.44) 100%
+  );
+  color: #39435b;
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  border: 1px solid #fff;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+}
+
+.table-card {
+  border-radius: 8px;
+}
+
+.btn-del {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: none;
+  color: rgba(104, 5, 5, 0.72);
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  background: rgba(234, 215, 184, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.btn-edit {
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: #ffffff;
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  background: rgba(122, 164, 194, 0.78);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+.balanced-table :deep(.el-table__cell) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.balanced-table :deep(.el-button--text) {
+  padding: 0 6px;
+}
+.canvas-wrap {
+  overflow-x: auto;
+}
+
+.type-list-mobile {
+  display: none;
+}
+
+.table-card {
+  width: 100%;
+}
+
+.styled-btn {
+  max-width: 100%;
+}
+
+@media (min-width: 1200px) {
+  .canvas {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .type-table {
+    display: none;
+  }
+
+  .type-list-mobile {
+    display: grid;
+    gap: 10px;
+  }
+
+  .type-item {
+    border-radius: 12px;
+    border: 1px solid #ebeef5;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 12px;
+  }
+
+  .type-item__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .type-item__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2d3d;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .type-item__id {
+    font-size: 12px;
+    color: #64748b;
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+
+  .type-item__desc {
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  .type-item__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .type-item__actions .el-button {
+    width: 90%;
+    height: 38px;
+    border-radius: 10px;
+  }
+}
+</style>

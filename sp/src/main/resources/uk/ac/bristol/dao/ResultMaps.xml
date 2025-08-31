@@ -11,15 +11,18 @@
     </resultMap>
 
     <resultMap id="AddressMap" type="java.util.Map">
-        <id property="assetHolderId" column="address_id"/>
+        <id property="id" column="address_id"/>
         <result property="street" column="address_street"/>
         <result property="city" column="address_city"/>
         <result property="postcode" column="address_postcode"/>
         <result property="country" column="address_country"/>
+        <result property="postcodeCountry" column="address_postcode_country"/>
+        <result property="postcodeRegion" column="address_postcode_region"/>
+        <result property="postcodeAdminDistrict" column="address_postcode_admin_district"/>
     </resultMap>
 
     <resultMap id="ContactPreferencesMap" type="java.util.Map">
-        <id property="assetHolderId" column="contact_preferences_id"/>
+        <id property="id" column="contact_preferences_id"/>
         <result property="email" column="contact_preferences_email"/>
         <result property="phone" column="contact_preferences_phone"/>
         <result property="post" column="contact_preferences_post"/>
@@ -28,26 +31,29 @@
         <result property="telegram" column="contact_preferences_telegram"/>
     </resultMap>
 
-    <resultMap id="AssetHolderMap" type="uk.ac.bristol.pojo.AssetHolder">
-        <id property="id" column="asset_holder_id"/>
-        <result property="name" column="asset_holder_name"/>
-        <result property="email" column="asset_holder_email"/>
-        <result property="phone" column="asset_holder_phone"/>
-        <result property="addressId" column="asset_holder_address_id"/>
-        <result property="contactPreferencesId" column="asset_holder_contact_preferences_id"/>
-        <result property="lastModified" column="asset_holder_last_modified"/>
-
-        <association property="address" javaType="java.util.Map" resultMap="AddressMap"/>
-        <association property="contactPreferences" javaType="java.util.Map" resultMap="ContactPreferencesMap"/>
+    <resultMap id="ContactDetailsMap" type="java.util.Map">
+        <id property="id" column="contact_details_id"/>
+        <result property="email" column="contact_details_email"/>
+        <result property="phone" column="contact_details_phone"/>
+        <result property="post" column="contact_details_post"/>
+        <result property="whatsapp" column="contact_details_whatsapp"/>
+        <result property="discord" column="contact_details_discord"/>
+        <result property="telegram" column="contact_details_telegram"/>
     </resultMap>
 
     <resultMap id="UserMap" type="uk.ac.bristol.pojo.User">
         <id property="id" column="user_id"/>
-        <result property="assetHolderId" column="user_asset_holder_id"/>
-        <result property="avatar" column="user_avatar"/>
+        <result property="rowId" column="user_row_id"/>
         <result property="admin" column="user_is_admin"/>
-        <association property="assetHolder" javaType="uk.ac.bristol.pojo.AssetHolder" resultMap="AssetHolderMap"/>
-        <association property="permissionConfig" javaType="uk.ac.bristol.pojo.PermissionConfig" resultMap="PermissionConfigMap"/>
+        <result property="adminLevel" column="user_admin_level"/>
+        <result property="avatar" column="user_avatar"/>
+        <result property="name" column="user_name"/>
+        <result property="lastModified" column="user_last_modified"/>
+
+        <association property="address" javaType="java.util.Map" resultMap="AddressMap"/>
+        <association property="contactPreferences" javaType="java.util.Map" resultMap="ContactPreferencesMap"/>
+        <association property="contactDetails" javaType="java.util.Map" resultMap="ContactDetailsMap"/>
+        <association property="accessControlGroup" javaType="uk.ac.bristol.pojo.AccessControlGroup" resultMap="AccessControlGroupAssociation" notNullColumn="user_row_id"/>
     </resultMap>
 
     <resultMap id="UserWithExtraColumnsMap" type="uk.ac.bristol.pojo.UserWithExtraColumns">
@@ -58,12 +64,14 @@
 
     <resultMap id="AssetTypeMap" type="uk.ac.bristol.pojo.AssetType">
         <id property="id" column="asset_type_type_id"/>
+        <result property="rowId" column="asset_type_row_id"/>
         <result property="name" column="asset_type_name"/>
         <result property="description" column="asset_type_description"/>
     </resultMap>
 
     <resultMap id="AssetMap" type="uk.ac.bristol.pojo.Asset">
         <id property="id" column="asset_id"/>
+        <result property="rowId" column="asset_row_id"/>
         <result property="name" column="asset_name"/>
         <result property="typeId" column="asset_type_id"/>
         <result property="ownerId" column="asset_owner_id"/>
@@ -106,6 +114,12 @@
         <collection property="assets" ofType="uk.ac.bristol.pojo.Asset" resultMap="AssetMap"/>
     </resultMap>
 
+    <resultMap id="UkRegionMap" type="java.util.Map">
+        <id property="id" column="uk_region_row_id"/>
+        <result property="name" column="uk_region_name"/>
+        <result property="area" column="uk_region_area"/>
+    </resultMap>
+
     <resultMap id="TemplateMap" type="uk.ac.bristol.pojo.Template">
         <id property="id" column="template_id"/>
         <result property="assetTypeId" column="template_asset_type_id"/>
@@ -116,14 +130,35 @@
         <result property="body" column="template_body"/>
     </resultMap>
 
-    <resultMap id="PermissionConfigMap" type="uk.ac.bristol.pojo.PermissionConfig">
-        <id property="userId" column="permission_config_user_id"/>
-        <result property="canCreateAsset" column="permission_config_can_create_asset"/>
-        <result property="canSetPolygonOnCreate" column="permission_config_can_set_polygon_on_create"/>
-        <result property="canUpdateAssetFields" column="permission_config_can_update_asset_fields"/>
-        <result property="canUpdateAssetPolygon" column="permission_config_can_update_asset_polygon"/>
-        <result property="canDeleteAsset" column="permission_config_can_delete_asset"/>
-        <result property="canUpdateProfile" column="permission_config_can_update_profile"/>
+    <resultMap id="AccessControlGroupAssociation" type="uk.ac.bristol.pojo.AccessControlGroup">
+        <id property="userRowId" column="user_row_id"/>
+        <result property="rowId" column="access_control_group_row_id"/>
+        <result property="name" column="access_control_group_name"/>
+        <result property="description" column="access_control_group_description"/>
+        <result property="canCreateAsset" column="access_control_can_create_asset"/>
+        <result property="canSetPolygonOnCreate" column="access_control_can_set_polygon_on_create"/>
+        <result property="canUpdateAssetFields" column="access_control_can_update_asset_fields"/>
+        <result property="canUpdateAssetPolygon" column="access_control_can_update_asset_polygon"/>
+        <result property="canDeleteAsset" column="access_control_can_delete_asset"/>
+        <result property="canUpdateProfile" column="access_control_can_update_profile"/>
+    </resultMap>
+
+    <resultMap id="AccessControlGroupMap" type="uk.ac.bristol.pojo.AccessControlGroup">
+        <id property="rowId" column="access_control_group_row_id"/>
+        <result property="name" column="access_control_group_name"/>
+        <result property="description" column="access_control_group_description"/>
+        <result property="canCreateAsset" column="access_control_can_create_asset"/>
+        <result property="canSetPolygonOnCreate" column="access_control_can_set_polygon_on_create"/>
+        <result property="canUpdateAssetFields" column="access_control_can_update_asset_fields"/>
+        <result property="canUpdateAssetPolygon" column="access_control_can_update_asset_polygon"/>
+        <result property="canDeleteAsset" column="access_control_can_delete_asset"/>
+        <result property="canUpdateProfile" column="access_control_can_update_profile"/>
+    </resultMap>
+
+    <resultMap id="UserAccessControlGroupMappingMap" type="java.util.Map">
+        <id property="rowId" column="user_group_mappings_row_id"/>
+        <result property="userId" column="user_group_mappings_user_id"/>
+        <result property="groupName" column="user_group_mappings_group_name"/>
     </resultMap>
 
     <resultMap id="InboxMessage" type="java.util.Map">
@@ -136,32 +171,4 @@
         <result property="message" column="inbox_message"/>
     </resultMap>
 
-    <sql id="filtering">
-        <where>
-            <if test="filterString != null and filterString != '' ">
-                ${filterString}
-            </if>
-        </where>
-    </sql>
-
-    <sql id="combinedFiltering">
-        <if test="filterString != null and filterString != '' ">
-            and ${filterString}
-        </if>
-    </sql>
-
-    <sql id="orderAndPage">
-        <if test="orderList != null and orderList.size() > 0">
-            order by
-            <foreach collection="orderList" item="item" separator=",">
-                ${item.column} ${item.direction}
-            </foreach>
-        </if>
-        <if test="limit != null">
-            limit #{limit}
-            <if test="offset != null">
-                offset #{offset}
-            </if>
-        </if>
-    </sql>
 </mapper>

@@ -9,36 +9,55 @@ import java.util.Map;
 
 public interface AssetService {
 
-    List<Asset> getAllAssets(Map<String, Object> filters,
-                             List<Map<String, String>> orderList,
-                             Integer limit,
-                             Integer offset);
+    List<Asset> getAssets(Map<String, Object> filters,
+                          List<Map<String, String>> orderList,
+                          Integer limit,
+                          Integer offset);
 
-    List<AssetWithWeatherWarnings> getAllAssetsWithWarnings(Map<String, Object> filters,
-                                                            List<Map<String, String>> orderList,
-                                                            Integer limit,
-                                                            Integer offset);
+    List<AssetWithWeatherWarnings> getAssetsWithWarnings(Map<String, Object> filters,
+                                                         List<Map<String, String>> orderList,
+                                                         Integer limit,
+                                                         Integer offset);
+
+    List<AssetWithWeatherWarnings> getCursoredAssetsWithWarnings(Boolean simplify,
+                                                                 Long lastAssetRowId,
+                                                                 Map<String, Object> filters,
+                                                                 List<Map<String, String>> orderList,
+                                                                 Integer limit,
+                                                                 Integer offset);
 
     Asset getAssetById(String id);
 
     AssetWithWeatherWarnings getAssetWithWarningsById(String id);
 
-    List<Asset> getAllAssetsByAssetHolderId(String ownerId,
-                                            List<Map<String, String>> orderList,
-                                            Integer limit,
-                                            Integer offset);
+    List<Asset> getAssetsByOwnerId(String ownerId,
+                                   List<Map<String, String>> orderList,
+                                   Integer limit,
+                                   Integer offset);
 
-    List<AssetWithWeatherWarnings> getAllAssetsWithWarningsByAssetHolderId(String ownerId,
-                                                                           List<Map<String, String>> orderList,
-                                                                           Integer limit,
-                                                                           Integer offset);
+    List<AssetWithWeatherWarnings> getAssetsWithWarningsByOwnerId(String ownerId,
+                                                                  List<Map<String, String>> orderList,
+                                                                  Integer limit,
+                                                                  Integer offset);
 
-    List<AssetType> getAllAssetTypes(Map<String, Object> filters,
-                                     List<Map<String, String>> orderList,
-                                     Integer limit,
-                                     Integer offset);
+    List<AssetType> getAssetTypes(Map<String, Object> filters,
+                                  List<Map<String, String>> orderList,
+                                  Integer limit,
+                                  Integer offset);
 
-    List<String> selectAssetIdsByWarningId(Long id);
+    List<AssetType> getCursoredAssetTypes(Long lastAssetTypeRowId,
+                                          Map<String, Object> filters,
+                                          List<Map<String, String>> orderList,
+                                          Integer limit,
+                                          Integer offset);
+
+    List<String> getAssetIdsIntersectingWithGivenWarning(Long id);
+
+    default Map<String, Integer> groupAssetLocationByCountry(Map<String, Object> filters){return Map.of();}
+
+    Map<String, Integer> groupAssetLocationByRegion(Map<String, Object> filters);
+
+    default Map<String, Integer> groupAssetLocationByAdminDistrict(Map<String, Object> filters){return Map.of();}
 
     int countAssetsWithFilter(Map<String, Object> filters);
 
@@ -47,6 +66,8 @@ public interface AssetService {
     int insertAssetType(AssetType assetType);
 
     int insertAsset(Asset asset);
+
+    String insertAssetReturningId(Asset asset);
 
     int updateAssetType(AssetType assetType);
 

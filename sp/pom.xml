@@ -132,8 +132,6 @@
             </exclusions>
         </dependency>
 
-
-
         <!-- Automatic JSON conversion -->
 
         <dependency>
@@ -168,7 +166,7 @@
             <version>0.11.5</version>
             <scope>runtime</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>
@@ -181,6 +179,13 @@
             <groupId>com.password4j</groupId>
             <artifactId>password4j</artifactId>
             <version>1.8.2</version>
+        </dependency>
+
+        <!-- Jsoup -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.17.2</version>
         </dependency>
 
     </dependencies>

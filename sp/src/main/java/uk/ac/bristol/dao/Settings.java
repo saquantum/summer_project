@@ -3,9 +3,6 @@ package uk.ac.bristol.dao;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface Settings {
 
@@ -17,7 +14,7 @@ public interface Settings {
 
     void createContactPreferences(@Param("tableName") String tableName);
 
-    void createAssetHolders(@Param("tableName") String tableName);
+    void createContactDetails(@Param("tableName") String tableName);
 
     void createUsers(@Param("tableName") String tableName);
 
@@ -27,9 +24,13 @@ public interface Settings {
 
     void createWeatherWarnings(@Param("tableName") String tableName);
 
+    void createUKRegions(@Param("tableName") String tableName);
+
     void createNotificationTemplates(@Param("tableName") String tableName);
 
-    void createPermissionConfigs(@Param("tableName") String tableName);
+    void createAccessControlGroups(@Param("tableName") String tableName);
+
+    void createUserAccessControlGroupMapping(@Param("tableName") String tableName);
 
     void createUserInboxes(@Param("tableName") String tableName);
 }

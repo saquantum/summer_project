@@ -7,6 +7,8 @@ spring.application.name: sp
 app:
   base-url: https://sp.zr17.fun
   http-only: true
+  pagination-limit: 1000
+  pagination-max-page: 50
 
 spring:
   datasource:
@@ -17,8 +19,8 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
 
   mail:
-    username: alchemistbackydian@gmail.com
-    password: ijllbowymtlavkvx
+    username: ourrainwatersender@gmail.com
+    password: iatlngoazwhxgfyi
     host: smtp.gmail.com
     port: 465
     properties:
@@ -32,11 +34,18 @@ spring:
             port: 465
             fallback: false
 
+  redis:
+    host: redis
+    port: 6379
+
 mybatis:
   mapper-locations: classpath*:uk/ac/bristol/dao/*.xml
   type-aliases-package: uk.ac.bristol.pojo
+  configuration:
+    call-setters-on-nulls: false
 
 mock-data:
+  ukmap: data/ukmap.json
   assets: data/assets.json
   asset-types: data/asset_types.json
   users: data/users.json
@@ -48,11 +57,6 @@ metoffice:
   url:  "https://services.arcgis.com/Lq3V5RFuTBC9I7kv/arcgis/rest/services/Met_Office_National_Severe_Weather_Warning_Service_Live/FeatureServer/0/query?where=1=1&outFields=*&returnGeometry=true&f=pgeojson"
   crawler:
     rate: 600000
-
-logging:
-  level:
-    uk.ac.bristol.dao: DEBUG
-    org.apache.ibatis: DEBUG
 
 twilio:
   account-sid: ACca414e42cf744fe7c04c1bef9c0d09c3

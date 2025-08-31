@@ -1,8 +1,27 @@
 package uk.ac.bristol.controller;
 
-public class Code {
-    public static final int PAGINATION_MAX_LIMIT = 1000;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+
+@Component
+public class Code {
+
+    @Value("${app.pagination-limit}")
+    private int paginationLimit;
+
+    @Value("${app.pagination-max-page}")
+    private int paginationMaxPage;
+
+    @PostConstruct
+    private void init() {
+        PAGINATION_MAX_LIMIT = this.paginationLimit;
+        PAGINATION_MAX_PAGE = this.paginationMaxPage;
+    }
+
+    public static int PAGINATION_MAX_LIMIT;
+    public static int PAGINATION_MAX_PAGE;
 
     public static final int SUCCESS = 20000;
     public static final int INSERT_ERR = 20010;
@@ -13,12 +32,12 @@ public class Code {
     public static final int UPDATE_OK = 20031;
     public static final int SELECT_ERR = 20040;
     public static final int SELECT_OK = 20041;
-    public static final int HEAD_OK = 20050;
-    public static final int HEAD_ERR = 20051;
 
     public static final int NOT_MODIFIED = 30400;
 
     public static final int BAD_REQUEST = 40000;
+    public static final int DUPLICATE_FIELD = 40001;
+    public static final int ILLEGAL_ARGUMENT = 40002;
     public static final int UNAUTHORISED = 40100;
     public static final int LOGIN_TOKEN_ERR = 40101;
     public static final int LOGIN_TOKEN_MISSING = 40111;

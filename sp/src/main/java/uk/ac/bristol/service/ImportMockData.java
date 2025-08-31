@@ -10,7 +10,7 @@ public interface ImportMockData {
 
     void importAssets(InputStream typesInputStream, InputStream assetsInputStream);
 
-    void importWarnings(InputStream warningsInputStream);
+    void importWarnings(InputStream warningsInputStream, InputStream UKMapInputStream);
 
     void importTemplates(InputStream notificationTemplatesInputStream);
 }

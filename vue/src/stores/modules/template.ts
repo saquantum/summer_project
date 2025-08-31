@@ -13,8 +13,12 @@ export const useTemplateStore = defineStore(
       limit: number,
       orderList: string
     ) => {
-      const { data } = await adminGetTemplateSerive(offset, limit, orderList)
-      templates.value = data
+      try {
+        const { data } = await adminGetTemplateSerive(offset, limit, orderList)
+        templates.value = data
+      } catch (e) {
+        console.error(e)
+      }
     }
 
     return { templates, getTemplates }

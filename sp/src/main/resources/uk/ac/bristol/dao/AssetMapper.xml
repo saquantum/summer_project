@@ -5,7 +5,8 @@
 
 <mapper namespace="uk.ac.bristol.dao.AssetMapper">
     <select id="selectAssets" resultMap="ResultMaps.AssetMap">
-        select asset_id,
+        select asset_row_id,
+               asset_id,
                asset_name,
                asset_type_id,
                asset_owner_id,
@@ -20,12 +21,13 @@
         from assets
                  left join asset_types
                            on asset_type_type_id = asset_type_id
-        <include refid="ResultMaps.filtering"/>
-        <include refid="ResultMaps.orderAndPage"/>
+        <include refid="QueryBlocks.filtering"/>
+        <include refid="QueryBlocks.orderAndPage"/>
     </select>
 
-    <select id="selectAssetsWithWarnings" resultMap="ResultMaps.AssetWithWarningsMap">
-        select asset_id,
+    <sql id="selectAssetsWithWarnings">
+        select asset_row_id,
+               asset_id,
                asset_name,
                asset_type_id,
                asset_owner_id,
@@ -36,21 +38,30 @@
                asset_installed_at,
                asset_last_inspection,
                asset_last_modified,
-
-               warning_id,
-               warning_weather_type,
-               warning_level,
-               warning_head_line,
-               warning_valid_from,
-               warning_valid_to,
-               warning_impact,
-               warning_likelihood,
-               warning_affected_areas,
-               warning_what_to_expect,
-               warning_further_details,
-               warning_update_description,
-               ST_AsGeoJSON(warning_area)   as warning_area,
-
+            <choose>
+                <when test="simplify != null and simplify == true">
+                    warning_id,
+                    warning_weather_type,
+                    warning_level,
+                    warning_valid_from,
+                    warning_valid_to,
+                </when>
+                <otherwise>
+                    warning_id,
+                    warning_weather_type,
+                    warning_level,
+                    warning_head_line,
+                    warning_valid_from,
+                    warning_valid_to,
+                    warning_impact,
+                    warning_likelihood,
+                    warning_affected_areas,
+                    warning_what_to_expect,
+                    warning_further_details,
+                    warning_update_description,
+                    ST_AsGeoJSON(warning_area)   as warning_area,
+                </otherwise>
+            </choose>
                asset_types.*
         from assets
                  left join weather_warnings
@@ -58,12 +69,24 @@
                               now() between warning_valid_from and warning_valid_to
                  left join asset_types
                            on asset_type_type_id = asset_type_id
-        <include refid="ResultMaps.filtering"/>
-        <include refid="ResultMaps.orderAndPage"/>
+    </sql>
+
+    <select id="selectAssetsWithWarnings" resultMap="ResultMaps.AssetWithWarningsMap">
+        <include refid="selectAssetsWithWarnings"/>
+        <include refid="QueryBlocks.filtering"/>
+        <include refid="QueryBlocks.orderAndPage"/>
+    </select>
+
+    <select id="selectAssetWithWarningsAnchor" resultType="java.util.Map">
+        <include refid="selectAssetsWithWarnings"/>
+        where asset_row_id &gt;= #{rowId}
+        order by asset_row_id asc
+        limit 1 offset 0
     </select>
 
     <select id="selectAssetsWithWarningsPuttingWarningsTableMain" resultMap="ResultMaps.AssetWithWarningsMap">
-        select asset_id,
+        select asset_row_id,
+               asset_id,
                asset_name,
                asset_type_id,
                asset_owner_id,
@@ -96,39 +119,31 @@
                               now() between warning_valid_from and warning_valid_to
                  left join asset_types
                            on asset_type_type_id = asset_type_id
-        <include refid="ResultMaps.filtering"/>
-        <include refid="ResultMaps.orderAndPage"/>
+        <include refid="QueryBlocks.filtering"/>
+        <include refid="QueryBlocks.orderAndPage"/>
     </select>
 
     <select id="countAssetsWithWarnings" resultType="int">
-        select count(distinct asset_id)
+        select count(distinct asset_row_id)
         from assets
                  left join weather_warnings
                            on ST_Intersects(asset_location, warning_area) and
                               now() between warning_valid_from and warning_valid_to
                  left join asset_types
                            on asset_type_type_id = asset_type_id
-        <include refid="ResultMaps.filtering"/>
+        <include refid="QueryBlocks.filtering"/>
     </select>
 
-    <select id="selectAssetTypes" resultMap="ResultMaps.AssetTypeMap">
-        select *
-        from asset_types
-        <include refid="ResultMaps.filtering"/>
-        <include refid="ResultMaps.orderAndPage"/>
+    <select id="testAssetLocationDiff" resultType="java.lang.Boolean">
+        select case
+                   when
+                       not ST_Equals(asset_location, ST_Multi(ST_GeomFromGeoJSON(#{locationAsJson})))
+                       then true
+                   else false
+                   end
+        from assets
+        where asset_id = #{id}
     </select>
-
-    <insert id="insertAssetType">
-        insert into asset_types (asset_type_type_id,
-                                 asset_type_name,
-                                 asset_type_description)
-        values (#{id}, #{name}, #{description});
-    </insert>
-
-    <insert id="insertAssetTypeAutoId">
-        insert into asset_types (asset_type_name, asset_type_description)
-        values (#{name}, #{description});
-    </insert>
 
     <insert id="insertAsset">
         insert into assets (asset_id,
@@ -181,15 +196,6 @@
                 #{installedAt}, #{lastInspection}, #{lastModified});
     </insert>
 
-    <update id="updateAssetType">
-        update asset_types
-        <set>
-            <if test="name != null and name != ''">asset_type_name = #{name},</if>
-            <if test="description != null and description != ''">asset_type_description = #{description},</if>
-        </set>
-        where asset_type_type_id = #{id};
-    </update>
-
     <update id="updateAsset">
         update assets
         <set>
@@ -203,21 +209,59 @@
             <if test="installedAt != null">asset_installed_at = #{installedAt},</if>
             <if test="lastInspection != null">asset_last_inspection = #{lastInspection},</if>
             <if test="lastModified != null">asset_last_modified = #{lastModified},</if>
+            asset_id = #{id}
         </set>
         where asset_id = #{id};
+    </update>
+
+    <delete id="deleteAssetByIDs">
+        delete
+        from assets
+        where asset_id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
+    </delete>
+
+    <select id="selectAssetTypes" resultMap="ResultMaps.AssetTypeMap">
+        select *
+        from asset_types
+        <include refid="QueryBlocks.filtering"/>
+        <include refid="QueryBlocks.orderAndPage"/>
+    </select>
+
+    <select id="selectAssetTypeAnchor" resultType="java.util.Map">
+        select *
+        from asset_types
+        where asset_type_row_id &gt;= #{rowId}
+        order by asset_type_row_id asc
+        limit 1 offset 0
+    </select>
+
+    <insert id="insertAssetType">
+        insert into asset_types (asset_type_type_id,
+                                 asset_type_name,
+                                 asset_type_description)
+        values (#{id}, #{name}, #{description});
+    </insert>
+
+    <insert id="insertAssetTypeAutoId">
+        insert into asset_types (asset_type_name, asset_type_description)
+        values (#{name}, #{description});
+    </insert>
+
+    <update id="updateAssetType">
+        update asset_types
+        <set>
+            <if test="name != null and name != ''">asset_type_name = #{name},</if>
+            <if test="description != null and description != ''">asset_type_description = #{description},</if>
+            asset_type_type_id = #{id}
+        </set>
+        where asset_type_type_id = #{id};
     </update>
 
     <delete id="deleteAssetTypeByIDs">
         delete
         from asset_types
         where asset_type_type_id in
-        <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
-    </delete>
-
-    <delete id="deleteAssetByIDs">
-        delete
-        from assets
-        where asset_id in
         <foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
     </delete>
 </mapper>

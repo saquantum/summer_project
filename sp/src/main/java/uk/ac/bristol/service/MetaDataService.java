@@ -1,5 +1,7 @@
 package uk.ac.bristol.service;
 
+import uk.ac.bristol.pojo.ColumnTriple;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,5 +14,7 @@ public interface MetaDataService {
 
     Set<String> getAllRegisteredTableNames();
 
-    Set<String> filterRegisteredColumnsInTables(List<String> tableNames, List<String> columnNames);
+    Set<String> getAllRegisteredColumnNamesWithBlacklist(List<String> blacklist);
+
+    List<ColumnTriple> getAllTableColumnMapsWithBlacklist(Set<String> blacklist);
 }

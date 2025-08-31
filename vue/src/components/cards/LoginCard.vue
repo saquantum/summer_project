@@ -3,20 +3,26 @@ import { User, Lock, Message, Phone } from '@element-plus/icons-vue'
 import { ref, watch } from 'vue'
 import { userRegisterService } from '@/api/user'
 import { useRouter } from 'vue-router'
-import { useAssetStore, useUserStore } from '@/stores/index.ts'
+import { useAssetStore, useMailStore, useUserStore } from '@/stores/index.ts'
 
 import { ElMessage } from 'element-plus'
 import type { LoginForm } from '@/types'
 import {
   createRepasswordRules,
-  emailRules,
   firstNameRules,
   lastNameRules,
   passwordRules,
   phoneRules,
   trimForm,
+  uniqueEmailRules,
   usernameRules
 } from '@/utils/formUtils'
+
+const router = useRouter()
+const userStore = useUserStore()
+const assetStore = useAssetStore()
+const mailStore = useMailStore()
+
 const loginFormRef = ref()
 const registerFormRef = ref()
 
@@ -45,10 +51,56 @@ const stepStatus = ref({
 
 const editingStep = ref<number | null>(null)
 
+const registerForm = ref({
+  id: '',
+  firstName: '',
+  lastName: '',
+  name: '',
+  email: '',
+  phone: '',
+  password: '',
+  repassword: '',
+  contact: false
+})
+
+const rules = {
+  // customize rules here
+  username: [
+    { required: true, message: 'Please input username', trigger: 'blur' }
+  ],
+  id: usernameRules,
+  password: passwordRules,
+  repassword: createRepasswordRules(() => registerForm.value.password || ''),
+  firstName: firstNameRules,
+  lastName: lastNameRules,
+  email: uniqueEmailRules,
+  phone: phoneRules
+}
+
+const login = async () => {
+  // form validation
+  try {
+    await loginFormRef.value.validate()
+  } catch {
+    return
+  }
+
+  try {
+    // get necessary information after login
+    await userStore.getUser(loginForm.value)
+    await assetStore.getAssetTypes()
+    await mailStore.getMails()
+    router.push('/')
+  } catch (e) {
+    loginForm.value.password = ''
+    console.error(e)
+  }
+}
+
+// register function
 const confirmEmail = async () => {
   try {
     await registerFormRef.value.validateField('email')
-    console.log('Email valid:', registerForm.value.email)
   } catch {
     return
   }
@@ -81,32 +133,30 @@ const getStepTitleClass = (step: number) => {
   }
 }
 
-const registerForm = ref({
-  id: '',
-  firstName: '',
-  lastName: '',
-  name: '',
-  email: '',
-  phone: '',
-  password: '',
-  repassword: ''
-})
+const resetRegister = () => {
+  registerForm.value = {
+    id: '',
+    firstName: '',
+    lastName: '',
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    repassword: '',
+    contact: false
+  }
 
-const rules = {
-  // customize rules here
-  username: [
-    { required: true, message: 'Please input username', trigger: 'blur' }
-  ],
-  id: usernameRules,
-  password: passwordRules,
-  repassword: createRepasswordRules(() => registerForm.value.password || ''),
-  firstName: firstNameRules,
-  lastName: lastNameRules,
-  email: emailRules,
-  phone: phoneRules
+  currentStep.value = 1
+  openSteps.value = ['1']
+  stepStatus.value = {
+    1: false,
+    2: false,
+    3: false
+  }
 }
 
 const register = async () => {
+  // form validation
   trimForm(registerForm.value)
   try {
     await registerFormRef.value.validate()
@@ -114,52 +164,15 @@ const register = async () => {
     return
   }
 
+  // register and reset value
   try {
     registerForm.value.name = `${registerForm.value.firstName} ${registerForm.value.lastName}`
-    console.log(registerForm.value)
-    const res = await userRegisterService(registerForm.value)
-    console.log(res)
+    await userRegisterService(registerForm.value)
     ElMessage.success('success')
     isRegister.value = false
-    registerForm.value = {
-      id: '',
-      firstName: '',
-      lastName: '',
-      name: '',
-      email: '',
-      phone: '',
-      password: '',
-      repassword: ''
-    }
-
-    currentStep.value = 1
-    openSteps.value = ['1']
-    stepStatus.value = {
-      1: false,
-      2: false,
-      3: false
-    }
+    resetRegister()
   } catch (e) {
     console.error(e)
-  }
-}
-
-const router = useRouter()
-const userStore = useUserStore()
-const assetStore = useAssetStore()
-const login = async () => {
-  try {
-    await loginFormRef.value.validate()
-  } catch {
-    return
-  }
-
-  try {
-    await userStore.getUser(loginForm.value)
-    await assetStore.getAssetTypes()
-    router.push('/')
-  } catch {
-    loginForm.value.password = ''
   }
 }
 
@@ -169,6 +182,8 @@ watch(isRegister, () => {
     password: '',
     email: ''
   }
+
+  resetRegister()
 })
 
 defineExpose({ currentStep })
@@ -215,7 +230,12 @@ defineExpose({ currentStep })
       </el-form-item>
 
       <el-form-item>
-        <el-button class="button" type="primary" @click="login">
+        <el-button
+          class="button"
+          type="primary"
+          @click="login"
+          data-test="loginButton"
+        >
           Sign in
         </el-button>
       </el-form-item>
@@ -225,7 +245,7 @@ defineExpose({ currentStep })
           <el-checkbox>Remember me</el-checkbox>
           <el-link
             type="primary"
-            underline="never"
+            underline="hover"
             @click="router.push('/recover')"
             >Forget password?
           </el-link>
@@ -403,6 +423,9 @@ defineExpose({ currentStep })
                 type="password"
                 placeholder="Please input password again"
               />
+              <el-checkbox v-model="registerForm.contact">
+                I agree to receive emails from [Company].</el-checkbox
+              >
             </el-form-item>
             <el-form-item>
               <el-button @click="register" class="step-button">
@@ -415,7 +438,7 @@ defineExpose({ currentStep })
 
       <el-form-item class="fixed-bottom-tip">
         <span>Already have an account?&nbsp;&nbsp;</span>
-        <el-link type="primary" underline="never" @click="isRegister = false">
+        <el-link type="primary" underline="hover" @click="isRegister = false">
           Sign in
         </el-link>
       </el-form-item>

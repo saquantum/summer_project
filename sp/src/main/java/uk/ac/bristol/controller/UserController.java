@@ -1,9 +1,8 @@
 package uk.ac.bristol.controller;
 
 import org.springframework.web.bind.annotation.*;
-import uk.ac.bristol.advice.UserAID;
-import uk.ac.bristol.advice.UserIdentificationAIDExecution;
-import uk.ac.bristol.advice.UserIdentificationUIDExecution;
+import uk.ac.bristol.advice.PostSearchEndpoint;
+import uk.ac.bristol.advice.UserIdentificationExecution;
 import uk.ac.bristol.advice.UserUID;
 import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.FilterDTO;
@@ -31,29 +30,15 @@ public class UserController {
     /* --------- interfaces for common users --------- */
     /* --------- *************************** --------- */
 
-    @UserIdentificationUIDExecution
+    @UserIdentificationExecution
     @GetMapping("/user/uid/{uid}")
     public ResponseBody getMyProfileByUID(HttpServletResponse response,
                                           HttpServletRequest request,
                                           @UserUID @PathVariable String uid) {
-        User user = userService.getUserByUserId(uid);
-        user.setPassword(null);
-        user.setPermissionConfig(QueryTool.getUserPermissions(uid, null));
-        return new ResponseBody(Code.SELECT_OK, user);
+        return new ResponseBody(Code.SELECT_OK, userService.getUserByUserId(uid));
     }
 
-    @UserIdentificationAIDExecution
-    @GetMapping("/user/aid/{aid}")
-    public ResponseBody getMyProfileByAID(HttpServletResponse response,
-                                          HttpServletRequest request,
-                                          @UserAID @PathVariable String aid) {
-        User user = userService.getUserByAssetHolderId(aid);
-        user.setPassword(null);
-        user.setPermissionConfig(QueryTool.getUserPermissions(null, aid));
-        return new ResponseBody(Code.SELECT_OK, user);
-    }
-
-    @UserIdentificationUIDExecution
+    @UserIdentificationExecution
     @RequestMapping(value = "/user/uid/{uid}", method = RequestMethod.HEAD)
     public void headMyLastModifiedByUID(HttpServletResponse response,
                                         HttpServletRequest request,
@@ -68,73 +53,36 @@ public class UserController {
         }
     }
 
-    @UserIdentificationAIDExecution
-    @RequestMapping(value = "/user/aid/{aid}", method = RequestMethod.HEAD)
-    public void headMyLastModifiedByAID(HttpServletResponse response,
-                                        HttpServletRequest request,
-                                        @UserAID @PathVariable String aid,
-                                        @RequestParam(value = "time", required = true) Long timestamp) {
-        boolean b = userService.compareUserLastModified(userService.getUserByAssetHolderId(aid).getId(), timestamp);
-        response.setHeader("last-modified", Boolean.toString(b));
-        if (b) {
-            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-        } else {
-            response.setStatus(HttpServletResponse.SC_OK);
-        }
-    }
-
     // NOTICE: No Post Mapping. A common user cannot insert new users, unless they access login controller to register
 
-    @UserIdentificationUIDExecution
+    @UserIdentificationExecution
     @PutMapping("/user/uid/{uid}")
     public ResponseBody updateMyProfileWithUID(HttpServletResponse response,
                                                HttpServletRequest request,
                                                @UserUID @PathVariable String uid,
                                                @RequestBody User user) {
-        if (!QueryTool.getUserPermissions(uid, null).getCanUpdateProfile()) {
+        if (!QueryTool.getAccessControlGroupByUserId(uid).getCanUpdateProfile()) {
             throw new SpExceptions.ForbiddenException("The user is not allowed to update profile");
         }
         userService.updateUser(user);
         return new ResponseBody(Code.UPDATE_OK, null);
     }
 
-    @UserIdentificationAIDExecution
-    @PutMapping("/user/aid/{aid}")
-    public ResponseBody updateMyProfileWithAID(HttpServletResponse response,
-                                               HttpServletRequest request,
-                                               @UserAID @PathVariable String aid,
-                                               @RequestBody User user) {
-        if (!QueryTool.getUserPermissions(null, aid).getCanUpdateProfile()) {
-            throw new SpExceptions.ForbiddenException("The user is not allowed to update profile");
-        }
-        userService.updateUser(user);
-        return new ResponseBody(Code.UPDATE_OK, null);
-    }
-
-    @UserIdentificationUIDExecution
+    @UserIdentificationExecution
     @DeleteMapping("/user/uid/{uid}")
     public ResponseBody deleteMyProfileWithUID(HttpServletResponse response,
                                                HttpServletRequest request,
                                                @UserUID @PathVariable String uid) {
-        userService.deleteUserByUserIds(new String[]{uid});
+        userService.deleteUserByUserIds(List.of(uid));
         return new ResponseBody(Code.DELETE_OK, null);
     }
 
-    @UserIdentificationAIDExecution
-    @DeleteMapping("/user/aid/{aid}")
-    public ResponseBody deleteMyProfileWithAID(HttpServletResponse response,
-                                               HttpServletRequest request,
-                                               @UserAID @PathVariable String aid) {
-        userService.deleteUserByAssetHolderIds(new String[]{aid});
-        return new ResponseBody(Code.DELETE_OK, null);
-    }
-
-    @UserIdentificationUIDExecution
-    @GetMapping("/user/uid/{uid}/permission")
-    public ResponseBody getMyPermissionByUID(HttpServletResponse response,
-                                             HttpServletRequest request,
-                                             @UserUID @PathVariable String uid) {
-        return new ResponseBody(Code.SELECT_OK, QueryTool.getUserPermissions(uid, null));
+    @UserIdentificationExecution
+    @GetMapping("/user/uid/{uid}/access-group")
+    public ResponseBody getMyAccessControlGroupByUID(HttpServletResponse response,
+                                                     HttpServletRequest request,
+                                                     @UserUID @PathVariable String uid) {
+        return new ResponseBody(Code.SELECT_OK, QueryTool.getAccessControlGroupByUserId(uid));
     }
 
     /* --------- ********************* --------- */
@@ -145,9 +93,9 @@ public class UserController {
     public ResponseBody getAllUsers(@RequestParam(required = false) List<String> orderList,
                                     @RequestParam(required = false) Integer limit,
                                     @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
+        FilterDTO filter = new FilterDTO(limit, offset);
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAssetHolder(
+        return new ResponseBody(Code.SELECT_OK, userService.getUsers(
                 null,
                 QueryTool.getOrderList(orderList),
                 filter.getLimit(),
@@ -155,13 +103,12 @@ public class UserController {
         ), message);
     }
 
+    @PostSearchEndpoint
     @PostMapping("/admin/user/all/search")
     public ResponseBody getAllUsers(@RequestBody FilterDTO filter) {
-        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
-            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
-        }
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAssetHolder(
+        return new ResponseBody(Code.SELECT_OK, userService.getCursoredUsers(
+                filter.getLastRowId(),
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),
@@ -170,53 +117,23 @@ public class UserController {
     }
 
     @GetMapping("/admin/user/unauthorised")
-    public ResponseBody getAllUnauthorisedUsersWithAssetHolder(@RequestParam(required = false) List<String> orderList,
-                                                               @RequestParam(required = false) Integer limit,
-                                                               @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
+    public ResponseBody getAllUnauthorisedUsers(@RequestParam(required = false) List<String> orderList,
+                                                @RequestParam(required = false) Integer limit,
+                                                @RequestParam(required = false) Integer offset) {
+        FilterDTO filter = new FilterDTO(limit, offset);
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, userService.getAllUnauthorisedUsersWithAssetHolder(
+        return new ResponseBody(Code.SELECT_OK, userService.getUnauthorisedUsers(
                 null,
                 QueryTool.getOrderList(orderList),
                 filter.getLimit(), offset
         ), message);
     }
 
+    @PostSearchEndpoint
     @PostMapping("/admin/user/unauthorised/search")
-    public ResponseBody getAllUnauthorisedUsersWithAssetHolder(@RequestBody FilterDTO filter) {
-        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
-            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
-        }
+    public ResponseBody getAllUnauthorisedUsers(@RequestBody FilterDTO filter) {
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, userService.getAllUnauthorisedUsersWithAssetHolder(
-                filter.getFilters(),
-                QueryTool.getOrderList(filter.getOrderList()),
-                filter.getLimit(),
-                filter.getOffset()
-        ), message);
-    }
-
-    @GetMapping("/admin/user/with-asset-ids")
-    public ResponseBody getAllAssetHoldersWithAssetIds(@RequestParam(required = false) List<String> orderList,
-                                                       @RequestParam(required = false) Integer limit,
-                                                       @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
-        String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, userService.getAllAssetHoldersWithAssetIds(
-                null,
-                QueryTool.getOrderList(orderList),
-                filter.getLimit(),
-                offset
-        ), message);
-    }
-
-    @PostMapping("/admin/user/with-asset-ids/search")
-    public ResponseBody getAllAssetHoldersWithAssetIds(@RequestBody FilterDTO filter) {
-        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
-            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
-        }
-        String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, userService.getAllAssetHoldersWithAssetIds(
+        return new ResponseBody(Code.SELECT_OK, userService.getUnauthorisedUsers(
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),
@@ -235,9 +152,9 @@ public class UserController {
                                                    @RequestParam(required = false) List<String> orderList,
                                                    @RequestParam(required = false) Integer limit,
                                                    @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
+        FilterDTO filter = new FilterDTO(limit, offset);
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAccumulator(
+        return new ResponseBody(Code.SELECT_OK, userService.getUsersWithAccumulator(
                 function, column,
                 null,
                 QueryTool.getOrderList(orderList),
@@ -246,15 +163,15 @@ public class UserController {
         ), message);
     }
 
+    @PostSearchEndpoint
     @PostMapping("/admin/user/accumulate/search")
     public ResponseBody getAllUsersWithAccumulator(@RequestParam String function,
                                                    @RequestParam String column,
                                                    @RequestBody FilterDTO filter) {
-        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
-            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
-        }
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, userService.getAllUsersWithAccumulator(function, column,
+        return new ResponseBody(Code.SELECT_OK, userService.getCursoredUsersWithAccumulator(
+                function, column,
+                filter.getLastRowId(),
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),
@@ -270,21 +187,12 @@ public class UserController {
     @GetMapping("/admin/user/uid/{id}")
     public ResponseBody getUserByUserId(@PathVariable String id) {
         User user = userService.getUserByUserId(id);
-        user.setPassword(null);
-        return new ResponseBody(Code.SELECT_OK, user);
-    }
-
-    @GetMapping("/admin/user/aid/{id}")
-    public ResponseBody getUserByAssetHolderId(@PathVariable String id) {
-        User user = userService.getUserByAssetHolderId(id);
-        user.setPassword(null);
         return new ResponseBody(Code.SELECT_OK, user);
     }
 
     @RequestMapping(value = "/admin/user/uid/{uid}", method = RequestMethod.HEAD)
     public void headUserLastModifiedByUID(HttpServletResponse response,
-                                          HttpServletRequest request,
-                                          @UserUID @PathVariable String uid,
+                                          @PathVariable String uid,
                                           @RequestParam(value = "time", required = true) Long timestamp) {
         boolean b = userService.compareUserLastModified(uid, timestamp);
         response.setHeader("last-modified", Boolean.toString(b));
@@ -295,37 +203,21 @@ public class UserController {
         }
     }
 
-    @RequestMapping(value = "/admin/user/aid/{aid}", method = RequestMethod.HEAD)
-    public void headUserMyLastModifiedByAID(HttpServletResponse response,
-                                            HttpServletRequest request,
-                                            @UserAID @PathVariable String aid,
-                                            @RequestParam(value = "time", required = true) Long timestamp) {
-        boolean b = userService.compareUserLastModified(userService.getUserByAssetHolderId(aid).getId(), timestamp);
-        response.setHeader("last-modified", Boolean.toString(b));
-        if (b) {
-            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-        } else {
-            response.setStatus(HttpServletResponse.SC_OK);
-        }
+    @PostMapping("/admin/user")
+    public ResponseBody insertUser(@RequestBody User user) {
+        return new ResponseBody(Code.INSERT_OK, userService.insertUser(user));
     }
 
-    @PostMapping("/admin/user")
-    public ResponseBody insertUsers(@RequestBody List<User> list) {
-        for (User u : list) {
-            userService.insertUser(u);
-        }
-        return new ResponseBody(Code.INSERT_OK, null);
+    @PostMapping("/admin/user/batch")
+    public ResponseBody insertUserBatch(@RequestBody List<User> list) {
+        return new ResponseBody(Code.INSERT_OK, userService.insertUserBatch(list));
     }
 
     @PutMapping("/admin/user")
     public ResponseBody updateUsers(@RequestBody List<User> list) {
-        for (User u : list) {
-            userService.updateUser(u);
-        }
-        return new ResponseBody(Code.UPDATE_OK, null);
+        return new ResponseBody(Code.UPDATE_OK, userService.updateUserBatch(list));
     }
 
-    // TODO: Consider soft delete.
     @DeleteMapping("/admin/user")
     public ResponseBody deleteUserByUserIds(@RequestBody Map<String, Object> body) {
         List<String> ids = (List<String>) body.get("ids");

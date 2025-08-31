@@ -6,7 +6,7 @@
     "tests/**/*.ts",
     "tests/**/*.tsx",
     "tests/**/*.vue"
-, "tests/views/units/ResetPassword.spec.js"  ],
+, "tests/views/units/ResetPassword.spec.js", "tests/components/units/charts/bar"  ],
   "exclude": [],
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.vitest.tsbuildinfo",

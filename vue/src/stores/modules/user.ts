@@ -18,9 +18,11 @@ export const useUserStore = defineStore(
 
     const getUser = async (form: LoginForm) => {
       try {
-        const res = await userLoginService(form)
-        user.value = res.data
-        if (!user.value?.admin) getUserInfo()
+        await userLoginService(form)
+        const res = await userGetInfoService(form.username)
+        if (res.data) {
+          user.value = res.data
+        }
         ElMessage.success('Success')
       } catch (e) {
         const status = (e as { response?: { status?: number } })?.response
@@ -35,14 +37,24 @@ export const useUserStore = defineStore(
     }
 
     const getUsers = async (func: string, obj: UserSearchBody) => {
-      const res = await adminSearchUsersService(func, obj)
-      users.value = res.data
+      try {
+        const res = await adminSearchUsersService(func, obj)
+        if (res.data) {
+          users.value = res.data
+        }
+      } catch (e) {
+        console.error(e)
+      }
     }
 
     const getUserInfo = async () => {
-      if (!user.value) return
-      const { data } = await userGetInfoService(user.value.id)
-      user.value = data
+      try {
+        if (!user.value) return
+        const { data } = await userGetInfoService(user.value.id)
+        user.value = data
+      } catch (e) {
+        console.error(e)
+      }
     }
 
     const updateUser = (obj: User) => {
@@ -51,6 +63,10 @@ export const useUserStore = defineStore(
 
     const setProxyId = (id: string) => {
       proxyId.value = id
+    }
+
+    const clearUserSearchHistory = () => {
+      userSearchHistory.value = []
     }
 
     return {
@@ -63,7 +79,8 @@ export const useUserStore = defineStore(
       setProxyId,
       updateUser,
       getUserInfo,
-      getUsers
+      getUsers,
+      clearUserSearchHistory
     }
   },
   {

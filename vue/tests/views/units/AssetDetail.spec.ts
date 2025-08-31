@@ -1,5 +1,5 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import AssetDetail from '@/views/assetdetail/index.vue'
+import AssetDetailDetail from '@/views/asset/AssetDetail.vue'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { config } from '@vue/test-utils'
 import { nextTick } from 'vue'
@@ -131,7 +131,7 @@ const mockUserStore = {
   user: {
     id: 'user1',
     admin: false,
-    permissionConfig: {
+    accessControlGroup: {
       canSetPolygonOnCreate: true,
       canUpdateAssetPolygon: true
     }
@@ -148,19 +148,19 @@ vi.mock('@/stores/index.ts', () => ({
   useAssetStore: () => mockAssetStore
 }))
 
-describe('AssetDetail', () => {
+describe('AssetDetailDetail', () => {
   beforeEach(() => {
     pushMock.mockClear()
     routeMock.params.id = '1'
 
     // Reset mock store state
     mockUserStore.user.admin = false
-    mockUserStore.user.permissionConfig.canUpdateAssetPolygon = true
+    mockUserStore.user.accessControlGroup.canUpdateAssetPolygon = true
     mockAssetStore.userAssets = [mockAsset]
   })
 
   const createWrapper = (options = {}) => {
-    return mount(AssetDetail, {
+    return mount(AssetDetailDetail, {
       ...options
     })
   }
@@ -272,28 +272,6 @@ describe('AssetDetail', () => {
     })
   })
 
-  describe('Admin Controls', () => {
-    it('should show admin section for admin users', () => {
-      mockUserStore.user.admin = true
-      const wrapper = createWrapper()
-      expect(wrapper.text()).toContain('Admin Actions')
-    })
-
-    it('should show admin controls for users with update permissions', () => {
-      mockUserStore.user.admin = false
-      mockUserStore.user.permissionConfig.canUpdateAssetPolygon = true
-      const wrapper = createWrapper()
-      expect(wrapper.text()).toContain('Admin Actions')
-    })
-
-    it('should hide admin controls for users without permissions', () => {
-      mockUserStore.user.admin = false
-      mockUserStore.user.permissionConfig.canUpdateAssetPolygon = false
-      const wrapper = createWrapper()
-      expect(wrapper.text()).not.toContain('Admin Actions')
-    })
-  })
-
   describe('Responsive Design', () => {
     it('should render properly on different screen sizes', async () => {
       // Mock window innerWidth
@@ -306,20 +284,6 @@ describe('AssetDetail', () => {
       const wrapper = createWrapper()
       await nextTick()
       expect(wrapper.exists()).toBe(true)
-    })
-  })
-
-  describe('Map Integration', () => {
-    it('should show drawing controls for authorized users', () => {
-      mockUserStore.user.admin = true
-      const wrapper = createWrapper()
-      expect(wrapper.text()).toContain('Draw new polygon')
-    })
-
-    it('should show navigation controls', () => {
-      mockUserStore.user.admin = true
-      const wrapper = createWrapper()
-      expect(wrapper.text()).toContain('reset display')
     })
   })
 

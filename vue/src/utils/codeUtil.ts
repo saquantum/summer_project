@@ -15,7 +15,7 @@ const Code = {
   LOGIN_TOKEN_MISSING: 30030,
 
   SYSTEM_ERR: 50001,
-  BUSINESS_ERR: 60002
+  BUSINESS_ERR: 60001
 }
 
 const CodeUtil = {

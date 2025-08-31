@@ -5,7 +5,6 @@ describe('RecoverForm', () => {
     cy.visit('/recover')
     // In your test, before the code input step:
     cy.intercept('**/email/verification*', (req) => {
-      console.log('Intercepted:', req)
       req.reply({ code: 200, message: 'success' })
     }).as('verifyCode')
   })
@@ -17,7 +16,7 @@ describe('RecoverForm', () => {
     )
     cy.contains('Send').click()
     // After sending, the code input should appear
-    cy.get('input[placeholder="Enter code code"]').should('be.visible')
+    cy.get('input[placeholder="Enter OTP code"]').should('be.visible')
     cy.contains('Verify').should('be.visible')
   })
 
@@ -26,7 +25,7 @@ describe('RecoverForm', () => {
       'testrecover@example.com'
     )
     cy.contains('Send').click()
-    cy.get('input[placeholder="Enter code code"]')
+    cy.get('input[placeholder="Enter OTP code"]')
       .should('be.visible')
       .type('123456')
     cy.contains('Verify').click()
@@ -43,7 +42,7 @@ describe('RecoverForm', () => {
       'testrecover@example.com'
     )
     cy.contains('Send').click()
-    cy.get('input[placeholder="Enter code code"]').type('123456')
+    cy.get('input[placeholder="Enter OTP code"]').type('123456')
     cy.contains('Verify').click()
     cy.get('input[placeholder="Please input password"]').type('newpassword')
     cy.get('input[placeholder="Please input password again"]').type(

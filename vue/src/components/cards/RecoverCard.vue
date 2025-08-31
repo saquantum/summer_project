@@ -10,6 +10,7 @@ import {
 import {
   codeRules,
   createRepasswordRules,
+  emailRules,
   passwordRules
 } from '@/utils/formUtils'
 const router = useRouter()
@@ -26,23 +27,47 @@ const formRef = ref()
 const codeVisible = ref(false)
 const resetFormVisible = ref(false)
 const rules = {
+  email: emailRules,
   password: passwordRules,
   repassword: createRepasswordRules(() => form.value.password || ''),
   code: codeRules
 }
 
-// reset password
+// count down for send button
+const sendDisabled = ref(false)
+const countdown = ref(0)
+let timer: ReturnType<typeof setInterval> | null = null
 
+// reset password
 const handleSendEmail = async () => {
-  const res = await userGetEmailService(form.value.email)
-  console.log(res)
-  codeVisible.value = true
+  try {
+    await formRef.value.validateField('email')
+  } catch {
+    return
+  }
+
+  try {
+    await userGetEmailService(form.value.email)
+    codeVisible.value = true
+    sendDisabled.value = true
+    countdown.value = 30
+    timer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) {
+        sendDisabled.value = false
+        clearInterval(timer!)
+        timer = null
+      }
+    }, 1000)
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 const handleVerify = async () => {
   try {
-    const res = await userEmailVerificationService(form.value)
-    console.log(res)
+    await userEmailVerificationService(form.value)
+
     resetFormVisible.value = true
   } catch (e) {
     console.error(e)
@@ -51,8 +76,8 @@ const handleVerify = async () => {
 
 const handleConfirm = async () => {
   try {
-    const res = await userResetPasswordService(form.value)
-    console.log(res)
+    await userResetPasswordService(form.value)
+
     router.push('/login')
   } catch (e) {
     console.error(e)
@@ -87,17 +112,19 @@ const handleConfirm = async () => {
         <el-input
           v-model="form.code"
           :prefix-icon="Lock"
-          placeholder="Enter code code"
+          placeholder="Enter OTP code"
           maxlength="6"
         />
       </el-form-item>
 
       <el-form-item>
-        <el-button @click="handleSendEmail">Send</el-button>
+        <el-button @click="handleSendEmail" :disabled="sendDisabled">
+          {{ sendDisabled ? `Send (${countdown})` : 'Send' }}
+        </el-button>
         <el-button @click="handleVerify" v-if="codeVisible">Verify</el-button>
       </el-form-item>
 
-      <el-link type="info" :underline="false" @click="router.push('/login')">
+      <el-link type="info" underline="hover" @click="router.push('/login')">
         ← Back to login
       </el-link>
     </el-form>
@@ -136,7 +163,7 @@ const handleConfirm = async () => {
         <el-button @click="handleConfirm">Confirm</el-button>
       </el-form-item>
 
-      <el-link type="info" underline="never" @click="router.push('/login')">
+      <el-link type="info" underline="hover" @click="router.push('/login')">
         ← Back to login
       </el-link>
     </el-form>

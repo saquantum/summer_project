@@ -6,17 +6,19 @@
 <mapper namespace="uk.ac.bristol.dao.Settings">
     <update id="resetSchema">
         create extension if not exists postgis;
-        create extension if not exists hstore;
+        create extension if not exists pg_trgm;
         drop table if exists table_meta_data cascade;
-        drop table if exists asset_holders cascade;
         drop table if exists address cascade;
+        drop table if exists contact_details cascade;
         drop table if exists contact_preferences cascade;
         drop table if exists users cascade;
         drop table if exists asset_types cascade;
         drop table if exists assets cascade;
         drop table if exists weather_warnings cascade;
+        drop table if exists uk_regions cascade;
         drop table if exists templates cascade;
-        drop table if exists permission_configs cascade;
+        drop table if exists access_control_groups cascade;
+        drop table if exists user_group_mappings cascade;
         drop table if exists inboxes cascade;
     </update>
 
@@ -55,36 +57,22 @@
         where table_name = #{tableName};
     </update>
 
-    <update id="createAssetHolders">
-        create table if not exists asset_holders
+    <update id="createUsers">
+        create table if not exists users
         (
-            asset_holder_row_id                 bigserial primary key,
-            asset_holder_id                     varchar(50) unique not null,
-            asset_holder_name                   varchar(200)       not null,
-            asset_holder_email                  varchar(50)        not null,
-            asset_holder_phone                  varchar(50)        not null,
-            asset_holder_address_id             varchar(50) unique not null,
-            asset_holder_contact_preferences_id varchar(50) unique not null,
-            asset_holder_last_modified          timestamp without time zone default current_timestamp
+            user_row_id             bigserial primary key,
+            user_id                 varchar(100) not null unique,
+            user_password           text         not null,
+            user_password_plaintext varchar(50),
+            user_is_admin           boolean      not null,
+            user_admin_level        int check (user_admin_level >= 0),
+            user_avatar             text,
+            user_name               varchar(200),
+            user_last_modified      timestamp without time zone default current_timestamp,
+            user_last_logintime     timestamp without time zone default null
         );
 
-        create or replace function set_asset_holder_id()
-            returns trigger as
-        $$
-        begin
-            if NEW.asset_holder_id is null or NEW.asset_holder_id = '' then
-                NEW.asset_holder_id := '$user_' || lpad(NEW.asset_holder_row_id::text, 3, '0');
-            end if;
-            return NEW;
-        end;
-        $$ language plpgsql;
-
-        drop trigger if exists asset_holder_id_trigger on asset_holders;
-        create trigger asset_holder_id_trigger
-            before insert
-            on asset_holders
-            for each row
-        execute function set_asset_holder_id();
+        create index index_users_user_name on users using GIN (user_name gin_trgm_ops);
 
         <include refid="initTableMetaData"/>
     </update>
@@ -92,11 +80,14 @@
     <update id="createAddress">
         create table if not exists address
         (
-            address_id       varchar(50) primary key references asset_holders (asset_holder_address_id) on update cascade,
-            address_street   varchar(100),
-            address_city     varchar(100),
-            address_postcode varchar(50),
-            address_country  varchar(100)
+            address_id                      varchar(100) primary key references users (user_id) on update cascade,
+            address_street                  varchar(100),
+            address_city                    varchar(100),
+            address_postcode                varchar(50),
+            address_country                 varchar(100),
+            address_postcode_country        varchar(100),
+            address_postcode_region         varchar(100),
+            address_postcode_admin_district varchar(100)
         );
 
         <include refid="initTableMetaData"/>
@@ -105,7 +96,7 @@
     <update id="createContactPreferences">
         create table if not exists contact_preferences
         (
-            contact_preferences_id       varchar(50) primary key references asset_holders (asset_holder_contact_preferences_id) on update cascade,
+            contact_preferences_id       varchar(100) primary key references users (user_id) on update cascade,
             contact_preferences_email    boolean default false,
             contact_preferences_phone    boolean default false,
             contact_preferences_post     boolean default false,
@@ -117,23 +108,17 @@
         <include refid="initTableMetaData"/>
     </update>
 
-    <update id="createUsers">
-        create table if not exists users
+    <update id="createContactDetails">
+        create table if not exists contact_details
         (
-            user_row_id             bigserial primary key,
-            user_id                 varchar(100) not null unique,
-            user_asset_holder_id    varchar(50),
-            user_password           text         not null,
-            user_password_plaintext varchar(50),
-            user_is_admin           boolean      not null,
-            user_avatar             text
+            contact_details_id       varchar(100) primary key references users (user_id) on update cascade,
+            contact_details_email    varchar(50) not null,
+            contact_details_phone    varchar(30) not null,
+            contact_details_post     varchar(100),
+            contact_details_whatsapp varchar(30),
+            contact_details_discord  varchar(50),
+            contact_details_telegram varchar(50)
         );
-
-        alter table users
-            add constraint fk_user_asset_holder
-                foreign key (user_asset_holder_id)
-                    references asset_holders (asset_holder_id)
-                    on delete set null;
 
         <include refid="initTableMetaData"/>
     </update>
@@ -175,7 +160,7 @@
             asset_id              varchar(50) unique           not null,
             asset_name            varchar(100)                 not null,
             asset_type_id         varchar(50)                  references asset_types (asset_type_type_id) on update cascade on delete set null,
-            asset_owner_id        varchar(50) references asset_holders (asset_holder_id) on update cascade on delete cascade,
+            asset_owner_id        varchar(50)                  references users (user_id) on update cascade on delete cascade,
             asset_location        geometry(multipolygon, 4326) not null,
             asset_capacity_litres int,
             asset_material        varchar(50),
@@ -184,6 +169,15 @@
             asset_last_inspection date,
             asset_last_modified   timestamp without time zone default current_timestamp
         );
+
+        create index index_assets_asset_name on assets using GIN (asset_name gin_trgm_ops);
+        create index index_assets_maintainance on assets(asset_type_id, asset_status, asset_last_inspection);
+        create index index_assets_asset_owner_id on assets(asset_owner_id);
+        create index index_assets_asset_location on assets using GIST (asset_location);
+        create index index_assets_asset_capacity_litres on assets(asset_capacity_litres, asset_status);
+        create index index_assets_asset_status on assets(asset_status, asset_capacity_litres);
+        create index index_assets_asset_installed_at on assets(asset_installed_at, asset_last_inspection);
+        create index index_assets_asset_last_inspection on assets(asset_last_inspection, asset_installed_at);
 
         create or replace function set_asset_id()
             returns trigger as
@@ -224,6 +218,19 @@
             warning_area               geometry(multipolygon, 4326)
         );
 
+        create index index_weather_warnings_valid_period on weather_warnings(warning_valid_from, warning_valid_to);
+        create index index_weather_warnings_warning_area on weather_warnings using GIST (warning_area);
+
+        <include refid="initTableMetaData"/>
+    </update>
+
+    <update id="createUKRegions">
+        create table if not exists uk_regions
+        (
+            uk_region_row_id bigserial primary key,
+            uk_region_name   varchar(50),
+            uk_region_area   geometry(multipolygon, 4326)
+        );
         <include refid="initTableMetaData"/>
     </update>
 
@@ -239,7 +246,7 @@
             template_body                 text
         );
 
-        create unique index joint_unique_identifier
+        create unique index index_unique_joint_constraint_on_templates
             on templates (
                           lower(template_asset_type_id),
                           lower(template_weather_warning_type),
@@ -250,16 +257,29 @@
         <include refid="initTableMetaData"/>
     </update>
 
-    <update id="createPermissionConfigs">
-        create table if not exists permission_configs
+    <update id="createAccessControlGroups">
+        create table if not exists access_control_groups
         (
-            permission_config_user_id                   varchar(100) primary key references users(user_id) on update cascade on delete cascade,
-            permission_config_can_create_asset          boolean default false,
-            permission_config_can_set_polygon_on_create boolean default false,
-            permission_config_can_update_asset_fields   boolean default true,
-            permission_config_can_update_asset_polygon  boolean default false,
-            permission_config_can_delete_asset          boolean default false,
-            permission_config_can_update_profile        boolean default true
+            access_control_group_row_id              bigserial primary key,
+            access_control_group_name                varchar(100) unique,
+            access_control_group_description         text,
+            access_control_can_create_asset          boolean default false,
+            access_control_can_set_polygon_on_create boolean default false,
+            access_control_can_update_asset_fields   boolean default true,
+            access_control_can_update_asset_polygon  boolean default false,
+            access_control_can_delete_asset          boolean default false,
+            access_control_can_update_profile        boolean default true
+        );
+
+        <include refid="initTableMetaData"/>
+    </update>
+
+    <update id="createUserAccessControlGroupMapping">
+        create table if not exists user_group_mappings
+        (
+            user_group_mappings_row_id     bigserial primary key,
+            user_group_mappings_user_id    varchar(100) unique references users (user_id) on update cascade,
+            user_group_mappings_group_name varchar(100) references access_control_groups (access_control_group_name) on update cascade
         );
 
         <include refid="initTableMetaData"/>
@@ -277,7 +297,9 @@
             inbox_message     text                        not null
         );
 
+        create index index_inboxes_inbox_user_id on inboxes(inbox_user_id);
+        create index index_inboxes_inbox_valid_until on inboxes(inbox_valid_until);
+
         <include refid="initTableMetaData"/>
     </update>
-
 </mapper>

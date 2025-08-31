@@ -11,11 +11,25 @@ export default mergeConfig(
       environment: 'jsdom',
       exclude: [...configDefaults.exclude, 'e2e/**'],
       root: fileURLToPath(new URL('./', import.meta.url)),
-
       server: {
         deps: {
-          inline: ['element-plus', '@element-plus/icons-vue']
+          inline: ['element-plus']
         }
+      },
+      coverage: {
+        provider: 'v8',
+        reporter: ['text', 'html'],
+        include: ['src/**/*.{ts,tsx,vue}'],
+        exclude: [
+          'src/main.ts',
+          'src/App.vue',
+          'src/types/**',
+          'src/api/**',
+          'src/router/**',
+          'src/views/[[]...all[]].vue',
+          'src/stores/index.ts',
+          'src/utils/**'
+        ]
       }
     }
   })

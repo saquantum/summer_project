@@ -32,13 +32,16 @@ const props = withDefaults(
   defineProps<{
     mapId: string
     locations: MultiPolygon[]
-    mode: string
+    mode?: string
     styles?: Style[]
-    asset: Asset
-    display: boolean
+    asset?: Asset | null
+    display?: boolean
   }>(),
   {
-    styles: () => []
+    mode: 'convex',
+    styles: () => [],
+    asset: null,
+    display: false
   }
 )
 
@@ -64,20 +67,7 @@ const handleClick = (e: LeafletMouseEvent) => {
     points[index] = [marker.getLatLng().lat, marker.getLatLng().lng]
   })
 }
-const DEFAULT_MULTIPOLYGON = {
-  type: 'MultiPolygon',
-  coordinates: [
-    [
-      [
-        [-0.5103751, 51.2867601],
-        [0.3340155, 51.2867601],
-        [0.3340155, 51.6918741],
-        [-0.5103751, 51.6918741],
-        [-0.5103751, 51.2867601]
-      ]
-    ]
-  ]
-}
+
 const focusedIndex = ref(0)
 
 const highlightCurrentPolygon = () => {
@@ -106,9 +96,9 @@ const highlightCurrentPolygon = () => {
         layer = L.geoJSON(polygon, {
           style: () => {
             return {
-              color: 'red',
+              color: '#33CC66',
               weight: 2,
-              fillOpacity: 0.5
+              fillOpacity: 0.4
             }
           }
         })
@@ -188,18 +178,11 @@ const quickEscapePolygons = () => {
 
 const beginDrawing = () => {
   if (!map) return
-
-  // clear place holder
-  if (
-    props.locations[0] &&
-    JSON.stringify(props.locations[0]) === JSON.stringify(DEFAULT_MULTIPOLYGON)
-  ) {
-    map.eachLayer((layer) => {
-      if (!(layer instanceof L.TileLayer)) {
-        map!.removeLayer(layer)
-      }
-    })
-  }
+  if (!props.locations || props.locations.length <= 0) return
+  polygons.value = extractPolygonsFromMultiPolygon(
+    JSON.parse(JSON.stringify(props.locations[0]))
+  )
+  highlightCurrentPolygon()
   map.on('click', handleClick)
 }
 
@@ -208,7 +191,6 @@ const finishOneShape = async () => {
    * find current polygon, modify on it
    */
 
-  console.log(currentPolygon.value)
   const m = map
   const layers = saveLayer
   if (!m || !layers) return
@@ -216,14 +198,12 @@ const finishOneShape = async () => {
   if (points.length < 3) {
     points = []
     ElMessage.error('You should specify more than 3 points to shape a polygon.')
-    // destroy all layers on the map
+    // destroy all points on the map
     m.eachLayer((layer) => {
-      if (!(layer instanceof L.TileLayer)) {
+      if (layer instanceof L.Marker || layer instanceof L.CircleMarker) {
         m.removeLayer(layer)
       }
     })
-    // Re-add all saved layers
-    layers.forEach((layer) => layer.addTo(m))
     return
   }
   // destroy all layers on the map
@@ -261,7 +241,6 @@ const finishOneShape = async () => {
         convexHull.geometry.coordinates[0]
       )
     }
-    console.log(polygons.value)
 
     polygons.value.forEach((polygon) => {
       const layer = L.geoJSON(polygon)
@@ -297,7 +276,6 @@ const finishOnePolygon = () => {
       const fixed = rewind(currentPolygon.value, {
         reverse: true
       }) as Polygon
-      console.log(fixed)
       polygons.value[focusedIndex.value] = fixed
       focusedIndex.value = polygons.value.length
     }
@@ -317,7 +295,6 @@ const endDrawing = async () => {
 
   // Create MultiPolygon from polygons array
   const multiPolygon = createMultiPolygonFromPolygons(polygons.value)
-  console.log(multiPolygon)
   emit('update:locations', [multiPolygon])
   if (props.asset) {
     const newAsset: Asset = {
@@ -359,26 +336,67 @@ const cancelDrawing = () => {
   })
   // Re-add all saved layers
   layers.forEach((layer) => layer.addTo(m))
+  // Fit bounds to all layers
+  if (layers.length > 0) {
+    try {
+      const group = L.featureGroup(layers)
+      m.fitBounds(group.getBounds())
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   // clear points, turn off click
   points = []
-  console.log(points)
+
+  // reset polygons, set focus index to 0 is this reasonable?
+  polygons.value = extractPolygonsFromMultiPolygon(
+    JSON.parse(JSON.stringify(props.locations[0]))
+  )
+  focusedIndex.value = 0
+  highlightCurrentPolygon()
   m.off('click', handleClick)
 }
 
-watch(
-  () => props.locations,
-  (newVal) => {
-    const m = map
-    if (!m) return
+const clearCurrentPolygon = () => {
+  if (focusedIndex.value >= 0 && focusedIndex.value < polygons.value.length) {
+    polygons.value.splice(focusedIndex.value, 1)
+    if (focusedIndex.value >= polygons.value.length) {
+      focusedIndex.value = polygons.value.length - 1
+    }
+    highlightCurrentPolygon()
+  }
+}
 
-    m.eachLayer((layer) => {
+const clearAll = () => {
+  points = []
+  polygons.value = []
+  if (map) {
+    map.setView([51.505, -0.09], 13)
+    map.eachLayer((layer) => {
       if (!(layer instanceof L.TileLayer)) {
-        m.removeLayer(layer)
+        map!.removeLayer(layer)
       }
     })
+  }
+}
 
-    if (!newVal || newVal.length === 0) return
+const renderLayers = (m: L.Map) => {
+  if (!m) return
+  // Clear existing layers (except tile layer)
+  m.eachLayer((layer) => {
+    if (!(layer instanceof L.TileLayer)) {
+      m.removeLayer(layer)
+    }
+  })
 
+  if (
+    !props.locations ||
+    props.locations.length <= 0 ||
+    props.locations[0].coordinates.length <= 0
+  ) {
+    m.setView([51.505, -0.09], 13)
+  } else {
     // Create separate layers for each MultiPolygon
     const layers: L.GeoJSON[] = []
 
@@ -402,17 +420,31 @@ watch(
       layers.push(layer)
     })
 
+    // Store all layers for later use
+    saveLayer.length = 0 // Clear existing layers
+    saveLayer.push(...layers)
+
     // Fit bounds to all layers
     if (layers.length > 0) {
       try {
         const group = L.featureGroup(layers)
-        m.fitBounds(group.getBounds())
+        m.fitBounds(group.getBounds(), {
+          padding: [50, 50],
+          maxZoom: 15
+        })
       } catch (e) {
         console.error(e)
       }
     }
+  }
+}
 
-    // highlightCurrentPolygon()
+watch(
+  () => props.locations,
+  () => {
+    const m = map
+    if (!m) return
+    renderLayers(m)
   },
   {
     deep: true
@@ -435,57 +467,8 @@ onMounted(async () => {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map)
 
-  // Create separate layers for each MultiPolygon
-  const layers: L.GeoJSON[] = []
-
-  props.locations.forEach((geometry, idx) => {
-    const feature: Feature = {
-      type: 'Feature',
-      geometry,
-      properties: { index: idx }
-    }
-
-    const layer = L.geoJSON(feature, {
-      style: () => {
-        if (props.styles?.length > 0 && props.styles[idx]) {
-          return props.styles[idx]
-        }
-        return {}
-      }
-    })
-
-    if (map) {
-      layer.addTo(map)
-    }
-
-    layers.push(layer)
-  })
-
-  // Store all layers for later use
-  saveLayer.length = 0 // Clear existing layers
-  saveLayer.push(...layers)
-
-  console.log(saveLayer)
-
-  // Fit bounds to all layers
-  if (layers.length > 0 && map) {
-    try {
-      const group = L.featureGroup(layers)
-      map.fitBounds(group.getBounds())
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
-  if (
-    props.locations[0] &&
-    JSON.stringify(props.locations[0]) !== JSON.stringify(DEFAULT_MULTIPOLYGON)
-  ) {
-    // conver multipolygon to polygon, this is only for asset
-    polygons.value = extractPolygonsFromMultiPolygon(props.locations[0])
-  }
-
-  // highlightCurrentPolygon()
+  // render layers using passed location
+  renderLayers(map)
 })
 
 onBeforeUnmount(() => {
@@ -504,6 +487,8 @@ defineExpose({
   finishOnePolygon,
   endDrawing,
   cancelDrawing,
+  clearAll,
+  clearCurrentPolygon,
   map,
   disablePrev,
   disableNext

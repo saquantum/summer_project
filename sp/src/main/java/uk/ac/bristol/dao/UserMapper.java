@@ -2,6 +2,7 @@ package uk.ac.bristol.dao;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import uk.ac.bristol.pojo.FilterItemDTO;
 import uk.ac.bristol.pojo.User;
 import uk.ac.bristol.pojo.UserWithAssets;
 import uk.ac.bristol.pojo.UserWithExtraColumns;
@@ -12,31 +13,34 @@ import java.util.Map;
 @Mapper
 public interface UserMapper {
 
-    List<User> selectUsers(@Param("filterString") String filterString,
+    // selecting
+
+    List<User> selectUsers(@Param("filterList") List<FilterItemDTO> filterList,
                            @Param("orderList") List<Map<String, String>> orderList,
                            @Param("limit") Integer limit,
                            @Param("offset") Integer offset);
 
-    List<User> selectUsersPuttingAssetHoldersTableMain(@Param("filterString") String filterString,
-                                                       @Param("orderList") List<Map<String, String>> orderList,
-                                                       @Param("limit") Integer limit,
-                                                       @Param("offset") Integer offset);
+    List<Map<String, Object>> selectUserAnchor(@Param("rowId") Long rowId);
 
-    List<User> selectUsersWithoutAssociation(@Param("filterString") String filterString,
+    List<User> selectUsersWithoutAssociation(@Param("filterList") List<FilterItemDTO> filterList,
                                              @Param("orderList") List<Map<String, String>> orderList,
                                              @Param("limit") Integer limit,
                                              @Param("offset") Integer offset);
 
     List<UserWithExtraColumns> selectUsersWithAccumulator(@Param("function") String function,
                                                           @Param("column") String column,
-                                                          @Param("filterString") String filterString,
+                                                          @Param("filterList") List<FilterItemDTO> filterList,
                                                           @Param("orderList") List<Map<String, String>> orderList,
                                                           @Param("limit") Integer limit,
                                                           @Param("offset") Integer offset);
 
+    List<Map<String, Object>> selectUserWithAccumulatorAnchor(@Param("function") String function,
+                                                              @Param("column") String column,
+                                                              @Param("rowId") Long rowId);
+
     String selectPasswordByUserId(@Param("id") String id);
 
-    Long selectUserRowIdByUserId(@Param("id") String id);
+    // grouping
 
     List<UserWithAssets> groupUsersWithOwnedAssetsByWarningId(@Param("limit") Integer limit,
                                                               @Param("cursor") Long cursor,
@@ -44,7 +48,11 @@ public interface UserMapper {
                                                               @Param("getDiff") boolean getDiff,
                                                               @Param("newArea") String newAreaAsJson);
 
-    int countUsers(@Param("filterString") String filterString);
+    // counting
+
+    long countUsers(@Param("filterList") List<FilterItemDTO> filterList);
+
+    // write & delete
 
     int insertUser(User user);
 
@@ -52,11 +60,35 @@ public interface UserMapper {
 
     int updateUserPasswordByUserId(User user);
 
-    int deleteUserByAssetHolderIDs(@Param("ids") String[] assetHolderIds);
+    int deleteUserByUserIds(@Param("ids") List<String> ids);
 
-    int deleteUserByAssetHolderIDs(@Param("ids") List<String> assetHolderIds);
+    /* address */
 
-    int deleteUserByIds(@Param("ids") String[] ids);
+    List<Map<String, Object>> selectAddressByUserId(@Param("id") String userId);
 
-    int deleteUserByIds(@Param("ids") List<String> ids);
+    boolean upsertAddressByUserId(@Param("id") String uid, Map<String, String> map);
+
+    int deleteAddressByUserIds(@Param("ids") List<String> ids);
+
+    /* contact details */
+
+    List<Map<String, Object>> selectContactDetailsByUserId(@Param("id") String userId);
+
+    boolean upsertContactDetailsByUserId(@Param("id") String uid, Map<String, String> map);
+
+    int deleteContactDetailsByUserIds(@Param("ids") List<String> ids);
+
+    /* contact preference */
+
+    List<Map<String, Object>> selectContactPreferencesByUserId(@Param("id") String userId);
+
+    boolean upsertContactPreferencesByUserId(@Param("id") String uid, Map<String, Boolean> map);
+
+    int deleteContactPreferencesByUserIds(@Param("ids") List<String> ids);
+
+    /* new function */
+
+    int saveLoginTime(@Param("id") String id);
+
+    int countLoginWithinTwoDays();
 }

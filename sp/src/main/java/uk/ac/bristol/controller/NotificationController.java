@@ -1,10 +1,9 @@
 package uk.ac.bristol.controller;
 
 import org.springframework.web.bind.annotation.*;
-import uk.ac.bristol.advice.UserAID;
-import uk.ac.bristol.advice.UserIdentificationUIDExecution;
+import uk.ac.bristol.advice.PostSearchEndpoint;
+import uk.ac.bristol.advice.UserIdentificationExecution;
 import uk.ac.bristol.advice.UserUID;
-import uk.ac.bristol.exception.SpExceptions;
 import uk.ac.bristol.pojo.FilterDTO;
 import uk.ac.bristol.service.ContactService;
 import uk.ac.bristol.service.WarningService;
@@ -32,7 +31,7 @@ public class NotificationController {
 
     /* ---------------- Inbox ---------------- */
 
-    @UserIdentificationUIDExecution
+    @UserIdentificationExecution
     @GetMapping("/user/uid/{uid}/inbox")
     public ResponseBody getMyInboxMessagesByUID(HttpServletResponse response,
                                                 HttpServletRequest request,
@@ -40,7 +39,14 @@ public class NotificationController {
         return new ResponseBody(Code.SELECT_OK, contactService.getUserInboxMessagesByUserId(uid));
     }
 
-    @UserIdentificationUIDExecution
+    @GetMapping("/admin/user/uid/{uid}/inbox")
+    public ResponseBody getUserInboxMessagesByUID(HttpServletResponse response,
+                                                  HttpServletRequest request,
+                                                  @UserUID @PathVariable String uid) {
+        return new ResponseBody(Code.SELECT_OK, contactService.getUserInboxMessagesByUserId(uid));
+    }
+
+    @UserIdentificationExecution
     @PutMapping("/user/uid/{uid}/inbox/{rowId}")
     public ResponseBody setMyInboxMessageReadByRowIdWithUID(HttpServletResponse response,
                                                             HttpServletRequest request,
@@ -52,11 +58,11 @@ public class NotificationController {
         return new ResponseBody(Code.UPDATE_OK, null);
     }
 
-    @UserIdentificationUIDExecution
+    @UserIdentificationExecution
     @DeleteMapping("/user/uid/{uid}/inbox/{rowId}")
     public ResponseBody deleteMyInboxMessageByRowIdWithUID(HttpServletResponse response,
                                                            HttpServletRequest request,
-                                                           @UserAID @PathVariable String uid,
+                                                           @UserUID @PathVariable String uid,
                                                            @PathVariable long rowId) {
         contactService.deleteInboxMessageByFilter(Map.of("inbox_row_id", rowId));
         return new ResponseBody(Code.DELETE_OK, null);
@@ -74,9 +80,32 @@ public class NotificationController {
                 "userId", userId,
                 "hasRead", false,
                 "issuedDate", now,
-                "validUntil", now.plus(Duration.ofMillis(validDuration)),
+                "validUntil", now.plus(Duration.ofMinutes(validDuration)),
                 "title", title,
                 "message", body)
+        );
+        return new ResponseBody(Code.SUCCESS, n, "Successfully sent " + n + " inbox messages.");
+    }
+
+    // TODO: split inbox tables into 2 tables: user-specific messages and common messages visible to all users.
+    // A problem: users registered later should receive the same old messages?
+
+    @PostMapping("/admin/notify/inbox/all")
+    public ResponseBody sendInboxMessageToUsersByFilter(@RequestBody Map<String, Object> message) {
+        Map<String, Object> filter = (Map<String, Object>) message.get("filters");
+        String title = (String) message.get("title");
+        String body = (String) message.get("body");
+        Long validDuration = Long.valueOf((Integer) message.get("duration"));
+
+        LocalDateTime now = LocalDateTime.now();
+        int n = contactService.insertInboxMessageToUsersByFilter(
+                filter,
+                Map.of(
+                        "hasRead", false,
+                        "issuedDate", now,
+                        "validUntil", now.plus(Duration.ofMinutes(validDuration)),
+                        "title", title,
+                        "message", body)
         );
         return new ResponseBody(Code.SUCCESS, n, "Successfully sent " + n + " inbox messages.");
     }
@@ -100,9 +129,9 @@ public class NotificationController {
     public ResponseBody getAllLiveWarnings(@RequestParam(required = false) List<String> orderList,
                                            @RequestParam(required = false) Integer limit,
                                            @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
+        FilterDTO filter = new FilterDTO(limit, offset);
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarnings(
+        return new ResponseBody(Code.SELECT_OK, warningService.getWarnings(
                 null,
                 QueryTool.getOrderList(orderList),
                 filter.getLimit(),
@@ -110,13 +139,12 @@ public class NotificationController {
         ), message);
     }
 
+    @PostSearchEndpoint
     @PostMapping("/warning/search")
     public ResponseBody getAllLiveWarnings(@RequestBody FilterDTO filter) {
-        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
-            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
-        }
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarnings(
+        return new ResponseBody(Code.SELECT_OK, warningService.getCursoredWarnings(
+                filter.getLastRowId(),
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),
@@ -128,9 +156,9 @@ public class NotificationController {
     public ResponseBody getAllWarningsIncludingOutdated(@RequestParam(required = false) List<String> orderList,
                                                         @RequestParam(required = false) Integer limit,
                                                         @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
+        FilterDTO filter = new FilterDTO(limit, offset);
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarningsIncludingOutdated(
+        return new ResponseBody(Code.SELECT_OK, warningService.getWarningsIncludingOutdated(
                 null,
                 QueryTool.getOrderList(orderList),
                 filter.getLimit(),
@@ -138,13 +166,12 @@ public class NotificationController {
         ), message);
     }
 
+    @PostSearchEndpoint
     @PostMapping("/admin/warning/all/search")
     public ResponseBody getAllWarningsIncludingOutdated(@RequestBody FilterDTO filter) {
-        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
-            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
-        }
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, warningService.getAllWarningsIncludingOutdated(
+        return new ResponseBody(Code.SELECT_OK, warningService.getCursoredWarningsIncludingOutdated(
+                filter.getLastRowId(),
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),

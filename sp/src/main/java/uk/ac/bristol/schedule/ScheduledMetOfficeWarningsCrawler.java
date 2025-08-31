@@ -1,7 +1,5 @@
 package uk.ac.bristol.schedule;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -12,6 +10,7 @@ import uk.ac.bristol.service.WarningService;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -22,9 +21,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Component
 public class ScheduledMetOfficeWarningsCrawler {
@@ -32,24 +29,10 @@ public class ScheduledMetOfficeWarningsCrawler {
     @Value("${metoffice.url}")
     private String DEFAULT_URL;
 
-    private static final ObjectMapper mapper = new ObjectMapper();
-
     private final WarningService warningService;
 
     public ScheduledMetOfficeWarningsCrawler(WarningService warningService) {
         this.warningService = warningService;
-    }
-
-    static class FeatureCollection {
-        public String type;
-        public List<Feature> features;
-    }
-
-    static class Feature {
-        public String type;
-        public Long id;
-        public Map<String, Object> properties;
-        public Map<String, Object> geometry;
     }
 
     @Scheduled(fixedRateString = "${metoffice.crawler.rate:600000}") // default polling rate -- 10 mins per polling
@@ -69,6 +52,9 @@ public class ScheduledMetOfficeWarningsCrawler {
         String response = null;
         try {
             httpResponse = getResponse();
+        } catch (ConnectException e) {
+            System.err.println("Failed to fetch weather warning data due to lost network connection.");
+            return;
         } catch (Exception e) {
             throw new SpExceptions.SystemException("Failed to fetch weather warning data. " + e.getMessage());
         }
@@ -93,8 +79,7 @@ public class ScheduledMetOfficeWarningsCrawler {
         // 3. parse GeoJSON into Warning DTO, send notifications
         List<Warning> warnings;
         try {
-            List<Feature> features = getFeatures(response);
-            warnings = parseWarningFromGeoJSON(features);
+            warnings = Warning.parseWarningsFromGeoJSON(response);
         } catch (Exception e) {
             throw new SpExceptions.SystemException(
                     "Failed to parse fetched weather warning data at "
@@ -102,7 +87,7 @@ public class ScheduledMetOfficeWarningsCrawler {
                             + ". " + e.getMessage());
         }
         if (!warnings.isEmpty()) {
-            if(warningService.storeWarningsAndSendNotifications(warnings)){
+            if (warningService.storeWarningsAndSendNotifications(warnings)) {
                 System.out.println("Successfully sent emails after crawling.");
             }
         } else {
@@ -150,19 +135,5 @@ public class ScheduledMetOfficeWarningsCrawler {
         }
         String timestamp = String.valueOf(Instant.now().toEpochMilli());
         Files.writeString(dataDir.resolve("raw_" + timestamp + ".json"), GeoJSON);
-    }
-
-    private List<Feature> getFeatures(String GeoJSON) throws JsonProcessingException {
-        return mapper.readValue(GeoJSON, FeatureCollection.class).features;
-    }
-
-    private List<Warning> parseWarningFromGeoJSON(List<Feature> features) {
-        if (features.isEmpty()) return new ArrayList<>();
-        List<Warning> warnings = new ArrayList<>();
-        for (Feature feature : features) {
-            Warning warning = Warning.getWarningFromGeoJSON(feature.properties, feature.geometry);
-            warnings.add(warning);
-        }
-        return warnings;
     }
 }

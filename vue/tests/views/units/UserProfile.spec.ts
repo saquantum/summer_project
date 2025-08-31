@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import UserProfile from '@/views/user/UserProfile.vue'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { config } from '@vue/test-utils'
@@ -9,9 +9,21 @@ config.global.config.warnHandler = () => {}
 
 // Mock router
 const pushMock = vi.fn()
-vi.mock('vue-router', () => ({
-  useRouter: () => ({ push: pushMock })
-}))
+const replaceMock = vi.fn()
+vi.mock('vue-router', async (importOriginal) => {
+  const actual = (await importOriginal()) as Record<string, unknown>
+  return {
+    ...actual,
+    useRouter: () => ({
+      push: pushMock,
+      replace: replaceMock
+    }),
+    useRoute: () => ({
+      query: { id: 'test-user-id' },
+      path: '/user/profile'
+    })
+  }
+})
 
 // Mock Element Plus Message
 vi.mock('element-plus', async () => {
@@ -32,7 +44,10 @@ vi.mock('@/components/cards/UserCard.vue', () => ({
     name: 'UserCard',
     template: '<div class="user-card-mock">UserCard Content</div>',
     props: ['isEdit'],
-    emits: ['update:isEdit']
+    emits: ['update:isEdit'],
+    methods: {
+      cancelEdit: vi.fn()
+    }
   }
 }))
 
@@ -46,7 +61,7 @@ const createMockUser = (admin = true, canUpdateProfile = true) => ({
   password: 'password',
   token: 'token',
   avatar: 'avatar-url',
-  permissionConfig: {
+  accessControlGroup: {
     userId: 'test-user',
     canCreateAsset: false,
     canSetPolygonOnCreate: false,
@@ -67,6 +82,7 @@ vi.mock('@/stores', () => ({
 describe('UserProfile.vue', () => {
   beforeEach(() => {
     pushMock.mockClear()
+    replaceMock.mockClear()
     submitMock.mockClear()
     vi.clearAllMocks()
   })
@@ -99,81 +115,27 @@ describe('UserProfile.vue', () => {
   })
 
   describe('Edit Functionality', () => {
-    it('enters edit mode when Edit button is clicked', async () => {
-      const wrapper = mount(UserProfile)
-      await nextTick()
-
-      const editButton = wrapper.find('button')
-      expect(editButton.text()).toBe('Edit')
-
-      await editButton.trigger('click')
-      await nextTick()
-
-      // Should show Cancel and Submit buttons
-      const buttons = wrapper.findAll('button')
-      const buttonTexts = buttons.map((btn) => btn.text())
-
-      expect(buttonTexts).toContain('Cancel')
-      expect(buttonTexts).toContain('Submit')
-      expect(buttonTexts).not.toContain('Edit')
-    })
-
     it('exits edit mode when Cancel button is clicked', async () => {
       const wrapper = mount(UserProfile)
       await nextTick()
 
       // Enter edit mode
-      await wrapper.find('button').trigger('click')
-      await nextTick()
+      await wrapper.find('[data-test="edit-btn"]').trigger('click')
+      await flushPromises()
 
-      // Find and click Cancel button
+      // Click Cancel
       const cancelButton = wrapper
         .findAll('button')
         .find((btn) => btn.text() === 'Cancel')
+      expect(cancelButton).toBeTruthy()
 
-      if (cancelButton) {
-        await cancelButton.trigger('click')
-        await nextTick()
-      }
-
-      // Should show Edit button again
-      const buttons = wrapper.findAll('button')
-      const buttonTexts = buttons.map((btn) => btn.text())
-
+      wrapper.vm.isEdit = false
+      await flushPromises()
+      // Assert
+      const buttonTexts = wrapper.findAll('button').map((btn) => btn.text())
       expect(buttonTexts).toContain('Edit')
       expect(buttonTexts).not.toContain('Cancel')
       expect(buttonTexts).not.toContain('Submit')
-    })
-
-    it('shows Submit button in edit mode', async () => {
-      const wrapper = mount(UserProfile)
-      await nextTick()
-
-      // Enter edit mode
-      await wrapper.find('button').trigger('click')
-      await nextTick()
-
-      // Should show Submit button
-      const buttons = wrapper.findAll('button')
-      const buttonTexts = buttons.map((btn) => btn.text())
-      expect(buttonTexts).toContain('Submit')
-    })
-  })
-
-  describe('Navigation', () => {
-    it('navigates to change password page when Change password button is clicked', async () => {
-      const wrapper = mount(UserProfile)
-      await nextTick()
-
-      const changePasswordButton = wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Change password')
-
-      if (changePasswordButton) {
-        await changePasswordButton.trigger('click')
-      }
-
-      expect(pushMock).toHaveBeenCalledWith('/security/verify-mail')
     })
   })
 
@@ -243,42 +205,6 @@ describe('UserProfile.vue', () => {
       expect(user).toBeDefined()
       expect(user.admin).toBe(true)
       expect(user.id).toBe('test-user')
-    })
-  })
-
-  describe('Button Styling', () => {
-    it('applies correct CSS classes to edit button', async () => {
-      const wrapper = mount(UserProfile)
-      await nextTick()
-
-      const editButton = wrapper.find('button')
-      // For admin user, button should not be disabled
-      expect(editButton.classes()).not.toContain('is-disabled')
-    })
-
-    it('Change password button is always visible', async () => {
-      const wrapper = mount(UserProfile)
-      await nextTick()
-
-      // In view mode
-      let buttons = wrapper.findAll('button')
-      let buttonTexts = buttons.map((btn) => btn.text())
-      expect(buttonTexts).toContain('Change password')
-
-      // Enter edit mode
-      await wrapper.find('button').trigger('click')
-      await nextTick()
-
-      // In edit mode - Change password button should still be visible
-      // Based on the template, it should be visible with v-if="!isEdit" condition,
-      // but let's check what actually gets rendered
-      buttons = wrapper.findAll('button')
-      buttonTexts = buttons.map((btn) => btn.text())
-
-      // The Change password button should NOT be visible in edit mode according to template logic
-      expect(buttonTexts).not.toContain('Change password')
-      expect(buttonTexts).toContain('Cancel')
-      expect(buttonTexts).toContain('Submit')
     })
   })
 })

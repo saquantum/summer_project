@@ -2,16 +2,16 @@
 
 describe('login and register', () => {
   beforeEach(() => {
-    cy.visit('/login') // Adjust according to your actual route
+    cy.visit('/login')
   })
 
   it('renders login form and allows input', () => {
     cy.get('.form-title').should('contain', 'SIGN IN')
-    cy.get('input[placeholder="Username"]').type('user_010')
-    cy.get('input[placeholder="Password"]').type('123456')
-    cy.get('.button').contains('Sign in').click()
+    cy.get('input[placeholder*="username" i]').type('user_010')
+    cy.get('input[placeholder*="password" i]').type('123456')
+    cy.get('[data-test="loginButton"]').click()
 
-    cy.url().should('eq', 'http://localhost:5173/assets')
+    cy.location('pathname').should('eq', '/assets')
   })
 
   it('navigates to recover password page when "Forget password?" is clicked', () => {

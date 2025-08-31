@@ -55,3 +55,5 @@ export const userResetPasswordService = ({
   email: string
   password: string
 }): Promise<ApiResponse> => request.post('/email/password', { email, password })
+
+export const userLogOutService = () => request.post('/logout')

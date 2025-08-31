@@ -4,7 +4,7 @@ import { computed } from 'vue'
 const props = defineProps({
   status: {
     type: String,
-    default: 'OFF' // possible value：success, YELLOW, AMBER, RED
+    default: 'OFF' // possible value：SUCCESS, YELLOW, AMBER, RED
   }
 })
 
@@ -19,10 +19,12 @@ const statusClass = computed(() => {
 
 <style scoped>
 .indicator {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 1px solid #ccc;
+  width: 40px;
+  height: 10px;
+  border-radius: 4px;
+  margin-left: 8px;
+  margin-top: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .indicator--SUCCESS {

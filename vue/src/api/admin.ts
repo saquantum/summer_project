@@ -17,7 +17,7 @@ import type {
   UserSearchBody,
   Warning
 } from '@/types'
-import type { Permission } from '@/types/permission'
+import type { PermissionGroup } from '@/types/permission'
 
 /**
  * user
@@ -44,7 +44,7 @@ export const adminSearchUsersService = (
   obj: UserSearchBody
 ): Promise<ApiResponse<UserItem[]>> =>
   request.post('/admin/user/accumulate/search', obj, {
-    params: { function: functionName, column: '1' }
+    params: { function: functionName, column: 'asset_id' }
   })
 
 export const adminGetUserInfoService = (
@@ -52,9 +52,6 @@ export const adminGetUserInfoService = (
 ): Promise<ApiResponse<User>> => {
   return request.get(`/admin/user/uid/${id}`)
 }
-
-export const adminGetUserInfoByAIDService = (aid: string) =>
-  request.get(`/admin/user/aid/${aid}`)
 
 export const adminInsertUserService = (
   users: UserInfoForm[]
@@ -97,8 +94,17 @@ export const adminGetTemplateByTypesService = (
     }
   })
 
+export const adminGetTemplateByIdService = (id: string) =>
+  request.get(`/admin/template/id/${id}`)
+
 export const adminUpdateTemplateByIdService = (template: Template) =>
   request.put('/admin/template/id', template)
+
+export const adminUpdateTemplateByTypesService = (template: Template) =>
+  request.put('/admin/template/type', template)
+
+export const adminInsertTemplateService = (template: Template) =>
+  request.post('/admin/template', template)
 
 export const adminDeleteTemplateByIdService = (ids: number[]) =>
   request.delete('/admin/template', {
@@ -173,22 +179,61 @@ export const adminGetAllLiveWarningsService = (): Promise<
  * permisssion
  */
 
-export const adminGetAllPermissionService = (): Promise<
-  ApiResponse<Permission[]>
-> => request.get('/admin/permission')
+// export const adminGetAllPermissionService = (): Promise<
+//   ApiResponse<Permission[]>
+// > => request.get('/admin/permission')
 
-export const adminGetPermissionByUIDService = (
-  id: string
-): Promise<ApiResponse<Permission[]>> => request.get(`/admin/permission/${id}`)
+// export const adminGetPermissionByUIDService = (
+//   id: string
+// ): Promise<ApiResponse<Permission>> => request.get(`/admin/permission/${id}`)
 
-export const adminUpdatePermissionService = (
-  permission: Permission
-): Promise<ApiResponse<Permission[]>> =>
-  request.put(`/admin/permission/`, permission)
+// export const adminUpdatePermissionService = (
+//   permission: Permission
+// ): Promise<ApiResponse<Permission[]>> =>
+//   request.put(`/admin/permission/`, permission)
+
+export const adminGetPermissionGroupsService = (): Promise<
+  ApiResponse<PermissionGroup[]>
+> => request.get('/admin/access-group')
+
+export const adminUpdatePermissionGroupService = (obj: PermissionGroup) =>
+  request.put('/admin/access-group', obj)
+
+export const adminInsertPermissionGroupService = (
+  obj: PermissionGroup
+): Promise<ApiResponse> => request.post('/admin/access-group', obj)
+
+export const adminAssignUsersToGroup = (groupName: string, obj: object) =>
+  request.put(`/admin/access-group/assign/${groupName}`, obj)
+
+export const adminDeletPermissionGroup = (ids: string[]) =>
+  request.delete('/admin/access-group', {
+    data: {
+      ids: ids
+    }
+  })
 
 /**
  * message
  */
 
 export const adminSendMessageService = (obj: object) =>
-  request.post('/admin/notify/inbox', obj)
+  request.post('/admin/notify/inbox/all', obj)
+
+/**
+ * dashboard
+ */
+
+export const adminGetMetaDateService = () => request.get('/admin/metadata')
+
+export const adminGetUserDistributionService = () =>
+  request.get('/admin/dashboard/users/region')
+
+export const adminGetContactPreferenceService = () =>
+  request.get('/admin/dashboard/users/contact-preference')
+
+export const adminGetAssetDistributionService = () =>
+  request.get('/admin/dashboard/assets/region')
+
+export const adminGetActiveUsersService = () =>
+  request.get('/admin/dashboard/login')

@@ -4,11 +4,19 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="uk.ac.bristol.dao.ContactMapper">
-    <select id="selectAllNotificationTemplates" resultMap="ResultMaps.TemplateMap">
+    <select id="selectNotificationTemplates" resultMap="ResultMaps.TemplateMap">
         select *
         from templates
-        <include refid="ResultMaps.filtering"/>
-        <include refid="ResultMaps.orderAndPage"/>
+        <include refid="QueryBlocks.filtering"/>
+        <include refid="QueryBlocks.orderAndPage"/>
+    </select>
+
+    <select id="selectNotificationTemplateAnchor" resultType="java.util.Map">
+        select *
+        from templates
+        where template_id &gt;= #{rowId}
+        order by template_id asc
+        limit 1 offset 0
     </select>
 
     <select id="selectNotificationTemplateById" resultMap="ResultMaps.TemplateMap">
@@ -67,13 +75,22 @@
             <if test="body != null and body != ''">
                 template_body = #{body},
             </if>
+            template_id = #{id}
         </set>
         where template_id = #{id}
     </update>
 
     <update id="updateNotificationTemplateMessageByTypes">
         update templates
-        set template_title = #{title}, template_body = #{body}
+        <set>
+            <if test="title != null and title != ''">
+                template_title = #{title},
+            </if>
+            <if test="body != null and body != ''">
+                template_body = #{body},
+            </if>
+            template_id = #{id}
+        </set>
         where LOWER(template_asset_type_id) = LOWER(#{assetTypeId})
           and LOWER(template_weather_warning_type) = LOWER(#{warningType})
           and LOWER(template_severity) = LOWER(#{severity})
@@ -112,6 +129,23 @@
         values (#{userId}, #{hasRead}, #{issuedDate}, #{validUntil}, #{title}, #{message})
     </insert>
 
+    <insert id="insertInboxMessageToUsersByFilter">
+        insert into inboxes (inbox_user_id,
+                             inbox_has_read,
+                             inbox_issued_date,
+                             inbox_valid_until,
+                             inbox_title,
+                             inbox_message)
+        select user_id,
+               #{message.hasRead},
+               #{message.issuedDate},
+               #{message.validUntil},
+               #{message.title},
+               #{message.message}
+        from users
+        <include refid="QueryBlocks.filtering"/>
+    </insert>
+
     <update id="updateInboxMessageByUserId">
         update inboxes
         <set>
@@ -130,13 +164,14 @@
             <if test="message != null and message != ''">
                 inbox_message = #{message}
             </if>
+            inbox_row_id = #{rowId}
         </set>
         where inbox_row_id = #{rowId} and inbox_user_id = #{userId}
     </update>
 
     <delete id="deleteInboxMessageByFilter">
         delete from inboxes
-        <include refid="ResultMaps.filtering"/>
+        <include refid="QueryBlocks.filtering"/>
     </delete>
 
     <delete id="deleteOutDatedInboxMessages">

@@ -2,10 +2,8 @@
 
 describe('UserProfile', () => {
   beforeEach(() => {
-    cy.visit('/login')
-    cy.get('input[placeholder="Username"]').type('user_017')
-    cy.get('input[placeholder="Password"]').type('123456')
-    cy.get('.button').contains('Sign in').click()
+    cy.login('user_017', '123456')
+    cy.visit('/assets')
     cy.get('[data-test="my-profile-side"]').click()
   })
 
@@ -16,8 +14,10 @@ describe('UserProfile', () => {
 
   it('enables edit mode when Edit is clicked', () => {
     cy.contains('Edit').click()
-    cy.get('button').contains('Cancel').should('be.visible')
-    cy.get('button').contains('Submit').should('be.visible')
+    cy.contains('Cancel').scrollIntoView()
+    cy.contains('Cancel').should('be.visible')
+    cy.contains('Submit').scrollIntoView()
+    cy.contains('Submit').should('be.visible')
   })
 
   it('cancels edit mode', () => {

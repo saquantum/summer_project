@@ -25,37 +25,19 @@ public class AssetController {
         this.assetService = assetService;
     }
 
-    @UserIdentificationUIDExecution
+    @UserIdentificationExecution
     @GetMapping("/user/uid/{uid}/asset")
     public ResponseBody getMyAssetsByUID(HttpServletResponse response,
-                                             HttpServletRequest request,
-                                             @UserUID @PathVariable String uid,
-                                             @RequestParam(required = false) List<String> orderList,
-                                             @RequestParam(required = false) Integer limit,
-                                             @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
+                                         HttpServletRequest request,
+                                         @UserUID @PathVariable String uid,
+                                         @RequestParam(required = false) List<String> orderList,
+                                         @RequestParam(required = false) Integer limit,
+                                         @RequestParam(required = false) Integer offset) {
+        FilterDTO filter = new FilterDTO(limit, offset);
         String message = QueryTool.formatPaginationLimit(filter);
         User user = userService.getUserByUserId(uid);
-        List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(
-                user.getAssetHolderId(),
-                QueryTool.getOrderList(orderList),
-                filter.getLimit(),
-                offset);
-        return new ResponseBody(Code.SELECT_OK, assets, message);
-    }
-
-    @UserIdentificationAIDExecution
-    @GetMapping("/user/aid/{aid}/asset")
-    public ResponseBody getMyAssetsByAID(HttpServletResponse response,
-                                             HttpServletRequest request,
-                                             @UserAID @PathVariable String aid,
-                                             @RequestParam(required = false) List<String> orderList,
-                                             @RequestParam(required = false) Integer limit,
-                                             @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
-        String message = QueryTool.formatPaginationLimit(filter);
-        List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(
-                aid,
+        List<AssetWithWeatherWarnings> assets = assetService.getAssetsWithWarningsByOwnerId(
+                user.getId(),
                 QueryTool.getOrderList(orderList),
                 filter.getLimit(),
                 offset);
@@ -63,38 +45,23 @@ public class AssetController {
     }
 
     @GetMapping("/admin/user/uid/{uid}/asset")
-    public ResponseBody getAllAssetsOfHolderByUserId(@PathVariable String uid,
-                                                     @RequestParam(required = false) List<String> orderList,
-                                                     @RequestParam(required = false) Integer limit,
-                                                     @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
+    public ResponseBody getAllAssetsByUserId(@PathVariable String uid,
+                                             @RequestParam(required = false) List<String> orderList,
+                                             @RequestParam(required = false) Integer limit,
+                                             @RequestParam(required = false) Integer offset) {
+        FilterDTO filter = new FilterDTO(limit, offset);
         String message = QueryTool.formatPaginationLimit(filter);
         User user = userService.getUserByUserId(uid);
-        List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(
-                user.getAssetHolderId(),
+        List<AssetWithWeatherWarnings> assets = assetService.getAssetsWithWarningsByOwnerId(
+                user.getId(),
                 QueryTool.getOrderList(orderList),
                 filter.getLimit(),
                 offset);
         return new ResponseBody(Code.SELECT_OK, assets, message);
     }
 
-    @GetMapping("/admin/user/aid/{aid}/asset")
-    public ResponseBody getAllAssetsOfHolderByAssetHolderId(@PathVariable String aid,
-                                                            @RequestParam(required = false) List<String> orderList,
-                                                            @RequestParam(required = false) Integer limit,
-                                                            @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
-        String message = QueryTool.formatPaginationLimit(filter);
-        List<AssetWithWeatherWarnings> assets = assetService.getAllAssetsWithWarningsByAssetHolderId(
-                aid,
-                QueryTool.getOrderList(orderList),
-                filter.getLimit(),
-                offset);
-        return new ResponseBody(Code.SELECT_OK, assets, message);
-    }
-
-    @UserIdentificationUIDExecution
-    @AssetOwnershipUIDExecution
+    @UserIdentificationExecution
+    @AssetOwnershipExecution
     @GetMapping("/user/uid/{uid}/asset/{assetId}")
     public ResponseBody getMyAssetByAssetIdWithUID(HttpServletResponse response,
                                                    HttpServletRequest request,
@@ -103,39 +70,12 @@ public class AssetController {
         return new ResponseBody(Code.SELECT_OK, List.of(assetService.getAssetWithWarningsById(assetId)));
     }
 
-    @UserIdentificationAIDExecution
-    @AssetOwnershipAIDExecution
-    @GetMapping("/user/aid/{aid}/asset/{assetId}")
-    public ResponseBody getMyAssetByAssetIdWithAID(HttpServletResponse response,
-                                                   HttpServletRequest request,
-                                                   @UserAID @PathVariable String aid,
-                                                   @UserAssetId @PathVariable String assetId) {
-        return new ResponseBody(Code.SELECT_OK, List.of(assetService.getAssetWithWarningsById(assetId)));
-    }
-
-    @UserIdentificationUIDExecution
-    @AssetOwnershipUIDExecution
+    @UserIdentificationExecution
+    @AssetOwnershipExecution
     @RequestMapping(value = "/user/uid/{uid}/asset/{assetId}", method = RequestMethod.HEAD)
     public void headMyAssetLastModifiedByAssetIdWithUID(HttpServletResponse response,
                                                         HttpServletRequest request,
                                                         @UserUID @PathVariable String uid,
-                                                        @UserAssetId @PathVariable String assetId,
-                                                        @RequestParam(value = "time", required = true) Long timestamp) {
-        boolean b = assetService.compareAssetLastModified(assetId, timestamp);
-        response.setHeader("last-modified", Boolean.toString(b));
-        if (b) {
-            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-        } else {
-            response.setStatus(HttpServletResponse.SC_OK);
-        }
-    }
-
-    @UserIdentificationAIDExecution
-    @AssetOwnershipAIDExecution
-    @RequestMapping(value = "/user/aid/{aid}/asset/{assetId}", method = RequestMethod.HEAD)
-    public void headMyAssetLastModifiedByAssetIdWithAID(HttpServletResponse response,
-                                                        HttpServletRequest request,
-                                                        @UserAID @PathVariable String aid,
                                                         @UserAssetId @PathVariable String assetId,
                                                         @RequestParam(value = "time", required = true) Long timestamp) {
         boolean b = assetService.compareAssetLastModified(assetId, timestamp);
@@ -161,34 +101,17 @@ public class AssetController {
         }
     }
 
-    @UserIdentificationUIDExecution
+    @UserIdentificationExecution
     @PostMapping("/user/uid/{uid}/asset")
     public ResponseBody insertAssetWithUID(HttpServletResponse response,
-                                               HttpServletRequest request,
-                                               @UserUID @PathVariable String uid,
-                                               @RequestBody Asset asset) {
-        if (!QueryTool.getUserPermissions(uid, null).getCanCreateAsset()) {
+                                           HttpServletRequest request,
+                                           @UserUID @PathVariable String uid,
+                                           @RequestBody Asset asset) {
+        if (!QueryTool.getAccessControlGroupByUserId(uid).getCanCreateAsset()) {
             throw new SpExceptions.ForbiddenException("The user is not allowed to insert asset.");
         }
         asset.setId(null);
-        if (!QueryTool.getUserPermissions(uid, null).getCanSetPolygonOnCreate()) {
-            asset.clearLocation();
-            return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset), "The asset is successfully inserted but without polygon since the user is not allowed to do so.");
-        }
-        return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset));
-    }
-
-    @UserIdentificationAIDExecution
-    @PostMapping("/user/aid/{aid}/asset")
-    public ResponseBody insertAssetWithAID(HttpServletResponse response,
-                                               HttpServletRequest request,
-                                               @UserAID @PathVariable String aid,
-                                               @RequestBody Asset asset) {
-        if (!QueryTool.getUserPermissions(null, aid).getCanCreateAsset()) {
-            throw new SpExceptions.ForbiddenException("The user is not allowed to insert asset");
-        }
-        asset.setId(null);
-        if (!QueryTool.getUserPermissions(null, aid).getCanSetPolygonOnCreate()) {
+        if (!QueryTool.getAccessControlGroupByUserId(uid).getCanSetPolygonOnCreate()) {
             asset.clearLocation();
             return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset), "The asset is successfully inserted but without polygon since the user is not allowed to do so.");
         }
@@ -199,9 +122,9 @@ public class AssetController {
     public ResponseBody getAllAssetsWithWarnings(@RequestParam(required = false) List<String> orderList,
                                                  @RequestParam(required = false) Integer limit,
                                                  @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
+        FilterDTO filter = new FilterDTO(limit, offset);
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetsWithWarnings(
+        return new ResponseBody(Code.SELECT_OK, assetService.getAssetsWithWarnings(
                 null,
                 QueryTool.getOrderList(orderList),
                 filter.getLimit(),
@@ -209,13 +132,14 @@ public class AssetController {
         ), message);
     }
 
+    @PostSearchEndpoint
     @PostMapping("/admin/asset/search")
-    public ResponseBody getAllAssetsWithWarnings(@RequestBody FilterDTO filter) {
-        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
-            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
-        }
+    public ResponseBody getAllAssetsWithWarnings(@RequestParam(required = false) Boolean simplify,
+                                                 @RequestBody FilterDTO filter) {
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetsWithWarnings(
+        return new ResponseBody(Code.SELECT_OK, assetService.getCursoredAssetsWithWarnings(
+                simplify,
+                filter.getLastRowId(),
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),
@@ -239,34 +163,17 @@ public class AssetController {
         return new ResponseBody(Code.INSERT_OK, assetService.insertAsset(asset));
     }
 
-    @UserIdentificationUIDExecution
-    @AssetOwnershipUIDExecution
+    @UserIdentificationExecution
+    @AssetOwnershipExecution
     @PutMapping("/user/uid/{uid}/asset")
     public ResponseBody updateMyAssetWithUID(HttpServletResponse response,
-                                               HttpServletRequest request,
-                                               @UserUID @PathVariable String uid,
-                                               @UserAsset @RequestBody Asset asset) {
-        if (!QueryTool.getUserPermissions(uid, null).getCanUpdateAssetFields()) {
+                                             HttpServletRequest request,
+                                             @UserUID @PathVariable String uid,
+                                             @UserAsset @RequestBody Asset asset) {
+        if (!QueryTool.getAccessControlGroupByUserId(uid).getCanUpdateAssetFields()) {
             throw new SpExceptions.ForbiddenException("The user is not allowed to update asset.");
         }
-        if (!QueryTool.getUserPermissions(uid, null).getCanUpdateAssetPolygon()) {
-            asset.clearLocation();
-            return new ResponseBody(Code.UPDATE_OK, assetService.updateAsset(asset), "The asset is successfully updated but without polygon since the user is not allowed to do so.");
-        }
-        return new ResponseBody(Code.UPDATE_OK, assetService.updateAsset(asset));
-    }
-
-    @UserIdentificationAIDExecution
-    @AssetOwnershipAIDExecution
-    @PutMapping("/user/aid/{aid}/asset")
-    public ResponseBody updateMyAssetWithAID(HttpServletResponse response,
-                                               HttpServletRequest request,
-                                               @UserAID @PathVariable String aid,
-                                               @UserAsset @RequestBody Asset asset) {
-        if (!QueryTool.getUserPermissions(null, aid).getCanUpdateAssetFields()) {
-            throw new SpExceptions.ForbiddenException("The user is not allowed to update asset.");
-        }
-        if (!QueryTool.getUserPermissions(null, aid).getCanUpdateAssetPolygon()) {
+        if (!QueryTool.getAccessControlGroupByUserId(uid).getCanUpdateAssetPolygon()) {
             asset.clearLocation();
             return new ResponseBody(Code.UPDATE_OK, assetService.updateAsset(asset), "The asset is successfully updated but without polygon since the user is not allowed to do so.");
         }
@@ -278,39 +185,20 @@ public class AssetController {
         return new ResponseBody(Code.UPDATE_OK, assetService.updateAsset(asset));
     }
 
-    @UserIdentificationUIDExecution
+    @UserIdentificationExecution
     @DeleteMapping("/user/uid/{uid}/asset")
     public ResponseBody deleteMyAssetsByAssetIdsWithUID(HttpServletResponse response,
-                                                          HttpServletRequest request,
-                                                          @UserUID @PathVariable String uid,
-                                                          @RequestBody Map<String, Object> body) {
-        if (!QueryTool.getUserPermissions(uid, null).getCanDeleteAsset()) {
+                                                        HttpServletRequest request,
+                                                        @UserUID @PathVariable String uid,
+                                                        @RequestBody Map<String, Object> body) {
+        if (!QueryTool.getAccessControlGroupByUserId(uid).getCanDeleteAsset()) {
             throw new SpExceptions.ForbiddenException("The user is not allowed to delete asset.");
         }
 
         List<String> ids = (List<String>) body.get("ids");
         for (String s : ids) {
-            if (!QueryTool.verifyAssetOwnership(s, uid, null)) {
+            if (!QueryTool.verifyAssetOwnership(s, uid)) {
                 throw new SpExceptions.ForbiddenException("Asset owner identification failed: " + s + " does not belong to current user");
-            }
-        }
-        return new ResponseBody(Code.DELETE_OK, assetService.deleteAssetByIDs(ids));
-    }
-
-    @UserIdentificationAIDExecution
-    @DeleteMapping("/user/aid/{aid}/asset")
-    public ResponseBody deleteMyAssetsByAssetIdsWithAID(HttpServletResponse response,
-                                                          HttpServletRequest request,
-                                                          @UserAID @PathVariable String aid,
-                                                          @RequestBody Map<String, Object> body) {
-        if (!QueryTool.getUserPermissions(null, aid).getCanDeleteAsset()) {
-            throw new SpExceptions.ForbiddenException("The user is not allowed to delete asset.");
-        }
-
-        List<String> ids = (List<String>) body.get("ids");
-        for (String s : ids) {
-            if (!QueryTool.verifyAssetOwnership(s, null, aid)) {
-                throw new SpExceptions.ForbiddenException("Asset owner identification failed");
             }
         }
         return new ResponseBody(Code.DELETE_OK, assetService.deleteAssetByIDs(ids));
@@ -328,9 +216,9 @@ public class AssetController {
     public ResponseBody getAllAssetTypes(@RequestParam(required = false) List<String> orderList,
                                          @RequestParam(required = false) Integer limit,
                                          @RequestParam(required = false) Integer offset) {
-        FilterDTO filter = new FilterDTO(limit);
+        FilterDTO filter = new FilterDTO(limit, offset);
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetTypes(
+        return new ResponseBody(Code.SELECT_OK, assetService.getAssetTypes(
                 null,
                 QueryTool.getOrderList(orderList),
                 filter.getLimit(),
@@ -338,13 +226,12 @@ public class AssetController {
         ), message);
     }
 
+    @PostSearchEndpoint
     @PostMapping("/asset/type/search")
     public ResponseBody getAllAssetTypes(@RequestBody FilterDTO filter) {
-        if (!filter.hasOrderList() && (filter.hasLimit() || filter.hasOffset())) {
-            throw new SpExceptions.BadRequestException("Pagination parameters specified without order list.");
-        }
         String message = QueryTool.formatPaginationLimit(filter);
-        return new ResponseBody(Code.SELECT_OK, assetService.getAllAssetTypes(
+        return new ResponseBody(Code.SELECT_OK, assetService.getCursoredAssetTypes(
+                filter.getLastRowId(),
                 filter.getFilters(),
                 QueryTool.getOrderList(filter.getOrderList()),
                 filter.getLimit(),

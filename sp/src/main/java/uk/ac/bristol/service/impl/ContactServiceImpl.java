@@ -3,13 +3,16 @@ package uk.ac.bristol.service.impl;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import io.jsonwebtoken.Claims;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -26,11 +29,23 @@ import uk.ac.bristol.service.UserService;
 import uk.ac.bristol.util.JwtUtil;
 import uk.ac.bristol.util.QueryTool;
 
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
 import javax.mail.MessagingException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class ContactServiceImpl implements ContactService {
@@ -55,6 +70,8 @@ public class ContactServiceImpl implements ContactService {
     private final Duration expireTime = Duration.ofMinutes(5);
     private final String prefix = "email:verify:code:";
 
+    private final Set<String> verifiedEmails = ConcurrentHashMap.newKeySet();
+
     public ContactServiceImpl(UserService userService, MetaDataMapper metaDataMapper, ContactMapper contactMapper) {
         this.userService = userService;
         this.metaDataMapper = metaDataMapper;
@@ -64,12 +81,15 @@ public class ContactServiceImpl implements ContactService {
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public void sendNotificationsToUser(Warning warning, UserWithAssets uwa) {
-        Map<String, Object> contactPreferences = uwa.getUser().getAssetHolder().getContactPreferences();
+        Map<String, Boolean> contactPreferences = uwa.getUser().getContactPreferences();
 
         Map<String, Object> emailNotification = formatNotification(warning, uwa, "email");
+
+        System.out.println("sending---------------------------");
+
         if (contactPreferences.get("email").equals(Boolean.TRUE)) {
             asyncEmailSender.sendEmailToAddress(
-                    uwa.getUser().getAssetHolder().getEmail(),
+                    uwa.getUser().getContactDetails().get("email"),
                     emailNotification
             );
         }
@@ -143,9 +163,9 @@ public class ContactServiceImpl implements ContactService {
 
     private String fillInVariablesWithValues(String content, User user, Asset asset) {
         return content
-                .replace("{{asset-model}}", asset.getName())
-                .replace("{{contact_name}}", user.getAssetHolder().getName())
-                .replace("{{post_town}}", user.getAssetHolder().getAddress().get("city"));
+                .replace("{{asset_model}}", asset.getName())
+                .replace("{{contact_name}}", user.getName())
+                .replace("{{post_town}}", user.getAddress().get("city"));
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -158,13 +178,8 @@ public class ContactServiceImpl implements ContactService {
         String uid = claims.get("unsubscribe-email-uid").toString();
 
         User user = userService.getUserByUserId(uid);
-        AssetHolder ah = user.getAssetHolder();
-        if (ah == null) {
-            throw new SpExceptions.BadRequestException("The user has no active asset holder details");
-        }
-
-        ah.getContactPreferences().put("email", false);
-        userService.updateAssetHolder(ah);
+        user.getContactPreferences().put("email", false);
+        userService.updateUser(user);
         return new ResponseBody(Code.DELETE_OK, null, "Successfully unsubscribed email for user " + uid);
     }
 
@@ -191,10 +206,10 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public ResponseBody generateCode(String email) {
         if (email == null) {
-            return new ResponseBody(Code.BUSINESS_ERR, null, "Failed to send email because email address is null");
+            return new ResponseBody(Code.SELECT_ERR, null, "Failed to send email because email address is null");
         }
         if (!userService.testEmailAddressExistence(email)) {
-            return new ResponseBody(Code.BUSINESS_ERR, null, "Failed to send email because email address doesn't exist");
+            return new ResponseBody(Code.SELECT_ERR, null, "Failed to send email because email address doesn't exist");
         }
         String code = String.valueOf(new Random().nextInt(899999) + 100000);
         saveEmailCode(email, code);
@@ -226,19 +241,19 @@ public class ContactServiceImpl implements ContactService {
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
         String savedCode = ops.get(key);
         if (savedCode == null) {
-            return new ResponseBody(Code.BUSINESS_ERR, null, "Verification code doesn't exists or has expired!");
+            return new ResponseBody(Code.BUSINESS_ERR, null, "Verification code doesn't exists or has expired");
         }
 
         Long ttl = redisTemplate.getExpire(key);
         if (ttl == null || ttl <= 0) {
-            return new ResponseBody(Code.BUSINESS_ERR, null, "Verification code has expired!");
+            return new ResponseBody(Code.BUSINESS_ERR, null, "Verification code has expired");
         }
 
         if (!savedCode.equals(code)) {
-            return new ResponseBody(Code.BUSINESS_ERR, null, "You entered wrong verification code!");
+            return new ResponseBody(Code.BUSINESS_ERR, null, "You entered wrong verification code");
         }
         redisTemplate.delete(key);
-        return new ResponseBody(Code.SUCCESS, null, "Verification code has been validated!");
+        return new ResponseBody(Code.SUCCESS, null, "Verification code has been validated");
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -258,13 +273,30 @@ public class ContactServiceImpl implements ContactService {
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<Template> getAllNotificationTemplates(Map<String, Object> filters,
-                                                      List<Map<String, String>> orderList,
-                                                      Integer limit,
-                                                      Integer offset) {
-        return contactMapper.selectAllNotificationTemplates(
+    public List<Template> getNotificationTemplates(Map<String, Object> filters,
+                                                   List<Map<String, String>> orderList,
+                                                   Integer limit,
+                                                   Integer offset) {
+        return contactMapper.selectNotificationTemplates(
                 QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList(orderList, "templates"),
+                QueryTool.formatOrderList("template_id", orderList, "templates"),
+                limit, offset);
+    }
+
+    @Override
+    public List<Template> getCursoredNotificationTemplates(Long lastTemplateId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
+        Map<String, Object> anchor = null;
+        if (lastTemplateId != null) {
+            List<Map<String, Object>> list = contactMapper.selectNotificationTemplateAnchor(lastTemplateId);
+            if (list.size() != 1) {
+                throw new SpExceptions.GetMethodException("Found " + list.size() + " anchors using template id " + lastTemplateId);
+            }
+            anchor = list.get(0);
+        }
+        List<Map<String, String>> formattedOrderList = QueryTool.formatOrderList("template_id", orderList, "templates");
+        return contactMapper.selectNotificationTemplates(
+                QueryTool.formatCursoredDeepPageFilters(filters, anchor, formattedOrderList),
+                formattedOrderList,
                 limit, offset);
     }
 
@@ -276,8 +308,12 @@ public class ContactServiceImpl implements ContactService {
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<Template> getNotificationTemplateById(Long id) {
-        return contactMapper.selectNotificationTemplateById(id);
+    public Template getNotificationTemplateById(Long id) {
+        List<Template> list = contactMapper.selectNotificationTemplateById(id);
+        if (list.size() != 1) {
+            throw new SpExceptions.GetMethodException("Get " + list.size() + " templates with id " + id);
+        }
+        return list.get(0);
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -336,6 +372,11 @@ public class ContactServiceImpl implements ContactService {
         return contactMapper.insertInboxMessageToUser(message);
     }
 
+    @Override
+    public int insertInboxMessageToUsersByFilter(Map<String, Object> filters, Map<String, Object> message) {
+        return contactMapper.insertInboxMessageToUsersByFilter(QueryTool.formatFilters(filters), message);
+    }
+
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public int updateInboxMessageByUserId(Map<String, Object> message) {
@@ -359,6 +400,21 @@ public class ContactServiceImpl implements ContactService {
     public int deleteOutDatedInboxMessagesByUserId(String userId) {
         return contactMapper.deleteOutDatedInboxMessagesByUserId(userId);
     }
+
+    @Override
+    public void markEmailVerified(String email) {
+        verifiedEmails.add(email);
+    }
+
+    @Override
+    public boolean isEmailVerified(String email) {
+        return verifiedEmails.contains(email);
+    }
+
+    @Override
+    public void clearEmailVerified(String email) {
+        verifiedEmails.remove(email);
+    }
 }
 
 @Component
@@ -378,37 +434,114 @@ class AsyncEmailSender {
             throw new SpExceptions.SystemException("Failed to send email because notification is null");
         }
 
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper mmh;
         try {
-            mmh = new MimeMessageHelper(message, true, "UTF-8");
-            mmh.setFrom(from);
-            mmh.setTo(toEmailAddress);
-            mmh.setSubject(notification.get("title").toString());
+            MimeMessage message = mailSender.createMimeMessage();
+            message.setFrom(from);
+            message.setRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(toEmailAddress));
+            message.setSubject(notification.get("title").toString());
+
+            MimeMultipart multipart = new MimeMultipart("related");
+
+            MimeBodyPart htmlPart = new MimeBodyPart();
+
+            String html = notification.get("body").toString();
+
+            System.out.println(html);
+
+            Map<String, String> cidMap = new HashMap<>();
+            Document doc = Jsoup.parse(html);
+            Elements images = doc.select("img[src^=http]");
+
+            for (Element img : images) {
+                String src = img.attr("src");
+                String cid = UUID.randomUUID().toString();
+                cidMap.put(src, cid);
+                img.attr("src", "cid:" + cid);
+            }
+
+            String modifiedHtml = doc.html();
 
             Map<String, Object> claims = new HashMap<>();
             claims.put("unsubscribe-email-uid", notification.get("toUserId").toString());
             claims.put("action", "unsubscribe-email");
             String unsubscribeUrl = baseURL + "/user/notify/email/unsubscribe?token=" + JwtUtil.generateJWT(claims);
-            mmh.setText("<!DOCTYPE html>\n" +
+
+            String finalHtml = "<!DOCTYPE html>\n" +
                     "<html lang=\"en\">\n" +
                     "<head>\n" +
                     "    <meta charset=\"UTF-8\">\n" +
                     "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-                    "    <title>Document</title>\n" +
+                    "    <title>Email</title>\n" +
                     "</head>\n" +
                     "<body>\n" +
-                    notification.get("body").toString()
-                    + "<br>"
-                    + "<br>"
-                    + "To unsubscribe email notifications, click the link below:"
-                    + "<br>"
-                    + "<a href=\"" + unsubscribeUrl + "\">unsubscribe</a>"
-                    + "</body>\n" +
-                    "</html>", true);
+                    modifiedHtml +
+                    "<br><br>" +
+                    "To unsubscribe email notifications, click the link below:" +
+                    "<br>" +
+                    "<a href=\"" + unsubscribeUrl + "\">unsubscribe</a>" +
+                    "</body>\n" +
+                    "</html>";
+
+            htmlPart.setContent(finalHtml, "text/html; charset=UTF-8");
+
+            multipart.addBodyPart(htmlPart);
+
+            for (Map.Entry<String, String> entry : cidMap.entrySet()) {
+                MimeBodyPart imagePart = new MimeBodyPart();
+
+                String imageUrl = entry.getKey();
+                String cid = entry.getValue();
+
+                URL url = new URL(imageUrl);
+                URLConnection connection = url.openConnection();
+                String contentType = connection.getContentType();
+                if (contentType == null) {
+                    contentType = "image/png";
+                }
+
+                String fileName = "image.png";
+                String path = url.getPath();
+                int lastSlash = path.lastIndexOf('/');
+                if (lastSlash >= 0 && lastSlash < path.length() - 1) {
+                    fileName = path.substring(lastSlash + 1);
+                }
+
+                try (InputStream inputStream = connection.getInputStream();
+                     ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+
+                    byte[] data = new byte[1024];
+                    int nRead;
+                    while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
+                        buffer.write(data, 0, nRead);
+                    }
+                    buffer.flush();
+                    byte[] imageBytes = buffer.toByteArray();
+
+                    DataSource ds = new ByteArrayDataSource(imageBytes, contentType);
+
+                    imagePart.setDataHandler(new DataHandler(ds));
+                    imagePart.setHeader("Content-ID", "<" + cid + ">");
+                    imagePart.setDisposition(MimeBodyPart.INLINE);
+                    imagePart.setFileName(fileName);
+
+                    multipart.addBodyPart(imagePart);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            message.setContent(multipart);
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            message.writeTo(out);
+            System.out.println(out.toString("UTF-8"));
+
             mailSender.send(message);
         } catch (MessagingException e) {
             throw new SpExceptions.SystemException("Failed to send email using mime message helper");
+        } catch (IOException e) {
+            throw new SpExceptions.SystemException("Failed to download image for embedding: " + e.getMessage());
         }
     }
 }

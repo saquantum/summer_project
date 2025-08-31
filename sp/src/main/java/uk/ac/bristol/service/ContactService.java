@@ -24,14 +24,20 @@ public interface ContactService {
 
     ResponseBody registerGenerateCode(String email);
 
-    List<Template> getAllNotificationTemplates(Map<String, Object> filters,
-                                               List<Map<String, String>> orderList,
-                                               Integer limit,
-                                               Integer offset);
+    List<Template> getNotificationTemplates(Map<String, Object> filters,
+                                            List<Map<String, String>> orderList,
+                                            Integer limit,
+                                            Integer offset);
+
+    List<Template> getCursoredNotificationTemplates(Long lastTemplateId,
+                                                    Map<String, Object> filters,
+                                                    List<Map<String, String>> orderList,
+                                                    Integer limit,
+                                                    Integer offset);
 
     List<Template> getNotificationTemplateByTypes(Template template);
 
-    List<Template> getNotificationTemplateById(Long id);
+    Template getNotificationTemplateById(Long id);
 
     int insertNotificationTemplate(Template templates);
 
@@ -49,6 +55,8 @@ public interface ContactService {
 
     int insertInboxMessageToUser(Map<String, Object> message);
 
+    int insertInboxMessageToUsersByFilter(Map<String, Object> filters, Map<String, Object> message);
+
     int updateInboxMessageByUserId(Map<String, Object> message);
 
     int deleteInboxMessageByFilter(Map<String, Object> filters);
@@ -56,4 +64,10 @@ public interface ContactService {
     int deleteOutDatedInboxMessages();
 
     int deleteOutDatedInboxMessagesByUserId(String userId);
+
+    void markEmailVerified(String email);
+
+    boolean isEmailVerified(String email);
+
+    void clearEmailVerified(String email);
 }

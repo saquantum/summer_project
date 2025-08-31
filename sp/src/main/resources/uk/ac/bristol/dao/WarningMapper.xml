@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="uk.ac.bristol.dao.WarningMapper">
-    <select id="selectAllWarnings" resultMap="ResultMaps.WarningMap">
+    <sql id="selectWarnings">
         select warning_id,
                warning_weather_type,
                warning_level,
@@ -19,28 +19,34 @@
                warning_update_description,
                ST_AsGeoJSON(warning_area) as warning_area
         from weather_warnings
+    </sql>
+
+    <select id="selectWarnings" resultMap="ResultMaps.WarningMap">
+        <include refid="selectWarnings"/>
         where now() between warning_valid_from and warning_valid_to
-        <include refid="ResultMaps.combinedFiltering"/>
-        <include refid="ResultMaps.orderAndPage"/>
+        <include refid="QueryBlocks.combinedFiltering"/>
+        <include refid="QueryBlocks.orderAndPage"/>
+    </select>
+
+    <select id="selectWarningAnchor" resultType="java.util.Map">
+        <include refid="selectWarnings"/>
+        where now() between warning_valid_from and warning_valid_to
+        and warning_id &gt;= #{rowId}
+        order by warning_id asc
+        limit 1 offset 0
     </select>
     
-    <select id="selectAllWarningsIncludingOutdated" resultMap="ResultMaps.WarningMap">
-        select warning_id,
-               warning_weather_type,
-               warning_level,
-               warning_head_line,
-               warning_valid_from,
-               warning_valid_to,
-               warning_impact,
-               warning_likelihood,
-               warning_affected_areas,
-               warning_what_to_expect,
-               warning_further_details,
-               warning_update_description,
-               ST_AsGeoJSON(warning_area) as warning_area
-        from weather_warnings
-        <include refid="ResultMaps.filtering"/>
-        <include refid="ResultMaps.orderAndPage"/>
+    <select id="selectWarningsIncludingOutdated" resultMap="ResultMaps.WarningMap">
+        <include refid="selectWarnings"/>
+        <include refid="QueryBlocks.filtering"/>
+        <include refid="QueryBlocks.orderAndPage"/>
+    </select>
+
+    <select id="selectWarningsIncludingOutdatedAnchor" resultType="java.util.Map">
+        <include refid="selectWarnings"/>
+        where warning_id &gt;= #{rowId}
+        order by warning_id asc
+        limit 1 offset 0
     </select>
 
     <select id="selectWarningById" resultMap="ResultMaps.WarningMap">
@@ -80,6 +86,44 @@
                       on ST_Intersects(asset_location, warning_area) and
                          now() between warning_valid_from and warning_valid_to
         where asset_id = #{assetId};
+    </select>
+
+    <select id="testWarningExistence" resultType="java.lang.Boolean">
+        select count(*) > 0
+        from weather_warnings
+        where warning_id = #{id};
+    </select>
+
+    <select id="testWarningDetailDiff" resultType="java.lang.Boolean">
+        select case
+                   when
+                       warning_weather_type != #{weatherType}
+                   or warning_level != #{warningLevel}
+            or warning_head_line != #{warningHeadLine}
+            or warning_valid_from != #{validFrom}
+            or warning_valid_to != #{validTo}
+            or warning_impact != #{warningImpact}
+            or warning_likelihood != #{warningLikelihood}
+            or warning_affected_areas != #{affectedAreas}
+            or warning_what_to_expect != #{whatToExpect}
+            or warning_further_details != #{warningFurtherDetails}
+            then true
+            else false
+        end
+        from weather_warnings
+        where warning_id =
+        #{id}
+    </select>
+
+    <select id="testWarningAreaDiff" resultType="java.lang.Boolean">
+        select case
+                   when
+                       not ST_Equals(warning_area, ST_Multi(ST_GeomFromGeoJSON(#{areaAsJson})))
+                       then true
+                   else false
+                   end
+        from weather_warnings
+        where warning_id = #{id}
     </select>
 
     <insert id="insertWarning">
@@ -126,6 +170,7 @@
             <if test="warningFurtherDetails != null and warningFurtherDetails != ''">warning_further_details = #{warningFurtherDetails},</if>
             <if test="warningUpdateDescription != null and warningUpdateDescription != ''">warning_update_description = #{warningUpdateDescription},</if>
             <if test="area != null and area != ''">warning_area = ST_Multi(ST_GeomFromGeoJSON(#{areaAsJson})),</if>
+            warning_id = #{id}
         </set>
         where warning_id = #{id};
     </update>
@@ -137,40 +182,18 @@
         </foreach>
     </delete>
 
-    <select id="testWarningExists" resultType="java.lang.Boolean">
-        select count(*) > 0 from weather_warnings where warning_id = #{id};
-    </select>
-    
-    <select id="testWarningDetailDiff" resultType="java.lang.Boolean">
-        select
-            case
-                when
-                    warning_weather_type != #{weatherType}
-                    or warning_level != #{warningLevel}
-                    or warning_head_line != #{warningHeadLine}
-                    or warning_valid_from != #{validFrom}
-                    or warning_valid_to != #{validTo}
-                    or warning_impact != #{warningImpact}
-                    or warning_likelihood != #{warningLikelihood}
-                    or warning_affected_areas != #{affectedAreas}
-                    or warning_what_to_expect != #{whatToExpect}
-                    or warning_further_details != #{warningFurtherDetails}
-                then true
-                else false
-            end
-        from weather_warnings
-        where warning_id = #{id}
+    <select id="selectIntersectingRegionsGivenGeometry" resultMap="ResultMaps.UkRegionMap">
+        select uk_region_row_id,
+               uk_region_name,
+               ST_AsGeoJSON(uk_region_area) as uk_region_area
+        from uk_regions
+        where ST_Intersects(uk_region_area, ST_Multi(ST_GeomFromGeoJSON(#{givenArea})))
     </select>
 
-    <select id="testWarningAreaDiff" resultType="java.lang.Boolean">
-        select
-            case
-                when
-                    warning_area != ST_Multi(ST_GeomFromGeoJSON(#{areaAsJson}))
-                then true
-                else false
-        end
-        from weather_warnings
-        where warning_id = #{id}
-    </select>
+    <insert id="insertUkRegion">
+        insert into uk_regions (uk_region_name,
+                                uk_region_area)
+        values (#{name},
+                ST_Multi(ST_GeomFromGeoJSON(#{area})));
+    </insert>
 </mapper>

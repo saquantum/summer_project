@@ -1,15 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { flushPromises, mount } from '@vue/test-utils'
-import AddAsset from '@/views/myassets/AddAsset.vue'
+import AddAsset from '@/views/asset/AddAsset.vue'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { config } from '@vue/test-utils'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
 import { useUserStore, useAssetStore } from '@/stores/index.ts'
 import { adminGetUserInfoService, adminInsertAssetService } from '@/api/admin'
 import { userInsertAssetService } from '@/api/user'
-
-config.global.config.warnHandler = () => {}
 
 // Mock router
 const pushMock = vi.fn()
@@ -67,7 +64,7 @@ const createMockUserStore = (overrides = {}) =>
       id: 'testuser123',
       admin: false,
       assetHolderId: 'holder123',
-      permissionConfig: {
+      accessControlGroup: {
         canCreateAsset: true,
         canSetPolygonOnCreate: true
       },
@@ -91,7 +88,7 @@ vi.mock('@/stores/index.ts', () => ({
 
 // Mock form utils
 vi.mock('@/utils/formUtils', () => ({
-  createAssetHolderRules: () => [
+  createUserRules: () => [
     { required: true, message: 'Username is required', trigger: 'blur' }
   ],
   trimForm: (form: any) => {
@@ -120,11 +117,6 @@ describe('AddAsset.vue', () => {
   describe('Component Rendering', () => {
     it('renders the form correctly for regular users', () => {
       const wrapper = mount(AddAsset)
-      const vm = wrapper.vm as any
-
-      // Debug: Let's see what the store is returning
-      console.log('User store in test:', vm.userStore.user)
-      console.log('disableAddAsset:', vm.disableAddAsset)
 
       // Check specifically for the restriction message, not just any h3
       expect(wrapper.find('h3').text()).not.toBe(
@@ -137,7 +129,7 @@ describe('AddAsset.vue', () => {
     it('shows restriction message for users without create permission', () => {
       ;(vi.mocked(useUserStore) as any).mockReturnValue(
         createMockUserStore({
-          permissionConfig: {
+          accessControlGroup: {
             canCreateAsset: false,
             canSetPolygonOnCreate: false
           }
@@ -196,7 +188,12 @@ describe('AddAsset.vue', () => {
         typeId: 'tank',
         ownerId: 'holder123',
         address: 'Test Address',
-        locations: [vm.DEFAULT_MULTIPOLYGON],
+        locations: [
+          {
+            type: 'MultiPolygon',
+            coordinates: []
+          }
+        ],
         capacityLitres: 1000,
         material: 'Steel',
         status: 'active',
@@ -370,10 +367,15 @@ describe('AddAsset.vue', () => {
         username: 'testuser123',
         name: 'Test Asset',
         typeId: 'tank',
-        ownerId: 'holder123',
+        ownerId: 'testuser123',
         address: 'Test Address',
-        locations: [vm.DEFAULT_MULTIPOLYGON],
-        capacityLitres: '1000', // String that will be converted to number
+        locations: [
+          {
+            type: 'MultiPolygon',
+            coordinates: []
+          }
+        ],
+        capacityLitres: 1000,
         material: 'Steel',
         status: 'active',
         installedAt: '2024-01-01',
@@ -397,7 +399,7 @@ describe('AddAsset.vue', () => {
         expect.objectContaining({
           name: 'Test Asset',
           capacityLitres: 1000, // Should be converted to number
-          ownerId: 'holder123'
+          ownerId: 'testuser123'
         })
       )
       expect(ElMessage.success).toHaveBeenCalledWith(
@@ -419,7 +421,12 @@ describe('AddAsset.vue', () => {
         typeId: 'tank',
         ownerId: 'holder123',
         address: 'Test Address',
-        locations: [vm.DEFAULT_MULTIPOLYGON],
+        locations: [
+          {
+            type: 'MultiPolygon',
+            coordinates: []
+          }
+        ],
         capacityLitres: 1000,
         material: 'Steel',
         status: 'active',
@@ -466,10 +473,15 @@ describe('AddAsset.vue', () => {
         username: 'targetuser',
         name: 'Admin Test Asset',
         typeId: 'pipeline',
-        ownerId: '',
+        ownerId: 'targetuser',
         address: 'Admin Test Address',
-        locations: [vm.DEFAULT_MULTIPOLYGON],
-        capacityLitres: '2000',
+        locations: [
+          {
+            type: 'MultiPolygon',
+            coordinates: []
+          }
+        ],
+        capacityLitres: 2000,
         material: 'Concrete',
         status: 'maintenance',
         installedAt: '2024-01-01',
@@ -487,13 +499,10 @@ describe('AddAsset.vue', () => {
       await vm.adminSubmit()
       await flushPromises()
 
-      expect(vi.mocked(adminGetUserInfoService)).toHaveBeenCalledWith(
-        'targetuser'
-      )
       expect(vi.mocked(adminInsertAssetService)).toHaveBeenCalledWith(
         expect.objectContaining({
           name: 'Admin Test Asset',
-          ownerId: 'targetUser123',
+          ownerId: 'targetuser',
           capacityLitres: 2000
         })
       )
@@ -543,7 +552,10 @@ describe('AddAsset.vue', () => {
       expect(vm.form.name).toBe('')
       expect(vm.form.material).toBe('')
       expect(vm.form.locations).toHaveLength(1)
-      expect(vm.form.locations[0]).toEqual(vm.DEFAULT_MULTIPOLYGON)
+      expect(vm.form.locations[0]).toEqual({
+        type: 'MultiPolygon',
+        coordinates: []
+      })
     })
   })
 
@@ -567,7 +579,7 @@ describe('AddAsset.vue', () => {
     it('disables add asset for users without permission', () => {
       ;(vi.mocked(useUserStore) as any).mockReturnValue(
         createMockUserStore({
-          permissionConfig: {
+          accessControlGroup: {
             canCreateAsset: false,
             canSetPolygonOnCreate: false
           }
@@ -584,7 +596,7 @@ describe('AddAsset.vue', () => {
     it('disables polygon setting for users without permission', () => {
       ;(vi.mocked(useUserStore) as any).mockReturnValue(
         createMockUserStore({
-          permissionConfig: {
+          accessControlGroup: {
             canCreateAsset: true,
             canSetPolygonOnCreate: false
           }
@@ -620,13 +632,21 @@ describe('AddAsset.vue', () => {
         typeId: 'tank',
         ownerId: 'holder123',
         address: 'Test Address',
-        locations: [vm.DEFAULT_MULTIPOLYGON],
+        locations: [
+          {
+            type: 'MultiPolygon',
+            coordinates: []
+          }
+        ],
         capacityLitres: 1000,
         material: 'Steel',
         status: 'active',
         installedAt: '2024-01-01',
         lastInspection: '2024-01-01',
-        location: vm.DEFAULT_MULTIPOLYGON
+        location: {
+          type: 'MultiPolygon',
+          coordinates: []
+        }
       }
 
       vm.formRef = {

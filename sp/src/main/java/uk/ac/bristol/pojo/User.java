@@ -1,27 +1,49 @@
 package uk.ac.bristol.pojo;
 
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 public class User {
+    private Long rowId;
     private String id;
     private String password;
     private String passwordPlainText;
-    private String assetHolderId;
-    private AssetHolder assetHolder;
-    private PermissionConfig permissionConfig;
     private boolean admin = false;
+    private Integer adminLevel;
     private String avatar;
-    private String token;
+    private String name;
+    private AccessControlGroup accessControlGroup;
+    private Map<String, String> address;
+    private Map<String, String> contactDetails;
+    private Map<String, Boolean> contactPreferences;
+    private Instant lastModified;
 
     @Override
     public String toString() {
         return "User{" +
                 "id='" + id + '\'' +
-                ", password='" + password + '\'' +
                 ", passwordPlainText='" + passwordPlainText + '\'' +
-                ", assetHolderId='" + assetHolderId + '\'' +
-                ", assetHolder=" + assetHolder +
                 ", admin=" + admin +
-                ", token='" + token + '\'' +
+                ", adminLevel=" + adminLevel +
+                ", name='" + name + '\'' +
+                ", address=" + address +
+                ", contactDetails=" + contactDetails +
+                ", contactPreferences=" + contactPreferences +
+                ", lastModified=" + lastModified +
                 '}';
+    }
+
+    public static final Set<String> addressDetails = Set.of("street", "city", "postcode", "country", "postcodeCountry", "postcodeRegion", "postcodeAdminDistrict");
+    public static final Set<String> contactOptions = Set.of("email", "phone", "post", "whatsapp", "discord", "telegram");
+
+    public Long getRowId() {
+        return rowId;
+    }
+
+    public void setRowId(Long rowId) {
+        this.rowId = rowId;
     }
 
     public String getId() {
@@ -29,7 +51,9 @@ public class User {
     }
 
     public void setId(String id) {
-        this.id = id;
+        if (id != null) {
+            this.id = id.trim();
+        }
     }
 
     public String getPassword() {
@@ -37,7 +61,9 @@ public class User {
     }
 
     public void setPassword(String password) {
-        this.password = password;
+        if (password != null) {
+            this.password = password.trim();
+        }
     }
 
     public String getPasswordPlainText() {
@@ -45,31 +71,9 @@ public class User {
     }
 
     public void setPasswordPlainText(String passwordPlainText) {
-        this.passwordPlainText = passwordPlainText;
-    }
-
-    public String getAssetHolderId() {
-        return assetHolderId;
-    }
-
-    public void setAssetHolderId(String assetHolderId) {
-        this.assetHolderId = assetHolderId;
-    }
-
-    public AssetHolder getAssetHolder() {
-        return assetHolder;
-    }
-
-    public void setAssetHolder(AssetHolder assetHolder) {
-        this.assetHolder = assetHolder;
-    }
-
-    public PermissionConfig getPermissionConfig() {
-        return permissionConfig;
-    }
-
-    public void setPermissionConfig(PermissionConfig permissionConfig) {
-        this.permissionConfig = permissionConfig;
+        if (passwordPlainText != null) {
+            this.passwordPlainText = passwordPlainText.trim();
+        }
     }
 
     public boolean isAdmin() {
@@ -80,6 +84,14 @@ public class User {
         this.admin = admin;
     }
 
+    public Integer getAdminLevel() {
+        return adminLevel;
+    }
+
+    public void setAdminLevel(Integer adminLevel) {
+        this.adminLevel = adminLevel;
+    }
+
     public String getAvatar() {
         return avatar;
     }
@@ -88,11 +100,86 @@ public class User {
         this.avatar = avatar;
     }
 
-    public String getToken() {
-        return token;
+    public String getName() {
+        return name;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setName(String name) {
+        if (name != null) {
+            this.name = name.trim();
+        }
+    }
+
+    public AccessControlGroup getAccessControlGroup() {
+        return accessControlGroup;
+    }
+
+    public void setAccessControlGroup(AccessControlGroup accessControlGroup) {
+        this.accessControlGroup = accessControlGroup;
+    }
+
+    public Map<String, String> getAddress() {
+        return address;
+    }
+
+    public void setAddress(Map<String, String> address) {
+        if (address == null) {
+            throw new IllegalArgumentException("trying to set address to be null");
+        }
+        Map<String, String> map = new HashMap<>();
+        for (String detail : addressDetails) {
+            map.put(detail, address.getOrDefault(detail, ""));
+        }
+        this.address = map;
+    }
+
+    public void clearAddress() {
+        this.address = null;
+    }
+
+    public Map<String, String> getContactDetails() {
+        return contactDetails;
+    }
+
+    public void setContactDetails(Map<String, String> contactDetails) {
+        if (contactDetails == null) {
+            throw new IllegalArgumentException("trying to set contact details to be null");
+        }
+        Map<String, String> map = new HashMap<>();
+        for (String option : contactOptions) {
+            map.put(option, contactDetails.getOrDefault(option, ""));
+        }
+        this.contactDetails = map;
+    }
+
+    public void clearContactDetails() {
+        this.contactDetails = null;
+    }
+
+    public Map<String, Boolean> getContactPreferences() {
+        return contactPreferences;
+    }
+
+    public void setContactPreferences(Map<String, Boolean> contactPreferences) {
+        if (contactPreferences == null) {
+            throw new IllegalArgumentException("trying to set contact preferences to be null");
+        }
+        Map<String, Boolean> map = new HashMap<>();
+        for (String option : contactOptions) {
+            map.put(option, contactPreferences.getOrDefault(option, false));
+        }
+        this.contactPreferences = map;
+    }
+
+    public void clearContactPreferences() {
+        this.contactPreferences = null;
+    }
+
+    public Instant getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(Instant lastModified) {
+        this.lastModified = lastModified;
     }
 }

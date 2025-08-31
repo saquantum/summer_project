@@ -1,5 +1,6 @@
 package uk.ac.bristol.service.impl;
 
+import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -7,6 +8,7 @@ import uk.ac.bristol.controller.Code;
 import uk.ac.bristol.dao.MetaDataMapper;
 import uk.ac.bristol.dao.WarningMapper;
 import uk.ac.bristol.exception.SpExceptions;
+import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.UserWithAssets;
 import uk.ac.bristol.pojo.Warning;
 import uk.ac.bristol.service.ContactService;
@@ -37,32 +39,70 @@ public class WarningServiceImpl implements WarningService {
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<Warning> getAllWarnings(Map<String, Object> filters,
-                                        List<Map<String, String>> orderList,
-                                        Integer limit,
-                                        Integer offset) {
-        return warningMapper.selectAllWarnings(
+    public List<Warning> getWarnings(Map<String, Object> filters,
+                                     List<Map<String, String>> orderList,
+                                     Integer limit,
+                                     Integer offset) {
+        return warningMapper.selectWarnings(
                 QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList(orderList, "weather_warnings"),
+                QueryTool.formatOrderList("warning_id", orderList, "weather_warnings"),
+                limit, offset);
+    }
+
+    @Override
+    public List<Warning> getCursoredWarnings(Long lastWarningRowId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
+        Map<String, Object> anchor = null;
+        if (lastWarningRowId != null) {
+            List<Map<String, Object>> list = warningMapper.selectWarningAnchor(lastWarningRowId);
+            if (list.size() != 1) {
+                throw new SpExceptions.GetMethodException("Found " + list.size() + " anchors using warning id " + lastWarningRowId);
+            }
+            anchor = list.get(0);
+        }
+        List<Map<String, String>> formattedOrderList = QueryTool.formatOrderList("warning_id", orderList, "weather_warnings");
+        return warningMapper.selectWarnings(
+                QueryTool.formatCursoredDeepPageFilters(filters, anchor, formattedOrderList),
+                formattedOrderList,
                 limit, offset);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<Warning> getAllWarningsIncludingOutdated(Map<String, Object> filters,
-                                                         List<Map<String, String>> orderList,
-                                                         Integer limit,
-                                                         Integer offset) {
-        return warningMapper.selectAllWarningsIncludingOutdated(
+    public List<Warning> getWarningsIncludingOutdated(Map<String, Object> filters,
+                                                      List<Map<String, String>> orderList,
+                                                      Integer limit,
+                                                      Integer offset) {
+        return warningMapper.selectWarningsIncludingOutdated(
                 QueryTool.formatFilters(filters),
-                QueryTool.filterOrderList(orderList, "weather_warnings"),
+                QueryTool.formatOrderList("warning_id", orderList, "weather_warnings"),
+                limit, offset);
+    }
+
+    @Override
+    public List<Warning> getCursoredWarningsIncludingOutdated(Long lastWarningRowId, Map<String, Object> filters, List<Map<String, String>> orderList, Integer limit, Integer offset) {
+        Map<String, Object> anchor = null;
+        if (lastWarningRowId != null) {
+            List<Map<String, Object>> list = warningMapper.selectWarningAnchor(lastWarningRowId);
+            if (list.size() != 1) {
+                throw new SpExceptions.GetMethodException("Found " + list.size() + " anchors using warning id " + lastWarningRowId);
+            }
+            anchor = list.get(0);
+        }
+        List<Map<String, String>> formattedOrderList = QueryTool.formatOrderList("warning_id", orderList, "weather_warnings");
+        return warningMapper.selectWarningsIncludingOutdated(
+                QueryTool.formatCursoredDeepPageFilters(filters, anchor, formattedOrderList),
+                formattedOrderList,
                 limit, offset);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Override
-    public List<Warning> getWarningById(Long id) {
-        return warningMapper.selectWarningById(id);
+    public Warning getWarningById(Long id) {
+        List<Warning> list = warningMapper.selectWarningById(id);
+        if (list.size() != 1) {
+            throw new SpExceptions.GetMethodException("Found " + list.size() + " warnings for warning id " + id);
+        }
+        return list.get(0);
     }
 
     @Override
@@ -79,7 +119,7 @@ public class WarningServiceImpl implements WarningService {
         for (Warning warning : parsedWarnings) {
             s++;
             // 1. new warning: send notifications
-            if (!warningMapper.testWarningExists(warning.getId())) {
+            if (!warningMapper.testWarningExistence(warning.getId())) {
                 warningsToNotify.add(warning);
                 warningMapper.insertWarning(warning);
                 metaDataMapper.increaseTotalCountByTableName("weather_warnings", 1);
@@ -92,6 +132,7 @@ public class WarningServiceImpl implements WarningService {
             // 3. warning area updated: send notifications to assets not intersecting with it beforehand
             else if (warningMapper.testWarningAreaDiff(warning.getId(), warning.getAreaAsJson())) {
                 handleGroupedUsersWithRespectToPagination(warning, true);
+                warningMapper.updateWarning(warning);
             } else {
                 s--;
             }
@@ -117,11 +158,11 @@ public class WarningServiceImpl implements WarningService {
         do {
             List<UserWithAssets> list = userService.groupUsersWithOwnedAssetsByWarningId(limit, cursor, warning.getId(), getDiff, warning.getAreaAsJson());
             length = list.size();
-            if(length == 0) break;
+            if (length == 0) break;
             for (UserWithAssets uwa : list) {
                 contactService.sendNotificationsToUser(warning, uwa);
             }
-            cursor = userService.getUserRowIdByUserId(list.get(list.size() - 1).getUser().getId());
+            cursor = list.get(list.size() - 1).getUser().getRowId();
         } while (length > 0);
         if (cursor == 0L) {
             if (getDiff) {
@@ -142,26 +183,6 @@ public class WarningServiceImpl implements WarningService {
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
-    public int insertWarningsList(List<Warning> warnings) {
-        if (warnings.isEmpty()) return 0;
-        int sum = 0;
-        for (Warning warning : warnings) {
-            List<Warning> search = warningMapper.selectWarningById(warning.getId());
-            if (search.size() > 1) {
-                throw new SpExceptions.SystemException("Found" + search.size() + " weather warning data stored in database for id " + warning.getId());
-            } else if (search.size() == 1) {
-                warningMapper.updateWarning(warning);
-            } else {
-                warningMapper.insertWarning(warning);
-                sum++;
-            }
-        }
-        metaDataMapper.increaseTotalCountByTableName("weather_warnings", sum);
-        return sum;
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-    @Override
     public int updateWarning(Warning warning) {
         return warningMapper.updateWarning(warning);
     }
@@ -178,5 +199,24 @@ public class WarningServiceImpl implements WarningService {
         int n = warningMapper.deleteWarningByIDs(ids);
         metaDataMapper.increaseTotalCountByTableName("weather_warnings", -n);
         return n;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Override
+    public String getRegionNameGivenAsset(Asset asset) {
+        Point centroid = asset.getLocationCentroid();
+        String geoJsonPoint = String.format(
+                "{\"type\":\"Point\",\"coordinates\":[%f,%f]}",
+                centroid.getX(), centroid.getY()
+        );
+        List<Map<String, Object>> regions =
+                warningMapper.selectIntersectingRegionsGivenGeometry(geoJsonPoint);
+        return regions.isEmpty() ? null : (String) regions.get(0).get("name");
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public int insertUkRegion(Map<String, String> region) {
+        return warningMapper.insertUkRegion(region);
     }
 }

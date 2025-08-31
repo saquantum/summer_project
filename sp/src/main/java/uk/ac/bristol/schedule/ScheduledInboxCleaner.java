@@ -13,7 +13,6 @@ public class ScheduledInboxCleaner {
     @Autowired
     ContactService contactService;
 
-    //@Scheduled(fixedRate = 30000)
     @Scheduled(fixedRate = 86400000)
     public void cleanOutdatedInboxMessages() {
         try {

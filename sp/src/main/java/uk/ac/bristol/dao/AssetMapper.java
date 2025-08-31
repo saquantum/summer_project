@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Param;
 import uk.ac.bristol.pojo.Asset;
 import uk.ac.bristol.pojo.AssetType;
 import uk.ac.bristol.pojo.AssetWithWeatherWarnings;
+import uk.ac.bristol.pojo.FilterItemDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -12,31 +13,28 @@ import java.util.Map;
 @Mapper
 public interface AssetMapper {
 
-    List<Asset> selectAssets(@Param("filterString") String filterString,
+    List<Asset> selectAssets(@Param("filterList") List<FilterItemDTO> filterList,
                              @Param("orderList") List<Map<String, String>> orderList,
                              @Param("limit") Integer limit,
                              @Param("offset") Integer offset);
 
-    List<AssetWithWeatherWarnings> selectAssetsWithWarnings(@Param("filterString") String filterString,
+    List<AssetWithWeatherWarnings> selectAssetsWithWarnings(@Param("simplify") Boolean simplify,
+                                                            @Param("filterList") List<FilterItemDTO> filterList,
                                                             @Param("orderList") List<Map<String, String>> orderList,
                                                             @Param("limit") Integer limit,
                                                             @Param("offset") Integer offset);
 
-    List<AssetWithWeatherWarnings> selectAssetsWithWarningsPuttingWarningsTableMain(@Param("filterString") String filterString,
+    List<Map<String, Object>> selectAssetWithWarningsAnchor(@Param("simplify") Boolean simplify, @Param("rowId") Long rowId);
+
+    List<AssetWithWeatherWarnings> selectAssetsWithWarningsPuttingWarningsTableMain(@Param("simplify") Boolean simplify,
+                                                                                    @Param("filterList") List<FilterItemDTO> filterList,
                                                                                     @Param("orderList") List<Map<String, String>> orderList,
                                                                                     @Param("limit") Integer limit,
                                                                                     @Param("offset") Integer offset);
 
-    int countAssetsWithWarnings(@Param("filterString") String filterString);
+    int countAssetsWithWarnings(@Param("filterList") List<FilterItemDTO> filterList);
 
-    List<AssetType> selectAssetTypes(@Param("filterString") String filterString,
-                                     @Param("orderList") List<Map<String, String>> orderList,
-                                     @Param("limit") Integer limit,
-                                     @Param("offset") Integer offset);
-
-    int insertAssetType(AssetType assetType);
-
-    int insertAssetTypeAutoId(AssetType assetType);
+    boolean testAssetLocationDiff(@Param("id") String assetId, @Param("locationAsJson") String locationAsJson);
 
     int insertAsset(Asset asset);
 
@@ -44,15 +42,28 @@ public interface AssetMapper {
 
     int insertAssetAutoId(Asset asset);
 
-    int updateAssetType(AssetType assetType);
-
     int updateAsset(Asset asset);
-
-    int deleteAssetTypeByIDs(@Param("ids") String[] ids);
-
-    int deleteAssetTypeByIDs(@Param("ids") List<String> ids);
 
     int deleteAssetByIDs(@Param("ids") String[] ids);
 
     int deleteAssetByIDs(@Param("ids") List<String> ids);
+
+    /* asset types */
+
+    List<AssetType> selectAssetTypes(@Param("filterList") List<FilterItemDTO> filterList,
+                                     @Param("orderList") List<Map<String, String>> orderList,
+                                     @Param("limit") Integer limit,
+                                     @Param("offset") Integer offset);
+
+    List<Map<String, Object>> selectAssetTypeAnchor(@Param("rowId") Long rowId);
+
+    int insertAssetType(AssetType assetType);
+
+    int insertAssetTypeAutoId(AssetType assetType);
+
+    int updateAssetType(AssetType assetType);
+
+    int deleteAssetTypeByIDs(@Param("ids") String[] ids);
+
+    int deleteAssetTypeByIDs(@Param("ids") List<String> ids);
 }
