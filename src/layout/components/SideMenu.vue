@@ -28,8 +28,9 @@ const visible = computed({
 
 // Helper functions for better route matching
 const isAssetDetailRoute = (route: string): boolean => {
-  // Match routes like /assets/123, /admin/assets/456 but exclude /assets and /assets/add
-  const assetRoutePattern = /^\/(?:admin\/)?assets\/(?!add$)[^/]+(?:\/.*)?$/
+  // Match routes like /assets/123, /admin/assets/456 but exclude /assets, /assets/add, /assets/types
+  const assetRoutePattern =
+    /^\/(?:admin\/)?assets\/(?!add$)(?!types$)[^/]+(?:\/.*)?$/
   return assetRoutePattern.test(route)
 }
 
