@@ -22,7 +22,7 @@ git clone git@github.com:saquantum/summer_project.git
 cd summer_project/vue
 ```
 
-If your prefer working without backend code, there is a copy of the front-end source code via this [link](https://github.com/redial17/summer_project_frontend)
+There is a repo with front-end alone as well. [link](https://github.com/redial17/summer_project_frontend)
 
 ```
 git clone git@github.com:redial17/summer_project_frontend.git
@@ -50,16 +50,42 @@ pnpm build
 #### Project Structure
 
 - `/api`: Contains abstracted API communication layers for backend integration
+
 - `/assets`: Contains static resources including images, stylesheets, and configuration files
+
 - `/components`: Contains reusable UI components following the single responsibility principle
+
 - `/composables`: Contains reactive composition functions for shared business logic
+
 - `/router`: Contains application routing logic and navigation guards
+
 - `/stores`: Contains centralized state management using Pinia
+
 - `/types`: Contains TypeScript interface definitions and type declarations
+
 - `/views`: Contains page-level components corresponding to application routes
+
 - `/utils`: Contains utility functions and helper methods for cross-cutting concerns
+
 - `/tests`: Contains unit test specifications
+
 - `/cypress`: Contains end-to-end testing suites
+
+#### Full Stack Development
+
+Run both backend and frontend in development mode:
+
+```
+# Terminal 1
+cd sp
+./mvnw clean sprint-boot run
+
+# Terminal 2
+cd vue
+pnpm dev
+```
+
+If the data structure of the database was changed, delete `mock-data-state` folder so that it can reset the database.
 
 ### Docker
 
@@ -68,8 +94,6 @@ You can build the front-end alone in the root folder with:
 ```sh
 docker build -t myapp .
 ```
-
-To run the whole project, you need to start the backend server first. Further information is available in the main branch.
 
 ### Testing
 
@@ -81,7 +105,7 @@ pnpm test
 
 ---
 
-To run the E2E tests, you need to start the web application first. Further information is available in the main branch. Once the server is ready, you can run all E2E tests. The commands are as follows:
+To run the E2E tests, you need to start the web application first. Further information is available in the [main branch](https://github.com/saquantum/summer_project) . Once the server is ready, you can run all E2E tests. The commands are as follows:
 
 Run all E2E tests with:
 
