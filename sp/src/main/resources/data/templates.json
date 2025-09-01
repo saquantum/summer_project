@@ -1,22 +1,22 @@
 [
   {
-    "title": ": Secure Your {{asset-model}}",
+    "title": ": Secure Your {{asset_model}}",
     "body": "<h3>Dear {{contact_name}}:</h3><br> <p>Secure your asset. If it sent by SMS, keep it short. If it is sent by email, insert helpful images and links.</p> <br> <a href=\"https://www.google.com\" > Click This Link </a>"
   },
   {
-    "title": ": Protect Your {{asset-model}}",
+    "title": ": Protect Your {{asset_model}}",
     "body": "<h3>Dear {{contact_name}}:</h3><br> <p>Protect your asset. If it sent by SMS, keep it short. If it is sent by email, insert helpful images and links.</p> <br> <a href=\"https://www.google.com\" > Click This Link </a>"
   },
   {
-    "title": ": Water Your {{asset-model}}",
+    "title": ": Water Your {{asset_model}}",
     "body": "<h3>Dear {{contact_name}}:</h3><br> <p>Water your asset. If it sent by SMS, keep it short. If it is sent by email, insert helpful images and links.</p> <br> <a href=\"https://www.google.com\" > Click This Link </a>"
   },
   {
-    "title": ": Use Your {{asset-model}}",
+    "title": ": Use Your {{asset_model}}",
     "body": "<h3>Dear {{contact_name}}:</h3><br> <p>Use your asset. If it sent by SMS, keep it short. If it is sent by email, insert helpful images and links.</p> <br> <a href=\"https://www.google.com\" > Click This Link </a>"
   },
   {
-    "title": ": Drain Your {{asset-model}}",
+    "title": ": Drain Your {{asset_model}}",
     "body": "<h3>Dear {{contact_name}}:</h3><br> <p>Drain your asset. If it sent by SMS, keep it short. If it is sent by email, insert helpful images and links.</p> <br> <a href=\"https://www.google.com\" > Click This Link </a>"
   }
 ]

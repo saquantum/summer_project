@@ -464,7 +464,8 @@ onMounted(async () => {
   }
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
+    attribution: '&copy; OpenStreetMap contributors',
+    detectRetina: true,
   }).addTo(map)
 
   // render layers using passed location
