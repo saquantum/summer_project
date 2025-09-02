@@ -47,15 +47,23 @@ Access port 80 in your browser. My linux VM is of IP `192.168.48.131` thus I acc
 
 ### Development
 
+#### Required Software
+
+- **JDK 17** - [Download JDK 17](https://openjdk.org/)
+- **Git** - [Download Git](https://git-scm.com/)
+- **PostGreSQL** [Download PostgreSQL](https://www.postgresql.org/download/)
+- **Redis** [Download Redis](https://redis.io/downloads/)
+- **Node.js 20+** - [Download Node.js](https://nodejs.org/)
+- **pnpm** - you can install it with `npm install -g pnpm` after Node.js is installed
+- **Git** - [Download Git](https://git-scm.com/)
+
 To run the project under development environment you will need to install Java JDK 17 and PostgreSQL beforehand.
 
 Do install PostGis plugin during installation. Make sure the username of your PostgreSQL's root is 'postgres' which is the default username, and the password is '123456'. After installation create a new database dubbed 'rainwaterBD'.
 
 If you have Java IDEs, open the `sp` directory in your IDE as Maven project and execute Maven's package lifecycle. You should see a `.jar` file in `sp/target` directory. 
 
-If you don't have Java IDE, run `./mvnw clean package` (linux) or `mvnw.cmd clean package` (windows) in `sp/` directory where `mvnw` file exists. Likewise, you should be able to find the `.jar` file.
-
-To boot up back-end service, direct to the `.jar` file and run `java -jar FILENAME.jar`. Replace the `FILENAME` placeholder to your actual file name.
+If you don't have Java IDE, run `./mvnw clean spring-boot:run` or `mvnw clean spring-boot:run` depending on your OS and shell.
 
 To boot up front-end you need to first install `Node.js`, `npm` and `pnpm`. Once that is done, direct to `vue/` directory and run `pnpm install` and then run `pnpm dev`. 
 

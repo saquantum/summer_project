@@ -78,7 +78,7 @@ Run both backend and frontend in development mode:
 ```
 # Terminal 1
 cd sp
-./mvnw clean sprint-boot run
+./mvnw clean spring-boot:run
 
 # Terminal 2
 cd vue
@@ -165,3 +165,40 @@ export const getUploadData = () => ({
   token: uploadConfig.auth.token
 }
 ```
+
+## User Guide
+
+After installed the application, you should be able to navigate to the log in page via `localhost:port`, by default the port is 80.
+
+The admin and user share the same log in page, under development environment, user and admin's password has been set.
+
+### User interface
+
+Take one of the user as an example
+
+```
+username: user_017
+password: 123456
+```
+
+After login, you will see a asset panel page. Under this page you can have a global view of your assets status.
+
+If you want to see further information, you can click the card's button.
+
+On the left hand side of the page there exist a sidebar, you can edit your personal information, view your inbox to see the messages sent by the admin or the system and the current warnings. You may notice that user can not add a new polygon, this is because the permission is set to false by default. In order to modify the permission, you need to log in to the admin interface.
+
+### Admin interface
+
+The default username and password for admin are:
+
+```
+username: admin
+password: admin
+```
+
+Like user, you can see all the admin pages on the sidebar. The default page for admin is the dashboard, in it you can see all the importance information of the system. The admin interface has the following functionality:
+
+1. manage assets through tables through tables and forms
+2. manage users through tables and forms
+3. manage message template through a rich text editor
+
