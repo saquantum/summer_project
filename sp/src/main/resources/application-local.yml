@@ -20,7 +20,7 @@ spring:
 
   mail:
     username: ourrainwatersender@gmail.com
-    password: iatlngoazwhxgfyi
+    password: yanqpnzjaehaptqu
     host: smtp.gmail.com
     port: 465
     properties:
