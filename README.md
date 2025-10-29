@@ -6,7 +6,7 @@
 
 To boot up the mock met office weather warnings, run `http-server -p 8002`.
 
-You should be able to test our app by visiting [GitHub Pages](https://saquantum.github.io/summer_project/). Please do not perform any load testing since it is deployed on my own device :) 
+~~You should be able to test our app by visiting [GitHub Pages](https://saquantum.github.io/summer_project/). Please do not perform any load testing since it is deployed on my own device :)~~
 
 Some test users are: 
 
